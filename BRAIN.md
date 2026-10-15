@@ -6,23 +6,24 @@
 
 ## 1. Current state
 
-| Field              | Value                                                        |
-| ------------------ | ------------------------------------------------------------ |
-| **Branch**         | `feature/p0-tooling`                                         |
-| **Last commit**    | `3679fb0` (pushed to origin)                                 |
-| **Working tree**   | completed B2 (P0-06 through P0-11); ready to merge into main |
-| **Open PR**        | PR #2 merged (partial); completing remaining B2 changes      |
-| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped)                |
-| **Date**           | 2026-10-15                                                   |
+| Field              | Value                                                             |
+| ------------------ | ----------------------------------------------------------------- |
+| **Branch**         | `feature/p0-ci-github`                                            |
+| **Last commit**    | `c0d0323` (main)                                                  |
+| **Working tree**   | completed B3 (P0-12 through P0-15); ready to push & merge to main |
+| **Open PR**        | preparing PR/merge for B3                                         |
+| **Last CI result** | `actionlint` 100% clean; `pnpm verify` (6 passed, 0 fail, 2 skip) |
+| **Date**           | 2026-10-15                                                        |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit remaining B2 files (`.husky/`, `.lintstagedrc.json`, `.prettierignore`, brand sync assets, `scripts/`, `docs/runbooks/dependency-versions.md`, formatted files) to `feature/p0-tooling`.
-2. Push to `origin feature/p0-tooling`.
-3. Merge `feature/p0-tooling` into `main`, push to `origin main`, delete `feature/p0-tooling` branch locally and remotely.
-4. Create branch `feature/p0-ci-github` for Slice B3 and start P0-12 (CI workflow with `ci-gate`).
+1. Commit all B3 files on `feature/p0-ci-github` with Conventional Commit: `ci(repo): add CI with ci-gate, PR title check, Dependabot, templates`.
+2. Push `feature/p0-ci-github` to `origin`.
+3. Merge `feature/p0-ci-github` into `main`, push to `origin main`, delete `feature/p0-ci-github` branch locally and remotely.
+4. Notify owner to enable GitHub branch ruleset `protect-main` requiring `ci-gate` (SETUP-GUIDE.md §4.4).
+5. Start Phase S1 · Slice B4 (`feature/s1-foundation`).
 
 ---
 

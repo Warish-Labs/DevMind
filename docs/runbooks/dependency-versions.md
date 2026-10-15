@@ -36,6 +36,14 @@ Updated in every branch that adds or changes a dependency (AGENTS.md §11, ANTIG
 | vitest | 5.0.5 | npmjs.com/package/vitest | MIT | 2026-10-15 |
 | zod | 3.24.2 | npmjs.com/package/zod | MIT | 2026-10-15 |
 | @types/node | 24.19.2 | npmjs.com/package/@types/node | MIT | 2026-10-15 |
+| actions/checkout | 11bd719 (v4.2.2) | github.com/actions/checkout | MIT | 2026-10-15 |
+| actions/setup-node | 1d0ff46 (v4.2.0) | github.com/actions/setup-node | MIT | 2026-10-15 |
+| pnpm/action-setup | 7088e56 (v4.1.0) | github.com/pnpm/action-setup | MIT | 2026-10-15 |
+| actions/upload-artifact | 4cec3d8 (v4.6.1) | github.com/actions/upload-artifact | MIT | 2026-10-15 |
+| actions/download-artifact | cc20338 (v4.1.9) | github.com/actions/download-artifact | MIT | 2026-10-15 |
+| actions/dependency-review-action | 3b139cf (v4.5.0) | github.com/actions/dependency-review-action | MIT | 2026-10-15 |
+| github/codeql-action | a65a038 (v3.28.10) | github.com/github/codeql-action | MIT | 2026-10-15 |
+| gitleaks/gitleaks-action | f586c14 (v2.3.8) | github.com/gitleaks/gitleaks-action | MIT | 2026-10-15 |
 
 ---
 
@@ -68,15 +76,6 @@ The following will be verified from npm/PyPI when the packages are installed dur
 - `pyright` — npmjs.com or pypi.org
 - `pytest` — pypi.org
 - `structlog` — pypi.org
-
-### GitHub Actions (pin by SHA)
-- `actions/checkout` — github.com/actions/checkout
-- `actions/setup-node` — github.com/actions/setup-node
-- `pnpm/action-setup` — github.com/pnpm/action-setup
-- `actions/cache` — github.com/actions/cache
-- `actions/upload-artifact` — github.com/actions/upload-artifact
-- `actions/dependency-review-action` — github.com/actions/dependency-review-action
-- `github/codeql-action` — github.com/github/codeql-action
 
 ### Fonts (SIL OFL — self-host)
 - Instrument Serif — fonts.google.com or github.com/Instrumental/fonts
