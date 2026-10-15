@@ -6,23 +6,24 @@
 
 ## 1. Current state
 
-| Field              | Value                                                              |
-| ------------------ | ------------------------------------------------------------------ |
-| **Branch**         | `feature/s1-foundation`                                            |
-| **Last commit**    | `696b12e` (docs: modernize root and client READMEs)                |
-| **Working tree**   | Slice B4 completed (S1-01 through S1-05); ready to merge into main |
-| **Open PR**        | preparing PR/merge for B4                                          |
-| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client build green  |
-| **Date**           | 2026-10-15                                                         |
+| Field              | Value                                                             |
+| ------------------ | ----------------------------------------------------------------- |
+| **Branch**         | `main`                                                            |
+| **Last commit**    | `cc604bd` (Merge B4 into main)                                    |
+| **Working tree**   | clean; Slice B4 completed & merged                                |
+| **Open PR**        | none                                                              |
+| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client build green |
+| **Date**           | 2026-10-15                                                        |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit all Slice B4 files with: `feat(client): scaffold Next.js app, tokens, fonts, brand sync, data sources`.
-2. Push to `origin feature/s1-foundation`.
-3. Merge `feature/s1-foundation` into `main`, push to `origin main`, delete `feature/s1-foundation` branch locally and remotely.
-4. Create branch `feature/s1-hero` for Slice B5 and execute S1-06 (Trace component with real text and SVG shapes).
+1. Create branch `feature/s1-hero` from `main` for Slice B5.
+2. Implement S1-06: Hero Trace component (real selectable text, SVG check/cross shapes, syntax tones, margin note).
+3. Implement S1-07: Hero sequence (WAAPI/CSS ~7s single run), replay button, and prefers-reduced-motion immediate final frame.
+4. Implement S1-08: Pointer-lit border (`--mx`/`--my`, opacity ≤0.35) and subtle fine-pointer parallax (≤6px).
+5. Verify tests, commit, push, and merge into `main`.
 
 ---
 
