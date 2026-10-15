@@ -1,0 +1,39 @@
+{
+  "name": "devmind-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": "^24.0.0",
+    "pnpm": "^12.0.0"
+  },
+  "scripts": {
+    "dev:client": "pnpm --filter client dev",
+    "build": "pnpm -r --filter=!./evals/** run build",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:all": "node scripts/test-all.mjs",
+    "verify": "node scripts/test-all.mjs --fast",
+    "screenshots": "node scripts/test-all.mjs --only client",
+    "brand:sync": "node scripts/sync-brand.mjs",
+    "brand:check": "node scripts/sync-brand.mjs --check",
+    "docs:links": "node scripts/docs-links.mjs",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
+    "eslint": "10.12.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
+    "prettier": "3.9.10",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.2"
+  }
+}
