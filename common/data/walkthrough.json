@@ -1,0 +1,100 @@
+[
+  {
+    "step": 1,
+    "title": "Developer writes code — a new admin API is added.",
+    "agent": "Developer",
+    "brainState": "Local workspace change detected; AST parse queued",
+    "status": "mvp"
+  },
+  {
+    "step": 2,
+    "title": "Project understanding updates — DevMind recognizes a new endpoint in the admin module.",
+    "agent": "Brain Indexer",
+    "brainState": "Symbol graph updated with /admin/users endpoint and route handler",
+    "status": "mvp"
+  },
+  {
+    "step": 3,
+    "title": "Security check runs — AuthCheck confirms authentication is present, but authorization is missing.",
+    "agent": "AuthCheck",
+    "brainState": "Finding devmind.authz.missing_role_check recorded with evidence level E1",
+    "status": "mvp"
+  },
+  {
+    "step": 4,
+    "title": "Code review runs — ReviewBuddy reports missing role validation and no test for unauthorized access.",
+    "agent": "ReviewBuddy",
+    "brainState": "Review finding linked to admin endpoint with missing test assertion",
+    "status": "planned"
+  },
+  {
+    "step": 5,
+    "title": "Pull request is summarized — PRAgent flags the change as high risk.",
+    "agent": "PRAgent",
+    "brainState": "Change Impact Analysis highlights sensitive administrative blast radius",
+    "status": "planned"
+  },
+  {
+    "step": 6,
+    "title": "Documentation gap is caught — DocsAlive notices the new API has no matching documentation.",
+    "agent": "DocsAlive",
+    "brainState": "Doc drift item generated linking missing spec to /admin/users",
+    "status": "planned"
+  },
+  {
+    "step": 7,
+    "title": "Developer fixes the gap — authorization is added.",
+    "agent": "Developer",
+    "brainState": "Local diff applies requireAdminRole middleware to endpoint",
+    "status": "mvp"
+  },
+  {
+    "step": 8,
+    "title": "DevMind re-checks — authorization, testing, and documentation now all pass.",
+    "agent": "AuthCheck & Verification",
+    "brainState": "Finding resolved; evidence updated to E3 Safe; doc drift closed",
+    "status": "mvp"
+  },
+  {
+    "step": 9,
+    "title": "The PR is merged.",
+    "agent": "GitHub / Developer",
+    "brainState": "Git commit ingested; main branch Brain strata advanced",
+    "status": "mvp"
+  },
+  {
+    "step": 10,
+    "title": "The project deploys.",
+    "agent": "CI / CD Pipeline",
+    "brainState": "Production deployment release tag registered",
+    "status": "mvp"
+  },
+  {
+    "step": 11,
+    "title": "Deployment fails in production.",
+    "agent": "Observability / Platform",
+    "brainState": "Production incident telemetry logged to deployment tracker",
+    "status": "planned"
+  },
+  {
+    "step": 12,
+    "title": "DeployDoctor investigates, and Bug Memory surfaces a similar past deployment incident.",
+    "agent": "DeployDoctor & BugMemory",
+    "brainState": "Stack trace correlated to historical transaction flow fix",
+    "status": "planned"
+  },
+  {
+    "step": 13,
+    "title": "The developer applies the known fix.",
+    "agent": "Developer",
+    "brainState": "Hotfix patch verified against known bug memory resolution",
+    "status": "planned"
+  },
+  {
+    "step": 14,
+    "title": "Project Evaluation updates — security, deployment health, and overall health reflect improvement.",
+    "agent": "ProjectEvaluation",
+    "brainState": "Health score recalculation completes: 78% -> 94% release readiness",
+    "status": "planned"
+  }
+]

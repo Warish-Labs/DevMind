@@ -1,11 +1,23 @@
 import { describe, it, expect } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import {
   RuleDefinitionSchema,
-  RuleCatalogSchema,
-  ReleaseStatusSchema,
-  PrivacyLedgerSchema,
+  validateRuleCatalog,
+  validateReleaseStatus,
+  validatePrivacyLedger,
+  validateCapabilities,
+  validateWalkthrough,
   themeColors,
 } from "../src/index.js";
+
+const DATA_DIR = path.resolve(__dirname, "../data");
+
+function readJsonFile(filename: string): unknown {
+  const filePath = path.join(DATA_DIR, filename);
+  const raw = fs.readFileSync(filePath, "utf-8");
+  return JSON.parse(raw);
+}
 
 describe("@devmind/common schemas", () => {
   it("validates a rule definition successfully", () => {
@@ -28,7 +40,7 @@ describe("@devmind/common schemas", () => {
       rule_id: "invalid.rule",
       name: "Bad rule",
       description: "Invalid severity",
-      severity: "critical-danger", // invalid
+      severity: "critical-danger",
       category: "security",
       default_evidence_level: "E1",
     };
@@ -36,67 +48,64 @@ describe("@devmind/common schemas", () => {
     expect(() => RuleDefinitionSchema.parse(invalidRule)).toThrow();
   });
 
-  it("validates rule catalog structure", () => {
-    const catalog = {
-      version: "1.0.0",
-      rules: [
-        {
-          rule_id: "devmind.authz.missing_role_check",
-          name: "Missing role check",
-          description: "Route lacks authorization role check",
-          severity: "high",
-          category: "security",
-          default_evidence_level: "E1",
-        },
-      ],
-    };
-
-    const parsed = RuleCatalogSchema.parse(catalog);
-    expect(parsed.rules).toHaveLength(1);
-  });
-
-  it("validates release status schema", () => {
-    const status = {
-      projectStatus: "specification",
-      lastUpdated: "2026-10-15",
-      capabilities: [
-        {
-          id: "CAP-01",
-          name: "Code Intelligence",
-          release: "mvp",
-          status: "in-progress",
-        },
-      ],
-    };
-
-    const parsed = ReleaseStatusSchema.parse(status);
-    expect(parsed.projectStatus).toBe("specification");
-    expect(parsed.capabilities[0].id).toBe("CAP-01");
-  });
-
-  it("validates privacy ledger schema", () => {
-    const ledger = {
-      version: "1.0.0",
-      entries: [
-        {
-          category: "File metadata (paths, hashes, sizes)",
-          staysLocal: false,
-          storedInDevMind: true,
-          embedded: false,
-          reachesLLM: false,
-          modes: ["metadata_only", "indexed"],
-        },
-      ],
-    };
-
-    const parsed = PrivacyLedgerSchema.parse(ledger);
-    expect(parsed.entries).toHaveLength(1);
-    expect(parsed.entries[0].modes).toContain("metadata_only");
-  });
-
   it("exports theme colors matching brand design tokens", () => {
     expect(themeColors.bg0).toBe("#0B0F12");
     expect(themeColors.signal).toBe("#38D39F");
     expect(themeColors.ref).toBe("#6CA8F9");
+  });
+});
+
+describe("common/data/*.json file integrity and acceptance checks", () => {
+  it("validates rule-catalog.json and verifies devmind.authz.missing_role_check is present", () => {
+    const data = readJsonFile("rule-catalog.json");
+    const catalog = validateRuleCatalog(data);
+
+    expect(catalog.version).toBeDefined();
+    expect(catalog.rules.length).toBeGreaterThan(0);
+
+    const targetRule = catalog.rules.find((r) => r.rule_id === "devmind.authz.missing_role_check");
+    expect(targetRule).toBeDefined();
+    expect(targetRule?.severity).toBe("high");
+    expect(targetRule?.default_evidence_level).toBe("E1");
+  });
+
+  it("validates release-status.json and verifies projectStatus is specification", () => {
+    const data = readJsonFile("release-status.json");
+    const status = validateReleaseStatus(data);
+
+    expect(status.projectStatus).toBe("specification");
+    expect(status.capabilities.length).toBe(9);
+  });
+
+  it("validates privacy-ledger.json", () => {
+    const data = readJsonFile("privacy-ledger.json");
+    const ledger = validatePrivacyLedger(data);
+
+    expect(ledger.version).toBeDefined();
+    expect(ledger.entries.length).toBeGreaterThan(0);
+    const staysLocalEntry = ledger.entries.find((e) => e.category.includes("File contents"));
+    expect(staysLocalEntry?.staysLocal).toBe(true);
+  });
+
+  it("validates capabilities.json with all 9 capabilities", () => {
+    const data = readJsonFile("capabilities.json");
+    const capabilities = validateCapabilities(data);
+
+    expect(capabilities).toHaveLength(9);
+    expect(capabilities.map((c) => c.id)).toContain("CAP-01");
+    expect(capabilities.map((c) => c.id)).toContain("CAP-02");
+    expect(capabilities.map((c) => c.id)).toContain("CAP-09");
+  });
+
+  it("validates walkthrough.json and confirms it has exactly 14 steps", () => {
+    const data = readJsonFile("walkthrough.json");
+    const walkthrough = validateWalkthrough(data);
+
+    expect(walkthrough).toHaveLength(14);
+    for (let i = 1; i <= 14; i++) {
+      const step = walkthrough.find((s) => s.step === i);
+      expect(step).toBeDefined();
+      expect(step?.title).toBeDefined();
+    }
   });
 });

@@ -5,6 +5,10 @@ import {
   ReleaseStatusSchema,
   PrivacyLedger,
   PrivacyLedgerSchema,
+  CapabilitiesCatalog,
+  CapabilitiesCatalogSchema,
+  WalkthroughCatalog,
+  WalkthroughCatalogSchema,
 } from "../schemas/index.js";
 
 export function validateRuleCatalog(data: unknown): RuleCatalog {
@@ -17,4 +21,12 @@ export function validateReleaseStatus(data: unknown): ReleaseStatus {
 
 export function validatePrivacyLedger(data: unknown): PrivacyLedger {
   return PrivacyLedgerSchema.parse(data);
+}
+
+export function validateCapabilities(data: unknown): CapabilitiesCatalog {
+  return CapabilitiesCatalogSchema.parse(data);
+}
+
+export function validateWalkthrough(data: unknown): WalkthroughCatalog {
+  return WalkthroughCatalogSchema.parse(data);
 }

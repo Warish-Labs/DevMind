@@ -71,15 +71,15 @@ Gate: CI green on the PR; owner enables ruleset requiring ci-gate (docs/SETUP-GU
 
 PR title: `feat(client): scaffold Next.js app, tokens, fonts, brand sync, data sources`
 
-- [ ] S1-01 Next.js App Router in client/ (TS strict, Tailwind, ESLint, Vitest, Playwright)
+- [x] S1-01 Next.js App Router in client/ (TS strict, Tailwind, ESLint, Vitest, Playwright)
   - Acceptance: pnpm --filter client build succeeds; / and /early-access render
-- [ ] S1-02 tokens.css + Tailwind mapping + no-hex lint rule; fonts via next/font (self-hosted)
+- [x] S1-02 tokens.css + Tailwind mapping + no-hex lint rule; fonts via next/font (self-hosted)
   - Acceptance: brand:check passes; no hard-coded hex in components
-- [ ] S1-03 brand sync (logos inline SVG, favicons, manifest, OG); metadata; robots/sitemap
+- [x] S1-03 brand sync (logos inline SVG, favicons, manifest, OG); metadata; robots/sitemap
   - Acceptance: /robots.txt and /sitemap.xml resolve; OG tags present; favicon shows in browser tab
-- [ ] S1-04 common/data/*.json + schemas + integrity tests (rule-catalog, release-status, privacy-ledger, capabilities, walkthrough)
+- [x] S1-04 common/data/*.json + schemas + integrity tests (rule-catalog, release-status, privacy-ledger, capabilities, walkthrough)
   - Acceptance: pnpm --filter common test passes; all JSON files validate; devmind.authz.missing_role_check present in rule-catalog.json; walkthrough has exactly 14 steps
-- [ ] S1-05 Layout: gutter rail (01–08), header, footer, skip link, /early-access, not-found
+- [x] S1-05 Layout: gutter rail (01–08), header, footer, skip link, /early-access, not-found
   - Acceptance: skip link present; landmarks in HTML; /early-access renders; 404 shows not-found.tsx
 
 ### B5 `feature/s1-hero`

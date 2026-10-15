@@ -1,0 +1,65 @@
+[
+  {
+    "id": "CAP-01",
+    "question": "How does this codebase work?",
+    "capability": "Code Intelligence",
+    "release": "MVP",
+    "summary": "Semantic symbol search, call graphs, and architectural boundary mapping grounded in the actual project."
+  },
+  {
+    "id": "CAP-02",
+    "question": "Is our authentication and authorization safe?",
+    "capability": "Security Intelligence",
+    "release": "MVP",
+    "summary": "Authentication vs authorization gap analysis with verifiable evidence levels (E0-E3) and zero speculative warnings."
+  },
+  {
+    "id": "CAP-03",
+    "question": "Have we solved this bug before?",
+    "capability": "Bug Memory",
+    "release": "1.2",
+    "summary": "Structured historical incident memory connecting past fixes to new errors across projects."
+  },
+  {
+    "id": "CAP-04",
+    "question": "Is our documentation up to date with code?",
+    "capability": "Living Documentation",
+    "release": "1.2",
+    "summary": "Continuous documentation synchronization flagging doc decay the instant code changes."
+  },
+  {
+    "id": "CAP-05",
+    "question": "Does this code change follow our invariants?",
+    "capability": "Code Review Intelligence",
+    "release": "1.1",
+    "summary": "Consistent multi-dimensional checklist review for authorization, validation, error handling, and tests."
+  },
+  {
+    "id": "CAP-06",
+    "question": "What is the blast radius of this pull request?",
+    "capability": "Pull Request Intelligence",
+    "release": "1.1",
+    "summary": "Cross-module Change Impact Analysis answering what else could break before merging."
+  },
+  {
+    "id": "CAP-07",
+    "question": "Why did production deployment fail?",
+    "capability": "Deployment Diagnosis",
+    "release": "1.4",
+    "summary": "Root-cause correlation between production stack traces and Project Brain AST nodes."
+  },
+  {
+    "id": "CAP-08",
+    "question": "What should I work on next?",
+    "capability": "Project Mentor",
+    "release": "1.3",
+    "summary": "Priority guidance based on module dependencies, blockages, and milestone goals."
+  },
+  {
+    "id": "CAP-09",
+    "question": "Is this project ready to ship?",
+    "capability": "Project Evaluation",
+    "release": "1.3",
+    "summary": "Unified release-readiness verdict across quality, test coverage, and security."
+  }
+]

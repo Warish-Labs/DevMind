@@ -1,192 +1,181 @@
-# DevMind
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/svg/devmind-lockup-horizontal-for-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="brand/svg/devmind-lockup-horizontal-for-light.svg">
+    <img alt="DevMind — Agentic AI Software Engineering System" src="brand/png/devmind-lockup-horizontal-for-dark-1200w.png" width="580">
+  </picture>
+</p>
 
-> An agentic AI software engineering system that maintains a shared, continuously updated understanding of a software project (the **Project Brain**) and uses specialized agents to help developers understand code, find security weaknesses, remember bugs, keep documentation current, review changes, diagnose deployments, prioritize work, and evaluate project health.
+<h3 align="center">Continuous Project Brain · Deterministic Code Tracing · Local-First Companion</h3>
 
-**Implementation status: SPECIFICATION PHASE. No application code exists yet.**
-Everything in `docs/` is a proposed design, not evidence that a feature is built, tested, or secure. See [Current implementation status](#11-current-implementation-status).
+<p align="center">
+  <a href="https://github.com/Warish-Labs/DevMind/actions/workflows/ci.yml"><img src="https://github.com/Warish-Labs/DevMind/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
+  <a href="https://github.com/Warish-Labs/DevMind/actions/workflows/codeql.yml"><img src="https://github.com/Warish-Labs/DevMind/actions/workflows/codeql.yml/badge.svg" alt="CodeQL Status"></a>
+  <img src="https://img.shields.io/badge/TypeScript-5.9_Strict-blue?logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Next.js-16_App_Router-black?logo=nextdotjs&logoColor=white" alt="Next.js">
+  <img src="https://img.shields.io/badge/FastAPI-Python_3.12-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white" alt="Postgres">
+  <img src="https://img.shields.io/badge/Security-Local--First_&_Redacted-2ea44f" alt="Security First">
+</p>
 
-Live - https://devmind.warishlabs.in
+<p align="center">
+  <a href="https://devmind.warishlabs.in"><strong>Live Platform</strong></a> ·
+  <a href="docs/00-documentation-index.md"><strong>Documentation</strong></a> ·
+  <a href="docs/02-system-architecture.md"><strong>Architecture</strong></a> ·
+  <a href="docs/SETUP-GUIDE.md"><strong>Setup Guide</strong></a> ·
+  <a href="docs/07-security-privacy-and-threat-model.md"><strong>Security & Threat Model</strong></a> ·
+  <a href="CONTRIBUTING.md"><strong>Contributing</strong></a>
+</p>
+
 ---
 
-## 1. Problem
+## 1. What is DevMind?
 
-A single change to one authentication route can ripple through security, API behavior, tests, documentation, and deployment, yet typical tooling treats these as separate activities. Codebases outgrow memory, bugs are re-solved from scratch, documentation decays silently, review quality depends on the reviewer, and nobody has an honest answer to "is this ready to ship?" (Source: `DevMind_Project_Document.md`, sections 1 and 2.)
+**DevMind** is an agentic software engineering system that maintains a shared, continuously synchronized mental model of an entire codebase—the **Project Brain**.
 
-## 2. Solution
+Traditional developer tools treat linting, security scans, review comments, documentation, and deployment debugging as fragmented silos. When an authentication handler changes in one route, its ripple effects across API permissions, architectural invariants, test coverage, and living documentation are lost.
 
-Instead of nine disconnected tools, DevMind builds **one shared model of the project** and lets specialized agents read from and write to it. Something found in one place (a missing authorization check) becomes immediately useful elsewhere (a review finding, a documentation gap, a PR risk, a health score).
+DevMind changes this paradigm:
 
-## 3. Differentiators
+1. **One Project Brain**: A version-aware knowledge strata linking AST symbols, call graphs, security boundaries, documentation, and bug history.
+2. **Deterministic-First Analysis**: Static parsers and deterministic linters establish ground truth; LLMs are reserved for semantic reasoning and architectural explanation.
+3. **Evidence-Based Findings**: Every finding is scored with rigorous evidence levels (**E0 to E3**). AI never presents speculative hunches as proven defects.
+4. **Local-First Privacy**: The VS Code companion scans on your machine and never transmits source code to the cloud without explicit, recorded consent.
 
-| Differentiator          | What it means concretely                                                                                                                                                                 |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shared Project Brain    | One version-aware, structured model of code, symbols, relationships, findings, bugs, docs, and history; not a giant prompt ([04](docs/04-project-brain-and-rag.md))                      |
-| Evidence-based findings | Every finding carries a location, evidence, confidence, and an **evidence level E0 to E3**; "possible" is never presented as "proven" ([13](docs/13-glossary-and-domain-terminology.md)) |
-| Human in the loop       | AI finds, explains, suggests; a human approves anything that matters                                                                                                                     |
-| Deterministic first     | Scanners and parsers produce facts; LLMs explain and reason over them ([05](docs/05-agents-and-llm-workflows.md))                                                                        |
-| Local-first scanning    | The VS Code extension scans locally and sends only consented, task-specific context ([06](docs/06-vscode-extension-and-local-scanning.md))                                               |
-| Lifecycle continuity    | Understand, build, review, secure, fix, document, deploy, evaluate, improve                                                                                                              |
+---
 
-## 4. The nine capabilities
+## 2. High-Level Architecture
 
-| ID     | Capability                                                          | Release |
-| ------ | ------------------------------------------------------------------- | ------- |
-| CAP-01 | Code Intelligence                                                   | MVP     |
-| CAP-02 | Security Intelligence (focused: authentication/authorization first) | MVP     |
-| CAP-05 | Code Review Intelligence                                            | 1.1     |
-| CAP-06 | Pull Request Intelligence                                           | 1.1     |
-| CAP-03 | Bug Memory                                                          | 1.2     |
-| CAP-04 | Living Documentation                                                | 1.2     |
-| CAP-08 | Project Mentor                                                      | 1.3     |
-| CAP-09 | Project Evaluation                                                  | 1.3     |
-| CAP-07 | Deployment Diagnosis                                                | 1.4     |
-
-Details and acceptance criteria: [01](docs/01-product-requirements.md) §9. The MVP breadth (depth on two capabilities) is an open decision, OQ-10 / ADR-038.
-
-## 5. Two interfaces
-
-|                          | Website (primary)                                                                              | VS Code extension (companion)                                                                     |
-| ------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Role                     | Projects, AI conversations, reports, findings, Brain exploration, GitHub/PRs (later), settings | Detect workspace, scan locally, local manifest, diagnostics, consented sync, links to the website |
-| AI chat                  | Yes                                                                                            | **No** (version one)                                                                              |
-| Uploads whole repository | n/a                                                                                            | **Never silently**; sync modes `metadata_only` or `indexed`, plus per-request consented snippets  |
-| Technology               | Next.js, TypeScript                                                                            | TypeScript (VS Code extension host)                                                               |
-
-## 6. High-level architecture
+DevMind is composed of a Next.js web application, a FastAPI modular monolith backend with Celery workers, a companion VS Code extension, and shared core packages.
 
 ```mermaid
-flowchart LR
-  subgraph Client
-    EXT[VS Code extension<br/>local scan + manifest]
-    WEB[Next.js website]
+flowchart TD
+  subgraph ClientEnv["Client Layer"]
+    EXT["VS Code Companion Extension<br/>(Local-first scan · Manifest · Diagnostics)"]
+    WEB["Next.js Web Application<br/>(Brain Navigator · Trace Explorer · Deep Chat)"]
   end
-  subgraph Backend["Backend (Render, Docker)"]
-    API[FastAPI API service]
-    WRK[Celery workers + scheduler]
+
+  subgraph CloudPlatform["DevMind Platform Core (Render)"]
+    API["FastAPI Modular Monolith<br/>(AuthContext · Policy Service · REST Endpoints)"]
+    ORCH["LangGraph Workflows<br/>(Multi-Turn Reasoning · Approval Checkpoints)"]
+    WRK["Celery Background Workers<br/>(AST Indexing · Embeddings · Verification)"]
   end
-  subgraph Data
-    PG[("Neon PostgreSQL + pgvector")]
-    RQ[("Managed Redis")]
-    R2[("Cloudflare R2")]
+
+  subgraph DataLayer["Storage & Intelligence Layer"]
+    PG[("Neon PostgreSQL + pgvector<br/>(Hybrid Semantic & Relational Strata)")]
+    REDIS[("Render Key Value / Redis<br/>(Task Queue · Rate Limiting · Pub/Sub)")]
+    R2[("Cloudflare R2<br/>(Artifacts · Encrypted Snapshots)")]
+    LLM[["LLM Gateway & Provider Adapters<br/>(OpenAI · Anthropic · Gemini)"]]
   end
-  LLM[["Hosted LLM and embedding APIs"]]
-  GH[["GitHub"]]
-  CK[["Clerk"]]
-  WEB -- bearer token --> API
-  EXT -- extension token --> API
-  WEB -. sign-in .-> CK
+
+  EXT -- "Consented Diagnostics (/api/v1/ext/*)" --> API
+  WEB -- "Session Auth (/api/v1/*)" --> API
   API --> PG
-  API --> RQ
-  RQ --> WRK
+  API --> REDIS
+  REDIS --> WRK
   WRK --> PG
   WRK --> R2
-  WRK --> LLM
-  API --> GH
-  WRK --> GH
+  WRK --> ORCH
+  ORCH --> LLM
 ```
 
-Full detail: [02](docs/02-system-architecture.md).
+---
 
-## 7. Stack and decision status
+## 3. The Nine Intelligence Capabilities
 
-| Layer               | Choice                                                                                | Status                                                       |
-| ------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Frontend            | Next.js, TypeScript, deployed separately                                              | Confirmed (ADR-002)                                          |
-| Backend             | Python, FastAPI modular monolith, Docker, Render                                      | Confirmed (ADR-004)                                          |
-| API and workers     | Separate deployables, one image                                                       | Confirmed (ADR-005)                                          |
-| Agent orchestration | LangGraph (agent workflows only)                                                      | Confirmed (ADR-006)                                          |
-| Database            | PostgreSQL on Neon with pgvector                                                      | Confirmed (ADR-007)                                          |
-| Queue               | Redis-backed queue on managed Redis                                                   | Confirmed (ADR-008); provider Open (ADR-031)                 |
-| Workers             | Celery                                                                                | Recommended (ADR-009)                                        |
-| Authentication      | Clerk; authorization implemented by DevMind                                           | Confirmed (ADR-010)                                          |
-| Object storage      | Cloudflare R2, suitable artifacts only                                                | Confirmed (ADR-013)                                          |
-| Email               | Resend, only when a feature needs it                                                  | Deferred (ADR-014)                                           |
-| GitHub              | OAuth first; GitHub App evaluated                                                     | Confirmed direction (ADR-015)                                |
-| LLM layer           | Provider adapters, config-driven routing                                              | Confirmed (ADR-016); **providers and models Open (ADR-017)** |
-| Retrieval           | Hybrid inside PostgreSQL                                                              | Confirmed (ADR-018)                                          |
-| Embeddings          | Hosted API, versioned embedding spaces                                                | Confirmed approach (ADR-019); model Open                     |
-| Frontend hosting    | Vercel Hobby (free; public repo)                                                      | Recommended (ADR-032); free profile Confirmed (ADR-046)      |
-| Backend hosting     | One Render free web service (API + embedded worker), Render free Key Value, Neon Free | Free profile Confirmed (ADR-046)                             |
+DevMind structures software engineering intelligence into nine core capabilities:
 
-Authoritative register: [12](docs/12-architecture-decisions-and-open-questions.md).
+| ID         | Capability                    | Description                                                                         | Release |
+| ---------- | ----------------------------- | ----------------------------------------------------------------------------------- | ------- |
+| **CAP-01** | **Code Intelligence**         | Deep semantic search, call-graph navigation, and AST symbol tracing across versions | **MVP** |
+| **CAP-02** | **Security Intelligence**     | Authentication & authorization vulnerability detection with verifiable evidence     | **MVP** |
+| **CAP-03** | **Bug Memory**                | Automatic regression memory; links past bug fixes to newly proposed code diffs      | v1.2    |
+| **CAP-04** | **Living Documentation**      | Continuously self-updating architectural docs; detects documentation decay on PRs   | v1.2    |
+| **CAP-05** | **Code Review Intelligence**  | Architectural blast-radius reviews; flags cross-boundary invariant violations       | v1.1    |
+| **CAP-06** | **Pull Request Intelligence** | Multi-file risk scoring and automated rollback / mitigation generation              | v1.1    |
+| **CAP-07** | **Deployment Diagnosis**      | Correlates production error logs and stack traces directly back to Brain AST nodes  | v1.4    |
+| **CAP-08** | **Project Mentor**            | Onboarding guide; explains unfamiliar patterns and organizational invariants        | v1.3    |
+| **CAP-09** | **Project Evaluation**        | Measurable codebase health scores covering modularity, test quality, and tech debt  | v1.3    |
 
-## 8. MVP summary
+---
 
-A vertical slice: open a TypeScript/JavaScript or Python workspace in VS Code, scan it locally, see authentication/authorization findings as diagnostics, sync metadata (and, with explicit consent, source snippets) to DevMind, then explore the project, findings with evidence, and a citation-grounded conversation on the website. Definition: [01](docs/01-product-requirements.md) §14. Build order: [11](docs/11-mvp-and-implementation-roadmap.md) (milestones M1 to M10 and M13 for the MVP).
+## 4. The Companion VS Code Extension
 
-## 9. Local development prerequisites (planned)
+The DevMind extension is a lightweight, local-first companion designed around privacy and zero bloat:
 
-| Tool                              | Purpose                                                                                                                                             | Notes                               |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Node.js LTS and `pnpm`            | Frontend, extension                                                                                                                                 | Versions pinned at repository setup |
-| Python and `uv`                   | Backend                                                                                                                                             | Version pinned at setup (ADR-036)   |
-| Docker and Docker Compose         | Local PostgreSQL (pgvector, pg_trgm), Redis, API, worker, scheduler                                                                                 |                                     |
-| VS Code                           | Extension development host                                                                                                                          |                                     |
-| Accounts and keys for development | Clerk development instance; at least one LLM provider key and one embedding provider key (or the built-in fake provider); optional GitHub OAuth app | Never committed; see `.env.example` |
+- **Local scanning only**: Extracts AST and manifest diagnostics without live database connections or direct LLM dependencies.
+- **Strict consent barrier**: Source code never leaves your workstation unless you explicitly review and approve a redacted snippet transmission.
+- **In-editor diagnostics**: Surfaced directly in the Problems tab (`devmind.authz.*`) with clickable deep links to the Web Platform for full trace inspection.
 
-## 10. Planned repository structure
+---
+
+## 5. Repository Structure
+
+This monorepo is managed via **pnpm workspaces** and enforces strict layer boundaries:
 
 ```text
 DevMind/
-├── README.md  AGENTS.md  PLAN.md  BRAIN.md  render.yaml  .env.example  .gitignore
-├── package.json  pnpm-workspace.yaml
-├── docs/                      # documentation package (00 to 13), runbooks, showcase kit
-├── brand/                     # logo, icons, social images, design tokens
-├── client/                    # Next.js website            (was: frontend/)
-├── extension/                 # VS Code extension          (was: vscode-extension/)
-├── common/                    # shared TypeScript: generated API client, shared data, tokens (was: packages/)
-├── server/                    # FastAPI + Celery (Python)  (was: backend/)
-│   ├── Dockerfile  pyproject.toml  README.md
-│   ├── alembic/               # migrations
-│   ├── configs/llm/           # providers.yaml, models.yaml, tasks.yaml (no secrets)
-│   ├── app/
-│   │   ├── api/  core/  domain/  persistence/
-│   │   ├── brain/  analysis/  llm/  orchestration/
-│   │   ├── integrations/  workers/
-│   │   └── llm/prompts/       # versioned prompt files
-│   └── tests/
-├── evals/                     # scanner, retrieval, answer-quality fixtures and results
-├── infra/                     # docker-compose.yml for local development
-├── scripts/                   # test-all, brand sync, docs link check
-└── .github/workflows/         # CI
+├── .github/                   # Workflows (ci-gate, CodeQL, main-guard, dependabot)
+├── brand/                     # Design tokens, SVG/PNG logos, brand sheet, and icons
+├── client/                    # Next.js 16 App Router website (TypeScript strict)
+├── common/                    # @devmind/common: Zod schemas, tokens, and data models
+├── extension/                 # VS Code Companion extension (TypeScript)
+├── server/                    # FastAPI modular monolith + Celery workers (Python 3.12)
+├── evals/                     # Retrieval & scanner eval suites with ground truth fixtures
+├── infra/                     # Local developer infrastructure (Docker Compose)
+├── scripts/                   # Verification runners, brand sync, and link checkers
+└── docs/                      # Architectural Decisions (ADRs), specifications, runbooks
 ```
 
-Folder names are owner-approved (ADR-039). Additions beyond the initial concept (`common/`, `evals/`, `infra/`, `scripts/`, `.github/`) are design recommendations ([02](docs/02-system-architecture.md) §5). The layout is a plan; no implementation files exist yet.
+---
 
-## 11. Current implementation status
+## 6. Development & Quality Verification
 
-| Area                                             | Status                                                                                          |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| Product and architecture specification           | Drafted; pending human review                                                                   |
-| Client, server, extension code                   | Not started                                                                                     |
-| Database schema and migrations                   | Specified logically only                                                                        |
-| LLM provider and model selection                 | Unresolved; requires evaluation ([05](docs/05-agents-and-llm-workflows.md) §16)                 |
-| Vendor facts (pricing, limits, scopes, versions) | Not verified; see the register in [12](docs/12-architecture-decisions-and-open-questions.md) §5 |
-| Tests, benchmarks, security validation           | None exist; no accuracy or performance claims are made                                          |
+DevMind uses a unified test runner with automatic report logging.
 
-## 12. Documentation map
+```bash
+# 1. Install workspace dependencies
+pnpm install
 
-| #   | Document                                                                               | Purpose                             |
-| --- | -------------------------------------------------------------------------------------- | ----------------------------------- |
-| 00  | [Documentation index](docs/00-documentation-index.md)                                  | Map, precedence, reading order      |
-| 01  | [Product requirements](docs/01-product-requirements.md)                                | What and why; MVP                   |
-| 02  | [System architecture](docs/02-system-architecture.md)                                  | How it fits together                |
-| 03  | [Data model and API](docs/03-data-model-and-api.md)                                    | Tables, endpoints, schemas          |
-| 04  | [Project Brain and retrieval](docs/04-project-brain-and-rag.md)                        | Knowledge model, RAG                |
-| 05  | [Agents and LLM workflows](docs/05-agents-and-llm-workflows.md)                        | LangGraph, routing, configuration   |
-| 06  | [VS Code extension and local scanning](docs/06-vscode-extension-and-local-scanning.md) | Local-first scanning, sync, consent |
-| 07  | [Security, privacy, threat model](docs/07-security-privacy-and-threat-model.md)        | Controls and risks                  |
-| 08  | [UI/UX design specification](docs/08-ui-ux-design-specification.md)                    | Visual identity, screens, motion    |
-| 09  | [Testing and quality](docs/09-testing-and-quality-strategy.md)                         | Tests, evaluations, gates           |
-| 10  | [Deployment and operations](docs/10-deployment-and-operations.md)                      | Runbook                             |
-| 11  | [MVP and roadmap](docs/11-mvp-and-implementation-roadmap.md)                           | Milestones M1 to M13                |
-| 12  | [Decisions and open questions](docs/12-architecture-decisions-and-open-questions.md)   | ADR register                        |
-| 13  | [Glossary](docs/13-glossary-and-domain-terminology.md)                                 | Terms                               |
+# 2. Fast verification (lint, typecheck, unit tests, brand drift check)
+pnpm verify
 
-Brand assets (logo, favicons, tokens): [brand/BRAND-GUIDE.md](brand/BRAND-GUIDE.md). Build plan for the AI coding agent: [docs/ANTIGRAVITY_PROMPT.md](docs/ANTIGRAVITY_PROMPT.md). Owner setup manual: [docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md).
+# 3. Check and sync brand assets
+pnpm brand:check
+pnpm brand:sync
 
-AI coding agents: read [AGENTS.md](AGENTS.md) first.
+# 4. Run client in development
+pnpm dev:client
+```
 
-## 13. License
+### Quality Gates
 
-Not yet chosen. Decide before the repository becomes public.
+- **`ci-gate`**: Single mandatory status check in GitHub Actions; executes lint, types, unit tests, security audits, and docs verification across all PRs.
+- **Conventional Commits**: Enforced on git commit and PR titles via `@commitlint/cli` and `pr-title.yml`.
+- **Pre-Push Guard**: Local hook preventing accidental direct pushes to `main` and ensuring all tests pass before pushing.
+
+---
+
+## 7. Security & Non-Negotiable Tenets
+
+1. **Untrusted Code Isolation**: Customer/repository code is treated as completely untrusted input (prompt injection and remote code execution risk). It is never executed in production environments (docs/07 §15).
+2. **Deterministic Redaction**: Proprietary secrets, credentials, and API keys are scrubbed prior to any LLM prompt submission.
+3. **Free-Tier Sustainability (ADR-046)**: Designed and verified to deploy on free cloud tiers (Vercel Hobby, Render Free Web Service + Key Value, Neon PostgreSQL Free).
+4. **Public Repository Transparency (ADR-047)**: All code is open and audited; zero private secrets or proprietary user source data are committed.
+
+---
+
+## 8. Roadmap & Current Status
+
+- [x] **Phase P0 · Layout & ADRs**: Monorepo structure, 47 ADRs, and brand system established.
+- [x] **Phase P0 · Tooling & Common**: pnpm workspace, `@devmind/common`, git hooks, and `test-all` runner.
+- [x] **Phase P0 · CI & GitHub**: GitHub Actions suite, CodeQL analysis, and `ci-gate` aggregator.
+- [~] **Phase S1 · Home Page**: Screenshot-first Next.js homepage with scripted Trace sequence, Brain strata, and custom motion.
+- [ ] **Phase S2 · VS Code Extension**: Companion extension UI shell with local diagnostics and consent preview.
+- [ ] **Milestone M1 · Server Core**: FastAPI modular monolith with PostgreSQL + pgvector and Celery worker.
+
+---
+
+## 9. License
+
+This repository is currently UNLICENSED. All rights reserved. Formal open-source licensing will be determined prior to public v1.0 release (see ADR-Open).

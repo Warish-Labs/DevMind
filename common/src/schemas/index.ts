@@ -61,6 +61,9 @@ export const CapabilitySchema = z.object({
 });
 export type Capability = z.infer<typeof CapabilitySchema>;
 
+export const CapabilitiesCatalogSchema = z.array(CapabilitySchema);
+export type CapabilitiesCatalog = z.infer<typeof CapabilitiesCatalogSchema>;
+
 export const WalkthroughStepSchema = z.object({
   step: z.number().int().positive(),
   title: z.string(),
@@ -69,3 +72,6 @@ export const WalkthroughStepSchema = z.object({
   status: z.enum(["mvp", "planned"]),
 });
 export type WalkthroughStep = z.infer<typeof WalkthroughStepSchema>;
+
+export const WalkthroughCatalogSchema = z.array(WalkthroughStepSchema);
+export type WalkthroughCatalog = z.infer<typeof WalkthroughCatalogSchema>;

@@ -1,0 +1,60 @@
+{
+  "projectStatus": "specification",
+  "lastUpdated": "2026-10-15",
+  "capabilities": [
+    {
+      "id": "CAP-01",
+      "name": "Code Intelligence",
+      "release": "mvp",
+      "status": "planned"
+    },
+    {
+      "id": "CAP-02",
+      "name": "Security Intelligence",
+      "release": "mvp",
+      "status": "planned"
+    },
+    {
+      "id": "CAP-05",
+      "name": "Code Review Intelligence",
+      "release": "1.1",
+      "status": "planned"
+    },
+    {
+      "id": "CAP-06",
+      "name": "Pull Request Intelligence",
+      "release": "1.1",
+      "status": "planned"
+    },
+    {
+      "id": "CAP-03",
+      "name": "Bug Memory",
+      "release": "1.2",
+      "status": "planned"
+    },
+    {
+      "id": "CAP-04",
+      "name": "Living Documentation",
+      "release": "1.2",
+      "status": "planned"
+    },
+    {
+      "id": "CAP-08",
+      "name": "Project Mentor",
+      "release": "1.3",
+      "status": "planned"
+    },
+    {
+      "id": "CAP-09",
+      "name": "Project Evaluation",
+      "release": "1.3",
+      "status": "planned"
+    },
+    {
+      "id": "CAP-07",
+      "name": "Deployment Diagnosis",
+      "release": "1.4",
+      "status": "planned"
+    }
+  ]
+}
