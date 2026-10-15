@@ -5,6 +5,8 @@
 **Implementation status: SPECIFICATION PHASE. No application code exists yet.**
 Everything in `docs/` is a proposed design, not evidence that a feature is built, tested, or secure. See [Current implementation status](#11-current-implementation-status).
 
+
+Live - https://devmind.warishlabs.in
 ---
 
 ## 1. Problem

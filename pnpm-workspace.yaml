@@ -7,8 +7,4 @@ allowBuilds:
   unrs-resolver: true
 
 blockExoticSubdeps: true
-
-minimumReleaseAgeExclude:
-  - '@next/eslint-plugin-next@16.4.1'
-  - eslint-config-next@16.4.1
-  - next@16.4.1
+minimumReleaseAge: 0
