@@ -1,0 +1,56 @@
+name: Main Branch Guard
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  verify-pr:
+    name: Verify Commit Originated from PR
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check associated Pull Requests
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          echo "Checking PR associations for commit $COMMIT_SHA..."
+          PRS=$(curl -sSL \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$REPO/commits/$COMMIT_SHA/pulls")
+
+          PR_COUNT=$(echo "$PRS" | jq 'length')
+          echo "Found $PR_COUNT associated PR(s)."
+
+          if [ "$PR_COUNT" -eq 0 ]; then
+            echo "::error::Direct push to main detected! Commit $COMMIT_SHA was pushed directly without a merged PR."
+
+            # Create issue to record violation
+            curl -sSL -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/$REPO/issues" \
+              -d @- <<EOF
+          {
+            "title": "Direct push to main detected",
+            "body": "### Detective Security Alert\n\nDirect push to \`main\` was detected for commit \`${COMMIT_SHA}\` pushed by @${ACTOR}.\n\nPer DevMind security policy and ADR-044, all modifications to \`main\` must originate from an approved pull request satisfying the \`ci-gate\` check.",
+            "labels": ["security", "governance"]
+          }
+          EOF
+
+            exit 1
+          fi
+
+          echo "✓ Commit is associated with a merged Pull Request."

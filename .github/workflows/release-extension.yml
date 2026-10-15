@@ -1,0 +1,111 @@
+name: Release VS Code Extension
+
+on:
+  push:
+    tags:
+      - "ext-v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-package:
+    name: Build & Package Extension
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@7088e561eb65bb68695d245aa206f005ef30921d # v4.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and Package .vsix
+        shell: bash
+        run: |
+          if [ -d "extension" ] && [ -f "extension/package.json" ]; then
+            pnpm --filter extension run build
+            pnpm --filter extension run test
+            pnpm --filter extension package
+            mkdir -p dist-extension
+            cp extension/*.vsix dist-extension/
+          else
+            echo "Extension package not scaffolded yet (scheduled for Phase S2)."
+            mkdir -p dist-extension
+            touch dist-extension/devmind-placeholder.vsix
+          fi
+
+      - name: Upload VSIX Artifact
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: devmind-extension-vsix
+          path: dist-extension/*.vsix
+          retention-days: 14
+
+      - name: Create Draft GitHub Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG_NAME" dist-extension/*.vsix \
+            --title "DevMind Extension $TAG_NAME" \
+            --draft \
+            --notes "Automated release build for DevMind VS Code extension $TAG_NAME."
+
+  publish-vs-marketplace:
+    name: Publish to Visual Studio Marketplace
+    needs: build-package
+    environment: extension-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Download VSIX Artifact
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        with:
+          name: devmind-extension-vsix
+          path: dist-extension
+
+      - name: Publish to VS Marketplace
+        shell: bash
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "VSCE_PAT secret is not configured in the extension-release environment. Skipping publish."
+            exit 0
+          fi
+          npx --yes @vscode/vsce publish --packagePath dist-extension/*.vsix -p "$VSCE_PAT"
+
+  publish-open-vsx:
+    name: Publish to Open VSX
+    needs: build-package
+    environment: extension-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Download VSIX Artifact
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        with:
+          name: devmind-extension-vsix
+          path: dist-extension
+
+      - name: Publish to Open VSX
+        shell: bash
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ -z "$OVSX_PAT" ]; then
+            echo "OVSX_PAT secret is not configured in the extension-release environment. Skipping publish."
+            exit 0
+          fi
+          npx --yes ovsx publish dist-extension/*.vsix -p "$OVSX_PAT"

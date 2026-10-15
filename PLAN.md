@@ -52,13 +52,13 @@ Gate: fresh clone → pnpm install --frozen-lockfile → pnpm test:all --fast pa
 
 PR title: `ci(repo): add CI with ci-gate, PR title check, Dependabot, templates`
 
-- [ ] P0-12 ci.yml with all jobs + ci-gate aggregator (all jobs always run; no path filters)
+- [x] P0-12 ci.yml with all jobs + ci-gate aggregator (all jobs always run; no path filters)
   - Acceptance: ci-gate job present; every job listed in needs[]; jq check on results
-- [ ] P0-13 pr-title.yml; dependabot.yml; PR/issue templates; CODEOWNERS; codeql.yml; main-guard.yml
+- [x] P0-13 pr-title.yml; dependabot.yml; PR/issue templates; CODEOWNERS; codeql.yml; main-guard.yml
   - Acceptance: actionlint clean; templates exist and render; CODEOWNERS has @mdwarishansari
-- [ ] P0-14 release-extension.yml (inert until secrets) + docs/runbooks/release-extension.md
+- [x] P0-14 release-extension.yml (inert until secrets) + docs/runbooks/release-extension.md
   - Acceptance: workflow exists; publish jobs gated on extension-release environment; secrets absence documented
-- [ ] P0-15 actionlint clean; first PR run green
+- [x] P0-15 actionlint clean; first PR run green
   - Acceptance: actionlint exits 0; first CI run on this branch passes (or only skips)
 
 Gate: CI green on the PR; owner enables ruleset requiring ci-gate (docs/SETUP-GUIDE.md §4.4)
