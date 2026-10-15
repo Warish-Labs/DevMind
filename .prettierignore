@@ -1,0 +1,29 @@
+# Version control and dependencies
+node_modules
+.git
+.husky/_
+pnpm-lock.yaml
+package-lock.json
+
+# Build outputs
+dist
+.next
+out
+coverage
+reports
+
+# Brand generated files & binary assets
+brand/png
+brand/social
+brand/favicon
+brand/vscode
+brand/svg
+brand/brand-sheet.*
+brand/tokens/tokens.json
+brand/tokens/tailwind.preset.cjs
+brand/tokens/devmind-tokens.css
+client/app/tokens.css
+extension/media
+
+# Documentation with custom formatting / tables
+docs/
