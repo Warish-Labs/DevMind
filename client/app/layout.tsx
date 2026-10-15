@@ -29,7 +29,42 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
+        url: "
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://devmind.warishlabs.in"),
+
+  title: "DevMind | AI-Powered Developer Tools",
+  description:
+    "Explore DevMind, your toolkit for smarter development and productivity.",
+
+  openGraph: {
+    title: "DevMind | AI-Powered Developer Tools",
+    description:
+      "Explore DevMind, your toolkit for smarter development and productivity.",
+    url: "https://devmind.warishlabs.in",
+    siteName: "DevMind",
+    type: "website",
+    images: [
+      {
         url: "/og-image-1200x630.png",
+        width: 1200,
+        height: 630,
+        alt: "DevMind — AI-Powered Developer Tools",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "DevMind | AI-Powered Developer Tools",
+    description:
+      "Explore DevMind, your toolkit for smarter development and productivity.",
+    images: ["/og-image-1200x630.png"],
+  },
+};
+",
         width: 1200,
         height: 630,
         alt: "DevMind — Continuous Project Brain",

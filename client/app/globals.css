@@ -44,3 +44,32 @@ body {
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
 }
+
+.pointer-lit-card {
+  position: relative;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pointer-lit-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      220px circle at var(--mx, -9999px) var(--my, -9999px),
+      var(--line-3) 0%,
+      transparent 100%
+    );
+    -webkit-mask:
+      linear-gradient(black 0 0) content-box,
+      linear-gradient(black 0 0);
+    mask:
+      linear-gradient(black 0 0) content-box,
+      linear-gradient(black 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+}

@@ -6,24 +6,22 @@
 
 ## 1. Current state
 
-| Field              | Value                                                             |
-| ------------------ | ----------------------------------------------------------------- |
-| **Branch**         | `main`                                                            |
-| **Last commit**    | `cc604bd` (Merge B4 into main)                                    |
-| **Working tree**   | clean; Slice B4 completed & merged                                |
-| **Open PR**        | none                                                              |
-| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client build green |
-| **Date**           | 2026-10-15                                                        |
+| Field              | Value                                                                |
+| ------------------ | -------------------------------------------------------------------- |
+| **Branch**         | `feature/s1-hero`                                                    |
+| **Last commit**    | `186163f`                                                            |
+| **Working tree**   | Slice B5 (S1-06, S1-07, S1-08) complete; tests green                 |
+| **Open PR**        | PR for Slice B5 (`feature/s1-hero`)                                  |
+| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client 8/8 tests pass |
+| **Date**           | 2026-10-15                                                           |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Create branch `feature/s1-hero` from `main` for Slice B5.
-2. Implement S1-06: Hero Trace component (real selectable text, SVG check/cross shapes, syntax tones, margin note).
-3. Implement S1-07: Hero sequence (WAAPI/CSS ~7s single run), replay button, and prefers-reduced-motion immediate final frame.
-4. Implement S1-08: Pointer-lit border (`--mx`/`--my`, opacity ≤0.35) and subtle fine-pointer parallax (≤6px).
-5. Verify tests, commit, push, and merge into `main`.
+1. Commit and push Slice B5 (`feature/s1-hero`) to GitHub.
+2. Merge `feature/s1-hero` into `main` and delete the branch locally and remotely.
+3. Start next task in PLAN.md: Phase S1 · Slice B6 (`feature/s1-sections`, PR: `feat(client): add homepage sections 02-08`).
 
 ---
 
