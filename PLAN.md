@@ -86,11 +86,11 @@ PR title: `feat(client): scaffold Next.js app, tokens, fonts, brand sync, data s
 
 PR title: `feat(client): add hero Trace with scripted sequence`
 
-- [ ] S1-06 Trace component (real selectable text, SVG shapes not emoji, syntax tones, margin note)
+- [x] S1-06 Trace component (real selectable text, SVG shapes not emoji, syntax tones, margin note)
   - Acceptance: Trace renders with correct rule id from rule-catalog.json; ✓ and ✗ are SVG shapes; final frame visible without JS
-- [ ] S1-07 Hero sequence (WAAPI/CSS ~7s, once), replay button, reduced-motion final frame
+- [x] S1-07 Hero sequence (WAAPI/CSS ~7s, once), replay button, reduced-motion final frame
   - Acceptance: sequence runs once on load; replay button works; prefers-reduced-motion shows final frame immediately
-- [ ] S1-08 Pointer-lit border (CSS --mx/--my, opacity ≤0.35) + subtle parallax on margin note (fine pointers only, ≤6px)
+- [x] S1-08 Pointer-lit border (CSS --mx/--my, opacity ≤0.35) + subtle parallax on margin note (fine pointers only, ≤6px)
   - Acceptance: no glow orb; effect absent under touch emulation; opacity under threshold
 
 ### B6 `feature/s1-sections`

@@ -1,42 +1,11 @@
 import Link from "next/link";
+import { Hero } from "../components/hero/Hero";
 
 export default function HomePage() {
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 flex flex-col gap-24">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-24">
       {/* 01: Hero Trace Section */}
-      <section id="section-01" className="scroll-mt-24 pt-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-chip bg-[var(--bg-1)] border border-[var(--line-1)] text-xs text-[var(--signal)] font-mono">
-          <span className="w-2 h-2 rounded-full bg-[var(--signal)] animate-pulse" />
-          <span>SECTION 01 · HERO TRACE</span>
-        </div>
-
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display text-[var(--fg-0)] mb-6 tracking-tight leading-[1.05]">
-          A shared, continuously synchronized mental model of your codebase.
-        </h1>
-
-        <p className="max-w-2xl text-base sm:text-lg text-[var(--fg-1)] mb-8 leading-relaxed">
-          DevMind replaces fragmented developer tools with a unified <strong>Project Brain</strong>.
-          Every finding carries verifiable evidence (E0–E3); scanners run locally first, and source
-          never leaves your machine unconsented.
-        </p>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <Link
-            href="/early-access"
-            className="px-6 py-3 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono"
-          >
-            Explore Early Access
-          </Link>
-          <a
-            href="https://github.com/Warish-Labs/DevMind"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono"
-          >
-            Inspect Source on GitHub ↗
-          </a>
-        </div>
-      </section>
+      <Hero />
 
       {/* 02: One Change / Five Consequences */}
       <section
