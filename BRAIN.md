@@ -8,28 +8,30 @@
 
 | Field | Value |
 |---|---|
-| **Branch** | `docs/p0-layout-and-adrs` |
-| **Last commit hash** | `af5cc03` |
-| **Working tree** | P0-01 through P0-05 complete; Gate passed |
-| **Open PR** | none (ready to push and open) |
-| **Last CI result** | not run |
+| **Branch** | `docs/p0-layout-and-adrs` (pushed to origin) |
+| **Last commit hash** | `cd94fde` |
+| **Working tree** | clean; branch pushed to remote |
+| **Open PR** | https://github.com/Warish-Labs/DevMind/pull/new/docs/p0-layout-and-adrs |
+| **Last CI result** | not run (CI workflows to be created in B3) |
 | **Date** | 2026-10-15 |
 
 ---
 
 ## 2. Next action (exact)
 
-Commit everything on `docs/p0-layout-and-adrs`, push, and open PR:
-
-```bash
-git add -A
-git commit -m "docs(repo): verify layout and ADRs, add PLAN, BRAIN and agent session files"
-git push -u origin docs/p0-layout-and-adrs
-```
-
-Then open PR to main with title: `docs(repo): verify layout and ADRs, add PLAN, BRAIN and agent session files`
-
-After owner merges PR, switch to main, pull, and start `feature/p0-tooling` (B2).
+1. Owner opens and squash-merges PR on GitHub:
+   - URL: `https://github.com/Warish-Labs/DevMind/pull/new/docs/p0-layout-and-adrs`
+   - Title: `docs(repo): verify layout and ADRs, add PLAN, BRAIN and agent session files`
+2. Owner types `continue` or `merged` in chat.
+3. Antigravity runs after-merge routine:
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   git branch -d docs/p0-layout-and-adrs
+   git fetch --prune
+   git switch -c feature/p0-tooling
+   ```
+4. Start task P0-06 in slice B2 (`feature/p0-tooling`).
 
 ---
 
@@ -37,7 +39,7 @@ After owner merges PR, switch to main, pull, and start `feature/p0-tooling` (B2)
 
 | # | Action required | Reference |
 |---|---|---|
-| 1 | After this PR is opened and merged: type `continue` so I can start B2 (`feature/p0-tooling`) | PLAN.md B1 Gate |
+| 1 | **Create and squash-merge PR**: Open `https://github.com/Warish-Labs/DevMind/pull/new/docs/p0-layout-and-adrs`, set title `docs(repo): verify layout and ADRs, add PLAN, BRAIN and agent session files`, squash-merge to `main`, then type `continue` | B1 Gate passed |
 | 2 | **SETUP-GUIDE.md §4.4**: After the first CI run is green on B3, enable the branch ruleset `protect-main` requiring `ci-gate` status check | P0-15 |
 | 3 | **VS Marketplace publisher**: Confirm the publisher id is `warishlabs` (or tell me the correct one) | S2 extension packaging |
 
@@ -144,6 +146,7 @@ uv run python --version    # (verifies Python works)
 | pnpm installed but `pnpm: command not found` in new shell | Run `source ~/.bashrc` or add `export PNPM_HOME=...` and `export PATH=...` before using pnpm | 2026-10-15 |
 | docs/ and brand/ are untracked (not committed to main) | Commit them on this branch as part of P0-01 | 2026-10-15 |
 | Sandbox run_command fails with connection reset | Use `BypassSandbox: true` — the sandbox network is unreachable for some commands | 2026-10-15 |
+| `ssh: Could not resolve hostname github-personal` | Configure `Host github-personal` alias in `~/.ssh/config` pointing to `github.com` with `~/.ssh/id_ed25519` | 2026-10-15 |
 
 ---
 
