@@ -24,7 +24,7 @@ Updated in every branch that adds or changes a dependency (AGENTS.md §11, ANTIG
 | pnpm | 12.11.2 | get.pnpm.io | MIT | 2026-10-15 |
 | uv | 0.12.17 | installed on machine | Apache-2.0 | 2026-10-15 |
 | corepack | 0.36.0 | bundled with Node 24 | MIT | 2026-10-15 |
-| typescript | 5.9.3 | npmjs.com/package/typescript | Apache-2.0 | 2026-10-15 |
+| typescript | 6.0.3 | npmjs.com/package/typescript | Apache-2.0 | 2026-10-15 |
 | eslint | 10.12.0 | npmjs.com/package/eslint | MIT | 2026-10-15 |
 | @eslint/js | 10.0.1 | npmjs.com/package/@eslint/js | MIT | 2026-10-15 |
 | typescript-eslint | 8.71.2 | npmjs.com/package/typescript-eslint | MIT | 2026-10-15 |
@@ -34,8 +34,8 @@ Updated in every branch that adds or changes a dependency (AGENTS.md §11, ANTIG
 | @commitlint/cli | 21.2.3 | npmjs.com/package/@commitlint/cli | MIT | 2026-10-15 |
 | @commitlint/config-conventional | 21.2.3 | npmjs.com/package/@commitlint/config-conventional | MIT | 2026-10-15 |
 | vitest | 5.0.5 | npmjs.com/package/vitest | MIT | 2026-10-15 |
-| zod | 3.24.2 | npmjs.com/package/zod | MIT | 2026-10-15 |
-| @types/node | 24.19.2 | npmjs.com/package/@types/node | MIT | 2026-10-15 |
+| zod | 4.6.7 | npmjs.com/package/zod | MIT | 2026-10-15 |
+| @types/node | 26.6.5 | npmjs.com/package/@types/node | MIT | 2026-10-15 |
 | actions/checkout | 11bd719 (v4.2.2) | github.com/actions/checkout | MIT | 2026-10-15 |
 | actions/setup-node | 1d0ff46 (v4.2.0) | github.com/actions/setup-node | MIT | 2026-10-15 |
 | pnpm/action-setup | 7088e56 (v4.1.0) | github.com/pnpm/action-setup | MIT | 2026-10-15 |
