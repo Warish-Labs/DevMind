@@ -1,0 +1,17 @@
+token,name,hex,rgb,role,contrast_on_#0B0F12,contrast_on_#FFFFFF
+--bg-0,Ink,#0B0F12,"11,15,18",Page background,1.00,19.24
+--bg-1,Panel,#10151A,"16,21,26","Panels, sidebars",1.05,18.35
+--bg-2,Raised,#161C22,"22,28,34","Raised surfaces, inputs, code",1.12,17.17
+--line-1,Hairline,#232B33,"35,43,51",Decorative hairlines,1.34,14.34
+--line-2,Border,#2F3944,"47,57,68",Panel borders,1.64,11.73
+--line-3,Control line,#5F6C78,"95,108,120",Control boundaries (3:1 on all surfaces),3.58,5.38
+--fg-0,Paper,#E8E6E1,"232,230,225",Primary text; logo D,15.43,1.25
+--fg-1,Mist,#A9B0B6,"169,176,182",Secondary text,8.77,2.19
+--fg-2,Slate,#7C858D,"124,133,141","Tertiary text, metadata",5.13,3.75
+--signal,Signal green,#20E3A2,"32,227,162","Verified, active, pass; logo evidence node",11.52,1.67
+--ref,Reference blue,#4EA1FF,"78,161,255","References, links, focus; logo M graph",7.21,2.67
+--warn,Caution amber,#F0B44C,"240,180,76",Medium severity,10.39,1.85
+--danger,Alert coral,#FF6B5E,"255,107,94",Critical and high severity,6.89,2.79
+--brand-light-bg,Paper bg,#F4F3EF,"244,243,239",Light backgrounds for logo use,17.33,1.11
+--brand-blue-on-light,Blue (light),#1863C4,"24,99,196",Logo M on light backgrounds,3.32,5.80
+--brand-green-on-light,Green (light),#087F59,"8,127,89",Logo node on light backgrounds,3.84,5.01
