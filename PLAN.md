@@ -29,7 +29,7 @@ Gate: link check = 0 broken; AGENTS.md under limit (PASSED: 0 broken links; AGEN
 ### B2 `feature/p0-tooling`
 PR title: `feat(repo): add workspace tooling, hooks and test-all runner`
 
-- [ ] P0-06 Root package.json, pnpm-workspace.yaml (supply-chain settings), node/python pins, tsconfig.base, eslint, prettier, editorconfig, gitattributes, gitignore
+- [~] P0-06 Root package.json, pnpm-workspace.yaml (supply-chain settings), node/python pins, tsconfig.base, eslint, prettier, editorconfig, gitattributes, gitignore
   - Acceptance: pnpm install --frozen-lockfile succeeds; tsc --noEmit exits 0 on empty project
 - [ ] P0-07 .env.example files (root, client/, server/, extension/), LICENSE placeholder, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md
   - Acceptance: all .env.example files present; every server variable has a placeholder and a comment
