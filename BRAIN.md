@@ -6,25 +6,23 @@
 
 ## 1. Current state
 
-| Field              | Value                                                             |
-| ------------------ | ----------------------------------------------------------------- |
-| **Branch**         | `main`                                                            |
-| **Last commit**    | `99a87c1` (Merge B3 into main)                                    |
-| **Working tree**   | clean; Phase P0 (B1, B2, B3) completed & merged                   |
-| **Open PR**        | none                                                              |
-| **Last CI result** | `actionlint` 100% clean; `pnpm verify` (6 passed, 0 fail, 2 skip) |
-| **Date**           | 2026-10-15                                                        |
+| Field              | Value                                                              |
+| ------------------ | ------------------------------------------------------------------ |
+| **Branch**         | `feature/s1-foundation`                                            |
+| **Last commit**    | `696b12e` (docs: modernize root and client READMEs)                |
+| **Working tree**   | Slice B4 completed (S1-01 through S1-05); ready to merge into main |
+| **Open PR**        | preparing PR/merge for B4                                          |
+| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client build green  |
+| **Date**           | 2026-10-15                                                         |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Create branch `feature/s1-foundation` from `main` for Phase S1 · Slice B4.
-2. Execute S1-01: Next.js App Router scaffold in `client/` (TS strict, Tailwind, ESLint, Vitest, Playwright setup).
-3. Execute S1-02: tokens.css + Tailwind mapping + no-hex rule; self-hosted fonts via `next/font`.
-4. Execute S1-03: brand sync integration (inline SVG logos, favicons, webmanifest, Open Graph metadata, sitemap, robots.txt).
-5. Execute S1-04: data files in `common/data/*.json` with schema validation and integrity tests.
-6. Execute S1-05: Layout component with gutter rail (01-08), header, footer, skip link, /early-access, and not-found pages.
+1. Commit all Slice B4 files with: `feat(client): scaffold Next.js app, tokens, fonts, brand sync, data sources`.
+2. Push to `origin feature/s1-foundation`.
+3. Merge `feature/s1-foundation` into `main`, push to `origin main`, delete `feature/s1-foundation` branch locally and remotely.
+4. Create branch `feature/s1-hero` for Slice B5 and execute S1-06 (Trace component with real text and SVG shapes).
 
 ---
 

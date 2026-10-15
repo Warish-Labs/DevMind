@@ -1,0 +1,77 @@
+{
+  "version": "1.0.0",
+  "entries": [
+    {
+      "category": "File contents on disk",
+      "staysLocal": true,
+      "storedInDevMind": false,
+      "embedded": false,
+      "reachesLLM": false,
+      "modes": ["metadata_only", "indexed"]
+    },
+    {
+      "category": "Absolute paths, machine names, usernames",
+      "staysLocal": true,
+      "storedInDevMind": false,
+      "embedded": false,
+      "reachesLLM": false,
+      "modes": ["metadata_only", "indexed"]
+    },
+    {
+      "category": "Repo-relative paths, content hashes, sizes",
+      "staysLocal": true,
+      "storedInDevMind": true,
+      "embedded": false,
+      "reachesLLM": true,
+      "modes": ["metadata_only", "indexed"]
+    },
+    {
+      "category": "Symbols (names, signatures, lines)",
+      "staysLocal": true,
+      "storedInDevMind": true,
+      "embedded": false,
+      "reachesLLM": true,
+      "modes": ["metadata_only", "indexed"]
+    },
+    {
+      "category": "Relationships & call graph",
+      "staysLocal": true,
+      "storedInDevMind": true,
+      "embedded": false,
+      "reachesLLM": true,
+      "modes": ["metadata_only", "indexed"]
+    },
+    {
+      "category": "Findings (without code)",
+      "staysLocal": true,
+      "storedInDevMind": true,
+      "embedded": false,
+      "reachesLLM": true,
+      "modes": ["metadata_only", "indexed"]
+    },
+    {
+      "category": "Consented source code chunks",
+      "staysLocal": false,
+      "storedInDevMind": true,
+      "embedded": true,
+      "reachesLLM": true,
+      "modes": ["indexed"]
+    },
+    {
+      "category": "Credential files, .env*, keys",
+      "staysLocal": true,
+      "storedInDevMind": false,
+      "embedded": false,
+      "reachesLLM": false,
+      "modes": ["metadata_only", "indexed"]
+    },
+    {
+      "category": "Secrets found inside source (redacted with hash)",
+      "staysLocal": true,
+      "storedInDevMind": false,
+      "embedded": false,
+      "reachesLLM": false,
+      "modes": ["metadata_only", "indexed"]
+    }
+  ]
+}

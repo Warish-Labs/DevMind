@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "rule_id": "devmind.authz.missing_role_check",
+      "name": "Missing Role Authorization Check",
+      "description": "Sensitive administrative operation has authentication verified but lacks role or permission authorization validation.",
+      "severity": "high",
+      "category": "authorization",
+      "default_evidence_level": "E1"
+    },
+    {
+      "rule_id": "devmind.authn.unauthenticated_route",
+      "name": "Unauthenticated Sensitive Route",
+      "description": "Route handles sensitive user or admin data without an authentication credential check.",
+      "severity": "critical",
+      "category": "authentication",
+      "default_evidence_level": "E1"
+    },
+    {
+      "rule_id": "devmind.sec.hardcoded_secret",
+      "name": "Hardcoded Secret In Source",
+      "description": "Sensitive credential, private key, or API token detected in source code.",
+      "severity": "critical",
+      "category": "secrets",
+      "default_evidence_level": "E0"
+    },
+    {
+      "rule_id": "devmind.authz.tenant_isolation_missing",
+      "name": "Missing Tenant Isolation Filter",
+      "description": "Database query accessing tenant-scoped data without workspace_id or tenant qualification.",
+      "severity": "high",
+      "category": "authorization",
+      "default_evidence_level": "E1"
+    }
+  ]
+}
