@@ -8,10 +8,10 @@
 
 | Field | Value |
 |---|---|
-| **Branch** | `docs/p0-layout-and-adrs` (pushed to origin) |
-| **Last commit hash** | `cd94fde` |
-| **Working tree** | clean; branch pushed to remote |
-| **Open PR** | https://github.com/Warish-Labs/DevMind/pull/new/docs/p0-layout-and-adrs |
+| **Branch** | `feature/p0-tooling` |
+| **Last commit hash** | `d750b11` (Merge pull request #1) |
+| **Working tree** | working on B2 task P0-06 |
+| **Open PR** | none |
 | **Last CI result** | not run (CI workflows to be created in B3) |
 | **Date** | 2026-10-15 |
 
@@ -19,19 +19,12 @@
 
 ## 2. Next action (exact)
 
-1. Owner opens and squash-merges PR on GitHub:
-   - URL: `https://github.com/Warish-Labs/DevMind/pull/new/docs/p0-layout-and-adrs`
-   - Title: `docs(repo): verify layout and ADRs, add PLAN, BRAIN and agent session files`
-2. Owner types `continue` or `merged` in chat.
-3. Antigravity runs after-merge routine:
-   ```bash
-   git switch main
-   git pull --ff-only origin main
-   git branch -d docs/p0-layout-and-adrs
-   git fetch --prune
-   git switch -c feature/p0-tooling
-   ```
-4. Start task P0-06 in slice B2 (`feature/p0-tooling`).
+Execute P0-06:
+1. Create root `package.json` (`private: true`, scripts, `packageManager: pnpm@12.11.2`, engines).
+2. Create `pnpm-workspace.yaml` (packages: client, extension, common; supply chain settings).
+3. Create `.nvmrc` (24.22.0), `.node-version` (24.22.0), `.python-version` (3.12.3).
+4. Create `tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc`, `.editorconfig`, `.gitattributes`, `.gitignore`.
+5. Run `pnpm install` and verify `tsc --noEmit` exits 0.
 
 ---
 
@@ -39,9 +32,8 @@
 
 | # | Action required | Reference |
 |---|---|---|
-| 1 | **Create and squash-merge PR**: Open `https://github.com/Warish-Labs/DevMind/pull/new/docs/p0-layout-and-adrs`, set title `docs(repo): verify layout and ADRs, add PLAN, BRAIN and agent session files`, squash-merge to `main`, then type `continue` | B1 Gate passed |
-| 2 | **SETUP-GUIDE.md §4.4**: After the first CI run is green on B3, enable the branch ruleset `protect-main` requiring `ci-gate` status check | P0-15 |
-| 3 | **VS Marketplace publisher**: Confirm the publisher id is `warishlabs` (or tell me the correct one) | S2 extension packaging |
+| 1 | **SETUP-GUIDE.md §4.4**: After the first CI run is green on B3, enable the branch ruleset `protect-main` requiring `ci-gate` status check | P0-15 |
+| 2 | **VS Marketplace publisher**: Confirm the publisher id is `warishlabs` (or tell me the correct one) | S2 extension packaging |
 
 ---
 
@@ -96,6 +88,12 @@
   - `chmod +x scripts/docs-links.mjs`
   - `node scripts/docs-links.mjs`
 - **Actual results**: Scanned 31 Markdown files, checked 345 relative links & anchors. 0 broken links. Gate PASSED.
+
+### B1 Merge — Pull Request #1 merged to main
+- **Date**: 2026-10-15
+- **PR**: https://github.com/Warish-Labs/DevMind/pull/1
+- **Title**: `Docs/p0 layout and adrs`
+- **What**: Owner reviewed and merged PR #1 to main. Antigravity switched to main, pulled (`d750b11`), deleted branch `docs/p0-layout-and-adrs` locally and on remote, created and switched to `feature/p0-tooling`.
 
 ---
 
@@ -174,4 +172,4 @@ uv run python --version    # (verifies Python works)
 
 ---
 
-_Updated: 2026-10-15 · Branch: docs/p0-layout-and-adrs · Task: P0-05 (B1 Gate passed)_
+_Updated: 2026-10-15 · Branch: feature/p0-tooling · Task: P0-06_

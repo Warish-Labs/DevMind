@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Python virtual environment & cache
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyright/
+
+# Build artifacts
+dist/
+build/
+out/
+.next/
+*.tsbuildinfo
+.turbo/
+
+# VS Code extension packaging
+*.vsix
+.vscode-test/
+
+# Test reports & coverage
+coverage/
+reports/
+test-results/
+playwright-report/
+blob-report/
+
+# Environment files and secrets (Never commit secrets!)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+.env.staging
+# Do NOT ignore .env.example files
+!.env.example
+!client/.env.example
+!server/.env.example
+!extension/.env.example
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE workspace files (keep tracked configs in .vscode, ignore user state)
+.idea/
+*.swp
+*.swo
+*~
