@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# DevMind pre-push hook
+# 1. Blocks direct pushes to main/master (override with DEVMIND_ALLOW_MAIN_PUSH=1)
+# 2. Runs fast test verification
+
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ] || [ "$remote_ref" = "refs/heads/master" ]; then
+    if [ "$DEVMIND_ALLOW_MAIN_PUSH" != "1" ]; then
+      echo "❌ Direct push to $remote_ref is prohibited by DevMind security rules (ADR-044)."
+      echo "   Please create a feature branch and open a pull request on GitHub."
+      exit 1
+    fi
+  fi
+done
+
+# Run fast checks if test-all script exists
+if [ -f "scripts/test-all.mjs" ]; then
+  echo "🔍 Running pre-push checks (pnpm test:all --fast)..."
+  node scripts/test-all.mjs --fast || {
+    echo "❌ Pre-push verification failed. Please fix errors before pushing."
+    exit 1
+  }
+fi
+
+exit 0

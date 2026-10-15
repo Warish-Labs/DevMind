@@ -1,0 +1,36 @@
+/* DevMind design tokens. Source of truth: docs/08-ui-ux-design-specification.md sections 3 to 7.
+   Copy into client/ as tokens.css. No hard-coded hex in components: use these variables. */
+:root {
+  /* surfaces */
+  --bg-0: #0B0F12;  --bg-1: #10151A;  --bg-2: #161C22;
+  /* lines (line-1/2 decorative only; line-3 for control boundaries) */
+  --line-1: #232B33;  --line-2: #2F3944;  --line-3: #5F6C78;
+  /* text */
+  --fg-0: #E8E6E1;  --fg-1: #A9B0B6;  --fg-2: #7C858D;
+  /* accents: signal = good/active, ref = connection/focus */
+  --signal: #20E3A2;  --ref: #4EA1FF;  --warn: #F0B44C;  --danger: #FF6B5E;
+  /* typography (self-host; confirm licences, OQ-16) */
+  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* spacing (4px base) */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 48px; --space-8: 64px; --space-9: 96px;
+  /* shape */
+  --radius-chip: 2px; --radius-control: 4px; --radius-panel: 6px;
+  /* motion */
+  --dur-1: 90ms; --dur-2: 160ms; --dur-3: 240ms; --dur-4: 400ms; --dur-story: 800ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-move: cubic-bezier(0.4, 0, 0.2, 1);
+  /* focus */
+  --focus-ring: 2px solid var(--ref);
+  --focus-offset: 2px;
+  color-scheme: dark;
+}
+html { background: var(--bg-0); color: var(--fg-0); font-family: var(--font-ui); }
+:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

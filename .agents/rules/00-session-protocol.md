@@ -5,6 +5,7 @@ This file is read by Google Antigravity at the start of every session.
 ## Quick recovery
 
 If the context is new or was lost, read in this order:
+
 1. `AGENTS.md` (rules)
 2. `BRAIN.md` (current state, next action, waiting on owner)
 3. `PLAN.md` (all tasks and their status)
@@ -24,6 +25,7 @@ When the owner types `continue`, `next`, or `merged`:
 ## HUMAN-STEP rule
 
 When the owner must act (merge PR, add secret, create account, click in a UI):
+
 - Stop that thread.
 - State exactly what to do (command or click path).
 - Record it in BRAIN.md §3 "Waiting on owner".

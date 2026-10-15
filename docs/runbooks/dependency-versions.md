@@ -24,23 +24,30 @@ Updated in every branch that adds or changes a dependency (AGENTS.md §11, ANTIG
 | pnpm | 12.11.2 | get.pnpm.io | MIT | 2026-10-15 |
 | uv | 0.12.17 | installed on machine | Apache-2.0 | 2026-10-15 |
 | corepack | 0.36.0 | bundled with Node 24 | MIT | 2026-10-15 |
+| typescript | 5.9.3 | npmjs.com/package/typescript | Apache-2.0 | 2026-10-15 |
+| eslint | 10.12.0 | npmjs.com/package/eslint | MIT | 2026-10-15 |
+| @eslint/js | 10.0.1 | npmjs.com/package/@eslint/js | MIT | 2026-10-15 |
+| typescript-eslint | 8.71.2 | npmjs.com/package/typescript-eslint | MIT | 2026-10-15 |
+| prettier | 3.9.10 | npmjs.com/package/prettier | MIT | 2026-10-15 |
+| husky | 9.1.7 | npmjs.com/package/husky | MIT | 2026-10-15 |
+| lint-staged | 17.6.0 | npmjs.com/package/lint-staged | MIT | 2026-10-15 |
+| @commitlint/cli | 21.2.3 | npmjs.com/package/@commitlint/cli | MIT | 2026-10-15 |
+| @commitlint/config-conventional | 21.2.3 | npmjs.com/package/@commitlint/config-conventional | MIT | 2026-10-15 |
+| vitest | 5.0.5 | npmjs.com/package/vitest | MIT | 2026-10-15 |
+| zod | 3.24.2 | npmjs.com/package/zod | MIT | 2026-10-15 |
+| @types/node | 24.19.2 | npmjs.com/package/@types/node | MIT | 2026-10-15 |
 
 ---
 
-## To be verified when adding (P0-B2 / S1)
+## To be verified when adding (S1 / Subsequent Slices)
 
-The following will be verified from npm/PyPI when the packages are installed during B2 (tooling) and S1 (Next.js scaffold). Versions will be added here after verification.
+The following will be verified from npm/PyPI when the packages are installed during S1 (Next.js scaffold) and subsequent slices. Versions will be added here after verification.
 
 ### TypeScript / Client
-- `typescript` — npmjs.com
 - `next` — npmjs.com
 - `react`, `react-dom` — must match Next.js peer requirement
 - `tailwindcss` — npmjs.com
-- `eslint` — npmjs.com
-- `vitest` — npmjs.com
 - `@playwright/test` — npmjs.com
-- `tsup` — npmjs.com (for common/ build)
-- `zod` — npmjs.com
 
 ### Extension
 - `@vscode/vsce` — npmjs.com

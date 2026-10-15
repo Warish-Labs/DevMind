@@ -6,40 +6,39 @@
 
 ## 1. Current state
 
-| Field | Value |
-|---|---|
-| **Branch** | `feature/p0-tooling` |
-| **Last commit hash** | `d750b11` (Merge pull request #1) |
-| **Working tree** | working on B2 task P0-06 |
-| **Open PR** | none |
-| **Last CI result** | not run (CI workflows to be created in B3) |
-| **Date** | 2026-10-15 |
+| Field              | Value                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **Branch**         | `feature/p0-tooling`                                         |
+| **Last commit**    | `3679fb0` (pushed to origin)                                 |
+| **Working tree**   | completed B2 (P0-06 through P0-11); ready to merge into main |
+| **Open PR**        | PR #2 merged (partial); completing remaining B2 changes      |
+| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped)                |
+| **Date**           | 2026-10-15                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-Execute P0-06:
-1. Create root `package.json` (`private: true`, scripts, `packageManager: pnpm@12.11.2`, engines).
-2. Create `pnpm-workspace.yaml` (packages: client, extension, common; supply chain settings).
-3. Create `.nvmrc` (24.22.0), `.node-version` (24.22.0), `.python-version` (3.12.3).
-4. Create `tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc`, `.editorconfig`, `.gitattributes`, `.gitignore`.
-5. Run `pnpm install` and verify `tsc --noEmit` exits 0.
+1. Commit remaining B2 files (`.husky/`, `.lintstagedrc.json`, `.prettierignore`, brand sync assets, `scripts/`, `docs/runbooks/dependency-versions.md`, formatted files) to `feature/p0-tooling`.
+2. Push to `origin feature/p0-tooling`.
+3. Merge `feature/p0-tooling` into `main`, push to `origin main`, delete `feature/p0-tooling` branch locally and remotely.
+4. Create branch `feature/p0-ci-github` for Slice B3 and start P0-12 (CI workflow with `ci-gate`).
 
 ---
 
 ## 3. Waiting on owner
 
-| # | Action required | Reference |
-|---|---|---|
-| 1 | **SETUP-GUIDE.md §4.4**: After the first CI run is green on B3, enable the branch ruleset `protect-main` requiring `ci-gate` status check | P0-15 |
-| 2 | **VS Marketplace publisher**: Confirm the publisher id is `warishlabs` (or tell me the correct one) | S2 extension packaging |
+| #   | Action required                                                                                                                           | Reference              |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| 1   | **SETUP-GUIDE.md §4.4**: After the first CI run is green on B3, enable the branch ruleset `protect-main` requiring `ci-gate` status check | P0-15                  |
+| 2   | **VS Marketplace publisher**: Confirm the publisher id is `warishlabs` (or tell me the correct one)                                       | S2 extension packaging |
 
 ---
 
 ## 4. Done log
 
 ### P0-01 — Verify repo preconditions; create PLAN.md and BRAIN.md
+
 - **Date**: 2026-10-15
 - **Branch**: `docs/p0-layout-and-adrs` (created from `main`)
 - **What**: Ran precondition checks; created PLAN.md and BRAIN.md
@@ -55,6 +54,7 @@ Execute P0-06:
 - **Actual results**: All preconditions met.
 
 ### P0-02 — Verify folder rename (client/server/extension/common); fix leftovers
+
 - **Date**: 2026-10-15
 - **Branch**: `docs/p0-layout-and-adrs`
 - **What**: Audited repository for legacy names (`frontend/`, `backend/`, `vscode-extension/`, `packages/`). Confirmed layout in `docs/02` §5 matches ADR-039.
@@ -69,18 +69,21 @@ Execute P0-06:
 - **Actual results**: Zero occurrences of legacy names describing DevMind's own layout remain.
 
 ### P0-03 — Verify ADR-039..049 in docs/12; fix drift
+
 - **Date**: 2026-10-15
 - **Branch**: `docs/p0-layout-and-adrs`
 - **What**: Verified ADR-039 through ADR-049 in `docs/12` against `docs/00`, `docs/02`, `docs/10` §22, `docs/11` and `README.md`.
 - **Actual results**: ADR register complete and verified; no drift.
 
 ### P0-04 — Trim AGENTS.md, add Session protocol, add .agents/rules/
+
 - **Date**: 2026-10-15
 - **Branch**: `docs/p0-layout-and-adrs`
 - **What**: Verified `AGENTS.md` length (8,966 characters, below the 9,000 character target and 12,000 Antigravity limit). Verified Session protocol section, free tiers rule (ADR-046), and public repository rule (ADR-047). Verified Antigravity official discovery path (`.agents/rules/*.md`) and created `.agents/rules/00-session-protocol.md`.
 - **Actual results**: `wc -c AGENTS.md` = 8966 bytes. `.agents/rules/00-session-protocol.md` present and verified.
 
 ### P0-05 — Create docs/runbooks stubs; scripts/docs-links.mjs; run link check
+
 - **Date**: 2026-10-15
 - **Branch**: `docs/p0-layout-and-adrs`
 - **What**: Created `docs/runbooks/secrets-rotation.md` completing runbook stubs. Implemented `scripts/docs-links.mjs` (ESM Markdown link & anchor validator). Executed validator across all documentation.
@@ -90,6 +93,7 @@ Execute P0-06:
 - **Actual results**: Scanned 31 Markdown files, checked 345 relative links & anchors. 0 broken links. Gate PASSED.
 
 ### B1 Merge — Pull Request #1 merged to main
+
 - **Date**: 2026-10-15
 - **PR**: https://github.com/Warish-Labs/DevMind/pull/1
 - **Title**: `Docs/p0 layout and adrs`
@@ -99,19 +103,19 @@ Execute P0-06:
 
 ## 5. Decisions and why
 
-| Decision | Rationale | ADR |
-|---|---|---|
-| Folder names: client/, server/, extension/, common/ | Owner-confirmed | ADR-039 |
-| Screenshot-first: S1 home page, S2 extension before M1 | Owner-confirmed | ADR-040 |
-| Custom cursor + richer motion on home page | Owner-confirmed | ADR-041 |
-| pnpm workspaces, uv, husky+lint-staged+commitlint | Owner-confirmed | ADR-042 |
-| Vitest (not Jest), Playwright, pytest; REST not GraphQL | Owner-confirmed | ADR-043 |
-| Feature/fix branches, Conventional Commits, squash merges | Owner-confirmed | ADR-044 |
-| common/data/ as single source of truth | Owner-confirmed | ADR-045 |
-| Free-only: Vercel Hobby + Render free + Neon Free + Render Key Value | Owner-confirmed | ADR-046 |
-| Real repo: Warish-Labs/DevMind (public) | Owner-confirmed | ADR-047 |
+| Decision                                                              | Rationale       | ADR     |
+| --------------------------------------------------------------------- | --------------- | ------- |
+| Folder names: client/, server/, extension/, common/                   | Owner-confirmed | ADR-039 |
+| Screenshot-first: S1 home page, S2 extension before M1                | Owner-confirmed | ADR-040 |
+| Custom cursor + richer motion on home page                            | Owner-confirmed | ADR-041 |
+| pnpm workspaces, uv, husky+lint-staged+commitlint                     | Owner-confirmed | ADR-042 |
+| Vitest (not Jest), Playwright, pytest; REST not GraphQL               | Owner-confirmed | ADR-043 |
+| Feature/fix branches, Conventional Commits, squash merges             | Owner-confirmed | ADR-044 |
+| common/data/ as single source of truth                                | Owner-confirmed | ADR-045 |
+| Free-only: Vercel Hobby + Render free + Neon Free + Render Key Value  | Owner-confirmed | ADR-046 |
+| Real repo: Warish-Labs/DevMind (public)                               | Owner-confirmed | ADR-047 |
 | Fake provider default; free LLM tiers only with synthetic/public data | Owner-confirmed | ADR-048 |
-| Domain: devmind.warishlabs.in / api.devmind.warishlabs.in | Recommended | ADR-049 |
+| Domain: devmind.warishlabs.in / api.devmind.warishlabs.in             | Recommended     | ADR-049 |
 
 ---
 
@@ -137,25 +141,25 @@ uv run python --version    # (verifies Python works)
 
 ## 7. Gotchas and fixes
 
-| Problem | Fix | Date |
-|---|---|---|
-| `corepack enable pnpm` fails with EACCES | Use pnpm installer script: `curl -fsSL https://get.pnpm.io/install.sh | SHELL=/bin/bash sh -` | 2026-10-15 |
-| `npm install -g pnpm` fails with EACCES | Same as above — use the installer, not npm global | 2026-10-15 |
-| pnpm installed but `pnpm: command not found` in new shell | Run `source ~/.bashrc` or add `export PNPM_HOME=...` and `export PATH=...` before using pnpm | 2026-10-15 |
-| docs/ and brand/ are untracked (not committed to main) | Commit them on this branch as part of P0-01 | 2026-10-15 |
-| Sandbox run_command fails with connection reset | Use `BypassSandbox: true` — the sandbox network is unreachable for some commands | 2026-10-15 |
-| `ssh: Could not resolve hostname github-personal` | Configure `Host github-personal` alias in `~/.ssh/config` pointing to `github.com` with `~/.ssh/id_ed25519` | 2026-10-15 |
+| Problem                                                   | Fix                                                                                                         | Date                  |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------- |
+| `corepack enable pnpm` fails with EACCES                  | Use pnpm installer script: `curl -fsSL https://get.pnpm.io/install.sh                                       | SHELL=/bin/bash sh -` | 2026-10-15 |
+| `npm install -g pnpm` fails with EACCES                   | Same as above — use the installer, not npm global                                                           | 2026-10-15            |
+| pnpm installed but `pnpm: command not found` in new shell | Run `source ~/.bashrc` or add `export PNPM_HOME=...` and `export PATH=...` before using pnpm                | 2026-10-15            |
+| docs/ and brand/ are untracked (not committed to main)    | Commit them on this branch as part of P0-01                                                                 | 2026-10-15            |
+| Sandbox run_command fails with connection reset           | Use `BypassSandbox: true` — the sandbox network is unreachable for some commands                            | 2026-10-15            |
+| `ssh: Could not resolve hostname github-personal`         | Configure `Host github-personal` alias in `~/.ssh/config` pointing to `github.com` with `~/.ssh/id_ed25519` | 2026-10-15            |
 
 ---
 
 ## 8. Dependency versions (verified 2026-10-15)
 
-| Package | Version | Source | License | Date verified |
-|---|---|---|---|---|
-| Node.js | 24.22.0 | Active LTS — nodejs.org | MIT | 2026-10-15 |
-| pnpm | 12.11.2 | get.pnpm.io installer | MIT | 2026-10-15 |
-| uv | 0.12.17 | already installed | Apache-2.0 | 2026-10-15 |
-| corepack | 0.36.0 | bundled with Node 24 | MIT | 2026-10-15 |
+| Package  | Version | Source                  | License    | Date verified |
+| -------- | ------- | ----------------------- | ---------- | ------------- |
+| Node.js  | 24.22.0 | Active LTS — nodejs.org | MIT        | 2026-10-15    |
+| pnpm     | 12.11.2 | get.pnpm.io installer   | MIT        | 2026-10-15    |
+| uv       | 0.12.17 | already installed       | Apache-2.0 | 2026-10-15    |
+| corepack | 0.36.0  | bundled with Node 24    | MIT        | 2026-10-15    |
 
 > Remaining versions (Next.js, React, TypeScript, Tailwind, Vitest, Playwright, FastAPI, etc.) will be pinned in docs/runbooks/dependency-versions.md after being verified from npm/PyPI registries during B2.
 
@@ -163,12 +167,12 @@ uv run python --version    # (verifies Python works)
 
 ## 9. Open questions for the owner
 
-| # | Question | Impact |
-|---|---|---|
+| #    | Question                                                                                                                                                                                          | Impact              |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
 | OQ-A | Is the Vercel Hobby team under the `warishlabs` GitHub account (the one whose commit email is `warishdeveloper@gmail.com`)? Vercel Hobby refuses to deploy commits from an email not on the team. | Deployment (Vercel) |
-| OQ-B | What is the VS Marketplace publisher id? The plan uses `warishlabs` as a placeholder. | Extension release |
-| OQ-C | Confirm the Neon free project is in the same region as Render (e.g., both `us-east-1`). | Latency (M1) |
-| OQ-D | Is `warishdeveloper@gmail.com` the GitHub noreply email, or a linked verified email on the Warish-Labs org account? | Vercel deploy |
+| OQ-B | What is the VS Marketplace publisher id? The plan uses `warishlabs` as a placeholder.                                                                                                             | Extension release   |
+| OQ-C | Confirm the Neon free project is in the same region as Render (e.g., both `us-east-1`).                                                                                                           | Latency (M1)        |
+| OQ-D | Is `warishdeveloper@gmail.com` the GitHub noreply email, or a linked verified email on the Warish-Labs org account?                                                                               | Vercel deploy       |
 
 ---
 
