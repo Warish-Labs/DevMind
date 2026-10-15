@@ -33,19 +33,19 @@ Full detail: [docs/runbooks/agent-rules-extended.md §1](docs/runbooks/agent-rul
 
 ## 2. Document → task mapping
 
-| Task area | Read first | Update |
-|---|---|---|
-| Product behavior | 01 | 11 |
-| Service boundaries | 02, 10 | 12 |
-| Tables, endpoints | 03 | alembic/, OpenAPI |
-| Indexing, retrieval | 04 | 03, 09 |
-| Agents, LLM | 05 | configs/llm/*, 09 |
-| Extension, scan | 06 | 03, 07 |
-| Auth, redaction | 07 | 03, 06, 09 |
-| UI, motion, a11y | 08 | 09 §5 |
-| Tests, CI | 09 | CI config |
-| Deployment, env | 10 | .env.example |
-| Task order | 11 | |
+| Task area           | Read first | Update            |
+| ------------------- | ---------- | ----------------- |
+| Product behavior    | 01         | 11                |
+| Service boundaries  | 02, 10     | 12                |
+| Tables, endpoints   | 03         | alembic/, OpenAPI |
+| Indexing, retrieval | 04         | 03, 09            |
+| Agents, LLM         | 05         | configs/llm/*, 09 |
+| Extension, scan     | 06         | 03, 07            |
+| Auth, redaction     | 07         | 03, 06, 09        |
+| UI, motion, a11y    | 08         | 09 §5             |
+| Tests, CI           | 09         | CI config         |
+| Deployment, env     | 10         | .env.example      |
+| Task order          | 11         |                   |
 
 ---
 

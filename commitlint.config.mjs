@@ -4,18 +4,7 @@ export default {
     "scope-enum": [
       2,
       "always",
-      [
-        "client",
-        "server",
-        "extension",
-        "common",
-        "docs",
-        "brand",
-        "ci",
-        "infra",
-        "deps",
-        "repo",
-      ],
+      ["client", "server", "extension", "common", "docs", "brand", "ci", "infra", "deps", "repo"],
     ],
   },
 };

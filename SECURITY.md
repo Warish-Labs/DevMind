@@ -14,6 +14,7 @@ Please report vulnerabilities privately:
    Send an encrypted or private email to **security@warishlabs.in** (or **warishdeveloper@gmail.com**) with the subject `[SECURITY] Potential Vulnerability in DevMind`.
 
 Please include:
+
 - A description of the issue and potential impact
 - Affected component(s) (`client`, `server`, `extension`, `common`)
 - Step-by-step reproduction instructions or a minimal proof of concept

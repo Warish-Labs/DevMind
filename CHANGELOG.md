@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Repository foundation specifications, architectural decision records (ADR-001 to ADR-049), and documentation packages.
 - Antigravity session protocol, working memory (`BRAIN.md`), and master execution plan (`PLAN.md`).
 - Multi-package monorepo workspace configuration with pnpm v12 and Node.js 24 LTS.
