@@ -8,10 +8,10 @@
 
 | Field              | Value                                                                  |
 | ------------------ | ---------------------------------------------------------------------- |
-| **Branch**         | `feature/s2-diagnostics-consent` (ready to merge to main)              |
-| **Last commit**    | `b886d0e` (Slice B11 implementation complete)                          |
-| **Working tree**   | active on Slice B11 (`feature/s2-diagnostics-consent`)                 |
-| **Open PR**        | PR for Slice B11 (`feature/s2-diagnostics-consent`)                    |
+| **Branch**         | `feature/s2-quality`                                                   |
+| **Last commit**    | `39f4969` (Slice B11 merged & pushed)                                  |
+| **Working tree**   | active on Slice B12 (`feature/s2-quality`); clean                      |
+| **Open PR**        | PR for Slice B12 (`feature/s2-quality`)                                |
 | **Last CI result** | `test-all --fast`: 9 passed, 0 failed, 2 skipped; extension 17/17 pass |
 | **Date**           | 2026-10-16                                                             |
 
@@ -19,12 +19,11 @@
 
 ## 2. Next action (exact)
 
-1. Merge Slice B11 (`feature/s2-diagnostics-consent`) into `main`, push to `origin/main`, retain remote feature branch.
-2. Cut branch `feature/s2-quality` for Slice B12:
-   - S2-13 Vitest (grouping, severity, text builders, redaction) + extension-host test (activates, fixture scan, diagnostics count, no network) + vsce package/ls; CI artifact
-   - S2-14 docs/runbooks/screenshots.md; verify F5 flow end to end
-3. Verify `vsce package` artifact generation and test suite.
-4. Commit and push to `origin/feature/s2-quality`.
+1. Implement Slice B12 (`feature/s2-quality`):
+   - S2-13 Vitest tests (grouping, severity, text builders, redaction) + extension package test (`vsce package`) + extension manifest verification
+   - S2-14 Extension screenshot and evaluation runbook (`docs/runbooks/screenshots.md` & F5 flow verification)
+2. Verify packaging artifact generation and full test suite (`pnpm test:all --fast`).
+3. Commit and push to `origin/feature/s2-quality`.
 
 ---
 
