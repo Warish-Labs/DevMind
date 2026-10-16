@@ -8,10 +8,10 @@
 
 | Field              | Value                                                                  |
 | ------------------ | ---------------------------------------------------------------------- |
-| **Branch**         | `feature/s1-sections`                                                  |
-| **Last commit**    | `93fee5e` (Favicon fix)                                                |
-| **Working tree**   | Slice B6 complete (S1-09 to S1-14); tests & build green                |
-| **Open PR**        | PR for Slice B6 (`feature/s1-sections`)                                |
+| **Branch**         | `main`                                                                 |
+| **Last commit**    | `936315f` (Merge Slice B6 into main)                                   |
+| **Working tree**   | clean; Slice B6 complete & merged; favicon fixed                       |
+| **Open PR**        | none                                                                   |
 | **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client 14/14 tests pass |
 | **Date**           | 2026-10-16                                                             |
 
@@ -19,9 +19,11 @@
 
 ## 2. Next action (exact)
 
-1. Commit and push Slice B6 (`feature/s1-sections`) to GitHub.
-2. Merge `feature/s1-sections` into `main` and delete the branch locally and remotely.
-3. Start next task in PLAN.md: Phase S1 · Slice B7 (`feature/s1-cursor-motion`, PR: `feat(client): add custom cursor and motion system`).
+1. Create branch `feature/s1-cursor-motion` from `main` for Slice B7.
+2. Implement S1-15: `lib/motion/` (tokens, usePrefersReducedMotion, useInView, sequence helper).
+3. Implement S1-16: DevMindCursor (core dot + ring, states: link/button/text/hotspot/pressed/hidden, magnetic ≤8px, caret bar, toggle, localStorage).
+4. Implement S1-17: View Transitions for `/` → `/early-access` (@view-transition navigation: auto; progressive enhancement).
+5. Verify tests, commit, push, and merge into `main`.
 
 ---
 
