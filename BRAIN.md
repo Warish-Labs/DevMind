@@ -8,23 +8,23 @@
 
 | Field              | Value                                                                  |
 | ------------------ | ---------------------------------------------------------------------- |
-| **Branch**         | `feature/s2-diagnostics-consent`                                       |
-| **Last commit**    | `3951a44` (Slice B10 merged & pushed)                                  |
-| **Working tree**   | active on Slice B11 (`feature/s2-diagnostics-consent`); clean          |
+| **Branch**         | `feature/s2-diagnostics-consent` (ready to merge to main)              |
+| **Last commit**    | `b886d0e` (Slice B11 implementation complete)                          |
+| **Working tree**   | active on Slice B11 (`feature/s2-diagnostics-consent`)                 |
 | **Open PR**        | PR for Slice B11 (`feature/s2-diagnostics-consent`)                    |
-| **Last CI result** | `test-all --fast`: 9 passed, 0 failed, 2 skipped; extension 12/12 pass |
+| **Last CI result** | `test-all --fast`: 9 passed, 0 failed, 2 skipped; extension 17/17 pass |
 | **Date**           | 2026-10-16                                                             |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement Slice B11 (`feature/s2-diagnostics-consent`):
-   - S2-10 DiagnosticCollection (source "DevMind", E1 prefixed "Possible:", code = rule id, severity mapping from docs/06)
-   - S2-11 Status bar (`$(shield)` DevMind · fixture · idle / scanning N/M / offline; text not color alone; click opens Scan view)
-   - S2-12 Consent preview webview (CSP + nonce, tokens, table of example files, Send/Cancel; Send in fixture mode shows message, no network; default focus Cancel)
-2. Verify with unit tests (`pnpm --filter devmind-vscode test`) and build.
-3. Commit and push to `origin/feature/s2-diagnostics-consent`.
+1. Merge Slice B11 (`feature/s2-diagnostics-consent`) into `main`, push to `origin/main`, retain remote feature branch.
+2. Cut branch `feature/s2-quality` for Slice B12:
+   - S2-13 Vitest (grouping, severity, text builders, redaction) + extension-host test (activates, fixture scan, diagnostics count, no network) + vsce package/ls; CI artifact
+   - S2-14 docs/runbooks/screenshots.md; verify F5 flow end to end
+3. Verify `vsce package` artifact generation and test suite.
+4. Commit and push to `origin/feature/s2-quality`.
 
 ---
 
@@ -38,6 +38,19 @@
 ---
 
 ## 4. Done log
+
+### B11 — Diagnostics Collection, Status Bar & Consent Preview Webview
+
+- **Date**: 2026-10-16
+- **Branch**: `feature/s2-diagnostics-consent`
+- **What**: Implemented diagnostics, status bar, and consent preview webview per docs/06:
+  - **S2-10 DiagnosticCollection** (`extension/src/services/diagnostics.ts`): source `"DevMind"`, code = rule ID, severity mapping (`critical`/`high` -> `Error`, `medium` -> `Warning`, `low` -> `Information`, `info` -> `Hint`), E1 prefixed with `"Possible: "`, accessible message text not relying on color alone, multi-file URI grouping.
+  - **S2-11 Status bar** (`extension/src/services/statusBar.ts`): icon + label (`$(shield) DevMind · fixture · idle`, `$(sync~spin) DevMind · fixture · scanning 1/2`, `$(cloud-offline) DevMind · fixture · offline`), accessible tooltip, click trigger opening findings.
+  - **S2-12 Consent preview webview** (`extension/src/views/consentWebview.ts`): strict CSP + crypto nonce, brand tokens, category transmission table, secret redaction preview (`[REDACTED:token:8a9b2c3d]`), Cancel button autofocus by default, Send button with zero-network simulated execution in fixture mode.
+- **Commands & tests added**:
+  - Registered `devmind.reviewSync` in `package.json` and `extension.ts`.
+  - Comprehensive unit test suite in `extension/tests/diagnostics-consent.test.ts` (5 tests, all passing).
+- **Actual results**: `pnpm test:all --fast` (9 passed, 0 failed, 2 skipped), 17/17 extension unit tests passing, esbuild bundle generated.
 
 ### B10 — VS Code Extension Views (Findings, Structure, Scan, Sync, Database)
 

@@ -70,6 +70,55 @@ export class Range {
   ) {}
 }
 
+export enum DiagnosticSeverity {
+  Error = 0,
+  Warning = 1,
+  Information = 2,
+  Hint = 3,
+}
+
+export class Diagnostic {
+  public source?: string;
+  public code?: string | number | { value: string | number; target: unknown };
+  public relatedInformation?: unknown[];
+
+  constructor(
+    public range: Range,
+    public message: string,
+    public severity: DiagnosticSeverity = DiagnosticSeverity.Error
+  ) {}
+}
+
+export const languages = {
+  createDiagnosticCollection: (name: string) => {
+    const map = new Map<string, Diagnostic[]>();
+    return {
+      name,
+      set: (uri: { fsPath?: string; path?: string } | unknown, diags: Diagnostic[]) => {
+        const key = (uri as { fsPath?: string })?.fsPath || "default";
+        map.set(key, diags);
+      },
+      get: (uri: { fsPath?: string }) => map.get(uri?.fsPath || "default") || [],
+      delete: (uri: { fsPath?: string }) => map.delete(uri?.fsPath || "default"),
+      clear: () => map.clear(),
+      dispose: () => map.clear(),
+      _map: map,
+    };
+  },
+};
+
+export enum StatusBarAlignment {
+  Left = 1,
+  Right = 2,
+}
+
+export enum ViewColumn {
+  Beside = -2,
+  Active = -1,
+  One = 1,
+  Two = 2,
+}
+
 export const Uri = {
   file: (filePath: string) => ({
     fsPath: filePath,
@@ -97,6 +146,51 @@ export const window = {
   registerTreeDataProvider: (_id: string, _provider: unknown) => ({
     dispose: () => {},
   }),
+  createStatusBarItem: (alignment = StatusBarAlignment.Left, priority = 100) => ({
+    alignment,
+    priority,
+    text: "",
+    tooltip: "",
+    command: "",
+    accessibilityInformation: undefined,
+    show: () => {},
+    hide: () => {},
+    dispose: () => {},
+  }),
+  createWebviewPanel: (
+    viewType: string,
+    title: string,
+    _showOptions: unknown,
+    _options: unknown
+  ) => {
+    let currentHtml = "";
+    const listeners: ((msg: unknown) => void)[] = [];
+    return {
+      viewType,
+      title,
+      webview: {
+        get html() {
+          return currentHtml;
+        },
+        set html(val: string) {
+          currentHtml = val;
+        },
+        onDidReceiveMessage: (listener: (msg: unknown) => void) => {
+          listeners.push(listener);
+          return { dispose: () => {} };
+        },
+        postMessage: async (msg: unknown) => {
+          for (const l of listeners) {
+            l(msg);
+          }
+        },
+        asWebviewUri: (uri: unknown) => uri,
+      },
+      onDidDispose: (_cb: () => void) => ({ dispose: () => {} }),
+      reveal: () => {},
+      dispose: () => {},
+    };
+  },
   withProgress: async <T>(
     _opts: unknown,
     task: (progress: {

@@ -152,9 +152,9 @@ PR title: `feat(extension): add Findings, Structure, Scan, Sync, Database views`
 
 PR title: `feat(extension): add diagnostics, status bar and consent preview`
 
-- [ ] S2-10 DiagnosticCollection (source "DevMind", E1 prefixed "Possible:", code = rule id, severity mapping from docs/06)
-- [ ] S2-11 Status bar ($(shield) DevMind · fixture · idle / scanning N/M / offline; text not color alone; click opens Scan view)
-- [ ] S2-12 Consent preview webview (CSP + nonce, tokens, table of example files, Send/Cancel; Send in fixture mode shows message, no network; default focus Cancel)
+- [x] S2-10 DiagnosticCollection (source "DevMind", E1 prefixed "Possible:", code = rule id, severity mapping from docs/06)
+- [x] S2-11 Status bar ($(shield) DevMind · fixture · idle / scanning N/M / offline; text not color alone; click opens Scan view)
+- [x] S2-12 Consent preview webview (CSP + nonce, tokens, table of example files, Send/Cancel; Send in fixture mode shows message, no network; default focus Cancel)
 
 ### B12 `feature/s2-quality`
 

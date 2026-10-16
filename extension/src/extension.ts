@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { DevMindLogger } from "./services/logger";
 import { SettingsService } from "./services/settings";
+import { DiagnosticService } from "./services/diagnostics";
+import { StatusBarService } from "./services/statusBar";
 import { FixtureFindingsSource } from "./sources/fixtureFindingsSource";
 import { FindingsSource } from "./types";
 import { FindingsViewProvider } from "./views/findingsView";
@@ -10,8 +12,11 @@ import { StructureViewProvider } from "./views/structureView";
 import { ScanViewProvider } from "./views/scanView";
 import { SyncViewProvider } from "./views/syncView";
 import { DatabaseViewProvider } from "./views/databaseView";
+import { ConsentWebviewManager } from "./views/consentWebview";
 
 let findingsSource: FindingsSource;
+let diagnosticService: DiagnosticService;
+let statusBarService: StatusBarService;
 let findingsProvider: FindingsViewProvider;
 let structureProvider: StructureViewProvider;
 let scanProvider: ScanViewProvider;
@@ -28,6 +33,8 @@ export function activate(context: vscode.ExtensionContext): void {
   });
 
   findingsSource = new FixtureFindingsSource();
+  diagnosticService = new DiagnosticService();
+  statusBarService = new StatusBarService(settings.fixtureMode);
 
   // Initialize TreeView Providers
   findingsProvider = new FindingsViewProvider(findingsSource);
@@ -49,10 +56,11 @@ export function activate(context: vscode.ExtensionContext): void {
   const regSync = vscode.window.registerTreeDataProvider("devmind.views.sync", syncProvider);
   const regDb = vscode.window.registerTreeDataProvider("devmind.views.database", databaseProvider);
 
-  // Register devmind.scanWorkspace command
-  const scanCmd = vscode.commands.registerCommand("devmind.scanWorkspace", async () => {
+  // Function to perform scan and update all listeners
+  const runScan = async () => {
     logger.info("Scan command triggered");
     scanProvider.setScanning(true, 10);
+    statusBarService.setScanning(1, 2);
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
     await vscode.window.withProgress(
@@ -68,7 +76,9 @@ export function activate(context: vscode.ExtensionContext): void {
         const findings = await findingsSource.getFindings(workspaceRoot);
         progress.report({ increment: 70, message: "Resolving policy invariants..." });
 
+        diagnosticService.updateDiagnostics(findings, workspaceRoot);
         scanProvider.setCompleted(18);
+        statusBarService.setIdle();
         findingsProvider.refresh();
         structureProvider.refresh();
         databaseProvider.refresh();
@@ -79,11 +89,15 @@ export function activate(context: vscode.ExtensionContext): void {
         );
       }
     );
-  });
+  };
+
+  // Register devmind.scanWorkspace command
+  const scanCmd = vscode.commands.registerCommand("devmind.scanWorkspace", runScan);
 
   // Register devmind.cancelScan command
   const cancelScanCmd = vscode.commands.registerCommand("devmind.cancelScan", () => {
     scanProvider.cancelScan();
+    statusBarService.setIdle();
     logger.info("DevMind scan canceled by user");
     vscode.window.showInformationMessage("DevMind scan canceled.");
   });
@@ -111,22 +125,17 @@ export function activate(context: vscode.ExtensionContext): void {
     }
   });
 
-  // Register devmind.showWhatLeaves command
-  const showWhatLeavesCmd = vscode.commands.registerCommand("devmind.showWhatLeaves", () => {
-    const currentSettings = SettingsService.get();
-    const ledger = [
-      "DevMind Privacy Ledger (ADR-022, ADR-047)",
-      "-----------------------------------------",
-      `Current Mode: ${currentSettings.syncMode}`,
-      "✓ Stays Local: Source code, credentials (.env), AST tokens, test bodies",
-      "✓ Reaches Cloud: Manifest hashes, route signatures, finding IDs",
-      "✓ Redaction: [REDACTED:secret:hash8] before any transmission",
-      "✘ Prohibited: Live DB connections, execution of project scripts",
-    ].join("\n");
+  // Register devmind.showWhatLeaves & devmind.reviewSync commands
+  const reviewSyncHandler = () => {
+    ConsentWebviewManager.show(context);
+    logger.info("Consent preview webview opened");
+  };
 
-    vscode.window.showInformationMessage(ledger, { modal: false });
-    logger.info("Privacy ledger reviewed by user");
-  });
+  const showWhatLeavesCmd = vscode.commands.registerCommand(
+    "devmind.showWhatLeaves",
+    reviewSyncHandler
+  );
+  const reviewSyncCmd = vscode.commands.registerCommand("devmind.reviewSync", reviewSyncHandler);
 
   // Register devmind.openFindingLocation command
   const openLocCmd = vscode.commands.registerCommand(
@@ -167,10 +176,13 @@ export function activate(context: vscode.ExtensionContext): void {
       fixtureMode: newSettings.fixtureMode,
       syncMode: newSettings.syncMode,
     });
+    statusBarService.setFixtureMode(newSettings.fixtureMode);
     syncProvider.refresh();
   });
 
   context.subscriptions.push(
+    diagnosticService.getCollection(),
+    statusBarService.getItem(),
     regFindings,
     regStructure,
     regScan,
@@ -182,15 +194,26 @@ export function activate(context: vscode.ExtensionContext): void {
     showLogsCmd,
     syncNowCmd,
     showWhatLeavesCmd,
+    reviewSyncCmd,
     openLocCmd,
     refreshAllCmd,
     settingsSub
   );
 
-  logger.info("DevMind Companion activated successfully with 5 view providers.");
+  // Initial load for fixture mode
+  if (settings.fixtureMode) {
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    findingsSource.getFindings(workspaceRoot).then((findings) => {
+      diagnosticService.updateDiagnostics(findings, workspaceRoot);
+    });
+  }
+
+  logger.info("DevMind Companion activated successfully with diagnostics and consent webview.");
 }
 
 export function deactivate(): void {
   const logger = DevMindLogger.get();
+  diagnosticService?.dispose();
+  statusBarService?.dispose();
   logger.info("DevMind Companion deactivated.");
 }

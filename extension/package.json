@@ -51,6 +51,11 @@
         "category": "DevMind"
       },
       {
+        "command": "devmind.reviewSync",
+        "title": "DevMind: Review What Leaves Machine (Consent Preview)",
+        "category": "DevMind"
+      },
+      {
         "command": "devmind.refreshAll",
         "title": "DevMind: Refresh All Views",
         "category": "DevMind"
