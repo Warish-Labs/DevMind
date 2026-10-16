@@ -80,14 +80,17 @@ DevMind maintains an interconnected semantic graph of your application:
   <em>DevMind Web Platform: Interactive Project Brain hero and deterministic code tracer.</em>
 </p>
 
-### Web Application & Companion Extension Gallery
+### Web Platform & Visual Architecture Gallery
 
-| Web Application                                                                                                                                             | VS Code Companion Extension                                                                                                                             |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![Code Trace Sequence](docs/assets/screenshots/home-hero-mid-sequence.png)<br><em>Step-by-step deterministic AST code trace sequence.</em>                  | ![Findings View](docs/assets/screenshots/home-hero-desktop.png)<br><em>In-editor Findings tree grouped by severity with E1 evidence tags.</em>          |
-| ![Project Brain Explorer](docs/assets/screenshots/home-brain-selected.png)<br><em>Multi-strata Project Brain layer inspection.</em>                         | ![Project Structure](docs/assets/screenshots/home-walkthrough-step.png)<br><em>Endpoint tree with active role-guard and missing-guard indicators.</em>  |
-| ![Verifiable Privacy Ledger](docs/assets/screenshots/home-privacy-ledger.png)<br><em>Cryptographic privacy ledger defining local vs remote boundaries.</em> | ![Consent Webview](docs/assets/screenshots/home-privacy-ledger.png)<br><em>Strict CSP-isolated transmission review with Cancel focused by default.</em> |
-| ![Responsive Tablet View](docs/assets/screenshots/home-tablet.png)<br><em>Responsive tablet layout adhering to WCAG 2.1 AA standards.</em>                  | ![Mobile Viewport](docs/assets/screenshots/home-mobile.png)<br><em>Mobile viewport with accessible touch targets and typography.</em>                   |
+| Component & Section                                                                                                               | View & Capture                                                                 |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **01 · Interactive Code Trace Sequence**<br>Step-by-step deterministic AST code trace and ripple tag execution.                   | ![Code Trace Sequence](docs/assets/screenshots/home-hero-mid-sequence.png)     |
+| **03 · Project Brain Strata Explorer**<br>Interactive multi-strata mental model inspecting symbols, edges, and living docs.       | ![Project Brain Explorer](docs/assets/screenshots/home-brain-selected.png)     |
+| **05 · Architectural Walkthrough**<br>14-step continuous lifecycle sticky timeline from local scan to PR review.                  | ![Architecture Walkthrough](docs/assets/screenshots/home-walkthrough-step.png) |
+| **07 · Cryptographic Privacy Ledger**<br>Verifiable data classification ledger defining strict local vs remote egress boundaries. | ![Verifiable Privacy Ledger](docs/assets/screenshots/home-privacy-ledger.png)  |
+| **08 · Preferences & Motion Control**<br>Custom magnetic cursor, reduced-motion preferences, and Early Access CTA.                | ![Preferences & Motion](docs/assets/screenshots/home-cursor-cta.png)           |
+| **Responsive Tablet Viewport**<br>Adaptive layout tested against iPad and tablet viewports meeting WCAG 2.1 AA.                   | ![Responsive Tablet View](docs/assets/screenshots/home-tablet.png)             |
+| **Accessible Mobile Viewport**<br>Compact touch-optimized mobile viewport with fluid typography and accessible touch targets.     | ![Mobile Viewport](docs/assets/screenshots/home-mobile.png)                    |
 
 ---
 
@@ -401,9 +404,9 @@ All progress is tracked against [PLAN.md](PLAN.md) and recorded in [BRAIN.md](BR
 | **Phase P0** | **B1–B3**  | Monorepo layout, ADRs 001–049, tooling, brand, and CI gate                         | **Complete**    | `c2a6327`       |
 | **Phase S1** | **B4–B8**  | Screenshot-first Next.js homepage, custom cursor, trace explorer                   | **Complete**    | `351880d`       |
 | **Phase S2** | **B9–B12** | VS Code companion UI shell, 5 views, diagnostics, consent webview, VSIX packaging  | **Complete**    | `7bc34c6`       |
-| **Phase R1** | **B13**    | Professional GitHub showcase README, setup guide verification, personal repo guide | **In Progress** | Active          |
-| **Phase M**  | **M1**     | Server foundation (FastAPI app factory, Dockerfile, render.yaml, /healthz)         | Planned         |                 |
-| **Phase M**  | **M2**     | Authentication (Clerk), workspaces, projects, database schemas                     | Planned         |                 |
+| **Phase R1** | **B13**    | Professional GitHub showcase README, setup guide verification, personal repo guide | **Complete**    | `0ba4d5d`       |
+| **Phase M**  | **M1**     | Server foundation (FastAPI app factory, Dockerfile, render.yaml, free launcher)    | **Complete**    | `537a3bc`       |
+| **Phase M**  | **M2**     | Authentication (Clerk), workspaces, projects, database schemas, and permissions    | **In Progress** | Active          |
 | **Phase M**  | **M3**     | VS Code extension real local tree-sitter scanning (replaces fixture source)        | Planned         |                 |
 | **Phase M**  | **M4–M13** | Project Brain ingestion, hybrid RAG, LangGraph agents, and release hardening       | Planned         |                 |
 
