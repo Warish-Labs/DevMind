@@ -9,7 +9,7 @@
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                       |
-| **Last commit**    | pending commit (M2-04 Policy service and route permission registry)                          |
+| **Last commit**    | `0ba4d5d` (feat(server): add policy service, permissions, and route registry CI test)        |
 | **Working tree**   | clean; working directly on main per user instruction                                         |
 | **Open PR**        | None (working directly on main)                                                              |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 64/64 pass, boundaries:server pass |
