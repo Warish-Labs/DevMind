@@ -90,7 +90,7 @@ export function Section03BrainStrata() {
                         ? "bg-[var(--signal)] text-[var(--bg-0)]"
                         : stratum.isHeroPath
                           ? "bg-[var(--signal)]/20 text-[var(--signal)] border border-[var(--signal)]/40"
-                          : "bg-[var(--line-1)] text-[var(--fg-2)]"
+                          : "bg-[var(--line-1)] text-[var(--fg-1)]"
                     }`}
                   >
                     {stratum.number}

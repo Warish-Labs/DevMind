@@ -118,9 +118,9 @@ PR title: `feat(client): add custom cursor and motion system`
 
 PR title: `test(client): add e2e, a11y, performance checks and screenshots`
 
-- [ ] S1-18 Vitest (content integrity, token contrast, cursor math, hooks) + Playwright + axe (keyboard, reduced-motion, touch, section nav)
-- [ ] S1-19 pnpm screenshots → docs/assets/screenshots/home-*.png (8 shots, compressed)
-- [ ] S1-20 Design review checklist (docs/08 §18) completed in PR body; fix findings
+- [x] S1-18 Vitest (content integrity, token contrast, cursor math, hooks) + Playwright + axe (keyboard, reduced-motion, touch, section nav)
+- [x] S1-19 pnpm screenshots → docs/assets/screenshots/home-*.png (8 shots, compressed)
+- [x] S1-20 Design review checklist (docs/08 §18) completed in PR body; fix findings
   - Acceptance: Lighthouse CWV numbers recorded in BRAIN.md; axe no serious violations; screenshots exist
 
 Gate: pnpm --filter client build + pnpm test:all --fast + e2e green; owner screenshots and merges

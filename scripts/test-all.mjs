@@ -160,6 +160,31 @@ function main() {
       "client not scaffolded yet"
     )
   );
+  if (BAIL && results[results.length - 1].status === "FAIL") finish(results);
+
+  results.push(
+    runStep(
+      "test:client",
+      "client",
+      "pnpm",
+      ["--filter", "client", "test"],
+      hasClient,
+      "client not scaffolded yet"
+    )
+  );
+  if (BAIL && results[results.length - 1].status === "FAIL") finish(results);
+
+  results.push(
+    runStep(
+      "test:e2e",
+      "client",
+      "pnpm",
+      ["--filter", "client", "test:e2e"],
+      hasClient && IS_FULL,
+      "e2e tests skipped in fast mode (run with --full to include Playwright)"
+    )
+  );
+  if (BAIL && results[results.length - 1].status === "FAIL") finish(results);
 
   // Step 7: Extension steps (Phase S2)
   const hasExtension = fs.existsSync(path.join(REPO_ROOT, "extension/package.json"));

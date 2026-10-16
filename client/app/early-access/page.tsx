@@ -7,6 +7,8 @@ export const metadata: Metadata = {
     "DevMind is in its design and build phase. Follow our open development progress, inspect the architecture, or register for early access.",
 };
 
+import { EarlyAccessForm } from "../../components/early-access/EarlyAccessForm";
+
 export default function EarlyAccessPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-16 sm:py-24">
@@ -94,25 +96,7 @@ export default function EarlyAccessPage() {
           extension and web workspace become available.
         </p>
 
-        <form className="flex flex-col sm:flex-row gap-3 max-w-lg" action="#" method="POST">
-          <label htmlFor="email-input" className="sr-only">
-            Email address
-          </label>
-          <input
-            id="email-input"
-            type="email"
-            name="email"
-            required
-            placeholder="developer@domain.com"
-            className="flex-1 px-4 py-2.5 rounded-control bg-[var(--bg-2)] border border-[var(--line-2)] text-sm text-[var(--fg-0)] placeholder:text-[var(--fg-2)] focus:border-[var(--ref)] focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="px-6 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer"
-          >
-            Join Waitlist
-          </button>
-        </form>
+        <EarlyAccessForm />
       </div>
 
       {/* Navigation Footer Links */}

@@ -6,22 +6,25 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                  |
-| ------------------ | ---------------------------------------------------------------------- |
-| **Branch**         | `feature/s1-cursor-motion`                                             |
-| **Last commit**    | `3c7feed`                                                              |
-| **Working tree**   | Slice B7 complete (S1-15 to S1-17); tests & build green                |
-| **Open PR**        | PR for Slice B7 (`feature/s1-cursor-motion`)                           |
-| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client 26/26 tests pass |
-| **Date**           | 2026-10-16                                                             |
+| Field              | Value                                                                   |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Branch**         | `feature/s1-quality`                                                    |
+| **Last commit**    | `4800f5a` (Slice B8 in progress)                                        |
+| **Working tree**   | Slice B8 complete (S1-18, S1-19, S1-20); e2e, axe, CWV green            |
+| **Open PR**        | PR for Slice B8 (`feature/s1-quality`)                                  |
+| **Last CI result** | `test-all --full`: 8 passed, 0 failed, 2 skipped; 38/38 unit tests pass |
+| **Performance**    | TTFB: 113ms · FCP: 496ms · Load: 515ms · CLS: 0.000                     |
+| **Accessibility**  | 0 critical/serious axe-core violations on / and /early-access           |
+| **Screenshots**    | 8/8 captured in docs/assets/screenshots/                                |
+| **Date**           | 2026-10-16                                                              |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push Slice B7 (`feature/s1-cursor-motion`) to GitHub.
-2. Merge `feature/s1-cursor-motion` into `main` and delete the branch locally and remotely.
-3. Start next task in PLAN.md: Phase S1 · Slice B8 (`feature/s1-quality`, PR: `test(client): add e2e, a11y, performance checks and screenshots`).
+1. Commit and push Slice B8 (`feature/s1-quality`) to GitHub.
+2. Merge `feature/s1-quality` into `main` and delete the branch locally and remotely.
+3. Start Phase S2 (Extension UI shell): Slice B9 `feature/s2-extension-scaffold` (PR: `feat(extension): scaffold extension, fixtures and activation`).
 
 ---
 

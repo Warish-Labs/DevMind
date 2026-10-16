@@ -35,7 +35,12 @@ export function Trace({
       </div>
 
       {/* Code Editor Body */}
-      <div className="relative p-4 sm:p-5 overflow-x-auto">
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Code editor lines"
+        className="relative p-4 sm:p-5 overflow-x-auto focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"
+      >
         {/* Animated Scan Line travelling down gutter */}
         {scanningActive && (
           <div

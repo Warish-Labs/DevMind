@@ -50,7 +50,12 @@ export function Section02BlastRadius() {
             <span className="text-[var(--signal)]">+2 lines</span>
           </div>
 
-          <div className="p-4 overflow-x-auto space-y-1">
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label="Diff hunk code lines"
+            className="p-4 overflow-x-auto space-y-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"
+          >
             <div className="text-[var(--ref)] mb-2 select-none">
               @@ -4,4 +4,6 @@ const router = Router();
             </div>
@@ -71,7 +76,7 @@ export function Section02BlastRadius() {
                         : "text-[var(--fg-2)]"
                   }`}
                 >
-                  <span className="w-8 shrink-0 select-none text-[var(--fg-2)] opacity-60">
+                  <span aria-hidden="true" className="w-8 shrink-0 select-none text-[var(--fg-2)]">
                     {l.line}
                   </span>
                   <span className="whitespace-pre flex-1">{l.text}</span>

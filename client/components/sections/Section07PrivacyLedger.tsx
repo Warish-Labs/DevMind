@@ -13,6 +13,9 @@ export function Section07PrivacyLedger() {
 
   return (
     <section id="section-07" className="scroll-mt-24 flex flex-col gap-8">
+      {/* Anchor for hash navigation */}
+      <div id="ledger" className="scroll-mt-28" />
+
       {/* Section Header */}
       <div>
         <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-chip bg-[var(--bg-1)] border border-[var(--line-1)] text-xs text-[var(--signal)] font-mono">
@@ -61,10 +64,15 @@ export function Section07PrivacyLedger() {
 
       {/* Auditable Privacy Matrix Table */}
       <div className="rounded-panel border border-[var(--line-1)] bg-[var(--bg-1)] overflow-hidden shadow-xl">
-        <div className="overflow-x-auto">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Privacy ledger table"
+          className="overflow-x-auto focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"
+        >
           <table className="w-full text-left font-mono text-xs border-collapse">
             <thead>
-              <tr className="border-b border-[var(--line-2)] bg-[var(--bg-2)]/60 text-[var(--fg-2)] select-none">
+              <tr className="border-b border-[var(--line-2)] bg-[var(--bg-2)]/60 text-[var(--fg-1)] select-none">
                 <th className="py-3 px-4 font-medium text-[var(--fg-0)]">Data Category</th>
                 <th className="py-3 px-4 w-28 text-center">Stays Local</th>
                 <th className="py-3 px-4 w-32 text-center">Stored in DevMind</th>
@@ -93,7 +101,7 @@ export function Section07PrivacyLedger() {
                           YES
                         </span>
                       ) : (
-                        <span className="inline-block px-2 py-0.5 rounded-chip text-[10px] font-bold bg-[var(--line-1)] text-[var(--fg-2)]">
+                        <span className="inline-block px-2 py-0.5 rounded-chip text-[10px] font-bold bg-[var(--line-1)] text-[var(--fg-1)]">
                           NO
                         </span>
                       )}
@@ -106,7 +114,7 @@ export function Section07PrivacyLedger() {
                           STORED
                         </span>
                       ) : (
-                        <span className="inline-block px-2 py-0.5 rounded-chip text-[10px] font-bold bg-[var(--line-1)] text-[var(--fg-2)]">
+                        <span className="inline-block px-2 py-0.5 rounded-chip text-[10px] font-bold bg-[var(--line-1)] text-[var(--fg-1)]">
                           NEVER
                         </span>
                       )}
@@ -119,7 +127,7 @@ export function Section07PrivacyLedger() {
                           pgvector
                         </span>
                       ) : (
-                        <span className="inline-block px-2 py-0.5 rounded-chip text-[10px] font-bold bg-[var(--line-1)] text-[var(--fg-2)]">
+                        <span className="inline-block px-2 py-0.5 rounded-chip text-[10px] font-bold bg-[var(--line-1)] text-[var(--fg-1)]">
                           NO
                         </span>
                       )}
@@ -132,7 +140,7 @@ export function Section07PrivacyLedger() {
                           CONSENTED
                         </span>
                       ) : (
-                        <span className="inline-block px-2 py-0.5 rounded-chip text-[10px] font-bold bg-[var(--line-1)] text-[var(--fg-2)]">
+                        <span className="inline-block px-2 py-0.5 rounded-chip text-[10px] font-bold bg-[var(--line-1)] text-[var(--fg-1)]">
                           NEVER
                         </span>
                       )}

@@ -51,7 +51,7 @@ export function Section05Walkthrough() {
                   className={`w-7 text-center py-0.5 rounded-xs font-semibold shrink-0 text-xs ${
                     isActive
                       ? "bg-[var(--signal)] text-[var(--bg-0)]"
-                      : "bg-[var(--line-1)] text-[var(--fg-2)]"
+                      : "bg-[var(--line-1)] text-[var(--fg-1)]"
                   }`}
                 >
                   {String(item.step).padStart(2, "0")}
@@ -66,7 +66,7 @@ export function Section05Walkthrough() {
                     <span
                       className={`text-[9px] px-1.5 py-0.2 rounded-xs uppercase tracking-wider font-bold ${
                         isPlanned
-                          ? "bg-[var(--line-1)] text-[var(--fg-2)]"
+                          ? "bg-[var(--line-1)] text-[var(--fg-1)]"
                           : "bg-[var(--signal)]/15 text-[var(--signal)]"
                       }`}
                     >
@@ -100,7 +100,7 @@ export function Section05Walkthrough() {
             <span
               className={`text-[10px] font-mono px-2 py-0.5 rounded-chip uppercase tracking-wider font-bold ${
                 activeStep.status === "planned"
-                  ? "bg-[var(--line-1)] text-[var(--fg-2)]"
+                  ? "bg-[var(--line-1)] text-[var(--fg-1)]"
                   : "bg-[var(--signal)]/15 text-[var(--signal)] border border-[var(--signal)]/30"
               }`}
             >

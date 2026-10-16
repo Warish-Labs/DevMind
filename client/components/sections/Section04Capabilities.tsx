@@ -29,10 +29,15 @@ export function Section04Capabilities() {
 
       {/* Capabilities Index Table */}
       <div className="rounded-panel border border-[var(--line-1)] bg-[var(--bg-1)] overflow-hidden shadow-xl">
-        <div className="overflow-x-auto">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Capabilities matrix"
+          className="overflow-x-auto focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"
+        >
           <table className="w-full text-left font-mono text-xs border-collapse">
             <thead>
-              <tr className="border-b border-[var(--line-2)] bg-[var(--bg-2)]/60 text-[var(--fg-2)] select-none">
+              <tr className="border-b border-[var(--line-2)] bg-[var(--bg-2)]/60 text-[var(--fg-1)] select-none">
                 <th className="py-3 px-4 w-20">ID</th>
                 <th className="py-3 px-4 font-medium text-[var(--fg-0)]">Question You Ask</th>
                 <th className="py-3 px-4 hidden md:table-cell">Capability</th>
@@ -74,7 +79,7 @@ export function Section04Capabilities() {
                           className={`inline-block px-2 py-0.5 rounded-chip text-[10px] font-bold uppercase tracking-wider ${
                             isMvp
                               ? "bg-[var(--signal)]/15 text-[var(--signal)] border border-[var(--signal)]/30"
-                              : "bg-[var(--line-1)] text-[var(--fg-2)] border border-[var(--line-2)]"
+                              : "bg-[var(--line-1)] text-[var(--fg-1)] border border-[var(--line-2)]"
                           }`}
                         >
                           {releaseBadge}

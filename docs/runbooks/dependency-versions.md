@@ -44,6 +44,8 @@ Updated in every branch that adds or changes a dependency (AGENTS.md §11, ANTIG
 | actions/dependency-review-action | 3b139cf (v4.5.0) | github.com/actions/dependency-review-action | MIT | 2026-10-15 |
 | github/codeql-action | a65a038 (v3.28.10) | github.com/github/codeql-action | MIT | 2026-10-15 |
 | gitleaks/gitleaks-action | f586c14 (v2.3.8) | github.com/gitleaks/gitleaks-action | MIT | 2026-10-15 |
+| @playwright/test | 1.64.1 | npmjs.com/package/@playwright/test | Apache-2.0 | 2026-10-16 |
+| @axe-core/playwright | 4.14.0 | npmjs.com/package/@axe-core/playwright | MPL-2.0 | 2026-10-16 |
 
 ---
 
