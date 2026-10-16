@@ -6,14 +6,14 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                        |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                       |
-| **Last commit**    | pending commit (M2-01 & M2-02 Alembic migrations & tenancy repositories)                     |
-| **Working tree**   | clean; working directly on main per user instruction                                         |
-| **Open PR**        | None (working directly on main)                                                              |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 48/48 pass, boundaries:server pass |
-| **Date**           | 2026-10-16                                                                                   |
+| Field              | Value                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                  |
+| **Last commit**    | `5fc1a89` (feat(server): setup alembic baseline, tenancy models, and repository layer with AuthContext) |
+| **Working tree**   | clean; working directly on main per user instruction                                                    |
+| **Open PR**        | None (working directly on main)                                                                         |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 48/48 pass, boundaries:server pass            |
+| **Date**           | 2026-10-16                                                                                              |
 
 ---
 
