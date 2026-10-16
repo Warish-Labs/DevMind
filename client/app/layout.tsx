@@ -3,6 +3,7 @@ import { instrumentSerif, ibmPlexSans, jetbrainsMono } from "./fonts";
 import { Header } from "../components/layout/Header";
 import { GutterRail } from "../components/layout/GutterRail";
 import { Footer } from "../components/layout/Footer";
+import { DevMindCursor } from "../components/cursor/DevMindCursor";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://devmind.warishlabs.in";
@@ -52,6 +53,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${instrumentSerif.variable} ${ibmPlexSans.variable} ${jetbrainsMono.variable} dark`}
     >
       <body className="min-h-screen flex flex-col bg-[var(--bg-0)] text-[var(--fg-0)] selection:bg-[var(--signal)] selection:text-[var(--bg-0)]">
+        {/* Custom Evidence Node Cursor (Fine pointer desktop only) */}
+        <DevMindCursor />
+
         {/* Accessible Skip Link */}
         <a
           href="#main-content"
