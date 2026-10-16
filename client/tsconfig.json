@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@devmind/common": ["../common/src"],
+      "@devmind/common/*": ["../common/src/*"]
     }
   },
   "include": [

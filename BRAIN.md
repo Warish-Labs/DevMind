@@ -37,6 +37,16 @@
 
 ## 4. Done log
 
+### Client Vercel Monorepo Build Fix
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Fixed Vercel deployment build failure where `@devmind/common/api` could not be resolved during Next.js build:
+  - Added `transpilePackages: ["@devmind/common"]` to `client/next.config.ts`.
+  - Added workspace path alias to `client/tsconfig.json` (`@devmind/common/* -> ../common/src/*`).
+  - Added `"prebuild": "pnpm --filter @devmind/common build"` to `client/package.json` ensuring `@devmind/common` is compiled before `next build`.
+  - Moved `@devmind/common` to `dependencies` in `client/package.json`.
+
 ### M3-01 — File Discovery Engine, Ignore Engine & Raw Byte Hasher
 
 - **Date**: 2026-10-16
