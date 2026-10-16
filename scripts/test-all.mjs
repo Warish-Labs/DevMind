@@ -243,6 +243,18 @@ function main() {
 
   results.push(
     runStep(
+      "boundaries:server",
+      "server",
+      "uv",
+      ["run", "--directory", "server", "lint-imports", "--no-cache"],
+      hasServer,
+      "server not scaffolded yet (Milestone M1)"
+    )
+  );
+  if (BAIL && results[results.length - 1].status === "FAIL") finish(results);
+
+  results.push(
+    runStep(
       "test:server",
       "server",
       "uv",

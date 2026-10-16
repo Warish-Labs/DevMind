@@ -186,10 +186,41 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
 
+  server:
+    name: Server Checks (Lint, Boundaries, Pytest)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "server/uv.lock"
+
+      - name: Setup Python
+        run: uv python install 3.12
+
+      - name: Install server dependencies
+        run: uv sync --frozen --project server
+
+      - name: Run Ruff Lint and Format Checks
+        run: |
+          uv run --directory server ruff check .
+          uv run --directory server ruff format --check .
+
+      - name: Run Architectural Boundary Checks
+        run: uv run --directory server lint-imports --no-cache
+
+      - name: Run Pytest Unit Tests
+        run: uv run --directory server pytest -m "not integration"
+
   ci-gate:
     name: ci-gate
     if: always()
-    needs: [lint-types, unit, build, e2e, docs, security]
+    needs: [lint-types, unit, build, e2e, docs, security, server]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

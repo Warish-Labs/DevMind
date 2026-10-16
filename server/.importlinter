@@ -1,0 +1,68 @@
+[importlinter]
+root_package = app
+
+[importlinter:contract:api-forbidden-imports]
+name = API layer forbidden imports
+type = forbidden
+source_modules =
+    app.api
+forbidden_modules =
+    app.persistence
+    app.orchestration
+
+[importlinter:contract:domain-forbidden-imports]
+name = Domain layer forbidden imports
+type = forbidden
+source_modules =
+    app.domain
+forbidden_modules =
+    app.api
+    app.workers
+
+[importlinter:contract:brain-forbidden-imports]
+name = Brain layer forbidden imports
+type = forbidden
+source_modules =
+    app.brain
+forbidden_modules =
+    app.api
+    app.orchestration
+
+[importlinter:contract:analysis-forbidden-imports]
+name = Analysis layer forbidden imports (deterministic)
+type = forbidden
+source_modules =
+    app.analysis
+forbidden_modules =
+    app.llm
+
+[importlinter:contract:orchestration-forbidden-imports]
+name = Orchestration layer forbidden imports
+type = forbidden
+source_modules =
+    app.orchestration
+forbidden_modules =
+    app.api
+
+[importlinter:contract:llm-forbidden-imports]
+name = LLM layer forbidden imports
+type = forbidden
+source_modules =
+    app.llm
+forbidden_modules =
+    app.api
+    app.domain
+    app.brain
+    app.analysis
+    app.orchestration
+    app.persistence
+    app.integrations
+    app.workers
+
+[importlinter:contract:workers-forbidden-imports]
+name = Workers layer forbidden imports
+type = forbidden
+source_modules =
+    app.workers
+forbidden_modules =
+    app.api

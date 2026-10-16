@@ -6,25 +6,25 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                             |
-| ------------------ | --------------------------------------------------------------------------------- |
-| **Branch**         | `feature/m1-docker-compose`                                                       |
-| **Last commit**    | `ce1926f` (M1-01 merged into main)                                                |
-| **Working tree**   | active on Milestone M1 (`feature/m1-docker-compose`); M1-02 complete              |
-| **Open PR**        | PR for M1-02 (`feature/m1-docker-compose`)                                        |
-| **Last CI result** | `test-all --fast`: 12 passed, 0 failed, 1 skipped; server 17/17 pass, lint:server |
-| **Date**           | 2026-10-16                                                                        |
+| Field              | Value                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| **Branch**         | `feature/m1-server-ci`                                                                       |
+| **Last commit**    | `7ca3303` (M1-02 merged into main)                                                           |
+| **Working tree**   | active on Milestone M1 (`feature/m1-server-ci`); M1-03 complete                              |
+| **Open PR**        | PR for M1-03 (`feature/m1-server-ci`)                                                        |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 19/19 pass, boundaries:server pass |
+| **Date**           | 2026-10-16                                                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push Slice M1-02 (`feature/m1-docker-compose`).
-2. Merge `feature/m1-docker-compose` into `main` and push `main`, retaining remote branch visible on GitHub.
-3. Cut branch `feature/m1-server-ci` for M1-03:
-   - Server CI jobs in GitHub Actions (`.github/workflows/ci.yml` / `ci-gate`)
-   - `import-linter` contracts for layer boundaries (`docs/02 §4.1`)
-   - Dependabot for pip/docker
+1. Commit and push Slice M1-03 (`feature/m1-server-ci`).
+2. Merge `feature/m1-server-ci` into `main` and push `main`.
+3. Clean up merged branches per user request (`git branch -d`, `git push origin --delete`).
+4. Cut branch `feature/m1-deploy-config` for M1-04:
+   - Create `render.yaml` Blueprint (free profile: one free web service + free Key Value per ADR-046)
+   - Create `docs/runbooks/deploy-render-vercel.md` deployment runbook.
 
 ---
 
@@ -38,6 +38,33 @@
 ---
 
 ## 4. Done log
+
+### M1-03 — Server CI Workflows, Import Boundary Linter & Dependabot
+
+- **Date**: 2026-10-16
+- **Branch**: `feature/m1-server-ci`
+- **What**: Implemented server CI validation, architectural boundary enforcement, and automated dependency maintenance:
+  - **Import Boundary Contracts** (`server/.importlinter`): Configured `import-linter` with 7 strict architectural layer contracts per `docs/02` §4.1:
+    - `api/` cannot import `persistence/` models directly, `orchestration/`, or provider SDKs.
+    - `domain/` cannot import `api/` or `workers/`.
+    - `brain/` cannot import `api/` or `orchestration/`.
+    - `analysis/` cannot import `llm/` (deterministic analysis invariant).
+    - `orchestration/` cannot import `api/`.
+    - `llm/` cannot import other layers.
+    - `workers/` cannot import `api/`.
+  - **Boundary Verification & Deliberate Violation Tests** (`server/tests/test_import_boundaries.py`):
+    - Tested that the codebase satisfies all 7 boundary contracts with 0 broken.
+    - Added deliberate violation fixture test confirming that an unauthorized import (analysis importing llm) reliably fails `lint-imports`.
+  - **GitHub Actions CI Workflow** (`.github/workflows/ci.yml`):
+    - Added `server` job with `astral-sh/setup-uv@v5`, Python 3.12, dependency syncing, Ruff lint & format checks, boundary checks (`lint-imports`), and unit tests.
+    - Wired `server` into `ci-gate` so PR merges require green server checks alongside client and extension checks.
+    - Validated workflow with `actionlint` (0 errors).
+  - **Dependabot Automation** (`.github/dependabot.yml`):
+    - Added `pip` ecosystem for `server/` with grouped updates (`python-dependencies`).
+    - Added `docker` ecosystem for `server/` (Dockerfile) and `infra/` (docker-compose).
+  - **Monorepo Test Runner** (`scripts/test-all.mjs`):
+    - Added `boundaries:server` check (`uv run --directory server lint-imports --no-cache`).
+- **Actual results**: `pnpm test:all --fast` (13 passed, 0 failed, 1 skipped: 19/19 Python tests pass, 7/7 import boundary contracts kept).
 
 ### M1-02 — Multi-Stage Non-Root Dockerfile & Docker Compose Local Stack
 
