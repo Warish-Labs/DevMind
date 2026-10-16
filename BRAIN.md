@@ -9,7 +9,7 @@
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
 | **Branch**         | `feature/m2-db-migrations` (tracking `origin/feature/m2-db-migrations`)                      |
-| **Last commit**    | `fe2426d` (Hero layout height balancing across left and right columns)                       |
+| **Last commit**    | `a535fcd` (CI fixes: common package build, pnpm audit prod, and playwright timeout)          |
 | **Working tree**   | clean; GitHub ruleset active; initiating Milestone M2 (Tasks M2-01 & M2-02)                  |
 | **Open PR**        | https://github.com/Warish-Labs/DevMind/pull/new/feature/m2-db-migrations                     |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 33/33 pass, boundaries:server pass |
