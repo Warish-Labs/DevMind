@@ -6,27 +6,25 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                        |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| **Branch**         | `feature/m1-deploy-config`                                                                   |
-| **Last commit**    | `49c7aee` (M1-03 merged into main)                                                           |
-| **Working tree**   | active on Milestone M1 (`feature/m1-deploy-config`); M1-04 & M1-05 complete                  |
-| **Open PR**        | PR for M1-04 (`feature/m1-deploy-config`)                                                    |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 21/21 pass, boundaries:server pass |
-| **Date**           | 2026-10-16                                                                                   |
+| Field              | Value                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| **Branch**         | `feature/m1-free-profile`                                                                      |
+| **Last commit**    | `0e59a3b` (M1-04 & M1-05 merged into main)                                                     |
+| **Working tree**   | active on Milestone M1 (`feature/m1-free-profile`); M1-06 & M1-07 complete (Milestone M1 100%) |
+| **Open PR**        | PR for M1-06 & M1-07 (`feature/m1-free-profile`)                                               |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 33/33 pass, boundaries:server pass   |
+| **Date**           | 2026-10-16                                                                                     |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push Slice M1-04/M1-05 (`feature/m1-deploy-config`).
-2. Merge `feature/m1-deploy-config` into `main` and push `main`.
-3. Clean up merged branch `feature/m1-deploy-config` locally and remotely (`git branch -d`, `git push origin --delete`).
-4. Cut branch `feature/m1-free-profile` for M1-06:
-   - Implement `server/app/launcher.py` supporting `DEVMIND_RUN_MODE=api|worker|scheduler|all` (uvicorn + embedded Celery `--pool=solo`, signal handling).
-   - Add advisory lock migration execution at start.
-   - Implement startup sweep for orphaned Celery tasks/Redis keys.
-   - Enforce `DEVMIND_REDIS_KEY_PREFIX` isolation.
+1. Commit and push Slice M1-06/M1-07 (`feature/m1-free-profile`).
+2. Merge `feature/m1-free-profile` into `main` and push `main`.
+3. Clean up merged branch `feature/m1-free-profile` locally and remotely (`git branch -d`, `git push origin --delete`).
+4. Initiate Milestone M2 (`feature/m2-auth-tenancy-db`):
+   - M2-01 Alembic baseline + migrations (users, workspaces, memberships, projects, audit events).
+   - M2-02 Repository layer requiring `AuthContext`.
 
 ---
 
@@ -40,6 +38,35 @@
 ---
 
 ## 4. Done log
+
+### M1-06 & M1-07 — Free Profile Launcher, Advisory Lock, Startup Sweep, & Quota Budget
+
+- **Date**: 2026-10-16
+- **Branch**: `feature/m1-free-profile`
+- **What**: Implemented unified process launcher and free profile operational mechanics per ADR-046 and `docs/10` §22:
+  - **Unified Launcher** (`server/app/launcher.py`):
+    - Supports all execution modes via `DEVMIND_RUN_MODE`:
+      - `api`: runs Uvicorn ASGI server.
+      - `worker`: runs Celery worker daemon.
+      - `scheduler`: runs Celery beat scheduler.
+      - `all`: Render free profile mode — runs Uvicorn HTTP server alongside embedded Celery worker with beat (`--pool=solo`, concurrency 1).
+    - Signal management: Traps `SIGTERM` and `SIGINT` to gracefully terminate embedded background workers, close connections, and exit cleanly with code 0.
+  - **Advisory Lock Migrations** (`server/app/core/lifecycle.py`):
+    - PostgreSQL advisory lock (`0x444D5F4D49475231`) ensures single-instance migration execution at container boot, preventing race conditions during cold starts or scaling.
+    - Handles lock contention and gracefully verifies pre-M2 baseline configuration.
+  - **Startup Sweep** (`server/app/core/lifecycle.py`):
+    - Scans Redis keys under `DEVMIND_REDIS_KEY_PREFIX` (`dm:`) at boot.
+    - Identifies and purges stale lock keys and orphan temporary buffers that survived an idle sleep.
+    - Gracefully degrades with structured warnings if Redis is temporarily offline during cold boot.
+  - **Celery Key Prefix Isolation** (`server/app/workers/celery_app.py`):
+    - Configured `broker_transport_options` and `result_backend_transport_options` with `global_keyprefix` to protect shared Render Key Value instances.
+    - Configured `task_acks_late=True` and `worker_prefetch_multiplier=1` for crash resilience.
+  - **Free Quotas Configuration & Measured Memory Budget** (`server/configs/quotas.free.yaml`):
+    - Storage Budget (Neon Free 512 MB): ~11.5 KB per chunk (3.5 KB text + 850 B tsvector + 3.0 KB raw vector + 3.7 KB HNSW index + 450 B row metadata); capped at 30,000 chunks (~345 MB) and 3,000 files per project.
+    - Memory Budget (Render Free 512 MB): Measured idle footprint ~110 MB (Uvicorn ~50 MB + Celery solo worker ~60 MB), leaving a 128 MB safety buffer below the 512 MB OOM ceiling.
+  - **Automated Tests** (`server/tests/test_launcher.py`, `server/tests/test_deploy_config.py`):
+    - 33 total server tests passing, 7/7 import boundary contracts strictly maintained.
+- **Actual results**: `pnpm test:all --fast` (13 passed, 0 failed, 1 skipped: 33/33 Python tests pass, import boundaries clean).
 
 ### M1-04 & M1-05 — Render Blueprint, Free-Tier Deployment Runbook & Server Verification
 

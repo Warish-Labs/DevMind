@@ -46,6 +46,8 @@ Updated in every branch that adds or changes a dependency (AGENTS.md §11, ANTIG
 | gitleaks/gitleaks-action | f586c14 (v2.3.8) | github.com/gitleaks/gitleaks-action | MIT | 2026-10-15 |
 | @playwright/test | 1.64.1 | npmjs.com/package/@playwright/test | Apache-2.0 | 2026-10-16 |
 | @axe-core/playwright | 4.14.0 | npmjs.com/package/@axe-core/playwright | MPL-2.0 | 2026-10-16 |
+| celery | 5.6.3 | pypi.org/project/celery | BSD-3-Clause | 2026-10-16 |
+| redis | 8.1.0 | pypi.org/project/redis | MIT | 2026-10-16 |
 
 ---
 

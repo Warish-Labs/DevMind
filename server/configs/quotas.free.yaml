@@ -1,0 +1,45 @@
+# DevMind Free Deployment Profile Quotas (ADR-046)
+# Derived from Neon Free storage cap (0.5 GB / 512 MB) and Render Free RAM (512 MB).
+# References: docs/10-deployment-and-operations.md §22, docs/05-agents-and-llm-workflows.md §13
+
+profile: free
+description: Strict resource ceilings for zero-cost operation on Neon Free and Render Free.
+
+storage:
+  # Database storage capacity: Neon Free plan (512 MB = 536,870,912 bytes)
+  database_storage_cap_bytes: 536870912
+  database_safety_margin_bytes: 161061273 # 30% reserved for WAL, system tables, user/audit rows
+  chunk_storage_budget_bytes: 375809639 # 70% available for Brain vector/text storage
+
+  # Measured bytes per indexed chunk (768-dim embeddings, tsvector, and HNSW index)
+  bytes_per_chunk:
+    text_content_bytes: 3500 # ~800 tokens average code chunk
+    tsvector_index_bytes: 850 # Full-text lexeme vector
+    vector_raw_bytes: 3072 # 768 dimensions * 4 bytes (float32)
+    hnsw_index_bytes: 3686 # HNSW index overhead (m=16, ef_construction=64)
+    row_metadata_overhead: 450 # Primary keys, timestamps, snapshot foreign keys
+    total_estimated_per_chunk: 11558 # ~11.3 KB per chunk
+
+  # Derived per-project and per-workspace ingestion limits
+  max_chunks_per_project: 30000 # 30,000 * 11.5 KB = ~345 MB
+  max_files_per_project: 3000 # Assuming ~10 chunks per file average
+  max_file_size_bytes: 1048576 # 1 MB individual file limit (protects worker memory)
+  max_projects_per_workspace: 3
+
+memory:
+  # Container RAM limits: Render Free web service (512 MB = 536,870,912 bytes)
+  container_ram_cap_bytes: 536870912
+  measured_idle_memory_bytes: 115343360 # ~110 MB (Uvicorn ~50MB + Celery solo worker ~60MB)
+  worker_concurrency: 1 # Celery --pool=solo (concurrency 1)
+  worker_max_task_memory_bytes: 268435456 # 256 MB soft threshold per task batch
+  container_oom_safety_buffer_bytes: 134217728 # 128 MB buffer before Render OOM kill
+
+rate_limits:
+  requests_per_minute_per_ip: 60
+  api_requests_per_hour_per_user: 300
+  concurrent_active_jobs_per_workspace: 1
+
+llm_monthly_budget:
+  monthly_token_allowance_per_workspace: 500000
+  max_tokens_per_analysis_request: 8192
+  fake_provider_unlimited: true
