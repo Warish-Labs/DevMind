@@ -50,9 +50,9 @@ export function TraceContainer({
     <div
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      className="pointer-lit-card rounded-panel p-2 sm:p-4 bg-[var(--bg-1)] border border-[var(--line-1)] relative"
+      className="pointer-lit-card rounded-panel p-2 sm:p-3 bg-[var(--bg-1)] border border-[var(--line-1)] relative"
     >
-      <div className="flex flex-col items-stretch gap-4">
+      <div className="flex flex-col items-stretch gap-2.5">
         {/* Upper Part: Code Editor Pane (Trace) */}
         <div className="w-full min-w-0">
           <Trace

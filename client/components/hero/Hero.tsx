@@ -131,45 +131,75 @@ export function Hero() {
       {/* Asymmetric Two-Zone Hero Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         {/* Left Column (Message & CTAs, ~5/12) */}
-        <div className="lg:col-span-5 flex flex-col justify-center">
-          {/* Eyebrow Label */}
-          <div className="inline-flex items-center gap-2 mb-4 font-mono text-xs text-[var(--signal)]">
-            <span className="text-[var(--ref)]">@@</span>
-            <span className="font-semibold tracking-wider">DevMind</span>
-            <span className="text-[var(--ref)]">@@</span>
-          </div>
+        <div className="lg:col-span-5 flex flex-col justify-between self-stretch">
+          <div>
+            {/* Eyebrow Label */}
+            <div className="inline-flex items-center gap-2 mb-3 font-mono text-xs text-[var(--signal)]">
+              <span className="text-[var(--ref)]">@@</span>
+              <span className="font-semibold tracking-wider">DevMind</span>
+              <span className="text-[var(--ref)]">@@</span>
+            </div>
 
-          {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display text-[var(--fg-0)] mb-5 tracking-tight leading-[1.08]">
-            Know what your code actually allows.
-          </h1>
+            {/* Headline */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display text-[var(--fg-0)] mb-4 tracking-tight leading-[1.08]">
+              Know what your code actually allows.
+            </h1>
 
-          {/* Supporting Line */}
-          <p className="text-base sm:text-lg text-[var(--fg-1)] mb-8 leading-relaxed">
-            DevMind keeps one evidence-backed model of your project (code, security, bugs, docs,
-            reviews, deploys) and shows its work down to the line.
-          </p>
+            {/* Supporting Line */}
+            <p className="text-sm sm:text-base text-[var(--fg-1)] mb-6 leading-relaxed">
+              DevMind keeps one evidence-backed model of your project (code, security, bugs, docs,
+              reviews, deploys) and shows its work down to the line.
+            </p>
 
-          {/* CTAs */}
-          <div className="flex flex-wrap items-center gap-4 mb-8">
-            <Link
-              href="/early-access"
-              className="px-6 py-3 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono"
-            >
-              Open DevMind
-            </Link>
+            {/* Key Architecture Guarantees */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-6">
+              <div className="p-2.5 rounded-control bg-[var(--bg-1)] border border-[var(--line-1)]">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--signal)] font-semibold mb-0.5">
+                  Local-First
+                </div>
+                <p className="text-xs text-[var(--fg-1)] leading-snug">
+                  AST &amp; symbol graphs stay on your machine.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-control bg-[var(--bg-1)] border border-[var(--line-1)]">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--warn)] font-semibold mb-0.5">
+                  Evidence Gate
+                </div>
+                <p className="text-xs text-[var(--fg-1)] leading-snug">
+                  Resolvable E0–E3 proof; zero hallucinated risks.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-control bg-[var(--bg-1)] border border-[var(--line-1)]">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--ref)] font-semibold mb-0.5">
+                  Zero Egress
+                </div>
+                <p className="text-xs text-[var(--fg-1)] leading-snug">
+                  No code leaves your box without consent preview.
+                </p>
+              </div>
+            </div>
 
-            <a
-              href="#section-05"
-              className="px-5 py-3 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono"
-            >
-              See how a finding is made ↓
-            </a>
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <Link
+                href="/early-access"
+                className="px-5 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono"
+              >
+                Open DevMind
+              </Link>
 
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-chip text-xs font-mono text-[var(--fg-2)] border border-[var(--line-1)] bg-[var(--bg-1)]/50 select-none">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--warn)]" />
-              <span>Extension in development</span>
-            </span>
+              <a
+                href="#section-05"
+                className="px-4 py-2.5 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono"
+              >
+                See how a finding is made ↓
+              </a>
+
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-chip text-xs font-mono text-[var(--fg-2)] border border-[var(--line-1)] bg-[var(--bg-1)]/50 select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--warn)]" />
+                <span>Extension in development</span>
+              </span>
+            </div>
           </div>
 
           {/* Status Strip & Replay Control */}

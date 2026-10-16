@@ -27,7 +27,7 @@ export function Trace({
       </div>
 
       {/* Editor Header Bar */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-[var(--line-1)] bg-[var(--bg-1)]/60 text-[11px] text-[var(--fg-2)] select-none">
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-[var(--line-1)] bg-[var(--bg-1)]/60 text-[11px] text-[var(--fg-2)] select-none">
         <span className="w-2 h-2 rounded-full bg-[var(--line-3)]" />
         <span className="w-2 h-2 rounded-full bg-[var(--line-3)]" />
         <span className="w-2 h-2 rounded-full bg-[var(--line-3)]" />
@@ -39,19 +39,19 @@ export function Trace({
         tabIndex={0}
         role="region"
         aria-label="Code editor lines"
-        className="relative p-4 sm:p-5 overflow-x-auto focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"
+        className="relative p-3 sm:p-3.5 overflow-x-auto focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"
       >
         {/* Animated Scan Line travelling down gutter */}
         {scanningActive && (
           <div
-            className="absolute left-12 w-1 h-6 rounded-full bg-[var(--signal)] shadow-sm pointer-events-none transition-transform duration-75 select-none"
+            className="absolute left-10 w-1 h-5 rounded-full bg-[var(--signal)] shadow-sm pointer-events-none transition-transform duration-75 select-none"
             style={{
-              top: `${16 + scanProgress * 180}px`,
+              top: `${12 + scanProgress * 150}px`,
             }}
           />
         )}
 
-        <div className="space-y-1.5 min-w-[480px]">
+        <div className="space-y-1 min-w-[440px]">
           {HERO_CODE_LINES.map((line: HeroCodeLine, index) => {
             const isVisible = index < visibleLineCount;
             const isLine7 = line.lineNumber === 7;
@@ -61,10 +61,10 @@ export function Trace({
                 key={line.lineNumber}
                 className={`flex items-start transition-opacity duration-300 ${
                   isVisible ? "opacity-100" : "opacity-0"
-                } ${isLine7 && diagnosticActive ? "bg-[var(--warn)]/5 -mx-4 px-4 py-1 rounded-xs" : ""}`}
+                } ${isLine7 && diagnosticActive ? "bg-[var(--warn)]/5 -mx-2 px-2 py-0.5 rounded-xs" : ""}`}
               >
                 {/* Gutter Line Number & Glyph with gap */}
-                <div className="w-14 shrink-0 text-right pr-4 mr-4 border-r border-[var(--line-1)] text-[var(--fg-2)] select-none flex items-center justify-end gap-1.5 font-mono text-xs">
+                <div className="w-11 shrink-0 text-right pr-2.5 mr-2.5 border-r border-[var(--line-1)] text-[var(--fg-2)] select-none flex items-center justify-end gap-1 font-mono text-xs">
                   {isLine7 && diagnosticActive && (
                     <span className="animate-in fade-in duration-300">
                       <GutterDiagnosticGlyph />

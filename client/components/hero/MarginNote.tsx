@@ -33,20 +33,20 @@ export function MarginNote({
   return (
     <div
       style={parallaxStyle}
-      className={`transition-all duration-500 ease-out flex flex-col gap-3 ${
+      className={`transition-all duration-500 ease-out flex flex-col gap-2 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
       }`}
     >
       {/* Margin Note Card */}
-      <div className="p-4 sm:p-5 rounded-panel bg-[var(--bg-1)] border border-[var(--line-2)] shadow-xl w-full max-w-full font-mono text-xs">
-        <div className="flex items-center justify-between pb-2 mb-3 border-b border-[var(--line-1)] text-[var(--signal)]">
+      <div className="p-3 sm:p-3.5 rounded-panel bg-[var(--bg-1)] border border-[var(--line-2)] shadow-xl w-full max-w-full font-mono text-xs">
+        <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[var(--line-1)] text-[var(--signal)]">
           <span className="font-semibold tracking-wide">{HERO_MARGIN_NOTE.header}</span>
           <span className="text-[10px] text-[var(--fg-2)] uppercase tracking-wider">
             Finding Trace
           </span>
         </div>
 
-        <div className="space-y-2.5">
+        <div className="space-y-1.5">
           {/* Authentication Row */}
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-[var(--fg-2)] w-28 shrink-0">{HERO_MARGIN_NOTE.authnLabel}</span>
@@ -114,7 +114,7 @@ export function MarginNote({
 
       {/* Ripple Tags (Shared Brain Consequence tags) */}
       <div
-        className={`flex flex-col gap-2 transition-all duration-500 delay-100 ${
+        className={`flex flex-col gap-1.5 transition-all duration-500 delay-100 ${
           rippleVisible
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-2 pointer-events-none"
@@ -124,7 +124,7 @@ export function MarginNote({
           Shared Brain Ripples
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {HERO_RIPPLE_TAGS.map((tag) => {
             const isSelected = activeTag?.id === tag.id;
             return (
@@ -137,7 +137,7 @@ export function MarginNote({
                   onFocus={() => setActiveTag(tag)}
                   onBlur={() => setActiveTag(null)}
                   aria-expanded={isSelected}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-chip text-xs font-mono transition-all border ${
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-chip text-[11px] font-mono transition-all border ${
                     isSelected
                       ? "bg-[var(--ref)]/15 border-[var(--ref)] text-[var(--fg-0)]"
                       : "bg-[var(--bg-1)] border-[var(--line-2)] text-[var(--fg-1)] hover:border-[var(--line-3)] hover:text-[var(--fg-0)]"
