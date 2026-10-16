@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { Finding, FindingsSource, ProjectModule } from "../types";
+import { DatabaseModel, Finding, FindingsSource, ProjectModule } from "../types";
 import { DevMindLogger } from "../services/logger";
 
 const FALLBACK_EXPRESS_FINDINGS: Finding[] = [
@@ -40,6 +40,29 @@ const FALLBACK_EXPRESS_MODULES: ProjectModule[] = [
         auth: true,
         roleGuard: true,
       },
+    ],
+  },
+];
+
+const FALLBACK_EXPRESS_DATABASE_MODELS: DatabaseModel[] = [
+  {
+    name: "User",
+    sourceFile: "src/models/user.ts",
+    fields: [
+      { name: "id", type: "string (UUID)", isPrimary: true },
+      { name: "email", type: "string", isUnique: true },
+      { name: "role", type: "RoleEnum" },
+      { name: "created_at", type: "Date" },
+    ],
+  },
+  {
+    name: "AuditLog",
+    sourceFile: "src/models/audit.ts",
+    fields: [
+      { name: "id", type: "string (UUID)", isPrimary: true },
+      { name: "workspace_id", type: "string (UUID)", isForeignKey: true },
+      { name: "action", type: "string" },
+      { name: "timestamp", type: "Date" },
     ],
   },
 ];
@@ -86,6 +109,29 @@ const FALLBACK_FASTAPI_MODULES: ProjectModule[] = [
   },
 ];
 
+const FALLBACK_FASTAPI_DATABASE_MODELS: DatabaseModel[] = [
+  {
+    name: "User",
+    sourceFile: "app/models/user.py",
+    fields: [
+      { name: "id", type: "UUID", isPrimary: true },
+      { name: "email", type: "str", isUnique: true },
+      { name: "role", type: "RoleEnum" },
+      { name: "created_at", type: "datetime" },
+    ],
+  },
+  {
+    name: "AuditLog",
+    sourceFile: "app/models/audit.py",
+    fields: [
+      { name: "id", type: "UUID", isPrimary: true },
+      { name: "workspace_id", type: "UUID", isForeignKey: true },
+      { name: "action", type: "str" },
+      { name: "timestamp", type: "datetime" },
+    ],
+  },
+];
+
 export class FixtureFindingsSource implements FindingsSource {
   private logger = DevMindLogger.get();
 
@@ -128,9 +174,30 @@ export class FixtureFindingsSource implements FindingsSource {
     return FALLBACK_EXPRESS_MODULES;
   }
 
-  private tryLoadExpectedJson(
-    workspaceRoot: string
-  ): { fixtureName?: string; findings?: Finding[]; expectedModules?: ProjectModule[] } | null {
+  public async getDatabaseModels(workspaceRoot?: string): Promise<DatabaseModel[]> {
+    if (workspaceRoot) {
+      const loaded = this.tryLoadExpectedJson(workspaceRoot);
+      if (loaded?.databaseModels) {
+        this.logger.info("Loaded database models from workspace expected.json fixture", {
+          count: loaded.databaseModels.length,
+        });
+        return loaded.databaseModels;
+      }
+
+      if (fs.existsSync(path.join(workspaceRoot, "pyproject.toml"))) {
+        return FALLBACK_FASTAPI_DATABASE_MODELS;
+      }
+    }
+
+    return FALLBACK_EXPRESS_DATABASE_MODELS;
+  }
+
+  private tryLoadExpectedJson(workspaceRoot: string): {
+    fixtureName?: string;
+    findings?: Finding[];
+    expectedModules?: ProjectModule[];
+    databaseModels?: DatabaseModel[];
+  } | null {
     try {
       const directExpected = path.join(workspaceRoot, "expected.json");
       if (fs.existsSync(directExpected)) {

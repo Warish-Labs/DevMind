@@ -26,6 +26,11 @@
         "category": "DevMind"
       },
       {
+        "command": "devmind.cancelScan",
+        "title": "DevMind: Cancel Active Scan",
+        "category": "DevMind"
+      },
+      {
         "command": "devmind.openFindings",
         "title": "DevMind: Open Findings View",
         "category": "DevMind"
@@ -38,6 +43,16 @@
       {
         "command": "devmind.syncNow",
         "title": "DevMind: Sync with Project Brain",
+        "category": "DevMind"
+      },
+      {
+        "command": "devmind.showWhatLeaves",
+        "title": "DevMind: Review What Leaves Machine",
+        "category": "DevMind"
+      },
+      {
+        "command": "devmind.refreshAll",
+        "title": "DevMind: Refresh All Views",
         "category": "DevMind"
       }
     ],
@@ -74,6 +89,28 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "devmind.views.findings",
+        "contents": "No architectural or authorization findings detected in workspace.\n[Scan Workspace](command:devmind.scanWorkspace)\n[Open Logs](command:devmind.showLogs)"
+      },
+      {
+        "view": "devmind.views.structure",
+        "contents": "No project modules or endpoints detected.\nRun a scan to extract routes and guard chains.\n[Scan Workspace](command:devmind.scanWorkspace)"
+      },
+      {
+        "view": "devmind.views.scan",
+        "contents": "Open a workspace folder to run local architectural analysis.\n[Open Folder](command:vscode.openFolder)"
+      },
+      {
+        "view": "devmind.views.sync",
+        "contents": "DevMind operates in privacy-first mode (ADR-022).\nSource code stays local unless explicit consent is provided.\n[Review Privacy Ledger](command:devmind.showWhatLeaves)"
+      },
+      {
+        "view": "devmind.views.database",
+        "contents": "Discovered statically from files (Prisma, SQLAlchemy, migrations).\nZero live database connections (ADR-034).\n[Scan Workspace](command:devmind.scanWorkspace)"
+      }
+    ],
     "configuration": {
       "title": "DevMind",
       "properties": {

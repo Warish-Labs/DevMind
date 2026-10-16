@@ -141,12 +141,12 @@ PR title: `feat(extension): scaffold extension, fixtures and activation`
 
 PR title: `feat(extension): add Findings, Structure, Scan, Sync, Database views`
 
-- [ ] S2-04 Findings tree (grouped by severity, tooltip, context actions)
-- [ ] S2-05 Project structure tree (modules, routes, handlers, guard chips, missing-role marker)
-- [ ] S2-06 Scan view (simulated progress, Cancel button, devmind.scanWorkspace command)
-- [ ] S2-07 Sync view (mode, last sync, what-was-sent log, review action)
-- [ ] S2-08 Database (from files) view placeholder (labeled example)
-- [ ] S2-09 Welcome content (viewsWelcome for no-workspace, not-signed-in, fixture-mode)
+- [x] S2-04 Findings tree (grouped by severity, tooltip, context actions)
+- [x] S2-05 Project structure tree (modules, routes, handlers, guard chips, missing-role marker)
+- [x] S2-06 Scan view (simulated progress, Cancel button, devmind.scanWorkspace command)
+- [x] S2-07 Sync view (mode, last sync, what-was-sent log, review action)
+- [x] S2-08 Database (from files) view placeholder (labeled example)
+- [x] S2-09 Welcome content (viewsWelcome for no-workspace, not-signed-in, fixture-mode)
 
 ### B11 `feature/s2-diagnostics-consent`
 

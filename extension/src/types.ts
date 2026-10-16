@@ -32,6 +32,20 @@ export interface ProjectModule {
   routes: RouteDetail[];
 }
 
+export interface DatabaseField {
+  name: string;
+  type: string;
+  isPrimary?: boolean;
+  isUnique?: boolean;
+  isForeignKey?: boolean;
+}
+
+export interface DatabaseModel {
+  name: string;
+  sourceFile: string;
+  fields: DatabaseField[];
+}
+
 export interface ExtensionSettings {
   apiBaseUrl: string;
   fixtureMode: boolean;
@@ -41,4 +55,5 @@ export interface ExtensionSettings {
 export interface FindingsSource {
   getFindings(workspaceRoot?: string): Promise<Finding[]>;
   getStructure(workspaceRoot?: string): Promise<ProjectModule[]>;
+  getDatabaseModels(workspaceRoot?: string): Promise<DatabaseModel[]>;
 }

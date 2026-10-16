@@ -6,28 +6,26 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                |
-| ------------------ | -------------------------------------------------------------------- |
-| **Branch**         | `feature/s2-views`                                                   |
-| **Last commit**    | `7af93ed` (Slice B9 complete & merged)                               |
-| **Working tree**   | active on Slice B10 (`feature/s2-views`); clean                      |
-| **Open PR**        | PR for Slice B10 (`feature/s2-views`)                                |
-| **Last CI result** | `test-all --fast`: 9 passed, 0 failed, 2 skipped; extension 5/5 pass |
-| **Date**           | 2026-10-16                                                           |
+| Field              | Value                                                                  |
+| ------------------ | ---------------------------------------------------------------------- |
+| **Branch**         | `feature/s2-views` (ready to merge to main)                            |
+| **Last commit**    | `8d4ede8` (Slice B10 implementation complete)                          |
+| **Working tree**   | active on Slice B10 (`feature/s2-views`)                               |
+| **Open PR**        | PR for Slice B10 (`feature/s2-views`)                                  |
+| **Last CI result** | `test-all --fast`: 9 passed, 0 failed, 2 skipped; extension 12/12 pass |
+| **Date**           | 2026-10-16                                                             |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement Slice B10 (`feature/s2-views`):
-   - S2-04 Findings tree view (grouped by severity, tooltip, context actions)
-   - S2-05 Project structure tree view (modules, routes, handlers, guard status)
-   - S2-06 Scan status view (progress, cancel, scan trigger)
-   - S2-07 Sync view (mode, last sync, what-was-sent audit log)
-   - S2-08 Database (from files) view placeholder
-   - S2-09 Welcome content for empty / fixture modes
-2. Verify with unit tests (`pnpm --filter devmind-vscode test`) and build.
-3. Commit and push to `origin/feature/s2-views`.
+1. Merge Slice B10 (`feature/s2-views`) into `main`, push to `origin/main`, retain remote feature branch.
+2. Cut branch `feature/s2-diagnostics-consent` for Slice B11:
+   - S2-10 DiagnosticCollection (source "DevMind", E1 prefixed "Possible:", code = rule id, severity mapping from docs/06)
+   - S2-11 Status bar (`$(shield)` DevMind · fixture · idle / scanning N/M / offline; text not color alone; click opens Scan view)
+   - S2-12 Consent preview webview (CSP + nonce, tokens, table of example files, Send/Cancel; Send in fixture mode shows message, no network; default focus Cancel)
+3. Verify with unit tests (`pnpm --filter devmind-vscode test`) and build.
+4. Commit and push to `origin/feature/s2-diagnostics-consent`.
 
 ---
 
@@ -41,6 +39,22 @@
 ---
 
 ## 4. Done log
+
+### B10 — VS Code Extension Views (Findings, Structure, Scan, Sync, Database)
+
+- **Date**: 2026-10-16
+- **Branch**: `feature/s2-views`
+- **What**: Implemented all 5 primary VS Code extension views per docs/06:
+  - **S2-04 Findings tree view** (`extension/src/views/findingsView.ts`): grouped by severity (`critical`, `high`, `medium`, `low`, `info`), codicons, evidence labels (`E1 · Possible`), tooltip with rule description/remediation, click-to-open file at exact line (`devmind.openFindingLocation`).
+  - **S2-05 Project structure view** (`extension/src/views/structureView.ts`): modules, endpoints/routes (`GET /admin/users`), authentication & role-guard markers (`$(shield)` protected vs `$(alert)` missing role guard).
+  - **S2-06 Scan status view** (`extension/src/views/scanView.ts`): live/simulated scanner progress, rules pack (`v1.0.0`), analyzed file count, skipped files audit (`.env` path-only, `package-lock.json`), workspace scan triggers (`devmind.scanWorkspace`, `devmind.cancelScan`).
+  - **S2-07 Sync & privacy view** (`extension/src/views/syncView.ts`): active mode (`metadata_only`), cryptographic receipt, audit ledger of what leaves machine (zero raw code chunks transmitted), ledger review action (`devmind.showWhatLeaves`).
+  - **S2-08 Database (from files) view** (`extension/src/views/databaseView.ts`): statically discovered schemas from files (Prisma, SQLAlchemy, migrations), primary key & foreign key tags, explicit ADR-034 enforcement note (zero live DB connections).
+  - **S2-09 Welcome content**: `viewsWelcome` registered in `package.json` for empty workspaces and unindexed states.
+- **Commands & tests added**:
+  - Registered `devmind.cancelScan`, `devmind.showWhatLeaves`, `devmind.openFindingLocation`, `devmind.refreshAll`.
+  - Comprehensive unit test suite in `extension/tests/views.test.ts` (7 new tests, 12/12 passing).
+- **Actual results**: `pnpm test:all --fast` (9 passed, 0 failed, 2 skipped), TypeScript clean, esbuild bundle generated.
 
 ### P0-01 — Verify repo preconditions; create PLAN.md and BRAIN.md
 

@@ -40,5 +40,27 @@
         }
       ]
     }
+  ],
+  "databaseModels": [
+    {
+      "name": "User",
+      "sourceFile": "src/models/user.ts",
+      "fields": [
+        { "name": "id", "type": "string (UUID)", "isPrimary": true },
+        { "name": "email", "type": "string", "isUnique": true },
+        { "name": "role", "type": "RoleEnum" },
+        { "name": "created_at", "type": "Date" }
+      ]
+    },
+    {
+      "name": "AuditLog",
+      "sourceFile": "src/models/audit.ts",
+      "fields": [
+        { "name": "id", "type": "string (UUID)", "isPrimary": true },
+        { "name": "workspace_id", "type": "string (UUID)", "isForeignKey": true },
+        { "name": "action", "type": "string" },
+        { "name": "timestamp", "type": "Date" }
+      ]
+    }
   ]
 }

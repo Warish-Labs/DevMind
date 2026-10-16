@@ -40,5 +40,27 @@
         }
       ]
     }
+  ],
+  "databaseModels": [
+    {
+      "name": "User",
+      "sourceFile": "app/models/user.py",
+      "fields": [
+        { "name": "id", "type": "UUID", "isPrimary": true },
+        { "name": "email", "type": "str", "isUnique": true },
+        { "name": "role", "type": "RoleEnum" },
+        { "name": "created_at", "type": "datetime" }
+      ]
+    },
+    {
+      "name": "AuditLog",
+      "sourceFile": "app/models/audit.py",
+      "fields": [
+        { "name": "id", "type": "UUID", "isPrimary": true },
+        { "name": "workspace_id", "type": "UUID", "isForeignKey": true },
+        { "name": "action", "type": "str" },
+        { "name": "timestamp", "type": "datetime" }
+      ]
+    }
   ]
 }
