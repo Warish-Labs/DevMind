@@ -210,7 +210,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 ### M3 · VS Code extension real local scanning
 
 - [x] M3-01 File discovery, ignore engine (.gitignore, .devmindignore, hard exclusions, credential file path guard), and SHA-256 hasher (feature/m3-discovery-hasher)
-- [ ] M3-02 Local manifest store outside repository tracking file hashes, language tiers, parse statuses, and findings (feature/m3-manifest-store)
+- [x] M3-02 Local manifest store outside repository tracking file hashes, language tiers, parse statuses, and findings (feature/m3-manifest-store)
 - [ ] M3-03 Semantic parser and extractor for TypeScript/JavaScript (Next.js/Express, Prisma) and Python (FastAPI, SQLAlchemy) (feature/m3-parser-extractor)
 - [ ] M3-04 Local rule engine and E0/E1 security finding evaluator with redaction (unprotected routes, missing guards, hardcoded secrets) (feature/m3-rules-engine)
 - [ ] M3-05 LocalScanFindingsSource implementation replacing FixtureFindingsSource, wired to TreeViews, Status Bar, and DiagnosticsCollection (feature/m3-local-scanner)

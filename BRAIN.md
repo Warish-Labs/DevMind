@@ -19,10 +19,10 @@
 
 ## 2. Next action (exact)
 
-1. Implement **Task M3-02: Local manifest store outside repository**:
-   - Create local manifest store service persisted in VS Code's `context.storageUri` / isolated directory.
-   - Implement manifest schema tracking relative paths, raw byte SHA-256 hashes, language tiers (1, 2, 3), parse status, and local finding IDs.
-   - Implement incremental dirty-checking algorithm comparing `(size, mtimeMs)` and content hashes.
+1. Implement **Task M3-03: Semantic parser and extractor**:
+   - Build AST / pattern extractors for TypeScript/JavaScript (Next.js App Router & Express routes, Prisma schema models).
+   - Build AST / pattern extractors for Python (FastAPI endpoints, SQLAlchemy models).
+   - Extract symbols, route methods, paths, and preliminary auth guards.
 
 ---
 
@@ -36,6 +36,20 @@
 ---
 
 ## 4. Done log
+
+### M3-02 — Local Manifest Store Outside Repository
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented local manifest store tracking file hashes, language tiers, parse statuses, and finding IDs outside the repository according to `docs/06` §5:
+  - **LocalManifestStore** (`extension/src/scanner/manifest.ts`):
+    - Persists manifest in an isolated directory (`context.storageUri`) outside the workspace repository, preventing accidental git commits.
+    - Tracks per-file metadata: `relativePath`, `size`, `mtimeMs`, `contentHash`, `languageTier`, `languageId`, `parseStatus`, `symbolCount`, `relationshipCount`, `rulesVersion`, `findingIds`, `lastSyncedHash`.
+    - Implemented fast incremental dirty-checking algorithm: unchanged `(size, mtimeMs)` skips content rehashing; modified files trigger content hash comparison; false-alarm timestamp touches are absorbed without rescan.
+    - Implemented `pruneRemovedFiles` to drop deleted paths and their derived findings.
+    - Implemented `getPendingSyncFiles` and `markSynced` with receipt hash stamping.
+  - **Comprehensive Unit Tests** (`extension/tests/manifest.test.ts`):
+    - 3 tests covering disk persistence, fast-path dirty checking, content hash modification detection, removed file pruning, and sync receipt tracking. All 32 extension unit tests passing.
 
 ### Client Vercel Monorepo Build Fix
 
