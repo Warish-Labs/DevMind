@@ -8,10 +8,10 @@
 
 | Field              | Value                                                                   |
 | ------------------ | ----------------------------------------------------------------------- |
-| **Branch**         | `feature/s2-quality` (ready to merge to main)                           |
-| **Last commit**    | `888f351` (Slice B12 implementation complete)                           |
-| **Working tree**   | active on Slice B12 (`feature/s2-quality`)                              |
-| **Open PR**        | PR for Slice B12 (`feature/s2-quality`)                                 |
+| **Branch**         | `docs/r1-readme-showcase`                                               |
+| **Last commit**    | `7bc34c6` (Phase S2 complete & merged into main)                        |
+| **Working tree**   | active on Phase R1 (`docs/r1-readme-showcase`); clean                   |
+| **Open PR**        | PR for Slice B13 (`docs/r1-readme-showcase`)                            |
 | **Last CI result** | `test-all --fast`: 10 passed, 0 failed, 2 skipped; extension 20/20 pass |
 | **Date**           | 2026-10-16                                                              |
 
@@ -19,13 +19,14 @@
 
 ## 2. Next action (exact)
 
-1. Merge Slice B12 (`feature/s2-quality`) into `main`, push to `origin/main`, retain remote feature branch.
-2. Complete Phase S2 Gate (Phase S2 UI Shell complete!).
-3. Initiate Phase R1 (Slice B13 `docs/r1-readme-showcase`):
-   - R1-01 Root README per ANTIGRAVITY_PROMPT.md §12 (logo, badges, screenshots, Mermaid diagrams, honest status table)
-   - R1-02 Reconcile docs/SETUP-GUIDE.md commands and env table with verified reality (date-stamped)
-   - R1-03 Upgrade docs/showcase/README.personal.md with real screenshots and honest status
-   - R1-04 Add docs/showcase/PROFILE-BLURB.md (under 300 chars + longer paragraph)
+1. Implement Phase R1 · Slice B13 (`docs/r1-readme-showcase`):
+   - R1-01 Root README.md per ANTIGRAVITY_PROMPT.md §12 (professional design, logo, badges, live screenshot gallery, architectural Mermaid diagrams, honest PLAN status table)
+   - R1-02 Reconcile docs/SETUP-GUIDE.md commands, dependencies, and environment variable tables with verified reality (date-stamped)
+   - R1-03 Upgrade docs/showcase/README.personal.md with real screenshots, honest status, and clean formatting
+   - R1-04 Add docs/showcase/PROFILE-BLURB.md (under 300 chars summary + narrative paragraph)
+2. Verify all markdown relative links and anchors with `scripts/docs-links.mjs`.
+3. Verify test suite with `pnpm verify`.
+4. Commit and push to `origin/docs/r1-readme-showcase`.
 
 ---
 
