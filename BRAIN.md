@@ -8,10 +8,10 @@
 
 | Field              | Value                                                                |
 | ------------------ | -------------------------------------------------------------------- |
-| **Branch**         | `feature/s2-extension-scaffold`                                      |
-| **Last commit**    | `351880d` (Slice B8 merged to main)                                  |
-| **Working tree**   | Slice B9 complete (S2-01, S2-02, S2-03); build & unit tests green    |
-| **Open PR**        | PR for Slice B9 (`feature/s2-extension-scaffold`)                    |
+| **Branch**         | `feature/s2-views`                                                   |
+| **Last commit**    | `7af93ed` (Slice B9 complete & merged)                               |
+| **Working tree**   | active on Slice B10 (`feature/s2-views`); clean                      |
+| **Open PR**        | PR for Slice B10 (`feature/s2-views`)                                |
 | **Last CI result** | `test-all --fast`: 9 passed, 0 failed, 2 skipped; extension 5/5 pass |
 | **Date**           | 2026-10-16                                                           |
 
@@ -19,9 +19,15 @@
 
 ## 2. Next action (exact)
 
-1. Commit and push Slice B9 (`feature/s2-extension-scaffold`) to GitHub.
-2. Merge `feature/s2-extension-scaffold` into `main` and delete the branch locally and remotely.
-3. Start Slice B10 (`feature/s2-views`): implement TreeDataProviders for Findings, Project Structure, Scan, Sync, and Database views.
+1. Implement Slice B10 (`feature/s2-views`):
+   - S2-04 Findings tree view (grouped by severity, tooltip, context actions)
+   - S2-05 Project structure tree view (modules, routes, handlers, guard status)
+   - S2-06 Scan status view (progress, cancel, scan trigger)
+   - S2-07 Sync view (mode, last sync, what-was-sent audit log)
+   - S2-08 Database (from files) view placeholder
+   - S2-09 Welcome content for empty / fixture modes
+2. Verify with unit tests (`pnpm --filter devmind-vscode test`) and build.
+3. Commit and push to `origin/feature/s2-views`.
 
 ---
 
