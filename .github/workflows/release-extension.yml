@@ -1,9 +1,10 @@
 name: Release VS Code Extension
 
 on:
-  push:
-    tags:
-      - "ext-v*.*.*"
+  workflow_dispatch:
+  # push:
+  #   tags:
+  #     - "ext-v*.*.*"
 
 permissions:
   contents: write
