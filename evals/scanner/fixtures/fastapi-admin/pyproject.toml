@@ -1,0 +1,7 @@
+[project]
+name = "fastapi-admin-fixture"
+version = "1.0.0"
+description = "Synthetic fixture for DevMind local scanner evaluation (FastAPI admin route)"
+dependencies = [
+    "fastapi>=0.111.0",
+]

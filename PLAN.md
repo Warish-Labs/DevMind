@@ -133,9 +133,9 @@ Gate: pnpm --filter client build + pnpm test:all --fast + e2e green; owner scree
 
 PR title: `feat(extension): scaffold extension, fixtures and activation`
 
-- [ ] S2-01 evals/scanner/fixtures/express-admin/ and fastapi-admin/ with expected.json
-- [ ] S2-02 Extension scaffold (esbuild, @vscode/vsce, launch/tasks config, media sync)
-- [ ] S2-03 FindingsSource + FixtureFindingsSource; Output channel; settings (apiBaseUrl machine-scope, fixtureMode, syncMode)
+- [x] S2-01 evals/scanner/fixtures/express-admin/ and fastapi-admin/ with expected.json
+- [x] S2-02 Extension scaffold (esbuild, @vscode/vsce, launch/tasks config, media sync)
+- [x] S2-03 FindingsSource + FixtureFindingsSource; Output channel; settings (apiBaseUrl machine-scope, fixtureMode, syncMode)
 
 ### B10 `feature/s2-views`
 

@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build:extension",
+      "type": "shell",
+      "command": "pnpm --filter devmind-vscode build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$esbuild"]
+    },
+    {
+      "label": "watch:extension",
+      "type": "shell",
+      "command": "pnpm --filter devmind-vscode watch",
+      "isBackground": true,
+      "problemMatcher": ["$esbuild-watch"]
+    }
+  ]
+}

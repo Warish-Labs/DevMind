@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "fixtureName": "fastapi-admin",
+  "language": "python",
+  "framework": "fastapi",
+  "findings": [
+    {
+      "id": "py-find-01",
+      "ruleId": "devmind.authz.missing_role_check",
+      "name": "Missing Role Authorization Check",
+      "severity": "high",
+      "category": "authorization",
+      "evidenceLevel": "E1",
+      "evidenceLabel": "E1 · Possible",
+      "file": "app/routes/admin.py",
+      "lineStart": 7,
+      "lineEnd": 9,
+      "message": "Sensitive administrative operation has authentication verified but lacks role or permission authorization validation.",
+      "codeSnippet": "@router.get(\"/users\")\nasync def list_admin_users(user: CurrentUser = Depends(get_current_user)):",
+      "remediation": "Replace Depends(get_current_user) with Depends(require_admin)."
+    }
+  ],
+  "expectedModules": [
+    {
+      "name": "admin",
+      "file": "app/routes/admin.py",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/admin/users",
+          "auth": true,
+          "roleGuard": false,
+          "findingId": "py-find-01"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/users/{user_id}",
+          "auth": true,
+          "roleGuard": true
+        }
+      ]
+    }
+  ]
+}

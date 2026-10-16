@@ -193,11 +193,24 @@ function main() {
       "build:extension",
       "extension",
       "pnpm",
-      ["--filter", "extension", "build"],
+      ["--filter", "devmind-vscode", "build"],
       hasExtension,
       "extension not created yet (Phase S2)"
     )
   );
+  if (BAIL && results[results.length - 1].status === "FAIL") finish(results);
+
+  results.push(
+    runStep(
+      "test:extension",
+      "extension",
+      "pnpm",
+      ["--filter", "devmind-vscode", "test"],
+      hasExtension,
+      "extension not created yet (Phase S2)"
+    )
+  );
+  if (BAIL && results[results.length - 1].status === "FAIL") finish(results);
 
   // Step 8: Server steps (Milestone M1)
   const hasServer = fs.existsSync(path.join(REPO_ROOT, "server/pyproject.toml"));

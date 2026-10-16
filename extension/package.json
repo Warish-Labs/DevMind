@@ -1,0 +1,121 @@
+{
+  "name": "devmind-vscode",
+  "displayName": "DevMind Companion",
+  "description": "Continuous Project Brain Companion for VS Code: local scanner, architectural map, and privacy-first sync.",
+  "version": "0.1.0",
+  "publisher": "warishlabs",
+  "license": "Apache-2.0",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Education"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "devmind.scanWorkspace",
+        "title": "DevMind: Scan Workspace",
+        "category": "DevMind"
+      },
+      {
+        "command": "devmind.openFindings",
+        "title": "DevMind: Open Findings View",
+        "category": "DevMind"
+      },
+      {
+        "command": "devmind.showLogs",
+        "title": "DevMind: Show Output Channel",
+        "category": "DevMind"
+      },
+      {
+        "command": "devmind.syncNow",
+        "title": "DevMind: Sync with Project Brain",
+        "category": "DevMind"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "devmind-activitybar",
+          "title": "DevMind",
+          "icon": "media/activitybar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "devmind-activitybar": [
+        {
+          "id": "devmind.views.findings",
+          "name": "Findings"
+        },
+        {
+          "id": "devmind.views.structure",
+          "name": "Project Structure"
+        },
+        {
+          "id": "devmind.views.scan",
+          "name": "Scan Status"
+        },
+        {
+          "id": "devmind.views.sync",
+          "name": "Sync & Privacy"
+        },
+        {
+          "id": "devmind.views.database",
+          "name": "Database (from files)"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "DevMind",
+      "properties": {
+        "devmind.apiBaseUrl": {
+          "type": "string",
+          "default": "http://localhost:8000/api/v1",
+          "scope": "machine",
+          "description": "Base URL of the DevMind server API."
+        },
+        "devmind.fixtureMode": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Use local fixtures for findings and project structure without requiring server connection."
+        },
+        "devmind.syncMode": {
+          "type": "string",
+          "enum": [
+            "metadata_only",
+            "indexed",
+            "disabled"
+          ],
+          "default": "metadata_only",
+          "scope": "resource",
+          "description": "Synchronization mode governing what information can be transmitted with consent."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm build",
+    "build": "node esbuild.mjs --production",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
+  }
+}

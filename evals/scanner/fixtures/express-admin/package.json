@@ -1,0 +1,9 @@
+{
+  "name": "express-admin-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Synthetic fixture for DevMind local scanner evaluation (Express.js admin route)",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
