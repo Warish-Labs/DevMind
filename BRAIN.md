@@ -9,9 +9,9 @@
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                       |
-| **Last commit**    | `c1c84d5` (M1-06 & M1-07 merged into main, Milestone M1 100% complete)                       |
-| **Working tree**   | clean; ready to kick off Milestone M2 (`feature/m2-db-migrations`)                           |
-| **Open PR**        | None (M1 merged and branches deleted)                                                        |
+| **Last commit**    | `b2dc361` (Hero trace realignment, content pages, continuous animations, cursor & CI fixes)  |
+| **Working tree**   | clean; all local .env* files configured with Warish@786 and dummy online keys                |
+| **Open PR**        | None (all merged and working directly on `main`)                                             |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 33/33 pass, boundaries:server pass |
 | **Date**           | 2026-10-16                                                                                   |
 
