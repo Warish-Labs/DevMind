@@ -23,6 +23,8 @@ export interface RouteDetail {
   path: string;
   auth: boolean;
   roleGuard: boolean;
+  lineStart?: number;
+  lineEnd?: number;
   findingId?: string;
 }
 

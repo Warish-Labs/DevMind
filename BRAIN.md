@@ -19,10 +19,13 @@
 
 ## 2. Next action (exact)
 
-1. Implement **Task M3-03: Semantic parser and extractor**:
-   - Build AST / pattern extractors for TypeScript/JavaScript (Next.js App Router & Express routes, Prisma schema models).
-   - Build AST / pattern extractors for Python (FastAPI endpoints, SQLAlchemy models).
-   - Extract symbols, route methods, paths, and preliminary auth guards.
+1. Implement **Task M3-04: Local rule engine and E0/E1 security finding evaluator**:
+   - Build rule evaluator executing on extracted facts:
+     - `devmind.authz.missing_role_check` (E1): administrative routes verifying auth but missing role checks.
+     - `devmind.authn.unprotected_route` (E1): sensitive API routes missing authentication entirely.
+     - `devmind.secrets.hardcoded_credential` (E0/E1): hardcoded API keys, tokens, and private keys with deterministic hash redaction `[REDACTED:token:hash8]`.
+     - `devmind.secrets.exposed_env_file` (E1): unignored `.env` or credential files in workspace.
+   - Attach accurate line ranges, code snippets, and remediation instructions.
 
 ---
 
@@ -36,6 +39,23 @@
 ---
 
 ## 4. Done log
+
+### M3-03 — Semantic Parsers and Extractors for TS/JS and Python
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented semantic parsers and extractors for Tier 1 languages (TS, JS, PY) and Prisma matching `docs/06` §8:
+  - **TypeScript/JavaScript Extractor** (`extension/src/scanner/extractors/typescriptExtractor.ts`):
+    - Express router extraction: extracts HTTP method, route path, line numbers, and middleware token stacks (`requireAuth`, `requireRole`, `hasRole`, `authorize`).
+    - Next.js App Router extraction: parses `route.ts` / `route.js`, maps filesystem folder paths to API paths (`app/api/workspaces/[id]/route.ts` -> `/api/workspaces/:id`), detects exported HTTP verbs and server session auth guards.
+    - Prisma schema extractor: parses `model <Name> { ... }`, fields, types, `@id` (primary key), `@unique`, and `@relation` (foreign key).
+  - **Python Extractor** (`extension/src/scanner/extractors/pythonExtractor.ts`):
+    - FastAPI router extraction: detects `APIRouter(prefix=...)` and combines with route decorators (`@router.get(...)`, `@router.delete(...)`), evaluates dependency guards (`Depends(get_current_user)`, `Depends(require_admin)`, `Security(...)`), captures line numbers.
+    - SQLAlchemy model extraction: extracts declarative models (`class User(Base):`), columns (`Column(...)`, `Mapped[...]`), primary keys, unique constraints, and foreign keys.
+  - **Unified Dispatcher** (`extension/src/scanner/extractor.ts`):
+    - `SemanticExtractor`: routes files by extension to appropriate extractors, returns structured `ProjectModule[]` and `DatabaseModel[]`, and calculates symbol and relationship counts.
+  - **Comprehensive Unit Tests** (`extension/tests/extractors.test.ts`):
+    - 6 tests evaluating against real fixtures (`evals/scanner/fixtures/express-admin` and `evals/scanner/fixtures/fastapi-admin`), Next.js App Router, Prisma schema, and SQLAlchemy models. All 38 extension tests pass.
 
 ### M3-02 — Local Manifest Store Outside Repository
 
