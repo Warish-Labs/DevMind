@@ -8,23 +8,23 @@
 
 | Field              | Value                                                                             |
 | ------------------ | --------------------------------------------------------------------------------- |
-| **Branch**         | `feature/m1-server-skeleton`                                                      |
-| **Last commit**    | `1f0f542` (Phase R1 merged into main)                                             |
-| **Working tree**   | active on Milestone M1 (`feature/m1-server-skeleton`); M1-01 complete             |
-| **Open PR**        | PR for M1-01 (`feature/m1-server-skeleton`)                                       |
-| **Last CI result** | `test-all --fast`: 12 passed, 0 failed, 1 skipped; server 15/15 pass, lint:server |
+| **Branch**         | `feature/m1-docker-compose`                                                       |
+| **Last commit**    | `ce1926f` (M1-01 merged into main)                                                |
+| **Working tree**   | active on Milestone M1 (`feature/m1-docker-compose`); M1-02 complete              |
+| **Open PR**        | PR for M1-02 (`feature/m1-docker-compose`)                                        |
+| **Last CI result** | `test-all --fast`: 12 passed, 0 failed, 1 skipped; server 17/17 pass, lint:server |
 | **Date**           | 2026-10-16                                                                        |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push Slice M1-01 (`feature/m1-server-skeleton`).
-2. Merge `feature/m1-server-skeleton` into `main` and push `main`, retaining remote branch visible on GitHub.
-3. Cut branch `feature/m1-docker-compose` for M1-02:
-   - Create multi-stage non-root `server/Dockerfile`
-   - Create `infra/docker-compose.yml` (Postgres with pgvector & pg_trgm, Redis/Valkey, API, Celery worker, Celery beat scheduler)
-   - Verify local container build and spin-up.
+1. Commit and push Slice M1-02 (`feature/m1-docker-compose`).
+2. Merge `feature/m1-docker-compose` into `main` and push `main`, retaining remote branch visible on GitHub.
+3. Cut branch `feature/m1-server-ci` for M1-03:
+   - Server CI jobs in GitHub Actions (`.github/workflows/ci.yml` / `ci-gate`)
+   - `import-linter` contracts for layer boundaries (`docs/02 §4.1`)
+   - Dependabot for pip/docker
 
 ---
 
@@ -38,6 +38,30 @@
 ---
 
 ## 4. Done log
+
+### M1-02 — Multi-Stage Non-Root Dockerfile & Docker Compose Local Stack
+
+- **Date**: 2026-10-16
+- **Branch**: `feature/m1-docker-compose`
+- **What**: Implemented containerization and local infrastructure stack per `docs/10` and `docs/02`:
+  - **Multi-Stage Non-Root Dockerfile** (`server/Dockerfile`):
+    - Builder stage using `python:3.12-slim-bookworm` with `uv` binary from official image for byte-compiled, frozen dependency synchronization (`uv sync --frozen --no-dev`).
+    - Runtime stage creating dedicated non-root user `appuser` (uid 10001, gid 10001), copying `.venv` and source tree with `--chown=appuser:devmind`.
+    - Healthcheck probe pointing to `/healthz` via `curl`. Default command runs `uvicorn app.main:app --host 0.0.0.0 --port 8000`.
+    - Verified build and runtime execution as non-root (`whoami` -> `appuser`, `uid=10001`, `gid=10001`).
+  - **Docker Compose Stack** (`infra/docker-compose.yml`):
+    - `postgres`: `pgvector/pgvector:pg16` with healthcheck probe `pg_isready -U devmind_app -d devmind`.
+    - `redis`: `valkey/valkey:7.2-alpine` (drop-in Redis replacement) with healthcheck probe `valkey-cli ping`.
+    - `api`: builds `server/Dockerfile`, depends on healthy postgres & redis, exposes port 8000.
+    - `worker`: builds `server/Dockerfile`, runs `python -m app.workers.runner`.
+    - `scheduler`: builds `server/Dockerfile`, runs `python -m app.workers.scheduler`.
+  - **Worker & Scheduler Entrypoints**:
+    - `server/app/workers/runner.py`: worker daemon with graceful signal handling (`SIGINT`/`SIGTERM`) and structured JSON logs.
+    - `server/app/workers/scheduler.py`: scheduler daemon with graceful signal handling and structured JSON logs.
+  - **Automated Tests** (`server/tests/test_docker_compose.py`):
+    - Verified Dockerfile stages, non-root user, and healthcheck.
+    - Verified docker-compose service definitions, images, and healthcheck dependencies.
+- **Actual results**: `pnpm test:all --fast` (12 passed, 0 failed, 1 skipped: 17/17 Python tests pass in 0.32s, Docker build verified in 43.8s).
 
 ### M1-01 — FastAPI Application Skeleton, Settings, Logging Redaction, Problem Details & Health
 

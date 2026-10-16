@@ -1,0 +1,108 @@
+# DevMind Local Infrastructure Stack (ADR-004, ADR-005, ADR-046)
+# Services: PostgreSQL (pgvector + pg_trgm), Valkey/Redis, API, Worker, Scheduler
+
+name: devmind
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: devmind-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-devmind_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devmind_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-devmind}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devmind_app -d devmind"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: valkey/valkey:7.2-alpine
+    container_name: devmind-redis
+    restart: unless-stopped
+    command: valkey-server --save "" --appendonly no
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping || redis-cli ping || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    container_name: devmind-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DEVMIND_ENV: local
+      DEVMIND_RUN_MODE: api
+      DEVMIND_LOG_LEVEL: INFO
+      DEVMIND_DATABASE_URL: postgresql+psycopg://devmind_app:devmind_pass@postgres:5432/devmind
+      DEVMIND_DATABASE_URL_DIRECT: postgresql+psycopg://devmind_app:devmind_pass@postgres:5432/devmind
+      DEVMIND_REDIS_URL: redis://redis:6379/0
+      DEVMIND_CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  worker:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    container_name: devmind-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DEVMIND_ENV: local
+      DEVMIND_RUN_MODE: worker
+      DEVMIND_LOG_LEVEL: INFO
+      DEVMIND_DATABASE_URL: postgresql+psycopg://devmind_app:devmind_pass@postgres:5432/devmind
+      DEVMIND_REDIS_URL: redis://redis:6379/0
+    command: ["python", "-m", "app.workers.runner"]
+
+  scheduler:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    container_name: devmind-scheduler
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DEVMIND_ENV: local
+      DEVMIND_RUN_MODE: scheduler
+      DEVMIND_LOG_LEVEL: INFO
+      DEVMIND_DATABASE_URL: postgresql+psycopg://devmind_app:devmind_pass@postgres:5432/devmind
+      DEVMIND_REDIS_URL: redis://redis:6379/0
+    command: ["python", "-m", "app.workers.scheduler"]
+
+volumes:
+  postgres_data:
+  redis_data:
