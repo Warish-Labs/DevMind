@@ -56,8 +56,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         redoc_url="/redoc" if not settings.is_production else None,
     )
 
-    # Attach settings to application state
+    # Attach settings to application state and dependency overrides
     app.state.settings = settings
+    app.dependency_overrides[get_settings] = lambda: settings
 
     # CORS middleware
     app.add_middleware(
@@ -94,6 +95,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     from app.api.me import router as me_router
     from app.api.projects import projects_router, workspace_projects_router
+    from app.api.webhooks import router as webhooks_router
     from app.api.workspaces import router as workspaces_router
     from app.domain.auth import PERMISSION_PUBLIC, declare_permission
 
@@ -111,6 +113,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_v1_router.include_router(workspace_projects_router)
     api_v1_router.include_router(projects_router)
     api_v1_router.include_router(me_router)
+    api_v1_router.include_router(webhooks_router)
 
     app.include_router(api_v1_router)
 

@@ -9,23 +9,21 @@
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                       |
-| **Last commit**    | `0452676` (ci: disable automatic triggers for all workflows)                                 |
+| **Last commit**    | `c6b223f` (feat(server): add idempotency middleware and redis sliding-window rate limiting)  |
 | **Working tree**   | clean; working directly on main per user instruction                                         |
 | **Open PR**        | None (working directly on main)                                                              |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 82/82 pass, boundaries:server pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 89/89 pass, boundaries:server pass |
 | **Date**           | 2026-10-16                                                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement Task M2-07: Clerk user webhook receiver with Svix signature verification and sync:
-   - `POST /api/v1/webhooks/clerk` endpoint.
-   - Svix signature verification (`svix-id`, `svix-timestamp`, `svix-signature`) using `CLERK_WEBHOOK_SECRET`.
-   - Replay protection (reject timestamps outside 5-minute window).
-   - Sync events: `user.created`, `user.updated`, `user.deleted` to `users` and automatic personal workspace provisioning.
-   - Problem Details RFC 9457 on signature mismatch or parsing failures.
-   - Comprehensive test suite in `server/tests/test_clerk_webhooks.py`.
+1. Implement Task M2-08: OpenAPI spec generation, TypeScript client generation (`pnpm gen:api`), and frontend authentication shell integration:
+   - Export OpenAPI schema `openapi.json` from FastAPI.
+   - Run openapi-typescript-codegen / `pnpm gen:api` to generate client API SDK under `client/lib/api/`.
+   - Wire Clerk frontend SDK (`@clerk/nextjs`) in `client/` app shell with token passing to generated API client.
+   - Test sign-in / session restoration flow.
 
 ---
 
@@ -39,6 +37,28 @@
 ---
 
 ## 4. Done log
+
+### M2-07 — Clerk User Webhook Receiver with Svix Signature Verification & Identity Sync
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented secure Clerk user lifecycle webhook receiver and automatic identity synchronization matching `docs/03` §10 and `docs/07` §11:
+  - **Svix Signature Verification** (`server/app/integrations/clerk_webhook.py`):
+    - Constant-time HMAC-SHA256 signature verification matching Svix specification.
+    - Automatic `whsec_` base64 decoding and payload hashing (`{svix_id}.{svix_timestamp}.{body}`).
+    - Replay protection rejecting webhooks with timestamps outside a 300-second (5-minute) tolerance window.
+  - **Webhook Domain Service** (`server/app/domain/webhooks/service.py`):
+    - Delivery deduplication via Redis `webhook:dedupe:{svix_id}` (with in-memory fallback) to safely ignore duplicate delivery replays.
+    - `user.created`: Upserts user record with Clerk user ID and primary email; auto-provisions a default personal workspace (`kind="personal"`) with the user as `owner`.
+    - `user.updated`: Syncs modified display names and email addresses.
+    - `user.deleted`: Performs soft-deletion by stamping `deleted_at`.
+    - All background database modifications execute under an explicit `SystemContext(reason="webhook:clerk")`.
+  - **FastAPI Webhook Router** (`server/app/api/webhooks.py`):
+    - `POST /api/v1/webhooks/clerk` tagged with `@declare_permission(PERMISSION_WEBHOOK)`.
+    - RFC 9457 Problem Details error responses on missing headers (401), invalid signatures (401), or malformed JSON (422).
+  - **Comprehensive Test Suite** (`server/tests/test_clerk_webhooks.py`):
+    - 7 tests covering cryptographic signature verification, body tampering, replay expiry, delivery deduplication, user creation & personal workspace provisioning, profile updates, and soft deletion.
+- **Actual results**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped; 89/89 server Python tests pass, boundaries clean).
 
 ### M2-06 — Idempotency Middleware and Redis-Backed Sliding-Window Rate Limiting
 

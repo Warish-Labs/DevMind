@@ -92,6 +92,26 @@ class UserRepository(BaseRepository):
             user.last_seen_at = datetime.now(UTC)
             await self.session.flush()
 
+    async def update(
+        self,
+        ctx: AuthContext | SystemContext,
+        user_id: UUID,
+        *,
+        email: str | None = None,
+        display_name: str | None = None,
+    ) -> User | None:
+        """Update mutable fields on a user record."""
+        self._validate_context(ctx)
+        user = await self.get_by_id(ctx, user_id)
+        if user:
+            if email is not None:
+                user.email = email
+            if display_name is not None:
+                user.display_name = display_name
+            await self.session.flush()
+            await self.session.refresh(user)
+        return user
+
     async def soft_delete(
         self,
         ctx: AuthContext | SystemContext,
