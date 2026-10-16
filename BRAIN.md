@@ -8,10 +8,10 @@
 
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                       |
-| **Last commit**    | `b2dc361` (Hero trace realignment, content pages, continuous animations, cursor & CI fixes)  |
-| **Working tree**   | clean; all local .env* files configured with Warish@786 and dummy online keys                |
-| **Open PR**        | None (all merged and working directly on `main`)                                             |
+| **Branch**         | `feature/m2-db-migrations` (tracking `origin/feature/m2-db-migrations`)                      |
+| **Last commit**    | `fe2426d` (Hero layout height balancing across left and right columns)                       |
+| **Working tree**   | clean; GitHub ruleset active; initiating Milestone M2 (Tasks M2-01 & M2-02)                  |
+| **Open PR**        | https://github.com/Warish-Labs/DevMind/pull/new/feature/m2-db-migrations                     |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 33/33 pass, boundaries:server pass |
 | **Date**           | 2026-10-16                                                                                   |
 
