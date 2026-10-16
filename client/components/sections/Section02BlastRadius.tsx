@@ -76,8 +76,11 @@ export function Section02BlastRadius() {
                         : "text-[var(--fg-2)]"
                   }`}
                 >
-                  <span aria-hidden="true" className="w-8 shrink-0 select-none text-[var(--fg-2)]">
-                    {l.line}
+                  <span
+                    aria-hidden="true"
+                    className="w-12 shrink-0 select-none text-[var(--fg-2)] pr-3 mr-3 border-r border-[var(--line-1)] tabular-nums opacity-80"
+                  >
+                    {String(l.line).padStart(2, "0")}
                   </span>
                   <span className="whitespace-pre flex-1">{l.text}</span>
                 </div>
@@ -137,6 +140,25 @@ export function Section02BlastRadius() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Continuous Live Ripple Simulator */}
+      <div className="rounded-panel p-4 bg-[var(--bg-1)] border border-[var(--line-1)] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+        <div className="flex items-center gap-3">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--warn)] opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--warn)]" />
+          </span>
+          <span className="text-[var(--fg-0)] font-semibold">Continuous Blast-Radius Monitor:</span>
+          <span className="text-[var(--fg-2)] hidden sm:inline">
+            Active change impact analysis running on diff AST
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-[var(--signal)]">
+          <span className="animate-pulse">● 5 consequences tracked</span>
+          <span className="text-[var(--line-3)]">|</span>
+          <span className="text-[var(--ref)]">Deterministic verification E1</span>
         </div>
       </div>
     </section>

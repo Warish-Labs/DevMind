@@ -21,7 +21,7 @@ def run_migrations_with_advisory_lock(
     lock_releaser: Callable[[int], bool] | None = None,
 ) -> bool:
     """Run database migrations under a PostgreSQL advisory lock (ADR-046).
-    
+
     Prevents race conditions when multiple instances boot or spin up under free tier.
     """
     logger.info("Initiating database migration check under advisory lock")
@@ -61,7 +61,7 @@ def run_migrations_with_advisory_lock(
 
 def run_startup_sweep(settings: Settings) -> dict[str, Any]:
     """Perform startup sweep on Redis to clear orphaned locks and stale keys (ADR-046).
-    
+
     Ensures that containers restarting after an idle sleep (e.g. Render free tier)
     do not retain corrupted locks or dangling job claims.
     """

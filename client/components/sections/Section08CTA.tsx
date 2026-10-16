@@ -147,26 +147,27 @@ export function Section08CTA() {
         </div>
 
         {/* Legal & Spec Quick Links */}
-        <div className="flex items-center gap-4">
-          <a
-            href="https://github.com/Warish-Labs/DevMind/tree/main/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[var(--fg-0)] transition-colors"
-          >
-            Documentation
-          </a>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/about" className="hover:text-[var(--fg-0)] transition-colors">
+            About
+          </Link>
           <span>·</span>
-          <a
-            href="https://github.com/Warish-Labs/DevMind/blob/main/docs/07-security-privacy-and-threat-model.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[var(--fg-0)] transition-colors"
-          >
-            Security &amp; Privacy
-          </a>
+          <Link href="/contact" className="hover:text-[var(--fg-0)] transition-colors">
+            Contact
+          </Link>
           <span>·</span>
-          <span className="text-[var(--signal)]">Specification Phase</span>
+          <Link href="/privacy" className="hover:text-[var(--fg-0)] transition-colors">
+            Privacy
+          </Link>
+          <span>·</span>
+          <Link href="/disclaimer" className="hover:text-[var(--fg-0)] transition-colors">
+            Disclaimer
+          </Link>
+          <span>·</span>
+          <span className="text-[var(--signal)] flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--signal)] animate-ping" />
+            <span>Specification Phase</span>
+          </span>
         </div>
       </div>
     </section>

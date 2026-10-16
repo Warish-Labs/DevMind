@@ -152,6 +152,25 @@ export function Section07PrivacyLedger() {
           </table>
         </div>
       </div>
+
+      {/* Continuous Live Privacy Audit Stream Ticker */}
+      <div className="rounded-panel p-4 bg-[var(--bg-1)] border border-[var(--line-1)] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+        <div className="flex items-center gap-3">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--signal)] opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--signal)]" />
+          </span>
+          <span className="text-[var(--fg-0)] font-semibold">Live Privacy Audit Stream:</span>
+          <span className="text-[var(--fg-2)] hidden sm:inline">
+            Active policy enforcement: zero unauthorized egress
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-[var(--signal)]">
+          <span className="animate-pulse">● Invariant ledger verified</span>
+          <span className="text-[var(--line-3)]">|</span>
+          <span className="text-[var(--ref)]">SHA-256 redacted secrets</span>
+        </div>
+      </div>
     </section>
   );
 }

@@ -38,10 +38,12 @@ export function DevMindCursor() {
       }
     };
 
-    if (!checkPreferences()) return;
-
-    // Apply custom cursor class to <html> only after confirming activation
-    document.documentElement.classList.add("has-custom-cursor");
+    let isEnabled = checkPreferences();
+    if (isEnabled) {
+      document.documentElement.classList.add("has-custom-cursor");
+    } else {
+      document.documentElement.classList.remove("has-custom-cursor");
+    }
 
     // Cursor state variables (no React state per frame to guarantee 60/120fps)
     let pointerX = -100;
@@ -214,14 +216,27 @@ export function DevMindCursor() {
 
     // Preferences toggle listener
     const onPreferencesChanged = () => {
-      if (!checkPreferences()) {
+      isEnabled = checkPreferences();
+      if (!isEnabled) {
         document.documentElement.classList.remove("has-custom-cursor");
         if (dotEl) dotEl.style.display = "none";
         if (ringEl) ringEl.style.display = "none";
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
       } else {
         document.documentElement.classList.add("has-custom-cursor");
-        if (dotEl) dotEl.style.display = "block";
-        if (ringEl) ringEl.style.display = "flex";
+        if (dotEl) {
+          dotEl.style.display = "block";
+          dotEl.style.opacity = "1";
+        }
+        if (ringEl) {
+          ringEl.style.display = "flex";
+          ringEl.style.opacity = "1";
+        }
+        isVisible = true;
+        scheduleFrame();
       }
     };
 
@@ -230,6 +245,14 @@ export function DevMindCursor() {
     window.addEventListener("pointerup", onPointerUp, { passive: true });
     document.addEventListener("mouseleave", onMouseLeave);
     window.addEventListener("devmind:preferences-changed", onPreferencesChanged);
+    window.addEventListener("devmind:cursor-toggle", onPreferencesChanged);
+    window.addEventListener("storage", onPreferencesChanged);
+
+    // Initial display sync
+    if (!isEnabled) {
+      if (dotEl) dotEl.style.display = "none";
+      if (ringEl) ringEl.style.display = "none";
+    }
 
     return () => {
       document.documentElement.classList.remove("has-custom-cursor");
@@ -239,6 +262,8 @@ export function DevMindCursor() {
       window.removeEventListener("pointerup", onPointerUp);
       document.removeEventListener("mouseleave", onMouseLeave);
       window.removeEventListener("devmind:preferences-changed", onPreferencesChanged);
+      window.removeEventListener("devmind:cursor-toggle", onPreferencesChanged);
+      window.removeEventListener("storage", onPreferencesChanged);
     };
   }, []);
 

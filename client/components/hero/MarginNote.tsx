@@ -38,7 +38,7 @@ export function MarginNote({
       }`}
     >
       {/* Margin Note Card */}
-      <div className="p-4 rounded-panel bg-[var(--bg-1)] border border-[var(--line-2)] shadow-xl max-w-sm sm:max-w-md font-mono text-xs">
+      <div className="p-4 sm:p-5 rounded-panel bg-[var(--bg-1)] border border-[var(--line-2)] shadow-xl w-full max-w-full font-mono text-xs">
         <div className="flex items-center justify-between pb-2 mb-3 border-b border-[var(--line-1)] text-[var(--signal)]">
           <span className="font-semibold tracking-wide">{HERO_MARGIN_NOTE.header}</span>
           <span className="text-[10px] text-[var(--fg-2)] uppercase tracking-wider">

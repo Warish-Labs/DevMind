@@ -32,6 +32,7 @@ reports/
 test-results/
 playwright-report/
 blob-report/
+.import_linter_cache/
 
 # Environment files and secrets (Never commit secrets!)
 .env

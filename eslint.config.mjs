@@ -11,6 +11,8 @@ export default tseslint.config(
       "**/coverage/**",
       "**/reports/**",
       "**/*.vsix",
+      "**/.venv/**",
+      "**/venv/**",
       "brand/**",
       "evals/scanner/fixtures/**",
     ],

@@ -15,7 +15,7 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "pnpm -r --filter=!./evals/** run test",
     "test:e2e": "pnpm --filter client test:e2e",
     "test:all": "node scripts/test-all.mjs",
     "verify": "node scripts/test-all.mjs --fast",
@@ -35,7 +35,7 @@
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
     "prettier": "3.9.10",
-    "typescript": "7.0.2",
+    "typescript": "6.0.3",
     "typescript-eslint": "8.71.2",
     "vitest": "^5.0.5"
   }

@@ -31,13 +31,23 @@ class Settings(BaseSettings):
     # Redis URL (Render Key Value or local)
     redis_url: str = "redis://localhost:6379/0"
 
-    # CORS origins
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    # CORS origins (accepts comma-separated string or list)
+    cors_origins: list[str] | str = Field(default_factory=lambda: ["http://localhost:3000"])
 
     @field_validator("cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: str | list[str]) -> list[str]:
         if isinstance(value, str):
+            value = value.strip()
+            if value.startswith("[") and value.endswith("]"):
+                import json
+
+                try:
+                    parsed = json.loads(value)
+                    if isinstance(parsed, list):
+                        return [str(item).strip() for item in parsed if str(item).strip()]
+                except Exception:
+                    pass
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
 

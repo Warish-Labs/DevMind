@@ -52,9 +52,9 @@ export function TraceContainer({
       onPointerLeave={handlePointerLeave}
       className="pointer-lit-card rounded-panel p-2 sm:p-4 bg-[var(--bg-1)] border border-[var(--line-1)] relative"
     >
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-start gap-4 lg:gap-6">
-        {/* Editor Code Pane (Trace) */}
-        <div className="flex-1 min-w-0">
+      <div className="flex flex-col items-stretch gap-4">
+        {/* Upper Part: Code Editor Pane (Trace) */}
+        <div className="w-full min-w-0">
           <Trace
             visibleLineCount={visibleLineCount}
             scanningActive={scanningActive}
@@ -63,15 +63,31 @@ export function TraceContainer({
           />
         </div>
 
-        {/* Hairline Connector Line (Desktop only) */}
-        <div className="hidden lg:flex items-center self-center text-[var(--line-2)] -mx-2 select-none pointer-events-none">
-          <svg width="24" height="2" viewBox="0 0 24 2" fill="none">
-            <line x1="0" y1="1" x2="24" y2="1" stroke="currentColor" strokeDasharray="3 3" />
-          </svg>
+        {/* Animated Connector Flow between Code & Details */}
+        <div className="flex items-center justify-between px-2 text-[11px] font-mono text-[var(--fg-2)] select-none">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[var(--signal)] animate-ping" />
+            <span className="text-[var(--signal)] font-medium">AST Analysis Pipeline</span>
+            <span className="text-[var(--line-3)]">·</span>
+            <span>Line 07 Route Handler</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[var(--ref)]">
+            <span>Derived Finding</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M12 5v14M19 12l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
 
-        {/* Margin Note Pane with fine-pointer Parallax */}
-        <div className="w-full lg:w-96 shrink-0">
+        {/* Bottom Part: Margin Note Finding Details */}
+        <div className="w-full">
           <MarginNote
             visible={noteVisible}
             evidenceStep={evidenceStep}

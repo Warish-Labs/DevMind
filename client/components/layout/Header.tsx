@@ -47,15 +47,15 @@ export function Header() {
           <Link href="/#section-07" className="hover:text-[var(--fg-0)] transition-colors">
             Privacy Ledger
           </Link>
-          <a
-            href="https://github.com/Warish-Labs/DevMind"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[var(--fg-0)] transition-colors flex items-center gap-1"
-          >
-            <span>GitHub</span>
-            <span className="text-[10px] text-[var(--fg-2)]">↗</span>
-          </a>
+          <Link href="/about" className="hover:text-[var(--fg-0)] transition-colors">
+            About
+          </Link>
+          <Link href="/privacy" className="hover:text-[var(--fg-0)] transition-colors">
+            Privacy
+          </Link>
+          <Link href="/contact" className="hover:text-[var(--fg-0)] transition-colors">
+            Contact
+          </Link>
         </nav>
 
         {/* Actions */}

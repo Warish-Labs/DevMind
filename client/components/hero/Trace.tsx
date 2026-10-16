@@ -44,14 +44,14 @@ export function Trace({
         {/* Animated Scan Line travelling down gutter */}
         {scanningActive && (
           <div
-            className="absolute left-8 w-1 h-6 rounded-full bg-[var(--signal)] shadow-sm pointer-events-none transition-transform duration-75 select-none"
+            className="absolute left-12 w-1 h-6 rounded-full bg-[var(--signal)] shadow-sm pointer-events-none transition-transform duration-75 select-none"
             style={{
               top: `${16 + scanProgress * 180}px`,
             }}
           />
         )}
 
-        <div className="space-y-1 min-w-[420px]">
+        <div className="space-y-1.5 min-w-[480px]">
           {HERO_CODE_LINES.map((line: HeroCodeLine, index) => {
             const isVisible = index < visibleLineCount;
             const isLine7 = line.lineNumber === 7;
@@ -61,16 +61,18 @@ export function Trace({
                 key={line.lineNumber}
                 className={`flex items-start transition-opacity duration-300 ${
                   isVisible ? "opacity-100" : "opacity-0"
-                } ${isLine7 && diagnosticActive ? "bg-[var(--warn)]/5 -mx-4 px-4 py-0.5 rounded-xs" : ""}`}
+                } ${isLine7 && diagnosticActive ? "bg-[var(--warn)]/5 -mx-4 px-4 py-1 rounded-xs" : ""}`}
               >
-                {/* Gutter Line Number & Glyph */}
-                <div className="w-10 shrink-0 text-right pr-4 text-[var(--fg-2)] select-none flex items-center justify-end gap-1 font-mono text-xs">
+                {/* Gutter Line Number & Glyph with gap */}
+                <div className="w-14 shrink-0 text-right pr-4 mr-4 border-r border-[var(--line-1)] text-[var(--fg-2)] select-none flex items-center justify-end gap-1.5 font-mono text-xs">
                   {isLine7 && diagnosticActive && (
                     <span className="animate-in fade-in duration-300">
                       <GutterDiagnosticGlyph />
                     </span>
                   )}
-                  <span>{line.lineNumber}</span>
+                  <span className="tabular-nums font-mono opacity-80">
+                    {String(line.lineNumber).padStart(2, "0")}
+                  </span>
                 </div>
 
                 {/* Code Content */}

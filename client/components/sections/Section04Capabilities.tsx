@@ -152,6 +152,27 @@ export function Section04Capabilities() {
           </table>
         </div>
       </div>
+
+      {/* Continuous Capability Execution Monitor */}
+      <div className="rounded-panel p-4 bg-[var(--bg-1)] border border-[var(--line-1)] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+        <div className="flex items-center gap-3">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ref)] opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--ref)]" />
+          </span>
+          <span className="text-[var(--fg-0)] font-semibold">
+            Continuous Capability Dispatcher:
+          </span>
+          <span className="text-[var(--fg-2)] hidden sm:inline">
+            Grounding queries directly in AST nodes &amp; evidence graphs
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-[var(--signal)]">
+          <span className="animate-pulse">● 9 capabilities registered</span>
+          <span className="text-[var(--line-3)]">|</span>
+          <span className="text-[var(--fg-1)]">Deterministic routing</span>
+        </div>
+      </div>
     </section>
   );
 }

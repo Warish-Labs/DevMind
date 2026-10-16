@@ -25,25 +25,29 @@ export function Footer() {
         </div>
 
         {/* Right: Credits and links */}
-        <div className="flex items-center gap-4 text-xs font-mono">
+        <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-4 gap-y-2 text-xs font-mono">
+          <Link href="/about" className="hover:text-[var(--fg-0)] transition-colors">
+            About
+          </Link>
+          <Link href="/contact" className="hover:text-[var(--fg-0)] transition-colors">
+            Contact
+          </Link>
+          <Link href="/privacy" className="hover:text-[var(--fg-0)] transition-colors">
+            Privacy
+          </Link>
+          <Link href="/disclaimer" className="hover:text-[var(--fg-0)] transition-colors">
+            Disclaimer
+          </Link>
           <Link href="/early-access" className="hover:text-[var(--fg-0)] transition-colors">
             Early Access
           </Link>
           <a
-            href="https://github.com/Warish-Labs/DevMind"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[var(--fg-0)] transition-colors"
-          >
-            Source (GitHub)
-          </a>
-          <a
             href="https://warishlabs.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-[var(--fg-0)] transition-colors"
+            className="hover:text-[var(--fg-0)] transition-colors text-[var(--ref)]"
           >
-            Built by WarishLabs
+            WarishLabs ↗
           </a>
         </div>
       </div>

@@ -78,10 +78,12 @@ def test_free_quotas_configuration() -> None:
     assert quotas["profile"] == "free"
     storage = quotas["storage"]
     assert storage["database_storage_cap_bytes"] <= 536870912  # 512 MB Neon Free limit
-    assert storage["max_chunks_per_project"] * storage["bytes_per_chunk"]["total_estimated_per_chunk"] <= storage["chunk_storage_budget_bytes"]
+    assert (
+        storage["max_chunks_per_project"] * storage["bytes_per_chunk"]["total_estimated_per_chunk"]
+        <= storage["chunk_storage_budget_bytes"]
+    )
 
     memory = quotas["memory"]
     assert memory["container_ram_cap_bytes"] <= 536870912  # 512 MB Render Free limit
     assert memory["worker_concurrency"] == 1  # Solo pool concurrency 1
     assert memory["measured_idle_memory_bytes"] < memory["container_ram_cap_bytes"]
-

@@ -164,6 +164,25 @@ export function Section05Walkthrough() {
           </div>
         </div>
       </div>
+
+      {/* Continuous Walkthrough Step Flow Monitor */}
+      <div className="rounded-panel p-4 bg-[var(--bg-1)] border border-[var(--line-1)] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+        <div className="flex items-center gap-3">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--signal)] opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--signal)]" />
+          </span>
+          <span className="text-[var(--fg-0)] font-semibold">Live Lifecycle Sequence Runner:</span>
+          <span className="text-[var(--fg-2)] hidden sm:inline">
+            Active transition between developer change, CI scan &amp; deploy
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-[var(--signal)]">
+          <span className="animate-pulse">● 14 lifecycle milestones</span>
+          <span className="text-[var(--line-3)]">|</span>
+          <span className="text-[var(--ref)]">Continuous feedback loop</span>
+        </div>
+      </div>
     </section>
   );
 }

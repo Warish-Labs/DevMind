@@ -85,6 +85,11 @@ jobs:
 
       - name: Run Package Builds
         run: pnpm build
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_dummy_publishable_key
+          NEXT_PUBLIC_FIXTURE_MODE: "true"
 
   e2e:
     name: End-to-End Tests
@@ -106,13 +111,32 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build client application
+        run: pnpm --filter client build
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_dummy_publishable_key
+          NEXT_PUBLIC_FIXTURE_MODE: "true"
+
+      - name: Install Playwright Chromium & dependencies
+        run: pnpm --filter client exec playwright install --with-deps chromium
+
       - name: Run Playwright Tests (if configured)
         run: |
-          if [ -f "playwright.config.ts" ] || [ -f "client/playwright.config.ts" ]; then
+          if [ -f "client/playwright.config.ts" ]; then
+            pnpm --filter client exec playwright test --config=playwright.config.ts --project=chromium
+          elif [ -f "playwright.config.ts" ]; then
             pnpm exec playwright test --project=chromium
           else
             echo "Playwright tests not scaffolded yet (scheduled for Phase S1)."
           fi
+        env:
+          CI: true
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_dummy_publishable_key
+          NEXT_PUBLIC_FIXTURE_MODE: "true"
 
       - name: Upload Playwright Report on Failure
         if: failure()
@@ -216,6 +240,21 @@ jobs:
 
       - name: Run Pytest Unit Tests
         run: uv run --directory server pytest -m "not integration"
+        env:
+          DEVMIND_ENV: test
+          DEVMIND_RUN_MODE: all
+          DEVMIND_DATABASE_URL: postgresql+psycopg://postgres:dummy@localhost:5432/devmind
+          DEVMIND_REDIS_URL: redis://localhost:6379/0
+          DEVMIND_CORS_ORIGINS: "http://localhost:3000"
+          DEVMIND_LLM_PROVIDER: fake
+          DEVMIND_LLM_API_KEY: sk_dummy_devmind_key
+          DEVMIND_EMBED_PROVIDER: fake
+          DEVMIND_EMBED_API_KEY: sk_dummy_devmind_key
+          DEVMIND_ENCRYPTION_KEYS: '["DrAIkfDgd0oVh4/ZyBsyJCJmUKl6XpvGdytd9dt0qeQ="]'
+          DEVMIND_EXT_TOKEN_PEPPER: "kzuCaQXOlbi4HcsIxKJCCPMR6ztDQ5uJlUjgmsdTrYo="
+          CLERK_SECRET_KEY: sk_test_dummy_key
+          CLERK_PUBLISHABLE_KEY: pk_test_dummy_key
+          CLERK_WEBHOOK_SECRET: whsec_dummy_key
 
   ci-gate:
     name: ci-gate
