@@ -202,7 +202,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M2-02 Database engine session factory, base model with UUIDv7 PK, and repository layer enforcing AuthContext (feature/m2-db-migrations)
 - [x] M2-03 Clerk token verification service (issuer, JWKS signature, expiry, authorized parties, cache) (feature/m2-auth-clerk)
 - [x] M2-04 Policy service, permission evaluator, and route permission registry with CI enforcement (feature/m2-auth-policy)
-- [ ] M2-05 Workspaces and projects CRUD REST endpoints with permission checks and Problem Details (feature/m2-workspaces-projects)
+- [x] M2-05 Workspaces and projects CRUD REST endpoints with permission checks and Problem Details (feature/m2-workspaces-projects)
 - [ ] M2-06 Idempotency middleware and Redis-backed sliding-window rate limiting (feature/m2-middleware)
 - [ ] M2-07 Clerk user webhook receiver with Svix signature verification and sync (feature/m2-webhooks)
 - [ ] M2-08 OpenAPI spec generation, TypeScript client generation (pnpm gen:api), and frontend authentication shell integration (feature/m2-client-auth)

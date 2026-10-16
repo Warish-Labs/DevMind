@@ -10,7 +10,9 @@ from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _ENV_FILES: tuple[str, ...] | None = (
-    None if ("pytest" in sys.modules or os.getenv("DEVMIND_ENV") == "test") else (".env", ".env.local")
+    None
+    if ("pytest" in sys.modules or os.getenv("DEVMIND_ENV") == "test")
+    else (".env", ".env.local")
 )
 
 

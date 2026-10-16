@@ -134,6 +134,7 @@ class ProjectRepository(BaseRepository):
             if key in allowed_fields:
                 setattr(project, key, value)
         await self.session.flush()
+        await self.session.refresh(project)
         return project
 
     async def add_member(

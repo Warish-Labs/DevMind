@@ -40,8 +40,8 @@ class AuthContext:
     user_id: UUID
     clerk_user_id: str
     email: str
-    workspace_id: UUID
-    workspace_role: WorkspaceRole
+    workspace_id: UUID | None = None
+    workspace_role: WorkspaceRole | None = None
     project_id: UUID | None = None
     project_role: ProjectRole | None = None
     permissions: frozenset[str] = field(default_factory=frozenset)
@@ -58,10 +58,14 @@ class AuthContext:
 
     def is_workspace_admin_or_owner(self) -> bool:
         """Check if caller has administrative privileges over the workspace."""
+        if self.workspace_role is None:
+            return False
         return self.workspace_role in ("owner", "admin")
 
     def has_workspace_role(self, minimum_role: WorkspaceRole) -> bool:
         """Check if caller meets or exceeds a minimum workspace role."""
+        if self.workspace_role is None:
+            return False
         return WORKSPACE_ROLE_WEIGHTS.get(self.workspace_role, 0) >= WORKSPACE_ROLE_WEIGHTS.get(
             minimum_role, 0
         )

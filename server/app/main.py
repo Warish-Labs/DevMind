@@ -82,6 +82,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # API v1 router placeholder
     api_v1_router = APIRouter(prefix="/api/v1")
 
+    from app.api.me import router as me_router
+    from app.api.projects import projects_router, workspace_projects_router
+    from app.api.workspaces import router as workspaces_router
     from app.domain.auth import PERMISSION_PUBLIC, declare_permission
 
     @api_v1_router.get("", tags=["System"])
@@ -93,6 +96,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "environment": settings.env,
             "status": "operational",
         }
+
+    api_v1_router.include_router(workspaces_router)
+    api_v1_router.include_router(workspace_projects_router)
+    api_v1_router.include_router(projects_router)
+    api_v1_router.include_router(me_router)
 
     app.include_router(api_v1_router)
 

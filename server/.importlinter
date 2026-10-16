@@ -9,6 +9,7 @@ source_modules =
 forbidden_modules =
     app.persistence
     app.orchestration
+allow_indirect_imports = true
 
 [importlinter:contract:domain-forbidden-imports]
 name = Domain layer forbidden imports

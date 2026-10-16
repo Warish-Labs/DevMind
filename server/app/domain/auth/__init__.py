@@ -1,6 +1,17 @@
-"""Domain authorization and policy evaluation module."""
-
+from app.domain.auth.dependencies import (
+    get_auth_context,
+    get_current_user_claims,
+    get_db_session,
+    get_token_verifier,
+)
 from app.domain.auth.policy import (
+    PERM_MEMBERS_MANAGE,
+    PERM_MEMBERS_MANAGE_WORKSPACE,
+    PERM_PROJECT_DELETE,
+    PERM_PROJECT_READ,
+    PERM_PROJECT_UPDATE,
+    PERM_WORKSPACE_MANAGE,
+    PERM_WORKSPACE_READ,
     PERMISSION_AUTHENTICATED,
     PERMISSION_PUBLIC,
     PERMISSION_WEBHOOK,
@@ -14,6 +25,13 @@ from app.domain.auth.policy import (
 )
 
 __all__ = [
+    "PERM_PROJECT_READ",
+    "PERM_PROJECT_UPDATE",
+    "PERM_PROJECT_DELETE",
+    "PERM_MEMBERS_MANAGE",
+    "PERM_WORKSPACE_READ",
+    "PERM_WORKSPACE_MANAGE",
+    "PERM_MEMBERS_MANAGE_WORKSPACE",
     "PERMISSION_AUTHENTICATED",
     "PERMISSION_PUBLIC",
     "PERMISSION_WEBHOOK",
@@ -22,6 +40,10 @@ __all__ = [
     "compute_permissions",
     "declare_permission",
     "find_undeclared_routes",
+    "get_auth_context",
+    "get_current_user_claims",
+    "get_db_session",
+    "get_token_verifier",
     "require_permission",
     "route_permission_registry",
 ]

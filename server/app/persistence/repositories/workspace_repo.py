@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import delete, select
@@ -172,6 +173,25 @@ class WorkspaceRepository(BaseRepository):
         result = await self.session.execute(stmt)
         await self.session.flush()
         return bool(result.rowcount and result.rowcount > 0)
+
+    async def update(
+        self,
+        ctx: AuthContext | SystemContext,
+        workspace_id: UUID,
+        **updates: Any,
+    ) -> Workspace | None:
+        """Update mutable fields on a workspace."""
+        self._validate_context(ctx)
+        ws = await self.get_by_id(ctx, workspace_id)
+        if not ws:
+            return None
+        allowed_fields = {"name", "slug", "kind"}
+        for key, value in updates.items():
+            if key in allowed_fields and value is not None:
+                setattr(ws, key, value)
+        await self.session.flush()
+        await self.session.refresh(ws)
+        return ws
 
     async def soft_delete(
         self,

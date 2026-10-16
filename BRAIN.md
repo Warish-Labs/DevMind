@@ -9,21 +9,21 @@
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                       |
-| **Last commit**    | `0ba4d5d` (feat(server): add policy service, permissions, and route registry CI test)        |
+| **Last commit**    | `8064481` (feat(server): expand settings to support local env overrides and domain config)   |
 | **Working tree**   | clean; working directly on main per user instruction                                         |
 | **Open PR**        | None (working directly on main)                                                              |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 64/64 pass, boundaries:server pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 71/71 pass, boundaries:server pass |
 | **Date**           | 2026-10-16                                                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement Task M2-05: Workspaces and projects CRUD REST endpoints with permission checks and Problem Details:
-   - Request and response schemas for workspaces, projects, memberships per `docs/03` §12.
-   - Routers under `server/app/api/workspaces.py` and `server/app/api/projects.py`.
-   - Permissions declared with `@declare_permission(...)` on every route.
-   - Comprehensive unit and integration tests including cross-tenant authorization checks.
+1. Implement Task M2-06: Idempotency middleware and Redis-backed sliding-window rate limiting:
+   - `Idempotency-Key` header requirement on mutating operations per `docs/03` §10.
+   - 24-hour response caching in Redis with SHA-256 payload binding (`idempotency.mismatch` 422).
+   - Sliding-window rate limiter per principal and route class (`read`, `write`, `job_create`, `ext_sync`, `auth`) with `RateLimit-*` and `Retry-After` headers.
+   - Comprehensive unit and integration tests.
 
 ---
 
@@ -38,7 +38,26 @@
 
 ## 4. Done log
 
-### M2-04 — Policy Service, Permission Evaluator, and Route Permission Registry with CI Enforcement
+### M2-05 — Workspaces and Projects CRUD REST Endpoints with Permissions & Problem Details
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented full CRUD REST endpoints for workspaces, codebase projects, memberships, and caller identity matching `docs/03` §11.1, `docs/07` §3, and architectural boundary constraints:
+  - **Strict Layer Separation** (`docs/02` §4.1):
+    - `server/app/domain/workspaces/service.py`: `WorkspaceService` coordinates validation, slug generation, owner assignment, membership updates, and tenant repository calls.
+    - `server/app/domain/projects/service.py`: `ProjectService` manages codebase projects, visibility, sync modes, and project-level role assignment.
+    - `server/app/domain/users/service.py`: `UserService` handles profile retrieval without leaking repository layer into `app.api`.
+  - **Authentication & Request Context** (`server/app/domain/auth/dependencies.py`):
+    - `get_auth_context`: Resolves Clerk Bearer token, lazily creates or syncs user, resolves active workspace and project roles, and computes effective permissions.
+    - `require_permission`: Enforces granular role-based permissions with automatic dependency ordering via `Depends(get_auth_context)`.
+  - **Routers & RFC 9457 Problem Details** (`server/app/api/`):
+    - `workspaces.py`: `GET /api/v1/workspaces`, `POST /api/v1/workspaces`, `GET/PATCH /workspaces/{id}`, `GET/POST /workspaces/{id}/members`, `PATCH/DELETE /workspaces/{id}/members/{user_id}`.
+    - `projects.py`: `GET/POST /workspaces/{wid}/projects`, `GET/PATCH/DELETE /projects/{pid}`, `GET/POST /projects/{pid}/members`, `DELETE /projects/{pid}/members/{user_id}`.
+    - `me.py`: `GET /api/v1/me`, `GET /api/v1/me/permissions`.
+    - Every route tagged with `@declare_permission(...)` passing automated route registry CI check.
+  - **Comprehensive Test Suite** (`server/tests/`):
+    - `test_workspaces_api.py`, `test_projects_api.py`, `test_me_api.py`: Tested 401 unauthenticated, 422 validation failures, 403 forbidden without permission, and end-to-end CRUD against live PostgreSQL database.
+- **Actual results**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped; 71/71 server Python tests pass, boundaries clean).
 
 - **Date**: 2026-10-16
 - **Branch**: `main` (direct main workflow per owner instruction)

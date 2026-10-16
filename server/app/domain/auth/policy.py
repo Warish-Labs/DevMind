@@ -229,23 +229,30 @@ def require_permission(permission: str) -> Any:
 
     Raises ForbiddenError (403) if authenticated caller lacks the required permission.
     """
+    from app.domain.auth.dependencies import get_auth_context
 
-    def dependency(request: Request) -> AuthContext:
-        ctx: AuthContext | None = getattr(request.state, "auth_context", None)
-        if ctx is None:
+    def dependency(
+        request: Request,
+        ctx: AuthContext | None = Depends(get_auth_context),
+    ) -> AuthContext:
+        resolved_ctx = (
+            ctx if isinstance(ctx, AuthContext) else getattr(request.state, "auth_context", None)
+        )
+        if resolved_ctx is None:
             # If no auth_context in state, fail unauthenticated
             raise AuthenticationError(detail="Authentication context is missing")
 
         if permission in (PERMISSION_PUBLIC, PERMISSION_AUTHENTICATED, PERMISSION_WEBHOOK):
-            return ctx
+            return resolved_ctx
 
-        if not ctx.has_permission(permission):
+        if not resolved_ctx.has_permission(permission):
             raise ForbiddenError(
                 detail=f"Forbidden: caller lacks required permission '{permission}'"
             )
-        return ctx
+        return resolved_ctx
 
-    return Depends(dependency)
+    dependency.dependency = dependency  # type: ignore[attr-defined]
+    return dependency
 
 
 def find_undeclared_routes(app_routes: list[Any]) -> list[str]:

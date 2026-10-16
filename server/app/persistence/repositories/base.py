@@ -50,6 +50,12 @@ class BaseRepository:
         cls._validate_context(ctx)
 
         if isinstance(ctx, AuthContext):
+            if ctx.workspace_id is None:
+                if target_workspace_id is not None:
+                    return stmt.where(model_workspace_col == target_workspace_id)
+                return stmt.where(
+                    model_workspace_col == UUID("00000000-0000-0000-0000-000000000000")
+                )
             if target_workspace_id is not None and target_workspace_id != ctx.workspace_id:
                 # Caller requested a different workspace than their authenticated context
                 # Constrain to an impossible match to return empty result
