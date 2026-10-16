@@ -109,10 +109,10 @@ PR title: `feat(client): add homepage sections 02-08`
 
 PR title: `feat(client): add custom cursor and motion system`
 
-- [ ] S1-15 lib/motion/ (tokens, usePrefersReducedMotion, useInView, sequence helper)
-- [ ] S1-16 DevMindCursor (core dot + ring, states: link/button/text/hotspot/pressed/hidden, magnetic ≤8px, caret bar, toggle, localStorage)
+- [x] S1-15 lib/motion/ (tokens, usePrefersReducedMotion, useInView, sequence helper)
+- [x] S1-16 DevMindCursor (core dot + ring, states: link/button/text/hotspot/pressed/hidden, magnetic ≤8px, caret bar, toggle, localStorage)
   - Acceptance: cursor mounts only with (hover:hover) and (pointer:fine) and !reducedMotion; touch profile has no cursor; toggle persists; aria-hidden; pointer-events:none
-- [ ] S1-17 View Transitions for / → /early-access (@view-transition navigation: auto; progressive enhancement)
+- [x] S1-17 View Transitions for / → /early-access (@view-transition navigation: auto; progressive enhancement)
 
 ### B8 `feature/s1-quality`
 

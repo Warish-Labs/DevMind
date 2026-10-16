@@ -8,22 +8,20 @@
 
 | Field              | Value                                                                  |
 | ------------------ | ---------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                 |
-| **Last commit**    | `936315f` (Merge Slice B6 into main)                                   |
-| **Working tree**   | clean; Slice B6 complete & merged; favicon fixed                       |
-| **Open PR**        | none                                                                   |
-| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client 14/14 tests pass |
+| **Branch**         | `feature/s1-cursor-motion`                                             |
+| **Last commit**    | `3c7feed`                                                              |
+| **Working tree**   | Slice B7 complete (S1-15 to S1-17); tests & build green                |
+| **Open PR**        | PR for Slice B7 (`feature/s1-cursor-motion`)                           |
+| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client 26/26 tests pass |
 | **Date**           | 2026-10-16                                                             |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Create branch `feature/s1-cursor-motion` from `main` for Slice B7.
-2. Implement S1-15: `lib/motion/` (tokens, usePrefersReducedMotion, useInView, sequence helper).
-3. Implement S1-16: DevMindCursor (core dot + ring, states: link/button/text/hotspot/pressed/hidden, magnetic ≤8px, caret bar, toggle, localStorage).
-4. Implement S1-17: View Transitions for `/` → `/early-access` (@view-transition navigation: auto; progressive enhancement).
-5. Verify tests, commit, push, and merge into `main`.
+1. Commit and push Slice B7 (`feature/s1-cursor-motion`) to GitHub.
+2. Merge `feature/s1-cursor-motion` into `main` and delete the branch locally and remotely.
+3. Start next task in PLAN.md: Phase S1 · Slice B8 (`feature/s1-quality`, PR: `test(client): add e2e, a11y, performance checks and screenshots`).
 
 ---
 
