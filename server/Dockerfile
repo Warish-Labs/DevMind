@@ -2,7 +2,7 @@
 # Produces a single image deployable as api, worker, or scheduler (ADR-005, ADR-046)
 
 # Stage 1: Build dependencies with uv
-FROM python:3.12-slim-bookworm AS builder
+FROM python:3.15-slim-bookworm AS builder
 
 # Copy uv binary from official image
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -18,7 +18,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
 
 # Stage 2: Production runtime image
-FROM python:3.12-slim-bookworm AS runtime
+FROM python:3.15-slim-bookworm AS runtime
 
 WORKDIR /app
 
