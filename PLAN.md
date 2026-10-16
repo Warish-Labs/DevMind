@@ -191,8 +191,8 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M1-01 server/ skeleton (FastAPI app factory, settings, structured logging + redaction, error mapping RFC 9457, /healthz, /readyz) (feature/m1-server-skeleton)
 - [x] M1-02 Dockerfile (multi-stage, non-root) + infra/docker-compose.yml (pgvector, Valkey/Redis, api, worker, scheduler) (feature/m1-docker-compose)
 - [x] M1-03 Server CI jobs added to ci-gate; import-linter; pytest layout; Dependabot pip/docker (feature/m1-server-ci)
-- [ ] M1-04 render.yaml Blueprint (free profile: one free web service + free Key Value); docs/runbooks/deploy-render-vercel.md (feature/m1-deploy-config)
-- [ ] M1-05 test-all server steps; SETUP-GUIDE commands verified
+- [x] M1-04 render.yaml Blueprint (free profile: one free web service + free Key Value); docs/runbooks/deploy-render-vercel.md (feature/m1-deploy-config)
+- [x] M1-05 test-all server steps; SETUP-GUIDE commands verified (feature/m1-deploy-config)
 - [ ] M1-06 launcher: DEVMIND_RUN_MODE=api|worker|scheduler|all (uvicorn + embedded Celery, --pool=solo, signal handling); migrations at start under advisory lock; startup sweep; DEVMIND_REDIS_KEY_PREFIX (feature/m1-free-profile)
 - [ ] M1-07 server/configs/quotas.free.yaml from measured bytes per chunk; memory measurement recorded in BRAIN.md
 

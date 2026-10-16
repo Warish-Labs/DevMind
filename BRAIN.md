@@ -8,23 +8,25 @@
 
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
-| **Branch**         | `feature/m1-server-ci`                                                                       |
-| **Last commit**    | `7ca3303` (M1-02 merged into main)                                                           |
-| **Working tree**   | active on Milestone M1 (`feature/m1-server-ci`); M1-03 complete                              |
-| **Open PR**        | PR for M1-03 (`feature/m1-server-ci`)                                                        |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 19/19 pass, boundaries:server pass |
+| **Branch**         | `feature/m1-deploy-config`                                                                   |
+| **Last commit**    | `49c7aee` (M1-03 merged into main)                                                           |
+| **Working tree**   | active on Milestone M1 (`feature/m1-deploy-config`); M1-04 & M1-05 complete                  |
+| **Open PR**        | PR for M1-04 (`feature/m1-deploy-config`)                                                    |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 21/21 pass, boundaries:server pass |
 | **Date**           | 2026-10-16                                                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push Slice M1-03 (`feature/m1-server-ci`).
-2. Merge `feature/m1-server-ci` into `main` and push `main`.
-3. Clean up merged branches per user request (`git branch -d`, `git push origin --delete`).
-4. Cut branch `feature/m1-deploy-config` for M1-04:
-   - Create `render.yaml` Blueprint (free profile: one free web service + free Key Value per ADR-046)
-   - Create `docs/runbooks/deploy-render-vercel.md` deployment runbook.
+1. Commit and push Slice M1-04/M1-05 (`feature/m1-deploy-config`).
+2. Merge `feature/m1-deploy-config` into `main` and push `main`.
+3. Clean up merged branch `feature/m1-deploy-config` locally and remotely (`git branch -d`, `git push origin --delete`).
+4. Cut branch `feature/m1-free-profile` for M1-06:
+   - Implement `server/app/launcher.py` supporting `DEVMIND_RUN_MODE=api|worker|scheduler|all` (uvicorn + embedded Celery `--pool=solo`, signal handling).
+   - Add advisory lock migration execution at start.
+   - Implement startup sweep for orphaned Celery tasks/Redis keys.
+   - Enforce `DEVMIND_REDIS_KEY_PREFIX` isolation.
 
 ---
 
@@ -38,6 +40,25 @@
 ---
 
 ## 4. Done log
+
+### M1-04 & M1-05 — Render Blueprint, Free-Tier Deployment Runbook & Server Verification
+
+- **Date**: 2026-10-16
+- **Branch**: `feature/m1-deploy-config`
+- **What**: Implemented free deployment profile infrastructure and runbook per ADR-046, ADR-049, and `docs/10`:
+  - **Render Infrastructure Blueprint** (`render.yaml`):
+    - Configured single free web service (`devmind-api`) using Docker runtime (`server/Dockerfile`), exposing port 8000 and `/healthz` probe.
+    - Configured Render free Key Value (`devmind-redis`) instance with connection string injection into `devmind-api`.
+    - Marked all secret credentials with `sync: false` and zero plaintext values (`DEVMIND_DATABASE_URL`, `CLERK_SECRET_KEY`, `DEVMIND_ENCRYPTION_KEYS`, etc.).
+  - **Free-Profile Deployment Runbook** (`docs/runbooks/deploy-render-vercel.md`):
+    - Documented step-by-step setup for Vercel Hobby (Next.js client) and Render (API + embedded Celery).
+    - Documented Neon PostgreSQL connection pooling, Clerk auth configuration, custom domains (`warishlabs.in`), and sleep tolerance invariants (graceful waking state on cold starts).
+  - **Automated Configuration Tests** (`server/tests/test_deploy_config.py`):
+    - Validated `render.yaml` schema, free plan enforcement, non-root Docker runtime, and absence of plaintext secrets.
+    - Validated deployment runbook existence and ADR cross-references.
+  - **Test-All Verification**:
+    - Confirmed all 13 test steps pass cleanly (`test-all --fast`), including all 21 server tests and import boundary checks.
+- **Actual results**: `pnpm test:all --fast` (13 passed, 0 failed, 1 skipped: 21/21 Python tests pass, docs links 0 broken).
 
 ### M1-03 — Server CI Workflows, Import Boundary Linter & Dependabot
 
