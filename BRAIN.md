@@ -8,10 +8,10 @@
 
 | Field              | Value                                                                  |
 | ------------------ | ---------------------------------------------------------------------- |
-| **Branch**         | `feature/s2-views` (ready to merge to main)                            |
-| **Last commit**    | `8d4ede8` (Slice B10 implementation complete)                          |
-| **Working tree**   | active on Slice B10 (`feature/s2-views`)                               |
-| **Open PR**        | PR for Slice B10 (`feature/s2-views`)                                  |
+| **Branch**         | `feature/s2-diagnostics-consent`                                       |
+| **Last commit**    | `3951a44` (Slice B10 merged & pushed)                                  |
+| **Working tree**   | active on Slice B11 (`feature/s2-diagnostics-consent`); clean          |
+| **Open PR**        | PR for Slice B11 (`feature/s2-diagnostics-consent`)                    |
 | **Last CI result** | `test-all --fast`: 9 passed, 0 failed, 2 skipped; extension 12/12 pass |
 | **Date**           | 2026-10-16                                                             |
 
@@ -19,13 +19,12 @@
 
 ## 2. Next action (exact)
 
-1. Merge Slice B10 (`feature/s2-views`) into `main`, push to `origin/main`, retain remote feature branch.
-2. Cut branch `feature/s2-diagnostics-consent` for Slice B11:
+1. Implement Slice B11 (`feature/s2-diagnostics-consent`):
    - S2-10 DiagnosticCollection (source "DevMind", E1 prefixed "Possible:", code = rule id, severity mapping from docs/06)
    - S2-11 Status bar (`$(shield)` DevMind · fixture · idle / scanning N/M / offline; text not color alone; click opens Scan view)
    - S2-12 Consent preview webview (CSP + nonce, tokens, table of example files, Send/Cancel; Send in fixture mode shows message, no network; default focus Cancel)
-3. Verify with unit tests (`pnpm --filter devmind-vscode test`) and build.
-4. Commit and push to `origin/feature/s2-diagnostics-consent`.
+2. Verify with unit tests (`pnpm --filter devmind-vscode test`) and build.
+3. Commit and push to `origin/feature/s2-diagnostics-consent`.
 
 ---
 
