@@ -1,0 +1,8 @@
+src/**
+tests/**
+.vscode/**
+esbuild.mjs
+tsconfig.json
+vitest.config.mts
+.env*
+*.vsix

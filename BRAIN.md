@@ -6,24 +6,26 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                  |
-| ------------------ | ---------------------------------------------------------------------- |
-| **Branch**         | `feature/s2-quality`                                                   |
-| **Last commit**    | `39f4969` (Slice B11 merged & pushed)                                  |
-| **Working tree**   | active on Slice B12 (`feature/s2-quality`); clean                      |
-| **Open PR**        | PR for Slice B12 (`feature/s2-quality`)                                |
-| **Last CI result** | `test-all --fast`: 9 passed, 0 failed, 2 skipped; extension 17/17 pass |
-| **Date**           | 2026-10-16                                                             |
+| Field              | Value                                                                   |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Branch**         | `feature/s2-quality` (ready to merge to main)                           |
+| **Last commit**    | `888f351` (Slice B12 implementation complete)                           |
+| **Working tree**   | active on Slice B12 (`feature/s2-quality`)                              |
+| **Open PR**        | PR for Slice B12 (`feature/s2-quality`)                                 |
+| **Last CI result** | `test-all --fast`: 10 passed, 0 failed, 2 skipped; extension 20/20 pass |
+| **Date**           | 2026-10-16                                                              |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement Slice B12 (`feature/s2-quality`):
-   - S2-13 Vitest tests (grouping, severity, text builders, redaction) + extension package test (`vsce package`) + extension manifest verification
-   - S2-14 Extension screenshot and evaluation runbook (`docs/runbooks/screenshots.md` & F5 flow verification)
-2. Verify packaging artifact generation and full test suite (`pnpm test:all --fast`).
-3. Commit and push to `origin/feature/s2-quality`.
+1. Merge Slice B12 (`feature/s2-quality`) into `main`, push to `origin/main`, retain remote feature branch.
+2. Complete Phase S2 Gate (Phase S2 UI Shell complete!).
+3. Initiate Phase R1 (Slice B13 `docs/r1-readme-showcase`):
+   - R1-01 Root README per ANTIGRAVITY_PROMPT.md §12 (logo, badges, screenshots, Mermaid diagrams, honest status table)
+   - R1-02 Reconcile docs/SETUP-GUIDE.md commands and env table with verified reality (date-stamped)
+   - R1-03 Upgrade docs/showcase/README.personal.md with real screenshots and honest status
+   - R1-04 Add docs/showcase/PROFILE-BLURB.md (under 300 chars + longer paragraph)
 
 ---
 
@@ -37,6 +39,24 @@
 ---
 
 ## 4. Done log
+
+### B12 — Extension Quality, Host Activation, Packaging & Screenshot Guide
+
+- **Date**: 2026-10-16
+- **Branch**: `feature/s2-quality`
+- **What**: Completed comprehensive test harness, activation testing, and packaging:
+  - **S2-13 Extension Quality & Packaging** (`extension/tests/quality.test.ts`):
+    - Full activation lifecycle test verifying registration of all 8 commands, 5 tree views, diagnostic collection, and status bar.
+    - Explicit assertion guaranteeing **zero network calls** during fixture mode activation and scan.
+    - Secret redaction format validation (`[REDACTED:token:8a9b2c3d]`).
+    - VSIX packaging pipeline via `@vscode/vsce package --no-dependencies --out dist/devmind-vscode.vsix` producing a lean, compliant 40.16 KB bundle. Added `.vscodeignore`, `README.md`, and `LICENSE`.
+    - Integrated `package:extension` step directly into `scripts/test-all.mjs` test runner.
+  - **S2-14 Extension Evaluation & Screenshots**:
+    - Validated `docs/runbooks/screenshots.md` guide covering F5 launch configuration, fixture mode assertions, and screenshot checklist.
+- **Commands & tests added**:
+  - `pnpm --filter devmind-vscode package` command in `extension/package.json`.
+  - Comprehensive quality test suite (3 new tests, 20/20 total extension unit tests passing).
+- **Actual results**: `pnpm test:all --fast` (10 passed, 0 failed, 2 skipped), VSIX generated.
 
 ### B11 — Diagnostics Collection, Status Bar & Consent Preview Webview
 

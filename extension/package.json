@@ -4,7 +4,7 @@
   "description": "Continuous Project Brain Companion for VS Code: local scanner, architectural map, and privacy-first sync.",
   "version": "0.1.0",
   "publisher": "warishlabs",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.90.0"
@@ -14,6 +14,11 @@
     "Linters",
     "Education"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Warish-Labs/DevMind.git",
+    "directory": "extension"
+  },
   "main": "./dist/extension.js",
   "activationEvents": [
     "onStartupFinished"
@@ -150,7 +155,8 @@
     "build": "node esbuild.mjs --production",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "package": "vsce package --no-dependencies --out dist/devmind-vscode.vsix"
   },
   "devDependencies": {
     "@types/node": "26.6.5",

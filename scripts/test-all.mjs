@@ -51,7 +51,10 @@ function runStep(name, area, command, cmdArgs, condition = true, skipReason = ""
 
   const result = spawnSync(command, cmdArgs, {
     cwd: REPO_ROOT,
-    env: { ...process.env, PATH: `${process.env.HOME}/.local/share/pnpm/bin:${process.env.PATH}` },
+    env: {
+      ...process.env,
+      PATH: `${process.env.HOME}/.local/share/pnpm/bin:${process.env.HOME}/.local/share/pnpm:${process.env.PATH}`,
+    },
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -206,6 +209,18 @@ function main() {
       "extension",
       "pnpm",
       ["--filter", "devmind-vscode", "test"],
+      hasExtension,
+      "extension not created yet (Phase S2)"
+    )
+  );
+  if (BAIL && results[results.length - 1].status === "FAIL") finish(results);
+
+  results.push(
+    runStep(
+      "package:extension",
+      "extension",
+      "pnpm",
+      ["--filter", "devmind-vscode", "package"],
       hasExtension,
       "extension not created yet (Phase S2)"
     )

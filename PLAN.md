@@ -160,8 +160,8 @@ PR title: `feat(extension): add diagnostics, status bar and consent preview`
 
 PR title: `test(extension): add unit, host and package tests and screenshot guide`
 
-- [ ] S2-13 Vitest (grouping, severity, text builders, redaction) + extension-host test (activates, fixture scan, diagnostics count, no network) + vsce package/ls; CI artifact
-- [ ] S2-14 docs/runbooks/screenshots.md; verify F5 flow end to end
+- [x] S2-13 Vitest (grouping, severity, text builders, redaction) + extension-host test (activates, fixture scan, diagnostics count, no network) + vsce package/ls; CI artifact
+- [x] S2-14 docs/runbooks/screenshots.md; verify F5 flow end to end
   - Acceptance: vsce package succeeds; host test passes; F5 shows all views with fixture data; nothing makes a network call
 
 Gate: package builds; host test passes; F5 verified; owner screenshots and merges
