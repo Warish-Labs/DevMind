@@ -8,10 +8,10 @@
 
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
-| **Branch**         | `feature/m2-db-migrations` (tracking `origin/feature/m2-db-migrations`)                      |
-| **Last commit**    | `a535fcd` (CI fixes: common package build, pnpm audit prod, and playwright timeout)          |
-| **Working tree**   | clean; GitHub ruleset active; initiating Milestone M2 (Tasks M2-01 & M2-02)                  |
-| **Open PR**        | https://github.com/Warish-Labs/DevMind/pull/new/feature/m2-db-migrations                     |
+| **Branch**         | `main`                                                                                       |
+| **Last commit**    | `537a3bc` (Hero layout height balancing and CI workflow fixes)                               |
+| **Working tree**   | clean; working directly on main per user instruction                                         |
+| **Open PR**        | None (merged locally into main)                                                              |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 33/33 pass, boundaries:server pass |
 | **Date**           | 2026-10-16                                                                                   |
 
