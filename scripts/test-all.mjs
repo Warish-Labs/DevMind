@@ -53,7 +53,7 @@ function runStep(name, area, command, cmdArgs, condition = true, skipReason = ""
     cwd: REPO_ROOT,
     env: {
       ...process.env,
-      PATH: `${process.env.HOME}/.local/share/pnpm/bin:${process.env.HOME}/.local/share/pnpm:${process.env.PATH}`,
+      PATH: `${process.env.HOME}/.local/bin:${process.env.HOME}/.local/share/pnpm/bin:${process.env.HOME}/.local/share/pnpm:${process.env.PATH}`,
     },
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
@@ -231,10 +231,22 @@ function main() {
   const hasServer = fs.existsSync(path.join(REPO_ROOT, "server/pyproject.toml"));
   results.push(
     runStep(
+      "lint:server",
+      "server",
+      "uv",
+      ["run", "--directory", "server", "ruff", "check", "."],
+      hasServer,
+      "server not scaffolded yet (Milestone M1)"
+    )
+  );
+  if (BAIL && results[results.length - 1].status === "FAIL") finish(results);
+
+  results.push(
+    runStep(
       "test:server",
       "server",
       "uv",
-      ["run", "pytest"],
+      ["run", "--directory", "server", "pytest"],
       hasServer,
       "server not scaffolded yet (Milestone M1)"
     )

@@ -6,24 +6,25 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                   |
-| ------------------ | ----------------------------------------------------------------------- |
-| **Branch**         | `docs/r1-readme-showcase`                                               |
-| **Last commit**    | `5a09516` (Phase R1 docs & showcase README)                             |
-| **Working tree**   | clean; Phase R1 completed, ready to merge into `main`                   |
-| **Open PR**        | PR for Slice B13 (`docs/r1-readme-showcase`)                            |
-| **Last CI result** | `test-all --fast`: 10 passed, 0 failed, 2 skipped; extension 20/20 pass |
-| **Date**           | 2026-10-16                                                              |
+| Field              | Value                                                                             |
+| ------------------ | --------------------------------------------------------------------------------- |
+| **Branch**         | `feature/m1-server-skeleton`                                                      |
+| **Last commit**    | `1f0f542` (Phase R1 merged into main)                                             |
+| **Working tree**   | active on Milestone M1 (`feature/m1-server-skeleton`); M1-01 complete             |
+| **Open PR**        | PR for M1-01 (`feature/m1-server-skeleton`)                                       |
+| **Last CI result** | `test-all --fast`: 12 passed, 0 failed, 1 skipped; server 15/15 pass, lint:server |
+| **Date**           | 2026-10-16                                                                        |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push Slice B13 (`docs/r1-readme-showcase`).
-2. Merge `docs/r1-readme-showcase` into `main`, keeping remote branch visible on GitHub.
-3. Initiate Phase M · Milestone M1 (`feature/m1-server-skeleton`):
-   - M1-01: FastAPI application skeleton in `server/app/` (`main.py`, settings, structured logging + secret redaction, RFC 9457 Problem Details error handler, `/healthz` and `/readyz` endpoints).
-   - M1-02: Multi-stage Dockerfile (`server/Dockerfile`) and `infra/docker-compose.yml`.
+1. Commit and push Slice M1-01 (`feature/m1-server-skeleton`).
+2. Merge `feature/m1-server-skeleton` into `main` and push `main`, retaining remote branch visible on GitHub.
+3. Cut branch `feature/m1-docker-compose` for M1-02:
+   - Create multi-stage non-root `server/Dockerfile`
+   - Create `infra/docker-compose.yml` (Postgres with pgvector & pg_trgm, Redis/Valkey, API, Celery worker, Celery beat scheduler)
+   - Verify local container build and spin-up.
 
 ---
 
@@ -37,6 +38,25 @@
 ---
 
 ## 4. Done log
+
+### M1-01 — FastAPI Application Skeleton, Settings, Logging Redaction, Problem Details & Health
+
+- **Date**: 2026-10-16
+- **Branch**: `feature/m1-server-skeleton`
+- **What**: Implemented complete server foundation per `docs/02`, `docs/03`, and `docs/11`:
+  - **Packaging & Tooling** (`server/pyproject.toml`): Configured `devmind-server` with Python >=3.11, FastAPI, Uvicorn, Pydantic v2, Pydantic-Settings, HTTPX, Ruff, Pytest, Import-Linter.
+  - **Configuration** (`server/app/core/settings.py`): Pydantic v2 `Settings` with `DEVMIND_` env prefix, environment mode validations (`local`, `test`, `staging`, `production`), run mode (`api`, `worker`, `scheduler`, `all`), and CORS origins list parsing.
+  - **Structured JSON Logging & Redaction Filter** (`server/app/core/logging.py`): RFC/ADR-002 compliant JSON logging with contextvars for `request_id`, `job_id`, `workspace_id`, and `project_id`. Regex filter automatically redacts Bearer tokens, `sk_live_`, `sk_test_`, `pk_live_`, `pk_test_`, `whsec_`, and database connection URI passwords.
+  - **RFC 9457 Problem Details** (`server/app/core/errors.py`): `ProblemDetails` schema with stable codes (`resource.not_found`, `auth.unauthenticated`, `auth.forbidden`, `validation.failed`, `conflict.state`, `consent.required`, `quota.exceeded`, `rate_limit.exceeded`, `llm.unavailable`). Handlers for `DevMindError`, `RequestValidationError` (422), and unhandled server exceptions (500).
+  - **Operational Probes** (`server/app/api/health.py`): `/healthz` (liveness) returning 200 OK without downstream dependency checks; `/readyz` (readiness) with pluggable database and redis checks returning 200 ready or 503 degraded without leaking secrets.
+  - **App Factory & Middleware** (`server/app/main.py`): `create_app()` factory with CORS middleware, `RequestContextMiddleware` for `X-Request-ID` and `X-Process-Time` injection, and routers.
+  - **Monorepo Integration** (`scripts/test-all.mjs`): Added `lint:server` (`uv run --directory server ruff check .`) and `test:server` (`uv run --directory server pytest`) to the automated verification runner.
+- **Commands & tests added**:
+  - `server/tests/test_health.py` (3 tests for `/healthz`, `/readyz`, `/api/v1`)
+  - `server/tests/test_settings.py` (3 tests for defaults, cors, environment modes)
+  - `server/tests/test_logging.py` (4 tests for Bearer token redaction, key redaction, DB URI password redaction, JSON formatting)
+  - `server/tests/test_errors.py` (5 tests for 404, 401, 403, 403 consent, 422 validation)
+- **Actual results**: `pnpm test:all --fast` (12 passed, 0 failed, 1 skipped: 15/15 Python unit tests passing in 0.40s, Ruff clean in 0.04s).
 
 ### B13 — Phase R1: Showcase README, Setup Guide & Profile Blurbs
 

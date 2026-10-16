@@ -188,7 +188,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 ### M1 · Repository foundation, rules, CI, Docker, configuration
 
-- [ ] M1-01 server/ skeleton (FastAPI app factory, settings, structured logging + redaction, error mapping RFC 9457, /healthz, /readyz) (feature/m1-server-skeleton)
+- [x] M1-01 server/ skeleton (FastAPI app factory, settings, structured logging + redaction, error mapping RFC 9457, /healthz, /readyz) (feature/m1-server-skeleton)
 - [ ] M1-02 Dockerfile (multi-stage, non-root) + infra/docker-compose.yml (pgvector, Valkey/Redis, api, worker, scheduler) (feature/m1-docker-compose)
 - [ ] M1-03 Server CI jobs added to ci-gate; import-linter; pytest layout; Dependabot pip/docker (feature/m1-server-ci)
 - [ ] M1-04 render.yaml Blueprint (free profile: one free web service + free Key Value); docs/runbooks/deploy-render-vercel.md (feature/m1-deploy-config)
