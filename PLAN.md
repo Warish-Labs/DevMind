@@ -97,12 +97,12 @@ PR title: `feat(client): add hero Trace with scripted sequence`
 
 PR title: `feat(client): add homepage sections 02-08`
 
-- [ ] S1-09 02: One change / five consequences (diff hunk + consequence questions + drawn connectors)
-- [ ] S1-10 03: Project Brain strata (interactive SVG, keyboard, 10 layers from docs/04 §2)
-- [ ] S1-11 04: Capability index table with release labels from release-status.json
-- [ ] S1-12 05: Walkthrough sticky timeline (14 steps, click-to-jump, id="walkthrough")
-- [ ] S1-13 06: Local-first diptych + 07: Privacy ledger (mode toggle, table from privacy-ledger.json)
-- [ ] S1-14 08: CTA + footer + Preferences control (cursor on/off, reduced motion on/off, localStorage)
+- [x] S1-09 02: One change / five consequences (diff hunk + consequence questions + drawn connectors)
+- [x] S1-10 03: Project Brain strata (interactive SVG, keyboard, 10 layers from docs/04 §2)
+- [x] S1-11 04: Capability index table with release labels from release-status.json
+- [x] S1-12 05: Walkthrough sticky timeline (14 steps, click-to-jump, id="walkthrough")
+- [x] S1-13 06: Local-first diptych + 07: Privacy ledger (mode toggle, table from privacy-ledger.json)
+- [x] S1-14 08: CTA + footer + Preferences control (cursor on/off, reduced motion on/off, localStorage)
   - Acceptance: all sections render; links in section 08 to /early-access and github.com/Warish-Labs/DevMind work
 
 ### B7 `feature/s1-cursor-motion`

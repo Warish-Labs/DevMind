@@ -6,27 +6,22 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                |
-| ------------------ | -------------------------------------------------------------------- |
-| **Branch**         | `main`                                                               |
-| **Last commit**    | `235fb16` (Merge Slice B5 into main)                                 |
-| **Working tree**   | clean; Slice B5 complete & merged; GitHub conflicts resolved         |
-| **Open PR**        | none                                                                 |
-| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client 8/8 tests pass |
-| **Date**           | 2026-10-15                                                           |
+| Field              | Value                                                                  |
+| ------------------ | ---------------------------------------------------------------------- |
+| **Branch**         | `feature/s1-sections`                                                  |
+| **Last commit**    | `93fee5e` (Favicon fix)                                                |
+| **Working tree**   | Slice B6 complete (S1-09 to S1-14); tests & build green                |
+| **Open PR**        | PR for Slice B6 (`feature/s1-sections`)                                |
+| **Last CI result** | `pnpm verify` (6 passed, 0 failed, 2 skipped); client 14/14 tests pass |
+| **Date**           | 2026-10-16                                                             |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Create branch `feature/s1-sections` from `main` for Slice B6.
-2. Implement S1-09: Section 02 (One change / five consequences: diff hunk, consequence questions, drawn connectors).
-3. Implement S1-10: Section 03 (Project Brain strata: interactive SVG, keyboard nav, 10 layers from docs/04 §2).
-4. Implement S1-11: Section 04 (Capability index table with release labels from `release-status.json`).
-5. Implement S1-12: Section 05 (Walkthrough sticky timeline: 14 steps, click-to-jump, id="walkthrough").
-6. Implement S1-13: Section 06 (Local-first diptych) + Section 07 (Privacy ledger from `privacy-ledger.json`).
-7. Implement S1-14: Section 08 (CTA + footer + Preferences control: cursor on/off, reduced motion on/off).
-8. Verify tests, commit, push, and merge into `main`.
+1. Commit and push Slice B6 (`feature/s1-sections`) to GitHub.
+2. Merge `feature/s1-sections` into `main` and delete the branch locally and remotely.
+3. Start next task in PLAN.md: Phase S1 · Slice B7 (`feature/s1-cursor-motion`, PR: `feat(client): add custom cursor and motion system`).
 
 ---
 
