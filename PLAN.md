@@ -174,10 +174,10 @@ Gate: package builds; host test passes; F5 verified; owner screenshots and merge
 
 PR title: `docs(repo): add showcase README with diagrams and screenshots`
 
-- [ ] R1-01 Root README per ANTIGRAVITY_PROMPT.md §12 (logo, badges, screenshots, Mermaid diagrams, honest status table)
-- [ ] R1-02 Reconcile docs/SETUP-GUIDE.md commands and env table with verified reality (date-stamped)
-- [ ] R1-03 Upgrade docs/showcase/README.personal.md with real screenshots and honest status; owner copies to personal repo by hand
-- [ ] R1-04 Add docs/showcase/PROFILE-BLURB.md (under 300 chars + longer paragraph)
+- [x] R1-01 Root README per ANTIGRAVITY_PROMPT.md §12 (logo, badges, screenshots, Mermaid diagrams, honest status table)
+- [x] R1-02 Reconcile docs/SETUP-GUIDE.md commands and env table with verified reality (date-stamped)
+- [x] R1-03 Upgrade docs/showcase/README.personal.md with real screenshots and honest status; owner copies to personal repo by hand
+- [x] R1-04 Add docs/showcase/PROFILE-BLURB.md (under 300 chars + longer paragraph)
   - Acceptance: all README links resolve; Mermaid renders (validate); every claim matches PLAN status
 
 Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md status

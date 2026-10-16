@@ -9,8 +9,8 @@
 | Field              | Value                                                                   |
 | ------------------ | ----------------------------------------------------------------------- |
 | **Branch**         | `docs/r1-readme-showcase`                                               |
-| **Last commit**    | `7bc34c6` (Phase S2 complete & merged into main)                        |
-| **Working tree**   | active on Phase R1 (`docs/r1-readme-showcase`); clean                   |
+| **Last commit**    | `5a09516` (Phase R1 docs & showcase README)                             |
+| **Working tree**   | clean; Phase R1 completed, ready to merge into `main`                   |
 | **Open PR**        | PR for Slice B13 (`docs/r1-readme-showcase`)                            |
 | **Last CI result** | `test-all --fast`: 10 passed, 0 failed, 2 skipped; extension 20/20 pass |
 | **Date**           | 2026-10-16                                                              |
@@ -19,14 +19,11 @@
 
 ## 2. Next action (exact)
 
-1. Implement Phase R1 · Slice B13 (`docs/r1-readme-showcase`):
-   - R1-01 Root README.md per ANTIGRAVITY_PROMPT.md §12 (professional design, logo, badges, live screenshot gallery, architectural Mermaid diagrams, honest PLAN status table)
-   - R1-02 Reconcile docs/SETUP-GUIDE.md commands, dependencies, and environment variable tables with verified reality (date-stamped)
-   - R1-03 Upgrade docs/showcase/README.personal.md with real screenshots, honest status, and clean formatting
-   - R1-04 Add docs/showcase/PROFILE-BLURB.md (under 300 chars summary + narrative paragraph)
-2. Verify all markdown relative links and anchors with `scripts/docs-links.mjs`.
-3. Verify test suite with `pnpm verify`.
-4. Commit and push to `origin/docs/r1-readme-showcase`.
+1. Commit and push Slice B13 (`docs/r1-readme-showcase`).
+2. Merge `docs/r1-readme-showcase` into `main`, keeping remote branch visible on GitHub.
+3. Initiate Phase M · Milestone M1 (`feature/m1-server-skeleton`):
+   - M1-01: FastAPI application skeleton in `server/app/` (`main.py`, settings, structured logging + secret redaction, RFC 9457 Problem Details error handler, `/healthz` and `/readyz` endpoints).
+   - M1-02: Multi-stage Dockerfile (`server/Dockerfile`) and `infra/docker-compose.yml`.
 
 ---
 
@@ -40,6 +37,18 @@
 ---
 
 ## 4. Done log
+
+### B13 — Phase R1: Showcase README, Setup Guide & Profile Blurbs
+
+- **Date**: 2026-10-16
+- **Branch**: `docs/r1-readme-showcase`
+- **What**: Comprehensive showcase documentation and link verification:
+  - **R1-01 Showcase README.md**: Fully upgraded root `README.md` per `docs/ANTIGRAVITY_PROMPT.md` §12: dual SVG header lockups, static badges, screenshots gallery, `/admin/users` story, Mermaid lifecycle flowchart, 9 capabilities table, Project Brain layers, E0-E3 evidence model, architecture diagrams, privacy ledger, tech stack with ADR links, verified setup commands, roadmap table, docs index, and maintainer credits.
+  - **R1-02 Setup Guide Reconciliation**: Updated `docs/SETUP-GUIDE.md` Section 8 with verified reality date-stamp: `Verified by Antigravity on 2026-10-16 at commit 7bc34c6 (Phase S2 complete)`.
+  - **R1-03 Personal README**: Upgraded `docs/showcase/README.personal.md` with honest status and real raw GitHub screenshot links.
+  - **R1-04 Profile Blurb**: Added `docs/showcase/PROFILE-BLURB.md` (<300 char summary + narrative paragraph).
+  - Validated all 358 links/anchors across 40 Markdown files with `scripts/docs-links.mjs` (0 broken links).
+- **Actual results**: `pnpm test:all --fast` (10 passed, 0 failed, 2 skipped), 0 broken links.
 
 ### B12 — Extension Quality, Host Activation, Packaging & Screenshot Guide
 

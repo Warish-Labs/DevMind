@@ -370,7 +370,7 @@ Local files: `client/.env.local`, `server/.env` (both git-ignored; copy from the
 
 ## 8. Running everything locally
 
-Expected commands. **Antigravity verifies each one in a clean clone after every phase and stamps the result here.** If a command fails, tell Antigravity the exact error.
+Expected commands. **Verified by Antigravity on 2026-10-16 at commit `7bc34c6` (Phase S2 complete).**
 
 | Task | Command | Available from |
 |---|---|---|
@@ -378,9 +378,9 @@ Expected commands. **Antigravity verifies each one in a clean clone after every 
 | Home page dev server | `pnpm --filter client dev` → http://localhost:3000 | S1 |
 | Home page production build | `pnpm --filter client build && pnpm --filter client start` | S1 |
 | Take home-page screenshots | `pnpm screenshots` → `docs/assets/screenshots/` | S1 |
-| Build the extension | `pnpm --filter extension build` | S2 |
+| Build the extension | `pnpm --filter devmind-vscode build` | S2 |
 | Run the extension | Open the repo in VS Code, **Run and Debug → "Run DevMind Extension" (F5)**; a second window opens on the fixture project | S2 |
-| Package the extension | `pnpm --filter extension package` → `.vsix` | S2 |
+| Package the extension | `pnpm --filter devmind-vscode package` → `dist/devmind-vscode.vsix` | S2 |
 | Start Postgres + Redis (+ API, worker) | `docker compose -f infra/docker-compose.yml up -d` | M1 |
 | Server setup | `cd server && uv sync && cp .env.example .env` | M1 |
 | Run the API | `cd server && uv run uvicorn app.main:app --reload --port 8000` → http://localhost:8000/healthz | M1 |
@@ -389,7 +389,7 @@ Expected commands. **Antigravity verifies each one in a clean clone after every 
 | Database migrations | `cd server && uv run alembic upgrade head` | M2 |
 | Regenerate API types | `pnpm gen:api` | M2 |
 | Lint / typecheck everything | `pnpm lint && pnpm typecheck` | P0 |
-| **Everything (fast)** | `pnpm test:all` | P0 |
+| **Everything (fast)** | `pnpm test:all` (or `pnpm verify`) | P0 |
 | **Everything (full)** | `pnpm test:all --full` | M1 |
 
 Ports: client 3000, API 8000 (Antigravity confirms and documents any change).
