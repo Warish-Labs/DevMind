@@ -9,23 +9,21 @@
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                       |
-| **Last commit**    | `537a3bc` (Hero layout height balancing and CI workflow fixes)                               |
+| **Last commit**    | pending commit (M2-01 & M2-02 Alembic migrations & tenancy repositories)                     |
 | **Working tree**   | clean; working directly on main per user instruction                                         |
-| **Open PR**        | None (merged locally into main)                                                              |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 33/33 pass, boundaries:server pass |
+| **Open PR**        | None (working directly on main)                                                              |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 48/48 pass, boundaries:server pass |
 | **Date**           | 2026-10-16                                                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Cut branch `feature/m2-db-migrations` for M2-01 & M2-02:
-   - Add SQLAlchemy 2.x, Alembic, psycopg v3 to `server/pyproject.toml`.
-   - Configure Alembic baseline (`server/alembic.ini`, `server/alembic/env.py`).
-   - Create models and migrations for `users`, `workspaces`, `workspace_memberships`, `projects`, `project_memberships`, `audit_events`, `usage_records`.
-   - Implement base models with UUIDv7 primary keys and UTC timestamps.
-   - Implement repository layer requiring `AuthContext`.
-   - Add unit and migration tests.
+1. Implement Task M2-03: Clerk token verification service:
+   - Clerk JWKS fetcher, issuer verification, signature validation, expiry checks.
+   - In-memory key caching and clock skew tolerance.
+   - Pydantic models for Clerk session claims.
+   - Unit tests for verified claims, expired tokens, and invalid signatures.
 
 ---
 
@@ -39,6 +37,30 @@
 ---
 
 ## 4. Done log
+
+### M2-01 & M2-02 — Alembic Migrations, Tenancy Models, and Repository Layer with AuthContext
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct local merge / main workflow per owner instruction)
+- **What**: Implemented initial database foundations, Alembic baseline migrations, and repository layer enforcing tenant isolation per ADR-046, `docs/03` §1–§4, and `docs/09` §4:
+  - **Alembic Configuration** (`server/alembic.ini`, `server/alembic/env.py`):
+    - Configured async migration runner supporting both offline DDL generation and online transactional async connections (`postgresql+psycopg://`).
+    - Uses application `Settings` to dynamically resolve direct migration URL.
+  - **Initial Tenancy Migration** (`server/alembic/versions/0001_initial_tenancy.py`):
+    - Created schema for `users`, `workspaces`, `workspace_memberships`, `projects`, `project_memberships`, `audit_events`, `usage_records`.
+    - Fully reversible `upgrade()` and `downgrade()` tested up and down against PostgreSQL.
+  - **Base Models & UUIDv7 Monotonicity** (`server/app/persistence/models/base.py`, `server/app/core/ids.py`):
+    - RFC 9562 compliant UUIDv7 generator providing 48-bit millisecond temporal ordering and B-Tree index locality.
+    - Mixins for `UUID7PrimaryKeyMixin`, `TimestampMixin` (UTC timestamptz), and `SoftDeleteMixin` (`deleted_at`).
+  - **SQLAlchemy Models** (`server/app/persistence/models/`):
+    - `User`, `Workspace`, `WorkspaceMembership`, `Project`, `ProjectMembership`, `AuditEvent`, `UsageRecord` with strict foreign keys (`CASCADE` / `SET NULL`), unique constraints, check constraints, and compound indexes.
+  - **Repository Layer Enforcing AuthContext** (`server/app/persistence/repositories/`):
+    - `BaseRepository`: strict enforcement that every repository function requires an `AuthContext` or `SystemContext` (raises `TypeError` on missing or invalid context).
+    - Query scoping automatically applies tenant `workspace_id` predicates; alien workspace requests clamp to impossible zero-match predicates.
+    - Implemented `UserRepository`, `WorkspaceRepository`, `ProjectRepository`, `AuditEventRepository`, and `UsageRecordRepository`.
+  - **Automated Tests** (`server/tests/test_ids.py`, `test_auth_context.py`, `test_models.py`, `test_repositories.py`, `test_migrations.py`):
+    - 48 total server tests passing, 7/7 architectural boundary contracts strictly verified.
+- **Actual results**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped; 48/48 Python tests pass, import boundaries clean).
 
 ### M1-06 & M1-07 — Free Profile Launcher, Advisory Lock, Startup Sweep, & Quota Budget
 

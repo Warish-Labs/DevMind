@@ -1,0 +1,35 @@
+"""Tests verifying Alembic migration configuration and revision consistency (docs/03 §9)."""
+
+from pathlib import Path
+
+from alembic.config import Config
+from alembic.script import ScriptDirectory
+
+from app.persistence.models import Base
+
+
+def test_alembic_config_and_revisions() -> None:
+    """Verify that alembic.ini points to a valid script directory and has exactly 1 head."""
+    ini_path = Path(__file__).parent.parent / "alembic.ini"
+    assert ini_path.exists(), "alembic.ini must exist in server root"
+
+    cfg = Config(str(ini_path))
+    script_dir = ScriptDirectory.from_config(cfg)
+
+    heads = script_dir.get_heads()
+    assert len(heads) == 1, f"Expected exactly 1 migration head, got: {heads}"
+    assert heads[0] == "0001_initial_tenancy"
+
+
+def test_migration_models_match_metadata() -> None:
+    """Verify that Base.metadata contains the tables declared in 0001_initial_tenancy."""
+    expected_tables = {
+        "users",
+        "workspaces",
+        "workspace_memberships",
+        "projects",
+        "project_memberships",
+        "audit_events",
+        "usage_records",
+    }
+    assert expected_tables.issubset(Base.metadata.tables.keys())

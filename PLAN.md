@@ -198,8 +198,8 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 ### M2 · Authentication, workspaces, projects, database, API foundations
 
-- [ ] M2-01 Alembic baseline setup and initial tenancy/identity migrations: users, workspaces, workspace_memberships, projects, project_memberships, audit_events, usage_records (feature/m2-db-migrations)
-- [ ] M2-02 Database engine session factory, base model with UUIDv7 PK, and repository layer enforcing AuthContext (feature/m2-db-migrations)
+- [x] M2-01 Alembic baseline setup and initial tenancy/identity migrations: users, workspaces, workspace_memberships, projects, project_memberships, audit_events, usage_records (feature/m2-db-migrations)
+- [x] M2-02 Database engine session factory, base model with UUIDv7 PK, and repository layer enforcing AuthContext (feature/m2-db-migrations)
 - [ ] M2-03 Clerk token verification service (issuer, JWKS signature, expiry, authorized parties, cache) (feature/m2-auth-clerk)
 - [ ] M2-04 Policy service, permission evaluator, and route permission registry with CI enforcement (feature/m2-auth-policy)
 - [ ] M2-05 Workspaces and projects CRUD REST endpoints with permission checks and Problem Details (feature/m2-workspaces-projects)
