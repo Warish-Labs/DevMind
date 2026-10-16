@@ -6,25 +6,26 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| **Branch**         | `feature/m1-free-profile`                                                                      |
-| **Last commit**    | `0e59a3b` (M1-04 & M1-05 merged into main)                                                     |
-| **Working tree**   | active on Milestone M1 (`feature/m1-free-profile`); M1-06 & M1-07 complete (Milestone M1 100%) |
-| **Open PR**        | PR for M1-06 & M1-07 (`feature/m1-free-profile`)                                               |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 33/33 pass, boundaries:server pass   |
-| **Date**           | 2026-10-16                                                                                     |
+| Field              | Value                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                       |
+| **Last commit**    | `c1c84d5` (M1-06 & M1-07 merged into main, Milestone M1 100% complete)                       |
+| **Working tree**   | clean; ready to kick off Milestone M2 (`feature/m2-db-migrations`)                           |
+| **Open PR**        | None (M1 merged and branches deleted)                                                        |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 33/33 pass, boundaries:server pass |
+| **Date**           | 2026-10-16                                                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push Slice M1-06/M1-07 (`feature/m1-free-profile`).
-2. Merge `feature/m1-free-profile` into `main` and push `main`.
-3. Clean up merged branch `feature/m1-free-profile` locally and remotely (`git branch -d`, `git push origin --delete`).
-4. Initiate Milestone M2 (`feature/m2-auth-tenancy-db`):
-   - M2-01 Alembic baseline + migrations (users, workspaces, memberships, projects, audit events).
-   - M2-02 Repository layer requiring `AuthContext`.
+1. Cut branch `feature/m2-db-migrations` for M2-01 & M2-02:
+   - Add SQLAlchemy 2.x, Alembic, psycopg v3 to `server/pyproject.toml`.
+   - Configure Alembic baseline (`server/alembic.ini`, `server/alembic/env.py`).
+   - Create models and migrations for `users`, `workspaces`, `workspace_memberships`, `projects`, `project_memberships`, `audit_events`, `usage_records`.
+   - Implement base models with UUIDv7 primary keys and UTC timestamps.
+   - Implement repository layer requiring `AuthContext`.
+   - Add unit and migration tests.
 
 ---
 
