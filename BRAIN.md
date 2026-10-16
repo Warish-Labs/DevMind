@@ -6,14 +6,14 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                        |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                       |
-| **Last commit**    | pending commit (M2-03 Clerk token verification service)                                      |
-| **Working tree**   | clean; working directly on main per user instruction                                         |
-| **Open PR**        | None (working directly on main)                                                              |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 56/56 pass, boundaries:server pass |
-| **Date**           | 2026-10-16                                                                                   |
+| Field              | Value                                                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                            |
+| **Last commit**    | `cd1ce12` (feat(server): add Clerk token verification service with RSA JWKS signature validation) |
+| **Working tree**   | clean; working directly on main per user instruction                                              |
+| **Open PR**        | None (working directly on main)                                                                   |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 56/56 pass, boundaries:server pass      |
+| **Date**           | 2026-10-16                                                                                        |
 
 ---
 
