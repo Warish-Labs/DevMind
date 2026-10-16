@@ -33,8 +33,9 @@ async def check_database_readiness() -> bool:
 
 async def check_redis_readiness() -> bool:
     """Check redis connectivity without exposing connection secrets."""
-    # Will be connected to redis client in M1/M2
-    return True
+    from app.core.redis import check_redis_connectivity
+
+    return await check_redis_connectivity()
 
 
 @router.get(

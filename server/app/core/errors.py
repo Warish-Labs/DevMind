@@ -46,6 +46,7 @@ class DevMindError(Exception):
         title: str = "Internal Server Error",
         errors: list[dict[str, Any]] | None = None,
         type_uri: str = "about:blank",
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(detail)
         self.detail = detail
@@ -54,6 +55,7 @@ class DevMindError(Exception):
         self.title = title
         self.errors = errors
         self.type_uri = type_uri
+        self.headers = headers
 
 
 class NotFoundError(DevMindError):
@@ -135,13 +137,34 @@ class RateLimitError(DevMindError):
     """Rate limit exceeded (429)."""
 
     def __init__(
-        self, detail: str = "Rate limit exceeded", errors: list[dict[str, Any]] | None = None
+        self,
+        detail: str = "Rate limit exceeded",
+        errors: list[dict[str, Any]] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(
             detail=detail,
             code="rate_limit.exceeded",
             status_code=429,
             title="Rate Limit Exceeded",
+            errors=errors,
+            headers=headers,
+        )
+
+
+class IdempotencyMismatchError(DevMindError):
+    """Idempotency key reused with different request payload (422)."""
+
+    def __init__(
+        self,
+        detail: str = "Idempotency key has already been used with a different request payload",
+        errors: list[dict[str, Any]] | None = None,
+    ) -> None:
+        super().__init__(
+            detail=detail,
+            code="idempotency.mismatch",
+            status_code=422,
+            title="Idempotency Key Mismatch",
             errors=errors,
         )
 
@@ -213,6 +236,7 @@ async def devmind_error_handler(request: Request, exc: DevMindError) -> JSONResp
         status_code=exc.status_code,
         content=problem.model_dump(exclude_none=True),
         media_type=PROBLEM_MEDIA_TYPE,
+        headers=exc.headers,
     )
 
 

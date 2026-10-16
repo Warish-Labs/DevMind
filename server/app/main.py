@@ -71,6 +71,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Request context middleware (correlation ID & timing)
     app.add_middleware(RequestContextMiddleware)
 
+    # Rate limiting middleware (sliding-window per principal and route class, docs/03 §10)
+    from app.middleware.rate_limit import RateLimitMiddleware
+
+    app.add_middleware(RateLimitMiddleware, settings=settings)
+
+    # Idempotency middleware (SHA-256 payload binding & 24h caching, docs/03 §10)
+    from app.middleware.idempotency import IdempotencyMiddleware
+
+    app.add_middleware(IdempotencyMiddleware, settings=settings)
+
     # RFC 9457 Problem Details error handlers
     app.add_exception_handler(DevMindError, devmind_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(RequestValidationError, validation_error_handler)  # type: ignore[arg-type]

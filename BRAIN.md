@@ -9,21 +9,23 @@
 | Field              | Value                                                                                        |
 | ------------------ | -------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                       |
-| **Last commit**    | `8064481` (feat(server): expand settings to support local env overrides and domain config)   |
+| **Last commit**    | `0452676` (ci: disable automatic triggers for all workflows)                                 |
 | **Working tree**   | clean; working directly on main per user instruction                                         |
 | **Open PR**        | None (working directly on main)                                                              |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 71/71 pass, boundaries:server pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 82/82 pass, boundaries:server pass |
 | **Date**           | 2026-10-16                                                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement Task M2-06: Idempotency middleware and Redis-backed sliding-window rate limiting:
-   - `Idempotency-Key` header requirement on mutating operations per `docs/03` §10.
-   - 24-hour response caching in Redis with SHA-256 payload binding (`idempotency.mismatch` 422).
-   - Sliding-window rate limiter per principal and route class (`read`, `write`, `job_create`, `ext_sync`, `auth`) with `RateLimit-*` and `Retry-After` headers.
-   - Comprehensive unit and integration tests.
+1. Implement Task M2-07: Clerk user webhook receiver with Svix signature verification and sync:
+   - `POST /api/v1/webhooks/clerk` endpoint.
+   - Svix signature verification (`svix-id`, `svix-timestamp`, `svix-signature`) using `CLERK_WEBHOOK_SECRET`.
+   - Replay protection (reject timestamps outside 5-minute window).
+   - Sync events: `user.created`, `user.updated`, `user.deleted` to `users` and automatic personal workspace provisioning.
+   - Problem Details RFC 9457 on signature mismatch or parsing failures.
+   - Comprehensive test suite in `server/tests/test_clerk_webhooks.py`.
 
 ---
 
@@ -37,6 +39,33 @@
 ---
 
 ## 4. Done log
+
+### M2-06 — Idempotency Middleware and Redis-Backed Sliding-Window Rate Limiting
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented RFC 9457-compliant idempotency middleware and Redis-backed sliding-window rate limiting per `docs/03` §10 and `docs/07` §11:
+  - **Redis Connection Management** (`server/app/core/redis.py`):
+    - Async connection pooling with `redis.asyncio` tied to running event loops.
+    - Graceful in-memory fallback for sliding windows and idempotency caching if Redis is offline or during testing.
+  - **Idempotency Middleware** (`server/app/middleware/idempotency.py`):
+    - Requires `Idempotency-Key` header on POST operations creating scans, jobs, uploads/snippets, or consents (`422 validation.failed` when missing).
+    - Computes SHA-256 payload binding on request body.
+    - Caches successful 2xx responses for 24 hours (`idempotency_ttl_seconds = 86400`).
+    - Same key + same payload: returns original cached response with `Idempotent-Replay: true` without re-executing downstream handlers.
+    - Same key + different payload: returns `422 idempotency.mismatch` RFC 9457 Problem Details.
+    - In-flight lock protection: simultaneous requests with the same key return `409 conflict.state`.
+    - Safe methods (GET, HEAD, OPTIONS) ignore `Idempotency-Key`; error responses (4xx/5xx) are not cached.
+  - **Sliding-Window Rate Limiting Middleware** (`server/app/middleware/rate_limit.py`):
+    - Sliding-window counter per principal and route class (`read`, `write`, `job_create`, `ext_sync`, `auth`) using Redis sorted sets (ZSET) or in-memory fallback.
+    - Derives principal from `AuthContext` (user/sub), Bearer token SHA-256 hash, or client IP hash.
+    - Injects `RateLimit-Limit`, `RateLimit-Remaining`, and `RateLimit-Reset` headers on all allowed responses.
+    - When exceeded, returns `429 rate_limit.exceeded` RFC 9457 Problem Details with `Retry-After` header.
+    - Exempts operational probes (`/healthz`, `/readyz`) and API docs (`/docs`, `/redoc`, `/openapi.json`).
+  - **Comprehensive Test Suite** (`server/tests/`):
+    - `test_rate_limit.py`: 5 tests covering allowed header injection, 429 exhaustion, per-principal isolation, exempt paths, and route class distinction.
+    - `test_idempotency.py`: 6 tests covering missing key enforcement, replay cache hits, payload mismatch detection, custom route decorators, GET safety, and error non-caching.
+- **Actual results**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped; 82/82 server Python tests pass, boundaries clean).
 
 ### M2-05 — Workspaces and Projects CRUD REST Endpoints with Permissions & Problem Details
 

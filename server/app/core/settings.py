@@ -40,6 +40,16 @@ class Settings(BaseSettings):
     # Redis URL (Render Key Value or local)
     redis_url: str = "redis://localhost:6379/0"
 
+    # Rate Limiting & Idempotency (docs/03 §10, docs/07 §11)
+    rate_limit_enabled: bool = True
+    rate_limit_window_seconds: int = 60
+    rate_limit_read: int = 300
+    rate_limit_write: int = 120
+    rate_limit_job_create: int = 30
+    rate_limit_ext_sync: int = 60
+    rate_limit_auth: int = 20
+    idempotency_ttl_seconds: int = 86400  # 24 hours (docs/03 §10)
+
     # CORS origins (accepts comma-separated string or list)
     cors_origins: list[str] | str = Field(default_factory=lambda: ["http://localhost:3000"])
 
