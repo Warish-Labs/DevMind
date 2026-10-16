@@ -6,6 +6,8 @@ from typing import Any
 from fastapi import APIRouter, Response, status
 from pydantic import BaseModel
 
+from app.domain.auth import PERMISSION_PUBLIC, declare_permission
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Operations"])
@@ -42,6 +44,7 @@ async def check_redis_readiness() -> bool:
     summary="Liveness probe",
     description="Returns 200 OK if the application process is running. Does not check downstream dependencies.",
 )
+@declare_permission(PERMISSION_PUBLIC)
 async def healthz() -> HealthResponse:
     """Liveness probe: verifies process is alive."""
     return HealthResponse(status="ok")
@@ -53,6 +56,7 @@ async def healthz() -> HealthResponse:
     summary="Readiness probe",
     description="Returns 200 OK if all required downstream dependencies are healthy and accepting traffic.",
 )
+@declare_permission(PERMISSION_PUBLIC)
 async def readyz(response: Response) -> ReadinessResponse:
     """Readiness probe: checks downstream dependencies."""
     db_ok = await check_database_readiness()

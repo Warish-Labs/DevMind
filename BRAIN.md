@@ -6,23 +6,24 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                             |
-| ------------------ | ------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                            |
-| **Last commit**    | `cd1ce12` (feat(server): add Clerk token verification service with RSA JWKS signature validation) |
-| **Working tree**   | clean; working directly on main per user instruction                                              |
-| **Open PR**        | None (working directly on main)                                                                   |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 56/56 pass, boundaries:server pass      |
-| **Date**           | 2026-10-16                                                                                        |
+| Field              | Value                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                       |
+| **Last commit**    | pending commit (M2-04 Policy service and route permission registry)                          |
+| **Working tree**   | clean; working directly on main per user instruction                                         |
+| **Open PR**        | None (working directly on main)                                                              |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 64/64 pass, boundaries:server pass |
+| **Date**           | 2026-10-16                                                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement Task M2-04: Policy service, permission evaluator, and route permission registry:
-   - Define role permission matrix per `docs/03` §4.2 (`project:read`, `project:sync`, `finding:triage`, etc.).
-   - Implement policy evaluator and `require_permission` route dependency.
-   - Implement automated route registry scanner and CI contract test failing any endpoint lacking declared permissions (docs/07 §3).
+1. Implement Task M2-05: Workspaces and projects CRUD REST endpoints with permission checks and Problem Details:
+   - Request and response schemas for workspaces, projects, memberships per `docs/03` §12.
+   - Routers under `server/app/api/workspaces.py` and `server/app/api/projects.py`.
+   - Permissions declared with `@declare_permission(...)` on every route.
+   - Comprehensive unit and integration tests including cross-tenant authorization checks.
 
 ---
 
@@ -36,6 +37,27 @@
 ---
 
 ## 4. Done log
+
+### M2-04 — Policy Service, Permission Evaluator, and Route Permission Registry with CI Enforcement
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented role-based permission evaluation and route-level authorization enforcement per ADR-010, `docs/03` §4.1–§4.2, `docs/07` §3, and `docs/09` §6:
+  - **Permission Matrix**: Defined granular permissions for `viewer`, `contributor`, `maintainer` project roles, and `viewer`, `member`, `admin`, `owner` workspace roles matching `docs/03` §4.2.
+  - **Effective Project Role Computer** (`compute_effective_project_role`):
+    - Workspace owners/admins automatically receive `maintainer` role across all projects regardless of visibility.
+    - Workspace members receive `contributor` role on `workspace` visibility projects, and `None` on `private` projects unless an explicit project membership row exists.
+    - Explicit project memberships elevate or override base role based on role priority weight (`maintainer > contributor > viewer`).
+  - **Route Permission Registry & Guard** (`server/app/domain/auth/policy.py`):
+    - `RoutePermissionRegistry`: Central registry tracking every API endpoint and its required permission.
+    - `@declare_permission(permission)`: Decorator tagging routes with required permission (`PERMISSION_PUBLIC`, `PERMISSION_AUTHENTICATED`, `project:read`, etc.).
+    - `require_permission(permission)`: FastAPI dependency verifying caller holds the required permission and raising RFC 9457 `ForbiddenError` (403) when denied.
+  - **Automated Route Registry CI Enforcement** (`server/tests/test_route_permissions.py`):
+    - Inspects all registered application routes at test time and fails CI if any HTTP route lacks an explicit permission declaration (`docs/07` §3).
+    - Verified negative test case: rogue/undeclared route is caught and flagged immediately.
+  - **Automated Tests** (`server/tests/test_policy.py`, `server/tests/test_route_permissions.py`):
+    - 8 comprehensive tests covering permission hierarchy, workspace permissions, effective role inheritance, `require_permission` runtime enforcement, and route registry scanning.
+- **Actual results**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped; 64/64 Python tests pass, import boundaries clean).
 
 ### M2-03 — Clerk Token Verification Service, RSA JWKS Cache & Validation
 

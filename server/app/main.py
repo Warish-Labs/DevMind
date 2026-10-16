@@ -82,7 +82,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # API v1 router placeholder
     api_v1_router = APIRouter(prefix="/api/v1")
 
+    from app.domain.auth import PERMISSION_PUBLIC, declare_permission
+
     @api_v1_router.get("", tags=["System"])
+    @declare_permission(PERMISSION_PUBLIC)
     async def v1_root() -> dict[str, Any]:
         return {
             "name": "DevMind API",
