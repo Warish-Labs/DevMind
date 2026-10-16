@@ -6,24 +6,23 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                   |
-| ------------------ | ------------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                  |
-| **Last commit**    | `5fc1a89` (feat(server): setup alembic baseline, tenancy models, and repository layer with AuthContext) |
-| **Working tree**   | clean; working directly on main per user instruction                                                    |
-| **Open PR**        | None (working directly on main)                                                                         |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 48/48 pass, boundaries:server pass            |
-| **Date**           | 2026-10-16                                                                                              |
+| Field              | Value                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                       |
+| **Last commit**    | pending commit (M2-03 Clerk token verification service)                                      |
+| **Working tree**   | clean; working directly on main per user instruction                                         |
+| **Open PR**        | None (working directly on main)                                                              |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 56/56 pass, boundaries:server pass |
+| **Date**           | 2026-10-16                                                                                   |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement Task M2-03: Clerk token verification service:
-   - Clerk JWKS fetcher, issuer verification, signature validation, expiry checks.
-   - In-memory key caching and clock skew tolerance.
-   - Pydantic models for Clerk session claims.
-   - Unit tests for verified claims, expired tokens, and invalid signatures.
+1. Implement Task M2-04: Policy service, permission evaluator, and route permission registry:
+   - Define role permission matrix per `docs/03` §4.2 (`project:read`, `project:sync`, `finding:triage`, etc.).
+   - Implement policy evaluator and `require_permission` route dependency.
+   - Implement automated route registry scanner and CI contract test failing any endpoint lacking declared permissions (docs/07 §3).
 
 ---
 
@@ -37,6 +36,27 @@
 ---
 
 ## 4. Done log
+
+### M2-03 — Clerk Token Verification Service, RSA JWKS Cache & Validation
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented Clerk session token verification service with cryptographic signature verification, JWKS key resolution, and claim validation per ADR-010, `docs/03` §10, and `docs/07` §3:
+  - **Dependency Addition**: Added `pyjwt[crypto]>=2.9.0` (Apache 2.0 license) with explicit user approval under AGENTS.md Rule 11/13.
+  - **Configuration Integration** (`server/app/core/settings.py`, `server/.env.example`):
+    - Added `clerk_issuer`, `clerk_jwks_url`, and `clerk_authorized_parties` (`azp` validation) settings with Pydantic validators.
+  - **Token Verifier Service** (`server/app/integrations/clerk/verifier.py`):
+    - `ClerkClaims`: Pydantic v2 model holding verified `sub`, `iss`, `exp`, `iat`, `nbf`, `azp`, `sid`, and `email`.
+    - `ClerkTokenVerifier`:
+      - Inspects unverified header to ensure `RS256` algorithm (rejects symmetric algorithm key confusion).
+      - Integrates PyJWT `PyJWKClient` with in-memory caching and rotation handling.
+      - Enforces issuer validation against `settings.clerk_issuer`.
+      - Enforces authorized party checks against `settings.clerk_authorized_parties`.
+      - Incorporates 5-second clock skew tolerance (`leeway=5`).
+      - Normalizes `Authorization: Bearer <token>` and maps all verification failures to RFC 9457 `AuthenticationError` (401).
+  - **Automated Tests** (`server/tests/test_clerk_verifier.py`):
+    - 8 comprehensive test cases covering valid RS256 decoding, Bearer prefix parsing, expired token rejection, alien/untrusted signature failure, issuer mismatch, unauthorized party rejection, symmetric key confusion prevention, and malformed input handling.
+- **Actual results**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped; 56/56 Python tests pass, import boundaries clean).
 
 ### M2-01 & M2-02 — Alembic Migrations, Tenancy Models, and Repository Layer with AuthContext
 

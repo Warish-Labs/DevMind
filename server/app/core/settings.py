@@ -34,6 +34,34 @@ class Settings(BaseSettings):
     # CORS origins (accepts comma-separated string or list)
     cors_origins: list[str] | str = Field(default_factory=lambda: ["http://localhost:3000"])
 
+    # Clerk Authentication (docs/07 §3, docs/10 §11)
+    clerk_issuer: str | None = None
+    clerk_jwks_url: str | None = None
+    clerk_authorized_parties: list[str] | str = Field(
+        default_factory=lambda: ["http://localhost:3000"]
+    )
+    clerk_secret_key: str | None = None
+    clerk_webhook_secret: str | None = None
+
+    @field_validator("clerk_authorized_parties", mode="before")
+    @classmethod
+    def parse_authorized_parties(cls, value: str | list[str] | None) -> list[str]:
+        if value is None:
+            return ["http://localhost:3000"]
+        if isinstance(value, str):
+            value = value.strip()
+            if value.startswith("[") and value.endswith("]"):
+                import json
+
+                try:
+                    parsed = json.loads(value)
+                    if isinstance(parsed, list):
+                        return [str(item).strip() for item in parsed if str(item).strip()]
+                except Exception:
+                    pass
+            return [party.strip() for party in value.split(",") if party.strip()]
+        return value
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: str | list[str]) -> list[str]:
