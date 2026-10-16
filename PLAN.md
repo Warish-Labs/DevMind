@@ -205,7 +205,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M2-05 Workspaces and projects CRUD REST endpoints with permission checks and Problem Details (feature/m2-workspaces-projects)
 - [x] M2-06 Idempotency middleware and Redis-backed sliding-window rate limiting (feature/m2-middleware)
 - [x] M2-07 Clerk user webhook receiver with Svix signature verification and sync (feature/m2-webhooks)
-- [ ] M2-08 OpenAPI spec generation, TypeScript client generation (pnpm gen:api), and frontend authentication shell integration (feature/m2-client-auth)
+- [x] M2-08 OpenAPI spec generation, TypeScript client generation (pnpm gen:api), and frontend authentication shell integration (feature/m2-client-auth)
 
 ### M3 · VS Code extension real local scanning
 

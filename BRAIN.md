@@ -6,24 +6,23 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                        |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                       |
-| **Last commit**    | `c6b223f` (feat(server): add idempotency middleware and redis sliding-window rate limiting)  |
-| **Working tree**   | clean; working directly on main per user instruction                                         |
-| **Open PR**        | None (working directly on main)                                                              |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 89/89 pass, boundaries:server pass |
-| **Date**           | 2026-10-16                                                                                   |
+| Field              | Value                                                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                        |
+| **Last commit**    | `5725a89` (feat(client): complete M2-08 OpenAPI client, Clerk auth shell, and footer upgrade) |
+| **Working tree**   | clean; working directly on main per user instruction                                          |
+| **Open PR**        | None (working directly on main)                                                               |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 89/89 pass, boundaries:server pass  |
+| **Date**           | 2026-10-16                                                                                    |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement Task M2-08: OpenAPI spec generation, TypeScript client generation (`pnpm gen:api`), and frontend authentication shell integration:
-   - Export OpenAPI schema `openapi.json` from FastAPI.
-   - Run openapi-typescript-codegen / `pnpm gen:api` to generate client API SDK under `client/lib/api/`.
-   - Wire Clerk frontend SDK (`@clerk/nextjs`) in `client/` app shell with token passing to generated API client.
-   - Test sign-in / session restoration flow.
+1. Begin **Phase M3 — VS Code extension real local scanning**:
+   - Replace `FixtureFindingsSource` with `LocalScanFindingsSource` adhering to ADR-034 local-first constraints.
+   - Wire extension workspace file walker with deterministic chunking and AST/regex rule evaluators for E0/E1 findings.
+   - Implement extension auth token caching and local secret redaction prior to any sync.
 
 ---
 
@@ -37,6 +36,25 @@
 ---
 
 ## 4. Done log
+
+### M2-08 — OpenAPI Generation, Typed Client, Clerk Auth Shell & Upgraded Footer
+
+- **Date**: 2026-10-16
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Completed OpenAPI 3.1 schema export, TypeScript client generation, Clerk auth wrapper integration, and client footer architecture:
+  - **OpenAPI Schema Generator** (`scripts/export-openapi.py`):
+    - Headless script booting FastAPI app factory and exporting schema to `common/openapi.json`.
+    - Declared 14 API paths, models, and Problem Details responses.
+  - **TypeScript API Client SDK** (`common/src/api/`):
+    - Configured `openapi-typescript` and added `pnpm gen:api` script.
+    - Exported schema types (`common/src/api/schema.d.ts`) and `DevMindApiClient` (`common/src/api/client.ts`) with RFC 9457 error mapping and bearer token injection.
+  - **Clerk Frontend Auth Shell** (`client/components/auth/AuthProvider.tsx`, `client/lib/api.ts`):
+    - Integrated `@clerk/nextjs` with graceful fallback when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is omitted (offline/CI/test environments).
+    - Wrapped root layout (`client/app/layout.tsx`).
+    - Configured typed web API client with Clerk session token resolver.
+  - **Footer Enhancement** (`client/components/layout/Footer.tsx`):
+    - 4-column responsive grid: Brand/Mission with live Render+Neon status pill; Architectural Strata links; Open Engine & Spec links; WarishLabs Governance & Legal links.
+    - Retained copyright, legal disclaimer, and all 38 client unit tests passing.
 
 ### M2-07 — Clerk User Webhook Receiver with Svix Signature Verification & Identity Sync
 

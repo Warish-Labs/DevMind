@@ -23,6 +23,7 @@
     "brand:sync": "node scripts/sync-brand.mjs",
     "brand:check": "node scripts/sync-brand.mjs --check",
     "docs:links": "node scripts/docs-links.mjs",
+    "gen:api": "server/.venv/bin/python scripts/export-openapi.py && pnpm --filter @devmind/common exec openapi-typescript openapi.json -o src/api/schema.d.ts && pnpm --filter @devmind/common build",
     "prepare": "husky"
   },
   "devDependencies": {

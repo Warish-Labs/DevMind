@@ -12,6 +12,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.9.16",
     "@vercel/analytics": "^2.0.1",
     "next": "16.4.1",
     "react": "19.3.0",

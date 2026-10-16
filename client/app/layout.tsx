@@ -3,6 +3,7 @@ import { instrumentSerif, ibmPlexSans, jetbrainsMono } from "./fonts";
 import { Header } from "../components/layout/Header";
 import { GutterRail } from "../components/layout/GutterRail";
 import { Footer } from "../components/layout/Footer";
+import { AuthProvider } from "../components/auth/AuthProvider";
 import { DevMindCursor } from "../components/cursor/DevMindCursor";
 import "./globals.css";
 
@@ -64,14 +65,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
 
-        <Header />
-        <GutterRail />
+        <AuthProvider>
+          <Header />
+          <GutterRail />
 
-        <main id="main-content" className="flex-1 w-full">
-          {children}
-        </main>
+          <main id="main-content" className="flex-1 w-full">
+            {children}
+          </main>
 
-        <Footer />
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

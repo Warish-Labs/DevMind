@@ -21,6 +21,10 @@
     "./tokens": {
       "types": "./dist/tokens/index.d.ts",
       "import": "./dist/tokens/index.js"
+    },
+    "./api": {
+      "types": "./dist/api/index.d.ts",
+      "import": "./dist/api/index.js"
     }
   },
   "scripts": {
@@ -33,6 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "26.6.5",
+    "openapi-typescript": "^7.13.0",
     "typescript": "6.0.3",
     "vitest": "^5.0.5"
   }
