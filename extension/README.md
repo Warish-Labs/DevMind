@@ -2,6 +2,34 @@
 
 > Continuous Project Brain Companion: local structural analyzer, architectural findings navigator, and privacy-first sync controller.
 
+<p align="left">
+  <a href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode">
+    <img src="https://img.shields.io/badge/Visual_Studio_Marketplace-WarishLabs.devmind--vscode-007ACC?logo=visualstudiocode&logoColor=white" alt="Visual Studio Marketplace">
+  </a>
+  <img src="https://img.shields.io/badge/VS_Code-^1.90.0-007ACC?logo=visualstudiocode&logoColor=white" alt="VS Code Version">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License">
+</p>
+
+---
+
+## Installation
+
+Install the official companion extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode):
+
+```bash
+# Using VS Code CLI:
+code --install-extension WarishLabs.devmind-vscode
+```
+
+Or in VS Code:
+
+1. Open the Quick Open box (`Ctrl+P` / `Cmd+P`).
+2. Run:
+   ```text
+   ext install WarishLabs.devmind-vscode
+   ```
+3. Press `Enter`.
+
 ---
 
 ## Overview

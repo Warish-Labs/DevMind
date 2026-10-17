@@ -93,10 +93,19 @@ export function Section08CTA() {
             Open DevMind
           </Link>
           <a
+            href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 rounded-control text-sm font-medium border border-[var(--signal)]/50 bg-[var(--bg-0)] text-[var(--fg-0)] hover:border-[var(--signal)] hover:text-[var(--signal)] transition-colors font-mono inline-flex items-center gap-2 cursor-pointer"
+          >
+            <span className="w-2 h-2 rounded-full bg-[var(--signal)] animate-pulse" />
+            <span>Install VS Code Extension ↗</span>
+          </a>
+          <a
             href="https://github.com/Warish-Labs/DevMind"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-6 py-3 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-0)] hover:bg-[var(--bg-2)] transition-colors font-mono"
+            className="px-6 py-3 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-2)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-2)] transition-colors font-mono"
           >
             Inspect Source on GitHub ↗
           </a>

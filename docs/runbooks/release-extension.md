@@ -2,13 +2,15 @@
 
 How to publish the DevMind VS Code extension to the Visual Studio Marketplace and Open VSX.
 
-**Publisher id:** `warishlabs` (confirm with the owner before first publish — HUMAN-STEP in S2).
+**Publisher id:** `WarishLabs`  
+**Marketplace URL:** [https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode](https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode)  
+**Install command:** `ext install WarishLabs.devmind-vscode`
 
 ---
 
 ## Prerequisites
 
-1. **VS Marketplace**: A publisher account at `marketplace.visualstudio.com` under the id `warishlabs`.
+1. **VS Marketplace**: A publisher account at `marketplace.visualstudio.com` under the id `WarishLabs`.
 2. **Azure DevOps PAT** (VS Marketplace): Required for `vsce publish`.
    - Note: Global Azure DevOps PATs retire **2026-12-01**. After that date, use `vsce publish --azure-credential` with a federated credential or scoped PAT. Document the migration in this file before that date.
    - How to create: dev.azure.com → User Settings → Personal Access Tokens → New Token → Marketplace (Manage) scope.

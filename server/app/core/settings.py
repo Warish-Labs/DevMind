@@ -37,8 +37,11 @@ class Settings(BaseSettings):
     )
     database_url_direct: str | None = None
 
-    # Redis URL (Render Key Value or local)
-    redis_url: str = "redis://localhost:6379/0"
+    # Redis URL (Upstash Redis or local, docs/10 §11)
+    redis_url: str = Field(
+        default="redis://localhost:6379/0",
+        validation_alias=AliasChoices("DEVMIND_REDIS_URL", "REDIS_URL", "UPSTASH_REDIS_URL"),
+    )
 
     # Rate Limiting & Idempotency (docs/03 §10, docs/07 §11)
     rate_limit_enabled: bool = True
@@ -51,13 +54,15 @@ class Settings(BaseSettings):
     idempotency_ttl_seconds: int = 86400  # 24 hours (docs/03 §10)
 
     # CORS origins (accepts comma-separated string or list)
-    cors_origins: list[str] | str = Field(default_factory=lambda: ["http://localhost:3000"])
+    cors_origins: list[str] | str = Field(
+        default_factory=lambda: ["http://localhost:3000", "https://devmind.warishlabs.in"]
+    )
 
     # Clerk Authentication (docs/07 §3, docs/10 §11)
     clerk_issuer: str | None = None
     clerk_jwks_url: str | None = None
     clerk_authorized_parties: list[str] | str = Field(
-        default_factory=lambda: ["http://localhost:3000"]
+        default_factory=lambda: ["http://localhost:3000", "https://devmind.warishlabs.in"]
     )
     clerk_secret_key: str | None = Field(
         default=None,
@@ -84,6 +89,14 @@ class Settings(BaseSettings):
     github_client_secret: str | None = None
     github_webhook_secret: str | None = None
     resend_api_key: str | None = None
+
+    # Cloudflare Turnstile bot protection (docs/07 §11, docs/10 §11)
+    turnstile_secret_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("DEVMIND_TURNSTILE_SECRET_KEY", "TURNSTILE_SECRET_KEY"),
+    )
+    turnstile_verify_url: str = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    turnstile_timeout_seconds: float = 5.0
 
     # Subsystem kill switches (docs/07 §12, docs/10 §11)
     kill_indexing: bool = False
@@ -142,6 +155,20 @@ class Settings(BaseSettings):
                     pass
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
+
+    @field_validator("redis_url", mode="before")
+    @classmethod
+    def validate_redis_url(cls, value: str | None) -> str:
+        if not value:
+            return "redis://localhost:6379/0"
+        val = value.strip()
+        if val.startswith("http://") or val.startswith("https://"):
+            raise ValueError(
+                "DevMind requires standard Redis protocol ('redis://' or 'rediss://' for Upstash TLS), "
+                "not the Upstash HTTP REST URL. In Upstash Console, copy the 'Redis Connect' string "
+                "(e.g. rediss://default:<password>@<host>.upstash.io:6379)."
+            )
+        return val
 
     @property
     def is_production(self) -> bool:

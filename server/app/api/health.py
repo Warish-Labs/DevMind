@@ -27,8 +27,9 @@ class ReadinessResponse(BaseModel):
 # Pluggable health checkers
 async def check_database_readiness() -> bool:
     """Check database connectivity without exposing connection secrets."""
-    # Will be connected to real session pool in M2
-    return True
+    from app.domain.auth import check_database_connectivity
+
+    return await check_database_connectivity()
 
 
 async def check_redis_readiness() -> bool:
@@ -38,6 +39,13 @@ async def check_redis_readiness() -> bool:
     return await check_redis_connectivity()
 
 
+@router.get(
+    "/health",
+    response_model=HealthResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Liveness probe",
+    description="Returns 200 OK if the application process is running. Does not check downstream dependencies.",
+)
 @router.get(
     "/healthz",
     response_model=HealthResponse,

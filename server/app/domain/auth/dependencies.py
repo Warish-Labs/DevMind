@@ -36,6 +36,22 @@ def get_token_verifier(settings: Settings = Depends(get_settings)) -> ClerkToken
     return _verifier
 
 
+async def check_database_connectivity() -> bool:
+    """Check database connectivity with a lightweight ping query."""
+    try:
+        from sqlalchemy import text
+
+        from app.persistence.database import get_engine
+
+        engine = get_engine()
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        return True
+    except Exception as exc:
+        logger.debug("Database readiness ping failed: %s", exc)
+        return False
+
+
 async def get_current_user_claims(
     request: Request,
     verifier: ClerkTokenVerifier = Depends(get_token_verifier),

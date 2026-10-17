@@ -61,30 +61,28 @@ export default function EarlyAccessPage() {
         </div>
 
         <div className="p-6 rounded-panel bg-[var(--bg-1)] border border-[var(--line-1)]">
-          <div className="text-xs font-mono uppercase text-[var(--ref)] tracking-wider mb-3">
-            ➔ Next Milestones
+          <div className="text-xs font-mono uppercase text-[var(--signal)] tracking-wider mb-3">
+            ● Available on Marketplace
           </div>
-          <h2 className="text-xl font-display text-[var(--fg-0)] mb-3">
-            MVP Engine &amp; Companion
+          <h2 className="text-xl font-display text-[var(--fg-0)] mb-2">
+            VS Code Companion Extension
           </h2>
-          <ul className="space-y-2 text-sm text-[var(--fg-1)] leading-relaxed">
-            <li className="flex items-start gap-2">
-              <span className="text-[var(--ref)]">➔</span>
-              <span>Interactive homepage with hero trace &amp; brain strata (Phase S1)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-[var(--ref)]">➔</span>
-              <span>VS Code Companion extension UI &amp; local scanner (Phase S2)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-[var(--ref)]">➔</span>
-              <span>FastAPI modular monolith + PostgreSQL pgvector (Milestone M1)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-[var(--ref)]">➔</span>
-              <span>LangGraph agent orchestration &amp; E0-E3 findings</span>
-            </li>
-          </ul>
+          <p className="text-sm text-[var(--fg-1)] mb-4 leading-relaxed">
+            The official DevMind Companion is published on Visual Studio Marketplace. Install it
+            directly in VS Code for local-first AST scanning and privacy audits:
+          </p>
+          <div className="p-3 rounded-control bg-[var(--bg-0)] border border-[var(--line-2)] font-mono text-xs text-[var(--signal)] mb-4 select-all">
+            ext install WarishLabs.devmind-vscode
+          </div>
+          <a
+            href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-control text-xs font-mono font-medium border border-[var(--signal)]/50 bg-[var(--signal)]/10 text-[var(--fg-0)] hover:bg-[var(--signal)] hover:text-[var(--bg-0)] transition-colors"
+          >
+            <span>Install from VS Code Marketplace</span>
+            <span>↗</span>
+          </a>
         </div>
       </div>
 
@@ -92,8 +90,8 @@ export default function EarlyAccessPage() {
       <div className="p-8 rounded-panel bg-[var(--bg-1)] border border-[var(--line-2)] mb-12">
         <h2 className="text-2xl font-display text-[var(--fg-0)] mb-2">Request Early Access</h2>
         <p className="text-sm text-[var(--fg-1)] mb-6 max-w-xl">
-          Enter your developer email to receive notifications when testing builds for the VS Code
-          extension and web workspace become available.
+          Enter your developer email to join the cloud workspace private beta and receive product
+          updates. You can install the companion extension right now from the Marketplace above.
         </p>
 
         <EarlyAccessForm />

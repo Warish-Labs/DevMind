@@ -26,6 +26,26 @@
         }
       }
     },
+    "/health": {
+      "get": {
+        "tags": ["Operations"],
+        "summary": "Liveness probe",
+        "description": "Returns 200 OK if the application process is running. Does not check downstream dependencies.",
+        "operationId": "healthz_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/readyz": {
       "get": {
         "tags": ["Operations"],
@@ -60,6 +80,86 @@
                   "additionalProperties": true,
                   "type": "object",
                   "title": "Response V1 Root Api V1 Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/waitlist": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Register for early access waitlist",
+        "description": "Submit developer email for early access notification.\n\nProtected against bot automated submissions via Cloudflare Turnstile and IP rate limiting.",
+        "operationId": "register_waitlist_api_v1_public_waitlist_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaitlistSubmissionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistSubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/contact": {
+      "post": {
+        "tags": ["Public"],
+        "summary": "Submit contact / inquiry message",
+        "description": "Submit a contact or architecture inquiry message.\n\nProtected against bot spam and abuse via Cloudflare Turnstile and IP rate limiting.",
+        "operationId": "submit_contact_api_v1_public_contact_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactSubmissionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactSubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -502,6 +602,247 @@
                 "schema": {
                   "$ref": "#/components/schemas/ProjectResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{wid}/integrations/github": {
+      "get": {
+        "tags": ["Integrations"],
+        "summary": "Get GitHub connection status for workspace",
+        "description": "List active GitHub connection records for the workspace (tokens are never returned).",
+        "operationId": "get_workspace_github_connections_api_v1_workspaces__wid__integrations_github_get",
+        "parameters": [
+          {
+            "name": "wid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Wid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GitHubConnectionSummary"
+                  },
+                  "title": "Response Get Workspace Github Connections Api V1 Workspaces  Wid  Integrations Github Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Integrations"],
+        "summary": "Revoke GitHub connection for workspace",
+        "description": "Revoke GitHub connection for the current user in this workspace.",
+        "operationId": "delete_workspace_github_connection_api_v1_workspaces__wid__integrations_github_delete",
+        "parameters": [
+          {
+            "name": "wid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Wid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/github/authorize": {
+      "get": {
+        "tags": ["Integrations"],
+        "summary": "Initiate GitHub OAuth authorization",
+        "description": "Redirect user to GitHub to authorize DevMind OAuth access.\n\nRequires valid DevMind user authentication. State parameter is HMAC-signed\nwith user/workspace binding to prevent CSRF and session fixation.",
+        "operationId": "github_authorize_api_v1_integrations_github_authorize_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Target workspace ID for connection",
+              "title": "Workspace Id"
+            },
+            "description": "Target workspace ID for connection"
+          },
+          {
+            "name": "return_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Frontend destination after authorization",
+              "title": "Return To"
+            },
+            "description": "Frontend destination after authorization"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/github/callback": {
+      "get": {
+        "tags": ["Integrations"],
+        "summary": "Receive GitHub OAuth callback",
+        "description": "Handle callback redirect from GitHub after user authorization.\n\nValidates state signature and expiration, exchanges authorization code for an\naccess token, fetches GitHub user identity, encrypts the credential at rest,\nand redirects user safely back to the allowed frontend return destination.",
+        "operationId": "github_callback_api_v1_integrations_github_callback_get",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "GitHub authorization code",
+              "title": "Code"
+            },
+            "description": "GitHub authorization code"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "HMAC-signed state token",
+              "title": "State"
+            },
+            "description": "HMAC-signed state token"
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Error reported by GitHub",
+              "title": "Error"
+            },
+            "description": "Error reported by GitHub"
+          },
+          {
+            "name": "error_description",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Error explanation",
+              "title": "Error Description"
+            },
+            "description": "Error explanation"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -1309,6 +1650,58 @@
         }
       }
     },
+    "/api/v1/projects/{pid}/brain/search": {
+      "post": {
+        "tags": ["Project Brain"],
+        "summary": "Multi-channel hybrid brain search with fusion and context pack",
+        "description": "Execute multi-channel hybrid search (symbols, keywords, vectors) with RRF fusion and context pack.",
+        "operationId": "search_brain_api_v1_projects__pid__brain_search_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrainSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrainSearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{pid}/scans": {
       "get": {
         "tags": ["Scans"],
@@ -2085,6 +2478,89 @@
         }
       }
     },
+    "/api/v1/webhooks/github": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "GitHub webhook receiver",
+        "description": "Receives and verifies GitHub webhooks with X-Hub-Signature-256 HMAC-SHA256.",
+        "operationId": "github_webhook_api_v1_webhooks_github_post",
+        "parameters": [
+          {
+            "name": "X-Hub-Signature-256",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Hub-Signature-256"
+            }
+          },
+          {
+            "name": "X-GitHub-Delivery",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Github-Delivery"
+            }
+          },
+          {
+            "name": "X-GitHub-Event",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "ping",
+              "title": "X-Github-Event"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Github Webhook Api V1 Webhooks Github Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/ext/token": {
       "post": {
         "tags": ["Extension"],
@@ -2690,6 +3166,53 @@
         "title": "BatchSymbolsResponse",
         "description": "Result receipt for batch symbol ingestion."
       },
+      "BrainCitation": {
+        "properties": {
+          "file_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "File Version Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "start_line": {
+            "type": "integer",
+            "title": "Start Line"
+          },
+          "end_line": {
+            "type": "integer",
+            "title": "End Line"
+          },
+          "content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Hash"
+          },
+          "symbol_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol Key"
+          }
+        },
+        "type": "object",
+        "required": ["file_version_id", "path", "start_line", "end_line"],
+        "title": "BrainCitation",
+        "description": "Provenance citation guaranteeing verifiable code attribution (docs/04 \u00a78.7)."
+      },
       "BrainFileDetail": {
         "properties": {
           "id": {
@@ -2896,6 +3419,151 @@
         "required": ["id", "file_id", "content_hash", "size_bytes", "line_count", "created_at"],
         "title": "BrainFileVersionItem",
         "description": "Historical file version record."
+      },
+      "BrainSearchItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "start_line": {
+            "type": "integer",
+            "title": "Start Line"
+          },
+          "end_line": {
+            "type": "integer",
+            "title": "End Line"
+          },
+          "symbol_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol Key"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "matched_by": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Matched By"
+          },
+          "citation": {
+            "$ref": "#/components/schemas/BrainCitation"
+          },
+          "is_expanded": {
+            "type": "boolean",
+            "title": "Is Expanded",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "path",
+          "start_line",
+          "end_line",
+          "content",
+          "score",
+          "citation"
+        ],
+        "title": "BrainSearchItem",
+        "description": "Individual retrieved and fused code item with ranking score and attribution."
+      },
+      "BrainSearchRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Query",
+            "description": "Search query or question"
+          },
+          "modes": {
+            "items": {
+              "type": "string",
+              "enum": ["symbol", "keyword", "vector"]
+            },
+            "type": "array",
+            "title": "Modes",
+            "description": "Active retrieval channels to query",
+            "default": ["symbol", "keyword", "vector"]
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "description": "Maximum direct results to return",
+            "default": 10
+          },
+          "expand_relationships": {
+            "type": "boolean",
+            "title": "Expand Relationships",
+            "description": "Whether to perform 1-hop relationship expansion for discovered symbols",
+            "default": true
+          },
+          "token_budget": {
+            "type": "integer",
+            "maximum": 8000.0,
+            "minimum": 100.0,
+            "title": "Token Budget",
+            "description": "Maximum token budget for context pack generation",
+            "default": 2000
+          }
+        },
+        "type": "object",
+        "required": ["query"],
+        "title": "BrainSearchRequest",
+        "description": "Request payload for hybrid brain search."
+      },
+      "BrainSearchResponse": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "total_results": {
+            "type": "integer",
+            "title": "Total Results"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BrainSearchItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "context_pack": {
+            "$ref": "#/components/schemas/ContextPack"
+          }
+        },
+        "type": "object",
+        "required": ["query", "total_results", "context_pack"],
+        "title": "BrainSearchResponse",
+        "description": "Response payload containing ranked results and assembled context pack."
       },
       "BrainSummaryResponse": {
         "properties": {
@@ -3418,6 +4086,94 @@
         "required": ["items", "total"],
         "title": "ConsentListResponse",
         "description": "List of consent records."
+      },
+      "ContactSubmissionRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Sender name"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$",
+            "title": "Email",
+            "description": "Sender email address"
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Subject",
+            "description": "Inquiry subject"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Message",
+            "description": "Message content"
+          },
+          "turnstile_token": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Turnstile Token",
+            "description": "Cloudflare Turnstile verification response token"
+          }
+        },
+        "type": "object",
+        "required": ["name", "email", "subject", "message", "turnstile_token"],
+        "title": "ContactSubmissionRequest",
+        "description": "Payload for submitting a contact or inquiry message."
+      },
+      "ContactSubmissionResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "received",
+            "title": "Status",
+            "default": "received"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "Your inquiry has been received. Our team will review and respond shortly."
+          }
+        },
+        "type": "object",
+        "title": "ContactSubmissionResponse",
+        "description": "Response returned upon contact message receipt."
+      },
+      "ContextPack": {
+        "properties": {
+          "formatted_context": {
+            "type": "string",
+            "title": "Formatted Context"
+          },
+          "total_tokens_estimate": {
+            "type": "integer",
+            "title": "Total Tokens Estimate"
+          },
+          "item_count": {
+            "type": "integer",
+            "title": "Item Count"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/BrainCitation"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": ["formatted_context", "total_tokens_estimate", "item_count"],
+        "title": "ContextPack",
+        "description": "Assembled prompt context bounded by token budget with complete citations."
       },
       "CreateConsentRequest": {
         "properties": {
@@ -4496,6 +5252,55 @@
         "type": "object",
         "required": ["to_status"],
         "title": "FindingStatusTransitionRequest"
+      },
+      "GitHubConnectionSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "external_account": {
+            "type": "string",
+            "title": "External Account"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scopes"
+          },
+          "created_at": {
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "user_id",
+          "kind",
+          "external_account",
+          "scopes",
+          "created_at"
+        ],
+        "title": "GitHubConnectionSummary",
+        "description": "Safe public representation of a GitHub connection without credentials."
       },
       "GraphEdge": {
         "properties": {
@@ -5749,6 +6554,51 @@
         "type": "object",
         "required": ["loc", "msg", "type"],
         "title": "ValidationError"
+      },
+      "WaitlistSubmissionRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$",
+            "title": "Email",
+            "description": "Developer email address"
+          },
+          "turnstile_token": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Turnstile Token",
+            "description": "Cloudflare Turnstile verification response token"
+          }
+        },
+        "type": "object",
+        "required": ["email", "turnstile_token"],
+        "title": "WaitlistSubmissionRequest",
+        "description": "Payload for registering on the early access waitlist."
+      },
+      "WaitlistSubmissionResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "received",
+            "title": "Status",
+            "default": "received"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "Thank you for joining the early access waitlist. We will notify you when developer preview builds are ready."
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": ["email"],
+        "title": "WaitlistSubmissionResponse",
+        "description": "Response returned upon waitlist registration."
       },
       "WorkspaceMemberResponse": {
         "properties": {

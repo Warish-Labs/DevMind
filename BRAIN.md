@@ -6,31 +6,24 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                       |
-| ------------------ | ----------------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                      |
-| **Last commit**    | pending (feat(server): implement M5-07 chunk embeddings with pgvector and per-space HNSW vector index)      |
-| **Working tree**   | clean; working directly on main per user instruction                                                        |
-| **Open PR**        | None (working directly on main)                                                                             |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 199/199 pass, extension 70/70 pass (40 API paths) |
-| **Date**           | 2026-10-17                                                                                                  |
+| Field              | Value                                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                                                |
+| **Last commit**    | `3b381fb` (feat(server): implement M5-07 chunk embeddings with pgvector and per-space HNSW vector index)                              |
+| **Working tree**   | M5-10 complete; retrieval baselines recorded; extension v0.1.1 packaged with env vars; Neon migrations applied (head 0008, 28 tables) |
+| **Open PR**        | None (working directly on main)                                                                                                       |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 245/249 pass (4 skipped), extension 70/70 pass                              |
+| **Date**           | 2026-10-17                                                                                                                            |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M5-08: Hybrid retrieval with fusion and context-pack builder**:
-   - Inspect `docs/04 §7-§8` and `docs/03 §4`:
-     - Multi-channel retrieval:
-       (a) symbol name trigram/exact matching via `code_symbols`,
-       (b) tsvector full-text keyword search via `code_chunks`,
-       (c) pgvector semantic similarity search via `chunk_embeddings`.
-     - Reciprocal Rank Fusion (RRF) combining rank scores across channels: `RRF(d) = sum(1 / (k + rank_i(d)))`.
-     - Relationship 1-hop / 2-hop expansion (callers, callees, definitions).
-     - Context-pack builder enforcing token budget ceiling, provenance citations (`file_version_id`, `path`, `start_line`, `end_line`, `symbol_key`).
-     - REST API endpoint `POST /api/v1/projects/{pid}/brain/search` with `PERM_PROJECT_READ`.
-     - OpenAPI schema generation and client SDK export.
-     - Integration tests verifying multi-channel retrieval, RRF ranking, budget limits, and cross-tenant isolation.
+1. Implement **Milestone M5-11: Failure-state behavior: embedding provider outage degradation to keyword/symbol** per `PLAN.md`:
+   - Inspect `docs/04 §16` and `docs/03 §10.1`:
+     - When the embedding provider or active space is unreachable/degraded, hybrid retrieval must gracefully degrade to keyword + symbol search.
+     - Set response metadata flag `degraded: true` with degradation reason.
+     - Add integration and error-handling unit tests for graceful fallback under simulated provider exceptions.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -44,6 +37,190 @@
 ---
 
 ## 4. Done log
+
+### Feature — M5-10: Record Retrieval Baselines in docs/09 §9
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Recorded first empirical retrieval benchmark baselines into `docs/09-testing-and-quality-strategy.md` §9 and established regression gates:
+  - Recorded benchmark results from `evals/results/retrieval/latest.json` under commit `3b381fb`.
+  - Documented baseline metrics across 12 labeled queries:
+    - Fused RRF: Recall@5: `0.5544`, MRR: `0.9375`, nDCG@5: `0.7377`.
+    - Fused RRF + 1-hop expansion: Recall@5: `0.5775`, MRR: `0.9375`, nDCG@5: `0.7658`.
+    - Ablation comparison: Fused RRF outperforming keyword (`0.6803`), vector (`0.6779`), and symbol (`0.4209`).
+  - Defined regression gate tolerance: maximum allowed drop in overall nDCG@5 is $\le 0.02$.
+
+### Feature — M5-09: Retrieval Evaluation Harness and Benchmark Dataset
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Implemented deterministic retrieval evaluation harness and labeled benchmark dataset:
+  - **Benchmark Dataset (`evals/retrieval/dataset.json`)**:
+    - 12 labeled queries across 4 categories: `identifier` (exact/trigram), `concept` (natural language), `flow` (relationship/callee tracing), and `no_answer` (negative controls).
+    - Graded relevance scores (relevance 2 for primary definitions/routes, 1 for callers/dependencies).
+  - **Metrics Computation Engine (`evals/retrieval/metrics.py`)**:
+    - Implemented Recall@k, Mean Reciprocal Rank (MRR), Normalized Discounted Cumulative Gain (nDCG@k), and No-Answer accuracy.
+    - Added category-level and overall aggregation helper `aggregate_query_metrics()`.
+  - **Evaluation Harness & Runner (`evals/retrieval/harness.py`)**:
+    - Created `InMemoryFixtureRetriever` indexing the fixture codebases (`fastapi-admin`, `express-admin`).
+    - Implemented ablation runner comparing: `symbol_only`, `keyword_only`, `vector_only`, `fused` (RRF), and `fused_expanded` (RRF + 1-hop expansion).
+    - Demonstrated empirical advantage of hybrid RRF (nDCG@5: `0.7377` fused vs `0.6803` keyword vs `0.6779` vector vs `0.4209` symbol; expansion further improves to `0.7658`).
+    - Added timestamped and `latest.json` result persistence under `evals/results/retrieval/`.
+    - Added `pnpm eval:retrieval` command to root `package.json`.
+  - **Test Suite (`server/tests/test_retrieval_eval.py`)**:
+    - Added 8 unit tests validating metric edge cases, dataset schema, fixture retriever, and benchmark execution.
+    - Verified all 245 server tests pass.
+
+### Feature — Extension v0.1.1 Rebuild & Packaging with Embedded Environment
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Bumped VS Code extension version to `0.1.1`, injected production environment defaults, and packaged artifact:
+  - Bumped version in `extension/package.json` to `0.1.1`.
+  - Updated `extension/src/services/syncClient.ts` `X-DevMind-Client` header to `extension/0.1.1`.
+  - Updated `extension/tests/quality.test.ts` to assert version `0.1.1` and tolerate fresh package states.
+  - Executed production esbuild build with `https://api.devmind.warishlabs.in/api/v1` and `fixtureMode: false` inlined.
+  - Packaged `extension/dist/devmind-vscode.vsix` (9 files, 51.93 KB) and verified inlined bundle inside VSIX.
+  - Verified all 70 extension vitest tests pass.
+
+### Feature — M5-08: Hybrid Retrieval with Fusion and Context-Pack Builder
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Implemented multi-channel hybrid retrieval, Reciprocal Rank Fusion (RRF), 1-hop relationship expansion, token-bounded context-pack assembly, and `POST /api/v1/projects/{pid}/brain/search`:
+  - **Retrieval Configuration (`server/configs/retrieval.yaml`)**:
+    - Default fusion hyperparameters: $k = 60$, equal channel weights ($w_{\text{symbol}} = 1.0$, $w_{\text{keyword}} = 1.0$, $w_{\text{vector}} = 1.0$).
+    - Configurable token budget ($2000$ tokens default, capped at $8192$), max results per channel ($20$).
+  - **BrainRepository Multi-Channel Retrieval**:
+    - Added `search_symbols()` using exact case-insensitive match and `pg_trgm` similarity ranking.
+    - Added `get_relationships_for_symbols()` querying 1-hop caller/callee/definition graph edges.
+    - Updated `search_chunks_text()` and `search_chunks_vector()` with eager loading (`joinedload`) of parent `ProjectFile` records.
+  - **RetrievalService & RRF Fusion (`server/app/domain/brain/retrieval_service.py`)**:
+    - Implemented multi-channel retrieval orchestrator querying symbol name, full-text tsvector keyword, and pgvector cosine similarity.
+    - Canonicalized chunk-to-symbol identity mapping and computed RRF scores: $\text{RRF}(d) = \sum_{c \in C} \frac{w_c}{k + \text{rank}_c(d)}$.
+    - Relationship graph 1-hop expansion: dynamically resolved related symbol definitions and callers/callees.
+    - Assembled markdown Context Pack with strict token budget enforcement, code fence language deduction, and provenance citations (`path`, `line_range`, `symbol_key`).
+  - **API Endpoint & OpenAPI Spec (`server/app/api/brain.py`)**:
+    - Mounted `POST /api/v1/projects/{pid}/brain/search` guarded by `@declare_permission(PERM_BRAIN_READ)`.
+    - Regenerated OpenAPI spec (48 endpoints) and synchronized `@devmind/common` SDK TypeScript types (`schema.d.ts`).
+  - **Automated Verification**:
+    - Added comprehensive unit and integration test suite (`server/tests/test_hybrid_retrieval.py`, 5 tests).
+    - Verified all 237 server tests pass (`pytest`), 0 lint warnings (`ruff`), and clean 13/13 passes in fast runner (`node scripts/test-all.mjs --fast`).
+
+### Feature — Neon Migration, Local Separation & Production Extension Packaging
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Executed production Neon database migrations, maintained strict local development environment separation, packaged the production VS Code extension with verified embedded environment variables, and added direct Vercel deployment automation:
+  - **Neon PostgreSQL Migration**:
+    - Acquired PostgreSQL advisory lock `0x444D5F4D49475231` on Neon.
+    - Executed all 8 pending Alembic revisions sequentially (`0001_initial_tenancy` through `0008_github_connections`).
+    - Successfully created all 28 production tables (including `chunk_embeddings` with `pgvector` HNSW index and `code_chunks` with `pg_trgm` GIN index).
+    - Executed idempotent reference data seed provisioning the default active embedding space (`fake-embed-v1`, 64-dim).
+    - Verified final Neon schema revision at `0008_github_connections`.
+  - **Local Development Configuration**:
+    - Kept `server/.env.local` completely isolated from `server/.env.production`.
+    - Tested local database connectivity (`localhost:5433/devmind`); ping `SELECT 1` verified successful.
+  - **VS Code Extension Production Packaging**:
+    - Updated `extension/.env.production` with `DEVMIND_API_BASE_URL=https://api.devmind.warishlabs.in/api/v1` and `DEVMIND_FIXTURE_MODE_DEFAULT=false`.
+    - Updated `extension/esbuild.mjs` to dynamically load `.env.production` in production mode and prevent localhost URLs from being packaged.
+    - Packaged `extension/dist/devmind-vscode.vsix` (9 files, 51.93 KB) with embedded production defaults verified by direct unzipping.
+    - Verified zero private secrets or environment files in the VSIX bundle.
+  - **Vercel Deployment Automation & Guide**:
+    - Added `"deploy:client"` (`npx --yes vercel deploy client --prod`) and `"deploy:client:preview"` (`npx --yes vercel deploy client`) to root `package.json`.
+    - Updated `DEPLOYMENT_GUIDE.md` Section 14 with direct CLI commands, linking procedures, and full dashboard settings.
+  - **Verification**: Fast test runner passed 13/13 checks (server 232/236, client 45/45, extension 70/70).
+
+### Feature — Official VS Code Extension Marketplace Promotion
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Updated DevMind web platform, documentation, and extension assets to promote the official Visual Studio Marketplace release:
+  - **Official Marketplace URL**: `https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode`
+  - **Installation Command**: `ext install WarishLabs.devmind-vscode` (or `code --install-extension WarishLabs.devmind-vscode`).
+  - **Web Platform Updates (`client/`)**:
+    - **Header (`Header.tsx`)**: Added `VS Code Extension ↗` action link navigating to Marketplace listing.
+    - **Hero (`Hero.tsx`)**: Replaced placeholder chip with prominent `Install VS Code Extension ↗` CTA button with active status pulse.
+    - **Architecture Diptych (`Section06Diptych.tsx`)**: Added Marketplace link in companion header and `ext install WarishLabs.devmind-vscode` prompt.
+    - **Primary CTA (`Section08CTA.tsx`)**: Added `Install VS Code Extension ↗` button in primary conversion row.
+    - **Footer (`Footer.tsx`)**: Added `VS Code Extension (Marketplace) ↗` link under Open Engine & Specs.
+    - **Early Access Page (`early-access/page.tsx`)**: Added dedicated companion installation card with one-click copyable install command and direct marketplace link.
+  - **Documentation & Metadata Updates**:
+    - **`README.md`**: Added official Visual Studio Marketplace badge, direct installation instructions with CLI/GUI options in Section 11, and updated Roadmap table status.
+    - **`extension/README.md`**: Added Marketplace version badge and quick installation guide.
+    - **`docs/SETUP-GUIDE.md` & `docs/runbooks/release-extension.md`**: Updated publisher ID to `WarishLabs` and listed the official Marketplace item URL.
+  - **Verification**: 13/13 passing in fast runner, 45/45 client tests, 70/70 extension tests, 232 server tests, and clean 12/12 Next.js Turbopack build.
+
+### Feature — Mid-Build Deployment Readiness & Production Preparation
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Prepared repository for zero-downtime, free-tier production deployment across Render (backend Docker), Vercel (Next.js client), Upstash Redis, Neon Postgres, and VS Code Extension:
+  - **Docker & Render Standardization**:
+    - Created multi-stage `server/Dockerfile` with Python 3.12, dynamic `PORT` binding (`os.getenv("PORT", "8000")`), and container health check probe.
+    - Added `server/.dockerignore` excluding `.venv`, `.env*`, and caches.
+    - Updated `render.yaml` to Docker runtime with free instance type, removed Render Redis, configured Upstash Redis env var.
+    - Built and verified local Docker image `devmind-server:test` with active health probes (`/health`, `/healthz`).
+  - **Upstash Redis Integration**:
+    - Added `UPSTASH_REDIS_URL` and `REDIS_URL` aliases in `server/app/core/settings.py` alongside `DEVMIND_REDIS_URL`.
+    - Added fast-fail validator rejecting Upstash HTTP REST URLs and requiring TLS Redis protocol URI (`rediss://default:...@...upstash.io:6379`).
+  - **Health Probes & Throttled Homepage Ping**:
+    - Mounted `GET /health` alongside `GET /healthz` verifying database connectivity with `SELECT 1` ping.
+    - Added client-side throttled health check (`client/lib/health/health-check.ts` and `HomepageHealthTrigger.tsx`) executing at most once per hour per browser without blocking rendering.
+  - **Database Migration & Reference Data Seed**:
+    - Implemented `server/app/core/bootstrap.py` for automated Alembic migrations and idempotent reference data seed (`text-embedding-3-small` embedding space).
+    - Added `pnpm db:migrate` and `pnpm db:seed` root package scripts.
+  - **Extension Build Standardization**:
+    - Configured `extension/esbuild.mjs` build-time injection targeting `https://api.devmind.warishlabs.in/api/v1` and `fixtureMode: false`.
+  - **Environment Audit & Verification**:
+    - Created `scripts/validate-env.mjs` secret-safe environment validator.
+    - Completely updated `DEPLOYMENT_GUIDE.md` with 20-point production deployment manual.
+    - Marked Cloudflare R2 as Deferred / Not used by MVP.
+    - All tests green: 13 passed in `test-all --fast` (server 232/236, client 45/45, extension 70/70).
+
+### Feature — Cloudflare Turnstile Verification End-to-End
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Integrated Cloudflare Turnstile across frontend and backend without silent bypass:
+  - **Frontend (`client/`)**:
+    - Created `TurnstileWidget` (`client/components/turnstile/TurnstileWidget.tsx`) with dynamic Turnstile script loading, theme detection, token callbacks, error/expiry handling, and fallback test mode.
+    - Integrated widget into `EarlyAccessForm` and `/contact` page.
+    - Unit tests (`client/tests/turnstile.test.ts`) covering widget rendering, reset, error handling, and form submission.
+  - **Backend (`server/`)**:
+    - Added `TurnstileVerifier` & `verify_turnstile_token` dependency (`server/app/core/turnstile.py`) supporting official Cloudflare Siteverify API with test secret fallback for local testing.
+    - Added RFC 9457 `TurnstileError` in `server/app/core/errors.py`.
+    - Added public endpoints `POST /api/v1/public/waitlist` and `POST /api/v1/public/contact` in `server/app/api/public.py`.
+    - Unit and integration tests (`server/tests/test_turnstile.py`) covering valid tokens, invalid/expired/missing tokens, upstream timeout/failure handling, and route protection.
+
+### Feature — GitHub OAuth Authorization & Webhook Receiver
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Implemented secure GitHub OAuth authorization flow, account linking, encrypted credential storage, and webhook receiver:
+  - **Envelope Encryption (`server/app/core/crypto.py`)**:
+    - AES-256-GCM envelope encryption with multi-key rotation fallback (`v1:0:nonce_b64:ct_b64`).
+    - Unit tests in `server/tests/test_crypto.py`.
+  - **Database Migration (`server/alembic/versions/0008_github_connections.py`)**:
+    - Table `github_connections` with composite unique constraint `(workspace_id, external_account, kind)`.
+    - Models and repository in `app/persistence/models/github.py` and `app/persistence/repositories/github_repo.py`.
+  - **Domain Service (`server/app/domain/integrations/github_oauth_service.py`)**:
+    - HMAC-SHA256 signed `state` parameter with 10-minute expiry to prevent CSRF.
+    - Open-redirect protection validating destination URL scheme/host against frontend allowlist.
+    - Code exchange with GitHub OAuth, authenticated `/user` profile fetch, and AES-256-GCM token encryption before database write.
+    - Safe workspace connection listing and revocation methods.
+  - **Webhook Receiver (`server/app/domain/webhooks/github_webhook_service.py`)**:
+    - HMAC-SHA256 verification of `X-Hub-Signature-256` using `settings.github_webhook_secret`.
+    - In-memory LRU deduplication on `X-GitHub-Delivery`.
+    - Handler for `ping`, `pull_request`, and `push` events.
+  - **API Endpoints (`server/app/api/integrations.py` & `server/app/api/webhooks.py`)**:
+    - `GET /api/v1/integrations/github/authorize` (302 to GitHub).
+    - `GET /api/v1/integrations/github/callback` (302 to frontend).
+    - `GET /api/v1/workspaces/{wid}/integrations/github` and `DELETE /api/v1/workspaces/{wid}/integrations/github`.
+    - `POST /api/v1/webhooks/github`.
+  - **Tests**:
+    - `server/tests/test_github_oauth.py` (8 tests) and `server/tests/test_github_webhook.py` (5 tests).
+    - Boundary checks and migration head assertions updated and passing.
 
 ### M5-07 — Chunk Embeddings with pgvector and Per-Space HNSW Vector Index
 

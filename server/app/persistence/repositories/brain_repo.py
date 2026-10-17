@@ -664,6 +664,39 @@ class BrainRepository(BaseRepository):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
+    async def search_symbols(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        query: str,
+        limit: int = 20,
+    ) -> list[CodeSymbol]:
+        """Search active code symbols by name or symbol_key (exact, prefix, and substring)."""
+        await self._verify_project_access(ctx, project_id)
+        if not query or not query.strip():
+            return []
+        clean = query.strip()
+        stmt = (
+            select(CodeSymbol)
+            .options(selectinload(CodeSymbol.file_version).selectinload(FileVersion.file))
+            .where(
+                CodeSymbol.project_id == project_id,
+                CodeSymbol.is_current.is_(True),
+                (
+                    CodeSymbol.name.ilike(f"%{clean}%")
+                    | CodeSymbol.symbol_key.ilike(f"%{clean}%")
+                ),
+            )
+            .order_by(
+                (CodeSymbol.name == clean).desc(),
+                CodeSymbol.name.startswith(clean).desc(),
+                CodeSymbol.name.asc(),
+            )
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
     async def get_symbol_by_id(
         self, ctx: AuthContext | SystemContext, project_id: UUID, symbol_id: UUID
     ) -> CodeSymbol | None:
@@ -704,6 +737,32 @@ class BrainRepository(BaseRepository):
             .where(
                 CodeRelationship.project_id == project_id,
                 CodeRelationship.is_current == is_current,
+            )
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_relationships_for_symbols(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        symbol_ids: list[UUID],
+        limit: int = 50,
+    ) -> list[CodeRelationship]:
+        """Retrieve active relationships where from_symbol_id or to_symbol_id is in symbol_ids."""
+        if not symbol_ids:
+            return []
+        await self._verify_project_access(ctx, project_id)
+        stmt = (
+            select(CodeRelationship)
+            .where(
+                CodeRelationship.project_id == project_id,
+                CodeRelationship.is_current.is_(True),
+                (
+                    CodeRelationship.from_symbol_id.in_(symbol_ids)
+                    | CodeRelationship.to_symbol_id.in_(symbol_ids)
+                ),
             )
             .limit(limit)
         )
@@ -784,6 +843,7 @@ class BrainRepository(BaseRepository):
         clean_query = query.strip()
         stmt = (
             select(CodeChunk)
+            .options(selectinload(CodeChunk.file_version).selectinload(FileVersion.file))
             .where(
                 CodeChunk.project_id == project_id,
                 CodeChunk.is_current.is_(True),
@@ -929,6 +989,7 @@ class BrainRepository(BaseRepository):
         dist_expr = ChunkEmbedding.embedding.cosine_distance(query_vector).label("distance")
         stmt = (
             select(CodeChunk, dist_expr)
+            .options(selectinload(CodeChunk.file_version).selectinload(FileVersion.file))
             .join(ChunkEmbedding, ChunkEmbedding.chunk_id == CodeChunk.id)
             .where(
                 ChunkEmbedding.project_id == project_id,

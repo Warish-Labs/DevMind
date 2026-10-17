@@ -88,6 +88,16 @@ export function Footer() {
             <ul className="flex flex-col gap-2 text-[11px] text-[var(--fg-2)]">
               <li>
                 <a
+                  href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--signal)] hover:underline inline-flex items-center gap-1 font-semibold"
+                >
+                  VS Code Extension (Marketplace) ↗
+                </a>
+              </li>
+              <li>
+                <a
                   href="https://github.com/Warish-Labs/DevMind"
                   target="_blank"
                   rel="noopener noreferrer"

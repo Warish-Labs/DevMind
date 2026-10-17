@@ -1,0 +1,941 @@
+{
+  "benchmark": "devmind-retrieval-benchmark-v1",
+  "version": "1.0.0",
+  "timestamp": "2026-10-17T15:19:00.368256+00:00",
+  "commit": "3b381fb",
+  "query_count": 12,
+  "modes": {
+    "symbol_only": {
+      "total_queries": 12,
+      "overall": {
+        "recall_at_1": 0.2558,
+        "recall_at_3": 0.3079,
+        "recall_at_5": 0.3218,
+        "mrr": 0.6667,
+        "ndcg_at_5": 0.4209
+      },
+      "by_category": {
+        "identifier": {
+          "recall_at_1": 0.1979,
+          "recall_at_3": 0.3542,
+          "recall_at_5": 0.3958,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6496
+        },
+        "concept": {
+          "recall_at_1": 0.0417,
+          "recall_at_3": 0.0417,
+          "recall_at_5": 0.0417,
+          "mrr": 0.25,
+          "ndcg_at_5": 0.0848
+        },
+        "flow": {
+          "recall_at_1": 0.0556,
+          "recall_at_3": 0.0556,
+          "recall_at_5": 0.0556,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.0566
+        },
+        "no_answer": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      }
+    },
+    "keyword_only": {
+      "total_queries": 12,
+      "overall": {
+        "recall_at_1": 0.2894,
+        "recall_at_3": 0.4224,
+        "recall_at_5": 0.4849,
+        "mrr": 0.9375,
+        "ndcg_at_5": 0.6803
+      },
+      "by_category": {
+        "identifier": {
+          "recall_at_1": 0.1979,
+          "recall_at_3": 0.3541,
+          "recall_at_5": 0.4166,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6364
+        },
+        "concept": {
+          "recall_at_1": 0.1111,
+          "recall_at_3": 0.2639,
+          "recall_at_5": 0.3611,
+          "mrr": 0.8125,
+          "ndcg_at_5": 0.6055
+        },
+        "flow": {
+          "recall_at_1": 0.1181,
+          "recall_at_3": 0.2986,
+          "recall_at_5": 0.3541,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.5979
+        },
+        "no_answer": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      }
+    },
+    "vector_only": {
+      "total_queries": 12,
+      "overall": {
+        "recall_at_1": 0.2894,
+        "recall_at_3": 0.412,
+        "recall_at_5": 0.5127,
+        "mrr": 0.9375,
+        "ndcg_at_5": 0.6779
+      },
+      "by_category": {
+        "identifier": {
+          "recall_at_1": 0.1979,
+          "recall_at_3": 0.3854,
+          "recall_at_5": 0.4166,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.5544
+        },
+        "concept": {
+          "recall_at_1": 0.1111,
+          "recall_at_3": 0.2639,
+          "recall_at_5": 0.4444,
+          "mrr": 0.8125,
+          "ndcg_at_5": 0.6748
+        },
+        "flow": {
+          "recall_at_1": 0.1181,
+          "recall_at_3": 0.1736,
+          "recall_at_5": 0.3541,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6091
+        },
+        "no_answer": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      }
+    },
+    "fused": {
+      "total_queries": 12,
+      "overall": {
+        "recall_at_1": 0.2894,
+        "recall_at_3": 0.4641,
+        "recall_at_5": 0.5544,
+        "mrr": 0.9375,
+        "ndcg_at_5": 0.7377
+      },
+      "by_category": {
+        "identifier": {
+          "recall_at_1": 0.1979,
+          "recall_at_3": 0.4688,
+          "recall_at_5": 0.5417,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.7505
+        },
+        "concept": {
+          "recall_at_1": 0.1111,
+          "recall_at_3": 0.3055,
+          "recall_at_5": 0.4444,
+          "mrr": 0.8125,
+          "ndcg_at_5": 0.6807
+        },
+        "flow": {
+          "recall_at_1": 0.1181,
+          "recall_at_3": 0.2361,
+          "recall_at_5": 0.3541,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.564
+        },
+        "no_answer": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      }
+    },
+    "fused_expanded_with_expansion": {
+      "total_queries": 12,
+      "overall": {
+        "recall_at_1": 0.2894,
+        "recall_at_3": 0.4502,
+        "recall_at_5": 0.5775,
+        "mrr": 0.9375,
+        "ndcg_at_5": 0.7658
+      },
+      "by_category": {
+        "identifier": {
+          "recall_at_1": 0.1979,
+          "recall_at_3": 0.4271,
+          "recall_at_5": 0.5834,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8238
+        },
+        "concept": {
+          "recall_at_1": 0.1111,
+          "recall_at_3": 0.3055,
+          "recall_at_5": 0.4444,
+          "mrr": 0.8125,
+          "ndcg_at_5": 0.6807
+        },
+        "flow": {
+          "recall_at_1": 0.1181,
+          "recall_at_3": 0.2361,
+          "recall_at_5": 0.4097,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.5858
+        },
+        "no_answer": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      }
+    }
+  },
+  "detailed_results": {
+    "symbol_only": [
+      {
+        "query_id": "ret-id-01",
+        "query": "require_admin",
+        "category": "identifier",
+        "mode": "symbol_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.1667,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.4758,
+        "retrieved_count": 4
+      },
+      {
+        "query_id": "ret-id-02",
+        "query": "CurrentUser",
+        "category": "identifier",
+        "mode": "symbol_only",
+        "recall_at_1": 0.125,
+        "recall_at_3": 0.25,
+        "recall_at_5": 0.25,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.6786,
+        "retrieved_count": 2
+      },
+      {
+        "query_id": "ret-id-03",
+        "query": "requireAuth",
+        "category": "identifier",
+        "mode": "symbol_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.3333,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.6786,
+        "retrieved_count": 3
+      },
+      {
+        "query_id": "ret-id-04",
+        "query": "list_admin_users",
+        "category": "identifier",
+        "mode": "symbol_only",
+        "recall_at_1": 0.3333,
+        "recall_at_3": 0.6667,
+        "recall_at_5": 0.6667,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7654,
+        "retrieved_count": 4
+      },
+      {
+        "query_id": "ret-cpt-01",
+        "query": "role authorization guard for administrator check",
+        "category": "concept",
+        "mode": "symbol_only",
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "retrieved_count": 0
+      },
+      {
+        "query_id": "ret-cpt-02",
+        "query": "extract bearer token and verify authorization header HTTP exception",
+        "category": "concept",
+        "mode": "symbol_only",
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "retrieved_count": 0
+      },
+      {
+        "query_id": "ret-cpt-03",
+        "query": "delete administrative user by ID endpoint",
+        "category": "concept",
+        "mode": "symbol_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.1667,
+        "recall_at_5": 0.1667,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.3392,
+        "retrieved_count": 1
+      },
+      {
+        "query_id": "ret-cpt-04",
+        "query": "missing role authorization vulnerability finding in admin routes",
+        "category": "concept",
+        "mode": "symbol_only",
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "retrieved_count": 0
+      },
+      {
+        "query_id": "ret-flw-01",
+        "query": "routes or functions that call require_admin or requireRole",
+        "category": "flow",
+        "mode": "symbol_only",
+        "recall_at_1": 0.1111,
+        "recall_at_3": 0.1111,
+        "recall_at_5": 0.1111,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.1131,
+        "retrieved_count": 2
+      },
+      {
+        "query_id": "ret-flw-02",
+        "query": "callees and dependencies of admin user listing handler",
+        "category": "flow",
+        "mode": "symbol_only",
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "retrieved_count": 0
+      },
+      {
+        "query_id": "ret-na-01",
+        "query": "stripe webhook payment verification using secret key",
+        "category": "no_answer",
+        "mode": "symbol_only",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      },
+      {
+        "query_id": "ret-na-02",
+        "query": "kubernetes cluster ingress tls certificate manager letsencrypt",
+        "category": "no_answer",
+        "mode": "symbol_only",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      }
+    ],
+    "keyword_only": [
+      {
+        "query_id": "ret-id-01",
+        "query": "require_admin",
+        "category": "identifier",
+        "mode": "keyword_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.3333,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.5036,
+        "retrieved_count": 2
+      },
+      {
+        "query_id": "ret-id-02",
+        "query": "CurrentUser",
+        "category": "identifier",
+        "mode": "keyword_only",
+        "recall_at_1": 0.125,
+        "recall_at_3": 0.25,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 5
+      },
+      {
+        "query_id": "ret-id-03",
+        "query": "requireAuth",
+        "category": "identifier",
+        "mode": "keyword_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.5729,
+        "retrieved_count": 3
+      },
+      {
+        "query_id": "ret-id-04",
+        "query": "list_admin_users",
+        "category": "identifier",
+        "mode": "keyword_only",
+        "recall_at_1": 0.3333,
+        "recall_at_3": 0.3333,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.4693,
+        "retrieved_count": 1
+      },
+      {
+        "query_id": "ret-cpt-01",
+        "query": "role authorization guard for administrator check",
+        "category": "concept",
+        "mode": "keyword_only",
+        "recall_at_1": 0.1111,
+        "recall_at_3": 0.2222,
+        "recall_at_5": 0.4444,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 5
+      },
+      {
+        "query_id": "ret-cpt-02",
+        "query": "extract bearer token and verify authorization header HTTP exception",
+        "category": "concept",
+        "mode": "keyword_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7227,
+        "retrieved_count": 3
+      },
+      {
+        "query_id": "ret-cpt-03",
+        "query": "delete administrative user by ID endpoint",
+        "category": "concept",
+        "mode": "keyword_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.3333,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.5531,
+        "retrieved_count": 7
+      },
+      {
+        "query_id": "ret-cpt-04",
+        "query": "missing role authorization vulnerability finding in admin routes",
+        "category": "concept",
+        "mode": "keyword_only",
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.1667,
+        "mrr": 0.25,
+        "ndcg_at_5": 0.1461,
+        "retrieved_count": 8
+      },
+      {
+        "query_id": "ret-flw-01",
+        "query": "routes or functions that call require_admin or requireRole",
+        "category": "flow",
+        "mode": "keyword_only",
+        "recall_at_1": 0.1111,
+        "recall_at_3": 0.2222,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.4731,
+        "retrieved_count": 4
+      },
+      {
+        "query_id": "ret-flw-02",
+        "query": "callees and dependencies of admin user listing handler",
+        "category": "flow",
+        "mode": "keyword_only",
+        "recall_at_1": 0.125,
+        "recall_at_3": 0.375,
+        "recall_at_5": 0.375,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7227,
+        "retrieved_count": 6
+      },
+      {
+        "query_id": "ret-na-01",
+        "query": "stripe webhook payment verification using secret key",
+        "category": "no_answer",
+        "mode": "keyword_only",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      },
+      {
+        "query_id": "ret-na-02",
+        "query": "kubernetes cluster ingress tls certificate manager letsencrypt",
+        "category": "no_answer",
+        "mode": "keyword_only",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      }
+    ],
+    "vector_only": [
+      {
+        "query_id": "ret-id-01",
+        "query": "require_admin",
+        "category": "identifier",
+        "mode": "vector_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.3333,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.4012,
+        "retrieved_count": 2
+      },
+      {
+        "query_id": "ret-id-02",
+        "query": "CurrentUser",
+        "category": "identifier",
+        "mode": "vector_only",
+        "recall_at_1": 0.125,
+        "recall_at_3": 0.375,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.9131,
+        "retrieved_count": 5
+      },
+      {
+        "query_id": "ret-id-03",
+        "query": "requireAuth",
+        "category": "identifier",
+        "mode": "vector_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.4342,
+        "retrieved_count": 3
+      },
+      {
+        "query_id": "ret-id-04",
+        "query": "list_admin_users",
+        "category": "identifier",
+        "mode": "vector_only",
+        "recall_at_1": 0.3333,
+        "recall_at_3": 0.3333,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.4693,
+        "retrieved_count": 1
+      },
+      {
+        "query_id": "ret-cpt-01",
+        "query": "role authorization guard for administrator check",
+        "category": "concept",
+        "mode": "vector_only",
+        "recall_at_1": 0.1111,
+        "recall_at_3": 0.2222,
+        "recall_at_5": 0.4444,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 5
+      },
+      {
+        "query_id": "ret-cpt-02",
+        "query": "extract bearer token and verify authorization header HTTP exception",
+        "category": "concept",
+        "mode": "vector_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7227,
+        "retrieved_count": 3
+      },
+      {
+        "query_id": "ret-cpt-03",
+        "query": "delete administrative user by ID endpoint",
+        "category": "concept",
+        "mode": "vector_only",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.3333,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.6992,
+        "retrieved_count": 7
+      },
+      {
+        "query_id": "ret-cpt-04",
+        "query": "missing role authorization vulnerability finding in admin routes",
+        "category": "concept",
+        "mode": "vector_only",
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.3333,
+        "mrr": 0.25,
+        "ndcg_at_5": 0.2773,
+        "retrieved_count": 8
+      },
+      {
+        "query_id": "ret-flw-01",
+        "query": "routes or functions that call require_admin or requireRole",
+        "category": "flow",
+        "mode": "vector_only",
+        "recall_at_1": 0.1111,
+        "recall_at_3": 0.2222,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.6018,
+        "retrieved_count": 4
+      },
+      {
+        "query_id": "ret-flw-02",
+        "query": "callees and dependencies of admin user listing handler",
+        "category": "flow",
+        "mode": "vector_only",
+        "recall_at_1": 0.125,
+        "recall_at_3": 0.125,
+        "recall_at_5": 0.375,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.6164,
+        "retrieved_count": 6
+      },
+      {
+        "query_id": "ret-na-01",
+        "query": "stripe webhook payment verification using secret key",
+        "category": "no_answer",
+        "mode": "vector_only",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      },
+      {
+        "query_id": "ret-na-02",
+        "query": "kubernetes cluster ingress tls certificate manager letsencrypt",
+        "category": "no_answer",
+        "mode": "vector_only",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      }
+    ],
+    "fused": [
+      {
+        "query_id": "ret-id-01",
+        "query": "require_admin",
+        "category": "identifier",
+        "mode": "fused",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.3333,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.5036,
+        "retrieved_count": 4
+      },
+      {
+        "query_id": "ret-id-02",
+        "query": "CurrentUser",
+        "category": "identifier",
+        "mode": "fused",
+        "recall_at_1": 0.125,
+        "recall_at_3": 0.375,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.9808,
+        "retrieved_count": 5
+      },
+      {
+        "query_id": "ret-id-03",
+        "query": "requireAuth",
+        "category": "identifier",
+        "mode": "fused",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.6667,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7521,
+        "retrieved_count": 5
+      },
+      {
+        "query_id": "ret-id-04",
+        "query": "list_admin_users",
+        "category": "identifier",
+        "mode": "fused",
+        "recall_at_1": 0.3333,
+        "recall_at_3": 0.6667,
+        "recall_at_5": 0.6667,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7654,
+        "retrieved_count": 4
+      },
+      {
+        "query_id": "ret-cpt-01",
+        "query": "role authorization guard for administrator check",
+        "category": "concept",
+        "mode": "fused",
+        "recall_at_1": 0.1111,
+        "recall_at_3": 0.2222,
+        "recall_at_5": 0.4444,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 5
+      },
+      {
+        "query_id": "ret-cpt-02",
+        "query": "extract bearer token and verify authorization header HTTP exception",
+        "category": "concept",
+        "mode": "fused",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7227,
+        "retrieved_count": 3
+      },
+      {
+        "query_id": "ret-cpt-03",
+        "query": "delete administrative user by ID endpoint",
+        "category": "concept",
+        "mode": "fused",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7227,
+        "retrieved_count": 7
+      },
+      {
+        "query_id": "ret-cpt-04",
+        "query": "missing role authorization vulnerability finding in admin routes",
+        "category": "concept",
+        "mode": "fused",
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.3333,
+        "mrr": 0.25,
+        "ndcg_at_5": 0.2773,
+        "retrieved_count": 8
+      },
+      {
+        "query_id": "ret-flw-01",
+        "query": "routes or functions that call require_admin or requireRole",
+        "category": "flow",
+        "mode": "fused",
+        "recall_at_1": 0.1111,
+        "recall_at_3": 0.2222,
+        "recall_at_5": 0.3333,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.4287,
+        "retrieved_count": 4
+      },
+      {
+        "query_id": "ret-flw-02",
+        "query": "callees and dependencies of admin user listing handler",
+        "category": "flow",
+        "mode": "fused",
+        "recall_at_1": 0.125,
+        "recall_at_3": 0.25,
+        "recall_at_5": 0.375,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.6992,
+        "retrieved_count": 6
+      },
+      {
+        "query_id": "ret-na-01",
+        "query": "stripe webhook payment verification using secret key",
+        "category": "no_answer",
+        "mode": "fused",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      },
+      {
+        "query_id": "ret-na-02",
+        "query": "kubernetes cluster ingress tls certificate manager letsencrypt",
+        "category": "no_answer",
+        "mode": "fused",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      }
+    ],
+    "fused_expanded_with_expansion": [
+      {
+        "query_id": "ret-id-01",
+        "query": "require_admin",
+        "category": "identifier",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.8908,
+        "retrieved_count": 8
+      },
+      {
+        "query_id": "ret-id-02",
+        "query": "CurrentUser",
+        "category": "identifier",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.125,
+        "recall_at_3": 0.375,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.9808,
+        "retrieved_count": 5
+      },
+      {
+        "query_id": "ret-id-03",
+        "query": "requireAuth",
+        "category": "identifier",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.6667,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7521,
+        "retrieved_count": 7
+      },
+      {
+        "query_id": "ret-id-04",
+        "query": "list_admin_users",
+        "category": "identifier",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.3333,
+        "recall_at_3": 0.3333,
+        "recall_at_5": 0.6667,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.6714,
+        "retrieved_count": 9
+      },
+      {
+        "query_id": "ret-cpt-01",
+        "query": "role authorization guard for administrator check",
+        "category": "concept",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.1111,
+        "recall_at_3": 0.2222,
+        "recall_at_5": 0.4444,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 9
+      },
+      {
+        "query_id": "ret-cpt-02",
+        "query": "extract bearer token and verify authorization header HTTP exception",
+        "category": "concept",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7227,
+        "retrieved_count": 6
+      },
+      {
+        "query_id": "ret-cpt-03",
+        "query": "delete administrative user by ID endpoint",
+        "category": "concept",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.1667,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.7227,
+        "retrieved_count": 8
+      },
+      {
+        "query_id": "ret-cpt-04",
+        "query": "missing role authorization vulnerability finding in admin routes",
+        "category": "concept",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.3333,
+        "mrr": 0.25,
+        "ndcg_at_5": 0.2773,
+        "retrieved_count": 9
+      },
+      {
+        "query_id": "ret-flw-01",
+        "query": "routes or functions that call require_admin or requireRole",
+        "category": "flow",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.1111,
+        "recall_at_3": 0.2222,
+        "recall_at_5": 0.4444,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.4724,
+        "retrieved_count": 7
+      },
+      {
+        "query_id": "ret-flw-02",
+        "query": "callees and dependencies of admin user listing handler",
+        "category": "flow",
+        "mode": "fused_expanded",
+        "recall_at_1": 0.125,
+        "recall_at_3": 0.25,
+        "recall_at_5": 0.375,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.6992,
+        "retrieved_count": 9
+      },
+      {
+        "query_id": "ret-na-01",
+        "query": "stripe webhook payment verification using secret key",
+        "category": "no_answer",
+        "mode": "fused_expanded",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      },
+      {
+        "query_id": "ret-na-02",
+        "query": "kubernetes cluster ingress tls certificate manager letsencrypt",
+        "category": "no_answer",
+        "mode": "fused_expanded",
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "retrieved_count": 0
+      }
+    ]
+  }
+}

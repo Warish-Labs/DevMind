@@ -1,0 +1,28 @@
+# Virtual environments and dependencies
+.venv/
+venv/
+env/
+
+# Environment files and credentials (CRITICAL: never bake secrets into image)
+.env
+.env.*
+*.env
+*.env.*
+env.production*
+env.productions*
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.import_linter_cache/
+
+# Tests and development documentation
+tests/
+reports/
+
+# Operating system artifacts
+.DS_Store

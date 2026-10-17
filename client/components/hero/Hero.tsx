@@ -189,16 +189,21 @@ export function Hero() {
               </Link>
 
               <a
+                href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2.5 rounded-control text-sm font-medium border border-[var(--signal)]/40 bg-[var(--bg-1)] text-[var(--fg-0)] hover:border-[var(--signal)] hover:text-[var(--signal)] transition-colors font-mono inline-flex items-center gap-2"
+              >
+                <span className="w-2 h-2 rounded-full bg-[var(--signal)] animate-pulse" />
+                <span>Install VS Code Extension ↗</span>
+              </a>
+
+              <a
                 href="#section-05"
-                className="px-4 py-2.5 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono"
+                className="px-4 py-2.5 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono"
               >
                 See how a finding is made ↓
               </a>
-
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-chip text-xs font-mono text-[var(--fg-2)] border border-[var(--line-1)] bg-[var(--bg-1)]/50 select-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--warn)]" />
-                <span>Extension in development</span>
-              </span>
             </div>
           </div>
 

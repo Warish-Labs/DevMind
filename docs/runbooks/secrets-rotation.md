@@ -45,12 +45,13 @@ If any secret, key, or token is committed to git or exposed in logs:
 5. Save changes in Render (triggers automatic zero-downtime rolling restart).
 6. Verify `/healthz` returns `{"status": "ok"}`.
 
-### 3.2 Render Key Value (Redis)
+### 3.2 Upstash Redis
 
-1. In Render dashboard, navigate to the DevMind Key Value instance.
-2. If credentials need rotation, recreate or update the connection string.
-3. Update `DEVMIND_REDIS_URL` in the Render web service environment.
-4. Restart service.
+1. In Upstash dashboard (console.upstash.com), navigate to the DevMind Redis database.
+2. If credentials need rotation, click **Reset Password** in Database Details.
+3. Copy the updated native Redis connection URI (`rediss://default:<new_password>@<host>.upstash.io:6379`).
+4. Update `DEVMIND_REDIS_URL` in the Render web service environment.
+5. Save changes in Render (triggers zero-downtime rolling restart).
 
 ### 3.3 Envelope encryption keys (`DEVMIND_ENCRYPTION_KEYS`)
 

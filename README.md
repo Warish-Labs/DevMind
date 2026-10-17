@@ -20,7 +20,7 @@
   <img src="https://img.shields.io/badge/FastAPI-Python_3.12-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/LangGraph-Stateful_Agents-orange" alt="LangGraph">
   <img src="https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/VS_Code-Extension_API-007ACC?logo=visualstudiocode&logoColor=white" alt="VS Code">
+  <a href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"><img src="https://img.shields.io/badge/VS_Code_Marketplace-WarishLabs.devmind--vscode-007ACC?logo=visualstudiocode&logoColor=white" alt="Visual Studio Marketplace"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License"></a>
 </p>
 
@@ -352,7 +352,25 @@ pnpm dev:client
 # Open http://localhost:3000 in your browser
 ```
 
-### Running the VS Code Extension
+### Installing the VS Code Extension
+
+Install the official companion extension directly from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode):
+
+```bash
+# Install via VS Code CLI:
+code --install-extension WarishLabs.devmind-vscode
+```
+
+Or inside VS Code:
+
+1. Press `Ctrl+P` (or `Cmd+P` on macOS) to open the Quick Open palette.
+2. Enter:
+   ```text
+   ext install WarishLabs.devmind-vscode
+   ```
+3. Press `Enter`.
+
+### Developing the VS Code Extension Locally
 
 1. Open the repository root in VS Code: `code .`
 2. Press `F5` to launch the **Extension Development Host**.

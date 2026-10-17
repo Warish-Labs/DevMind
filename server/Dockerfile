@@ -1,5 +1,5 @@
 # Multi-stage, non-root Dockerfile for DevMind backend services
-# Produces a single image deployable as api, worker, or scheduler (ADR-005, ADR-046)
+# Produces a single image deployable as api, worker, scheduler, or all (ADR-005, ADR-046)
 
 # Stage 1: Build dependencies with uv
 FROM python:3.12-slim-bookworm AS builder
@@ -38,10 +38,15 @@ COPY --from=builder --chown=appuser:devmind /app/.venv /app/.venv
 # Configure execution environment
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH="/app" \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PORT=8000
 
-# Copy application source code and configurations
+# Copy application source code, migrations, and configurations
 COPY --chown=appuser:devmind app /app/app
+COPY --chown=appuser:devmind alembic /app/alembic
+COPY --chown=appuser:devmind alembic.ini /app/alembic.ini
+COPY --chown=appuser:devmind configs /app/configs
+COPY --chown=appuser:devmind pyproject.toml /app/pyproject.toml
 COPY --chown=appuser:devmind README.md /app/README.md
 
 # Switch to non-root user
@@ -49,9 +54,9 @@ USER appuser
 
 EXPOSE 8000
 
-# Health check verifies liveness probe
-HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/healthz || exit 1
+# Health check verifies liveness probe on configured PORT
+HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/healthz || exit 1
 
-# Default command runs FastAPI via uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command runs the unified launcher (runs migrations, startup sweep, and selected run mode)
+CMD ["python", "-m", "app.launcher"]

@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.schemas import (
     BrainFileDetail,
     BrainFileItem,
+    BrainSearchRequest,
+    BrainSearchResponse,
     BrainSummaryResponse,
     CodeSymbolItem,
     CreateSnapshotRequest,
@@ -27,7 +29,7 @@ from app.domain.auth import (
     get_db_session,
     require_permission,
 )
-from app.domain.brain import BrainService, SnapshotService, SymbolService
+from app.domain.brain import BrainService, RetrievalService, SnapshotService, SymbolService
 
 router = APIRouter(
     prefix="/projects/{pid}/brain",
@@ -203,3 +205,23 @@ async def get_brain_file_detail(
     service = BrainService(session)
     scoped_ctx = await service.resolve_project_context(ctx, pid)
     return await service.get_file_detail(scoped_ctx, pid, fid)
+
+
+@router.post(
+    "/search",
+    response_model=BrainSearchResponse,
+    summary="Multi-channel hybrid brain search with fusion and context pack",
+)
+@declare_permission(PERM_BRAIN_READ)
+async def search_brain(
+    pid: UUID,
+    payload: BrainSearchRequest,
+    ctx: AuthContext = Depends(require_permission(PERM_BRAIN_READ)),
+    session: AsyncSession = Depends(get_db_session),
+) -> BrainSearchResponse:
+    """Execute multi-channel hybrid search (symbols, keywords, vectors) with RRF fusion and context pack."""
+    service = BrainService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    retrieval_service = RetrievalService(session)
+    return await retrieval_service.search(scoped_ctx, pid, payload)
+

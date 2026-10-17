@@ -65,7 +65,15 @@ export function Section06Diptych() {
         <div className="lg:col-span-5 rounded-panel bg-[var(--bg-1)] border border-[var(--line-2)] overflow-hidden font-mono text-xs shadow-xl">
           <div className="flex items-center justify-between px-4 py-2.5 bg-[var(--bg-2)]/60 border-b border-[var(--line-1)] text-[11px] text-[var(--fg-2)] select-none">
             <span className="text-[var(--fg-0)] font-medium">VS Code Extension (Local Host)</span>
-            <span className="text-[var(--signal)]">Offline Capable</span>
+            <a
+              href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--signal)] hover:underline inline-flex items-center gap-1 font-semibold"
+            >
+              <span>Marketplace</span>
+              <span>↗</span>
+            </a>
           </div>
 
           <div className="p-4 space-y-4">
@@ -97,6 +105,20 @@ export function Section06Diptych() {
             <div className="text-[11px] text-[var(--fg-2)] leading-relaxed">
               No live database connection. No LLM credentials on workstation. Scans locally with
               Tree-sitter.
+            </div>
+
+            <div className="pt-2 border-t border-[var(--line-1)] flex items-center justify-between text-[10px] text-[var(--fg-2)]">
+              <span className="font-mono text-[var(--fg-1)]">
+                ext install WarishLabs.devmind-vscode
+              </span>
+              <a
+                href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--ref)] hover:underline"
+              >
+                Install →
+              </a>
             </div>
           </div>
         </div>

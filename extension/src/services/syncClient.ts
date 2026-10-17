@@ -17,7 +17,7 @@
  */
 
 import { DatabaseModel, Finding, ProjectModule } from "../types";
-import { LocalManifestStore, ManifestRecord } from "../scanner/manifest";
+import { LocalManifestStore } from "../scanner/manifest";
 import { computeNormalizedTextHash } from "../scanner/hasher";
 import { ExtensionAuthService } from "./auth";
 import { DevMindLogger } from "./logger";
@@ -90,7 +90,7 @@ export class SyncClient {
     const headers = (tok: string) => ({
       "Content-Type": "application/json",
       Authorization: `Bearer ${tok}`,
-      "X-DevMind-Client": "extension/0.1.0",
+      "X-DevMind-Client": "extension/0.1.1",
     });
 
     let staleBaseRecovered = false;

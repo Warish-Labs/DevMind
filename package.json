@@ -11,6 +11,15 @@
   "scripts": {
     "dev:client": "pnpm --filter client dev",
     "build": "pnpm -r --filter=!./evals/** run build",
+    "build:client": "pnpm --filter client build",
+    "build:extension": "pnpm --filter devmind-vscode build",
+    "package:extension": "pnpm --filter devmind-vscode package",
+    "deploy:client": "npx --yes vercel deploy client --prod",
+    "deploy:client:preview": "npx --yes vercel deploy client",
+    "docker:build:server": "docker build -t devmind-server:latest -f server/Dockerfile server",
+    "validate:env": "node scripts/validate-env.mjs",
+    "db:migrate": "cd server && uv run alembic upgrade head",
+    "db:seed": "cd server && uv run python -m app.core.bootstrap",
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
@@ -23,6 +32,7 @@
     "brand:sync": "node scripts/sync-brand.mjs",
     "brand:check": "node scripts/sync-brand.mjs --check",
     "docs:links": "node scripts/docs-links.mjs",
+    "eval:retrieval": "python3 evals/retrieval/harness.py",
     "gen:api": "server/.venv/bin/python scripts/export-openapi.py && pnpm --filter @devmind/common exec openapi-typescript openapi.json -o src/api/schema.d.ts && pnpm --filter @devmind/common build",
     "prepare": "husky"
   },

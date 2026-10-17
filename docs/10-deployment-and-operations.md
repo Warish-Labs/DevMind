@@ -56,7 +56,8 @@ Queue names and concurrency are configuration; exact flags are confirmed at impl
 | `devmind-api` | Web service (Docker) | API command | `GET /healthz` for liveness; `/readyz` for deploy readiness | Instances by configuration; stateless |
 | `devmind-worker` | Background worker (Docker, same image) | Worker command, separate queue sets possible (`ingest`/`embed` vs `analysis`) | Process-level; heartbeats recorded in the database | Replicas by queue depth; bounded concurrency to protect Neon connections |
 | `devmind-scheduler` | Background worker | Beat command | Process-level | Exactly 1 |
-| Redis | Managed Redis-compatible store (Render Key Value is the interim default, ADR-031, OQ-04) | n/a | n/a | Persistence and eviction policy set per §5 |
+| Redis | Managed Redis-compatible store (Upstash Redis with standard TLS connection string, ADR-046) | n/a | n/a | Persistence and eviction policy set per §5 |
+
 
 Defined as infrastructure-as-code in `render.yaml` at the repository root (planned; the **free profile** in §22 is the one deployed now). Pre-deploy command runs migrations (§8). Auto-deploy from the main branch only to staging; production deploys are manual promotions after checks (§17). Environment groups hold shared non-secret variables; secrets are set per service in the platform's secret store.
 
@@ -158,7 +159,8 @@ All variables are listed in `.env.example` with placeholders. Prefix `DEVMIND_` 
 | `DEVMIND_EMBED_API_KEY` | worker | **yes** | Embedding provider |
 | `DEVMIND_RESEND_API_KEY` | api | **yes** | Only when email features ship (ADR-014) |
 | `DEVMIND_SENTRY_DSN` or equivalent | all | treat as sensitive | Error reporting (vendor open, OQ-15) |
-| `DEVMIND_OTEL_EXPORTER_ENDPOINT` | all | maybe | Tracing |
+| `DEVMIND_TURNSTILE_SECRET_KEY` | api | **yes** | Cloudflare Turnstile secret key for public form verification (Render) |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | client | no | Cloudflare Turnstile site key for browser widget (Vercel) |
 | `DEVMIND_CORS_ORIGINS` | api | no | Comma-separated exact origins |
 | `DEVMIND_MIN_EXTENSION_VERSION` | api | no | Compatibility floor ([06](06-vscode-extension-and-local-scanning.md) §18) |
 | `DEVMIND_KILL_SWITCHES` | api, worker | no | Flags: disable `indexed` mode, disable a provider, pause queues, disable webhooks |
@@ -309,11 +311,11 @@ The owner uses free tiers only. This profile keeps the code and the target archi
 |---|---|---|
 | Client | Vercel Hobby, public repo, root directory `client`, personal non-commercial use | Any host |
 | API + worker + scheduler | **One** Render free web service, `DEVMIND_RUN_MODE=all` (launcher starts uvicorn and an embedded Celery worker with beat, `--pool=solo`, concurrency 1) | Three services: web, worker, scheduler |
-| Queue and rate limits | Render free Key Value (disposable, 25 MB, no persistence) | Persistent managed Redis with `noeviction` |
+| Queue and rate limits | Upstash Redis Free Tier (standard TLS connection string, 10k cmd/day) | Persistent managed Redis with `noeviction` |
 | Database | Neon Free, pooled endpoint, small storage cap | Neon paid or equivalent |
 | Migrations | Run at container start under an advisory lock (do not rely on the pre-deploy command on free instances) | Pre-deploy command via the direct endpoint (§8) |
-| Health check | `/healthz` (cheap; `/readyz` is used by monitoring) | `/readyz` |
-| Object storage | Not needed for the MVP; later Cloudflare R2 free allotment on the owner's account, or none | R2 |
+| Health check | `/health` / `/healthz` (cheap; `/readyz` is used by monitoring) | `/readyz` |
+| Object storage | Deferred / Not used by the MVP (zero accounts or subscriptions) | R2 |
 | Email | Resend free tier on the verified `warishlabs.in` domain (M11) | Resend |
 | Monitoring | Render logs, health endpoints, optional free error-reporting tier (OQ-15) | Full observability stack |
 | CI | GitHub Actions on a public repository (unlimited standard-runner minutes) | Same |
@@ -325,13 +327,13 @@ The owner uses free tiers only. This profile keeps the code and the target archi
 3. On every start the app runs the enqueuer sweep and stale-job reaper ([02](02-system-architecture.md) §10) so jobs stranded by a sleep are resumed or failed with a clear reason.
 4. Long jobs are split into short resumable tasks; the website polls job status, which also generates traffic.
 5. SSE streams reconnect and fall back to polling (OQ-13).
-6. No keep-alive pinger by default: it spends the shared 750 instance-hour pool and may breach fair use. If the owner chooses one, record it as a decision.
+6. No keep-alive pinger by default: a best-effort non-blocking probe runs at most once per hour when visitors open the homepage without aggressive loops.
 
 **Memory budget.** The free instance has 512 MB. Before M2 ends, measure resident memory of the combined container under a representative ingestion and record it in `BRAIN.md`. If it does not fit, the fallback is a Postgres-backed job runner in place of Celery, which needs its own ADR.
 
 **Storage budget.** Neon Free caps storage per project (plan for 0.5 GB). Embedding dimension at most 768 or `halfvec`; per-project limits on files and chunks are derived from measured bytes per chunk (text, tsvector, vector, HNSW index) and stored in `server/configs/quotas.free.yaml`; the quota service stops ingestion with a clear message before the cap is reached.
 
-**Shared limits to remember.** One free Key Value per Render workspace and 750 free instance hours per workspace are shared with every other free service in that workspace (for example other projects). If another project already uses the free Key Value, DevMind needs a different Redis (see the setup guide) or a different workspace.
+**Shared limits to remember.** Upstash Redis provides 10,000 commands/day on its free tier. Celery visibility timeout is set to 3600 seconds to prevent unnecessary re-polling. Render 750 free instance hours per workspace are shared with every other free service in that workspace.
 
 **Upgrade triggers (not now).** Always-on worker needed; memory exceeded; storage cap hit; commercial use (Vercel Hobby terms); free tier terms change. Each trigger gets an ADR.
 

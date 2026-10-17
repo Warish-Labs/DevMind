@@ -28,6 +28,7 @@ from app.persistence.models.brain import (
 )
 from app.persistence.models.consent import ConsentRecord
 from app.persistence.models.extension import ExtensionRegistration, ExtensionToken
+from app.persistence.models.github import GitHubConnection
 from app.persistence.models.project import Project, ProjectMembership
 from app.persistence.models.usage import UsageRecord
 from app.persistence.models.user import User
@@ -50,6 +51,7 @@ __all__ = [
     "Finding",
     "FindingEvidence",
     "FindingStatusHistory",
+    "GitHubConnection",
     "JobEvent",
     "LocalWorkspaceRegistration",
     "Project",

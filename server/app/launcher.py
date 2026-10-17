@@ -181,11 +181,21 @@ def launch(
     if settings is None:
         settings = get_settings()
 
+    # Honor PORT environment variable from hosting platform (e.g. Render assigns PORT)
+    import os
+
+    if os.getenv("PORT"):
+        try:
+            port = int(os.environ["PORT"])
+        except ValueError:
+            pass
+
     setup_logging(log_level=settings.log_level)
     logger.info(
-        "DevMind launcher starting (run_mode=%s, env=%s, redis_prefix=%s)",
+        "DevMind launcher starting (run_mode=%s, env=%s, port=%d, redis_prefix=%s)",
         settings.run_mode,
         settings.env,
+        port,
         settings.redis_key_prefix,
     )
 

@@ -60,6 +60,15 @@ export function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
+          <a
+            href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-mono font-medium border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors"
+          >
+            <span>VS Code Extension</span>
+            <span className="text-[var(--signal)]">↗</span>
+          </a>
           <Link
             href="/early-access"
             className="inline-flex items-center justify-center px-4 py-2 rounded-control text-xs sm:text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"

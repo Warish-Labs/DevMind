@@ -1,0 +1,24 @@
+# DevMind Hybrid Retrieval Configuration (docs/04 §8)
+# Tuned on retrieval evaluation set; not adjusted arbitrarily.
+
+fusion:
+  # Reciprocal rank fusion smoothing parameter: score(d) = sum(1 / (k + rank_i(d)))
+  rrf_k: 60
+  weights:
+    symbol: 1.0
+    keyword: 1.0
+    vector: 1.0
+
+limits:
+  default_limit: 10
+  max_limit: 50
+
+relationship_expansion:
+  # 1-hop expansion of direct callers, callees, guards, and definitions
+  max_hops: 1
+  max_related_symbols: 5
+
+context_pack:
+  # Default token budget for model context window allocation
+  default_token_budget: 2000
+  max_token_budget: 8000

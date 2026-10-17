@@ -1,16 +1,17 @@
-# DevMind — Render Infrastructure Blueprint (Free Profile, ADR-046)
-# Deploys one free web service (API + embedded Celery) and one free Key Value instance
-# Docs: docs/runbooks/deploy-render-vercel.md and docs/10-deployment-and-operations.md §22
+# DevMind — Render Infrastructure Blueprint (Docker Profile, ADR-046)
+# Deploys one free web service (FastAPI + embedded Celery worker/scheduler)
+# External stores: Neon PostgreSQL (pgvector) and Upstash Redis (TLS)
+# Docs: DEPLOYMENT_GUIDE.md and docs/10-deployment-and-operations.md
 
 services:
   # ---------------------------------------------------------------------------
-  # 1. DevMind Web Service (FastAPI + Embedded Celery in Free Profile)
+  # DevMind Web Service (FastAPI + Embedded Celery in Docker Profile)
   # ---------------------------------------------------------------------------
   - type: web
     name: devmind-api
     runtime: docker
     plan: free
-    region: oregon # or ohio / frankfurt (match Neon database region)
+    region: oregon # Match Neon and Upstash region for lowest latency
     dockerfilePath: server/Dockerfile
     dockerContext: server
     healthCheckPath: /healthz
@@ -21,7 +22,7 @@ services:
       - key: DEVMIND_ENV
         value: production
       - key: DEVMIND_RUN_MODE
-        value: all # Free profile: runs uvicorn + embedded Celery worker/scheduler
+        value: all # Docker profile: runs uvicorn + embedded Celery worker/scheduler
       - key: DEVMIND_LOG_LEVEL
         value: INFO
       - key: DEVMIND_REDIS_KEY_PREFIX
@@ -29,14 +30,11 @@ services:
       - key: DEVMIND_CORS_ORIGINS
         value: https://devmind.warishlabs.in,http://localhost:3000
 
-      # Redis connection from Render Key Value
+      # Upstash Redis connection string (rediss://default:<password>@<host>.upstash.io:6379)
       - key: DEVMIND_REDIS_URL
-        fromService:
-          type: redis
-          name: devmind-redis
-          property: connectionString
+        sync: false
 
-      # Database URLs (Neon PostgreSQL — user inputs in Render Dashboard)
+      # Database URLs (Neon PostgreSQL — pooled for app, direct for migrations)
       - key: DEVMIND_DATABASE_URL
         sync: false
       - key: DEVMIND_DATABASE_URL_DIRECT
@@ -50,26 +48,28 @@ services:
       - key: CLERK_WEBHOOK_SECRET
         sync: false
 
-      # Token Security and Encryption
+      # Token Security and Envelope Encryption (AES-256-GCM)
       - key: DEVMIND_ENCRYPTION_KEYS
         sync: false
       - key: DEVMIND_EXT_TOKEN_PEPPER
         sync: false
 
-      # LLM Provider (Default: fake provider for zero-cost baseline)
+      # Cloudflare Turnstile Bot Protection
+      - key: DEVMIND_TURNSTILE_SECRET_KEY
+        sync: false
+
+      # GitHub OAuth & Webhooks
+      - key: DEVMIND_GITHUB_CLIENT_ID
+        sync: false
+      - key: DEVMIND_GITHUB_CLIENT_SECRET
+        sync: false
+      - key: DEVMIND_GITHUB_WEBHOOK_SECRET
+        sync: false
+
+      # LLM Provider (Default: fake provider for zero-cost testing baseline)
       - key: DEVMIND_LLM_PROVIDER
         value: fake
       - key: DEVMIND_LLM_PRIMARY_API_KEY
         sync: false
       - key: DEVMIND_EMBED_API_KEY
         sync: false
-
-  # ---------------------------------------------------------------------------
-  # 2. DevMind Key Value (Render Free Redis-compatible store)
-  # ---------------------------------------------------------------------------
-  - type: redis
-    name: devmind-redis
-    plan: free
-    region: oregon # Must match web service region
-    ipAllowList: [] # Internal service access only
-    maxmemoryPolicy: noeviction

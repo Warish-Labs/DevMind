@@ -16,7 +16,7 @@ def test_render_blueprint_structure() -> None:
         blueprint = yaml.safe_load(f)
 
     services = blueprint.get("services", [])
-    assert len(services) >= 2, "render.yaml must define at least web service and redis"
+    assert len(services) >= 1, "render.yaml must define web service"
 
     # Find web service
     web_services = [
@@ -35,11 +35,16 @@ def test_render_blueprint_structure() -> None:
     sensitive_keys = [
         "DEVMIND_DATABASE_URL",
         "DEVMIND_DATABASE_URL_DIRECT",
+        "DEVMIND_REDIS_URL",
         "CLERK_SECRET_KEY",
         "CLERK_PUBLISHABLE_KEY",
         "CLERK_WEBHOOK_SECRET",
         "DEVMIND_ENCRYPTION_KEYS",
         "DEVMIND_EXT_TOKEN_PEPPER",
+        "DEVMIND_TURNSTILE_SECRET_KEY",
+        "DEVMIND_GITHUB_CLIENT_ID",
+        "DEVMIND_GITHUB_CLIENT_SECRET",
+        "DEVMIND_GITHUB_WEBHOOK_SECRET",
         "DEVMIND_LLM_PRIMARY_API_KEY",
         "DEVMIND_EMBED_API_KEY",
     ]
@@ -51,14 +56,6 @@ def test_render_blueprint_structure() -> None:
             assert "value" not in env_dict[key], (
                 f"Sensitive env var {key} must not have plaintext value"
             )
-
-    # Find Redis service
-    redis_services = [
-        s for s in services if s.get("type") == "redis" and s.get("name") == "devmind-redis"
-    ]
-    assert len(redis_services) == 1, "Must define redis service devmind-redis"
-    redis = redis_services[0]
-    assert redis.get("plan") == "free", "Redis service must use free plan (ADR-046)"
 
 
 def test_deployment_runbook_exists() -> None:

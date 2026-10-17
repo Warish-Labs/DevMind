@@ -16,7 +16,10 @@ flowchart TD
 
   subgraph Render["Render Free Web Service"]
     api["FastAPI + Embedded Celery (DEVMIND_RUN_MODE=all)\napi.devmind.warishlabs.in"]
-    kv["Render Key Value (Free, 25 MB)\ninternal Redis transport"]
+  end
+
+  subgraph Upstash["Upstash Redis (Free)"]
+    kv["Upstash Redis (TLS / rediss://)\nRate limits, idempotency & Celery broker"]
   end
 
   subgraph Neon["Neon Serverless PostgreSQL (Free)"]
@@ -30,7 +33,7 @@ flowchart TD
   client -->|"HTTPS + Clerk JWT"| api
   client -->|"Auth UI"| clerk
   api -->|"Validation"| clerk
-  api -->|"Jobs & Rate Limits"| kv
+  api -->|"Jobs & Rate Limits (TLS)"| kv
   api -->|"Data & Vectors"| db
 ```
 
@@ -38,9 +41,11 @@ flowchart TD
 |---|---|---|---|
 | **Website (`client/`)** | Vercel | Hobby | Non-commercial, automatic Next.js build, 100 GB bandwidth |
 | **Backend (`server/`)** | Render | Free Web Service | 512 MB RAM, sleeps after 15m idle, wakes in ~60s |
-| **Queue (`devmind-redis`)** | Render | Free Key Value | 25 MB RAM, no persistence, internal only |
+| **Queue & Cache (`DEVMIND_REDIS_URL`)** | Upstash | Free Tier | 10k commands/day, standard Redis TLS protocol (`rediss://`) |
 | **Database** | Neon | Free | 0.5 GB storage cap, compute suspends after 5m idle |
 | **Auth** | Clerk | Free | 10,000 monthly active users |
+
+> Note: For the complete step-by-step master guide, see [DEPLOYMENT_GUIDE.md](../../DEPLOYMENT_GUIDE.md).
 
 ---
 
@@ -55,29 +60,28 @@ Before deploying, ensure the required cloud accounts are configured:
    - Create project `devmind-prod` on [Neon Console](https://console.neon.tech).
    - Copy **Pooled** URL (port 5432, host contains `-pooler`) for `DEVMIND_DATABASE_URL`.
    - Copy **Direct** URL (pooling disabled) for `DEVMIND_DATABASE_URL_DIRECT`.
-3. **Generate Security Secrets**:
+3. **Upstash Redis**:
+   - Create Redis database `devmind-redis` on [Upstash Console](https://console.upstash.com).
+   - Copy standard Redis connection URI: `rediss://default:<password>@<host>.upstash.io:6379`.
+4. **Generate Security Secrets**:
    ```bash
    openssl rand -base64 32 # For DEVMIND_EXT_TOKEN_PEPPER
-   openssl rand -base64 32 # For DEVMIND_ENCRYPTION_KEYS (format: ["<key>"])
+   openssl rand -hex 32    # For DEVMIND_ENCRYPTION_KEYS (format: ["<key>"])
    ```
 
 ---
 
-## 3. Deploying Backend via Render Blueprint
+## 3. Deploying Backend via Render
 
-The backend is configured as code in [`render.yaml`](../../render.yaml).
+The backend is deployed as a Docker Web Service configured in [`render.yaml`](../../render.yaml).
 
 ### Step 1: Connect GitHub Repository
 1. Log into [Render Dashboard](https://dashboard.render.com).
-2. Click **New +** → **Blueprint**.
+2. Click **New +** → **Web Service** (or **Blueprint**).
 3. Select `Warish-Labs/DevMind` repository on branch `main`.
 
 ### Step 2: Configure Environment Secrets
-Render will detect two resources in `render.yaml`:
-- `devmind-api` (Web Service)
-- `devmind-redis` (Key Value store)
-
-When prompted for un-synced variables (`sync: false`), supply:
+Supply the un-synced variables (`sync: false`):
 - `DEVMIND_DATABASE_URL`: Neon pooled connection string.
 - `DEVMIND_DATABASE_URL_DIRECT`: Neon direct connection string.
 - `CLERK_SECRET_KEY`: Clerk secret key (`sk_live_...`).

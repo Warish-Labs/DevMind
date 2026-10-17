@@ -1,0 +1,125 @@
+{
+  "version": "1.0.0",
+  "name": "devmind-retrieval-benchmark-v1",
+  "description": "Standard retrieval evaluation dataset covering identifier lookup, natural-language concept search, flow/relationship tracing, and no-answer queries over TypeScript and Python fixtures.",
+  "fixtures": ["evals/scanner/fixtures/fastapi-admin", "evals/scanner/fixtures/express-admin"],
+  "queries": [
+    {
+      "id": "ret-id-01",
+      "query": "require_admin",
+      "category": "identifier",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "app/auth.py", "symbol": "require_admin", "relevance": 2 },
+        { "path": "app/routes/admin.py", "symbol": "delete_admin_user", "relevance": 1 }
+      ]
+    },
+    {
+      "id": "ret-id-02",
+      "query": "CurrentUser",
+      "category": "identifier",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "app/auth.py", "symbol": "CurrentUser", "relevance": 2 },
+        { "path": "app/routes/admin.py", "symbol": "list_admin_users", "relevance": 1 },
+        { "path": "app/routes/admin.py", "symbol": "delete_admin_user", "relevance": 1 }
+      ]
+    },
+    {
+      "id": "ret-id-03",
+      "query": "requireAuth",
+      "category": "identifier",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "src/auth.ts", "symbol": "requireAuth", "relevance": 2 },
+        { "path": "src/routes/admin.ts", "symbol": "GET:/admin/users", "relevance": 1 }
+      ]
+    },
+    {
+      "id": "ret-id-04",
+      "query": "list_admin_users",
+      "category": "identifier",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "app/routes/admin.py", "symbol": "list_admin_users", "relevance": 2 }
+      ]
+    },
+    {
+      "id": "ret-cpt-01",
+      "query": "role authorization guard for administrator check",
+      "category": "concept",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "app/auth.py", "symbol": "require_admin", "relevance": 2 },
+        { "path": "src/auth.ts", "symbol": "requireRole", "relevance": 2 },
+        { "path": "app/routes/admin.py", "symbol": "delete_admin_user", "relevance": 1 }
+      ]
+    },
+    {
+      "id": "ret-cpt-02",
+      "query": "extract bearer token and verify authorization header HTTP exception",
+      "category": "concept",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "app/auth.py", "symbol": "get_current_user", "relevance": 2 },
+        { "path": "src/auth.ts", "symbol": "requireAuth", "relevance": 2 }
+      ]
+    },
+    {
+      "id": "ret-cpt-03",
+      "query": "delete administrative user by ID endpoint",
+      "category": "concept",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "app/routes/admin.py", "symbol": "delete_admin_user", "relevance": 2 },
+        { "path": "src/routes/admin.ts", "symbol": "DELETE:/admin/users/:id", "relevance": 2 }
+      ]
+    },
+    {
+      "id": "ret-cpt-04",
+      "query": "missing role authorization vulnerability finding in admin routes",
+      "category": "concept",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "app/routes/admin.py", "symbol": "list_admin_users", "relevance": 2 },
+        { "path": "src/routes/admin.ts", "symbol": "GET:/admin/users", "relevance": 2 }
+      ]
+    },
+    {
+      "id": "ret-flw-01",
+      "query": "routes or functions that call require_admin or requireRole",
+      "category": "flow",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "app/routes/admin.py", "symbol": "delete_admin_user", "relevance": 2 },
+        { "path": "src/routes/admin.ts", "symbol": "DELETE:/admin/users/:id", "relevance": 2 },
+        { "path": "app/auth.py", "symbol": "require_admin", "relevance": 1 }
+      ]
+    },
+    {
+      "id": "ret-flw-02",
+      "query": "callees and dependencies of admin user listing handler",
+      "category": "flow",
+      "expect_no_answer": false,
+      "expected_targets": [
+        { "path": "app/routes/admin.py", "symbol": "list_admin_users", "relevance": 2 },
+        { "path": "app/auth.py", "symbol": "get_current_user", "relevance": 2 },
+        { "path": "app/auth.py", "symbol": "CurrentUser", "relevance": 1 }
+      ]
+    },
+    {
+      "id": "ret-na-01",
+      "query": "stripe webhook payment verification using secret key",
+      "category": "no_answer",
+      "expect_no_answer": true,
+      "expected_targets": []
+    },
+    {
+      "id": "ret-na-02",
+      "query": "kubernetes cluster ingress tls certificate manager letsencrypt",
+      "category": "no_answer",
+      "expect_no_answer": true,
+      "expected_targets": []
+    }
+  ]
+}

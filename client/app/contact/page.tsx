@@ -2,9 +2,20 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { TurnstileWidget } from "../../components/turnstile/TurnstileWidget";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:8000`
+    : "http://localhost:8000");
 
 export default function ContactPage() {
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,10 +23,52 @@ export default function ContactPage() {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-    setSubmitted(true);
+    setError(null);
+
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    if (!turnstileToken) {
+      setError("Please complete the Cloudflare security verification challenge.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/public/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject,
+          message: formData.message.trim(),
+          turnstile_token: turnstileToken,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        const detail = errorData?.detail || `Submission failed with status ${res.status}`;
+        setError(detail);
+        setSubmitting(false);
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError(
+        "Network error: Unable to contact DevMind API server. Please check your connection."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -97,8 +150,12 @@ export default function ContactPage() {
               </p>
               <button
                 type="button"
-                onClick={() => setSubmitted(false)}
-                className="mt-4 px-4 py-2 rounded-control border border-[var(--line-2)] text-[var(--fg-0)] hover:bg-[var(--bg-2)] transition-colors"
+                onClick={() => {
+                  setSubmitted(false);
+                  setFormData({ name: "", email: "", subject: "inquiry", message: "" });
+                  setTurnstileToken("");
+                }}
+                className="mt-4 px-4 py-2 rounded-control border border-[var(--line-2)] text-[var(--fg-0)] hover:bg-[var(--bg-2)] transition-colors cursor-pointer"
               >
                 Send Another Message
               </button>
@@ -116,10 +173,11 @@ export default function ContactPage() {
                   id="name"
                   type="text"
                   required
+                  disabled={submitting}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. Warish Ansari"
-                  className="w-full px-3 py-2 rounded-control bg-[var(--bg-2)] border border-[var(--line-1)] text-[var(--fg-0)] placeholder:text-[var(--fg-2)] focus:outline-none focus:ring-1 focus:ring-[var(--ref)] text-xs font-mono"
+                  className="w-full px-3 py-2 rounded-control bg-[var(--bg-2)] border border-[var(--line-1)] text-[var(--fg-0)] placeholder:text-[var(--fg-2)] focus:outline-none focus:ring-1 focus:ring-[var(--ref)] text-xs font-mono disabled:opacity-50"
                 />
               </div>
 
@@ -134,10 +192,11 @@ export default function ContactPage() {
                   id="email"
                   type="email"
                   required
+                  disabled={submitting}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="name@domain.com"
-                  className="w-full px-3 py-2 rounded-control bg-[var(--bg-2)] border border-[var(--line-1)] text-[var(--fg-0)] placeholder:text-[var(--fg-2)] focus:outline-none focus:ring-1 focus:ring-[var(--ref)] text-xs font-mono"
+                  className="w-full px-3 py-2 rounded-control bg-[var(--bg-2)] border border-[var(--line-1)] text-[var(--fg-0)] placeholder:text-[var(--fg-2)] focus:outline-none focus:ring-1 focus:ring-[var(--ref)] text-xs font-mono disabled:opacity-50"
                 />
               </div>
 
@@ -150,9 +209,10 @@ export default function ContactPage() {
                 </label>
                 <select
                   id="subject"
+                  disabled={submitting}
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full px-3 py-2 rounded-control bg-[var(--bg-2)] border border-[var(--line-1)] text-[var(--fg-0)] focus:outline-none focus:ring-1 focus:ring-[var(--ref)] text-xs font-mono"
+                  className="w-full px-3 py-2 rounded-control bg-[var(--bg-2)] border border-[var(--line-1)] text-[var(--fg-0)] focus:outline-none focus:ring-1 focus:ring-[var(--ref)] text-xs font-mono disabled:opacity-50"
                 >
                   <option value="inquiry">General Architecture Inquiry</option>
                   <option value="early-access">Early Access Registration</option>
@@ -171,19 +231,40 @@ export default function ContactPage() {
                 <textarea
                   id="message"
                   required
+                  disabled={submitting}
                   rows={5}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   placeholder="How can we help your team with Project Brain capabilities?"
-                  className="w-full px-3 py-2 rounded-control bg-[var(--bg-2)] border border-[var(--line-1)] text-[var(--fg-0)] placeholder:text-[var(--fg-2)] focus:outline-none focus:ring-1 focus:ring-[var(--ref)] text-xs font-mono resize-none"
+                  className="w-full px-3 py-2 rounded-control bg-[var(--bg-2)] border border-[var(--line-1)] text-[var(--fg-0)] placeholder:text-[var(--fg-2)] focus:outline-none focus:ring-1 focus:ring-[var(--ref)] text-xs font-mono resize-none disabled:opacity-50"
                 />
               </div>
 
+              {/* Cloudflare Turnstile challenge */}
+              <TurnstileWidget
+                onVerify={(token) => {
+                  setTurnstileToken(token);
+                  setError(null);
+                }}
+                onExpire={() => setTurnstileToken("")}
+                onError={() => setError("Turnstile verification error. Please retry.")}
+              />
+
+              {error && (
+                <div
+                  role="alert"
+                  className="p-3 rounded-control bg-red-950/40 border border-red-500/30 text-xs font-mono text-red-400"
+                >
+                  {error}
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full py-3 rounded-control bg-[var(--signal)] text-[var(--bg-0)] font-medium font-mono text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                disabled={submitting}
+                className="w-full py-3 rounded-control bg-[var(--signal)] text-[var(--bg-0)] font-medium font-mono text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-sm disabled:opacity-50"
               >
-                Send Message →
+                {submitting ? "Sending..." : "Send Message →"}
               </button>
             </form>
           )}

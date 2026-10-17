@@ -83,7 +83,7 @@ Everything below must stay on the free tier. Numbers are what I could verify on 
 | **GitHub CLI (`gh`)** | Now | Lets Antigravity push and open PRs | Free |
 | **Clerk** | M2 | Website sign-in | Free plan with a large monthly-active-user allowance (sources say 10,000 to 50,000; check) and a custom domain |
 | **Neon** | Deploy / staging (local dev uses Docker) | PostgreSQL + pgvector | Free: about 0.5 GB per project (a 2026-10-02 changelog says 1 GB; plan for 0.5), compute suspends after about 5 minutes, up to 100 projects, so use one Neon project per environment |
-| **Redis** | Local: Docker. Hosted: **Render Key Value (free)** | Celery queue, rate limits | Free Key Value: 25 MB, no persistence, **one per Render workspace**. Disposable by design: Postgres holds job state |
+| **Redis** | Local: Docker. Hosted: **Upstash Redis (free)** | Celery queue, rate limits | Free Tier: 10k commands/day, standard Redis TLS protocol (`rediss://`). Disposable by design: Postgres holds job state |
 | **Render** | Deploy | The API + embedded worker | Free web service: 512 MB RAM, sleeps after about 15 min idle (about a minute to wake), 750 instance hours per workspace per month shared with other free services; **no free background worker** |
 | **Vercel (Hobby)** | Deploy | The website | Free, **personal non-commercial use only**; org repos only if public; commit author must be the team owner. If DevMind ever earns money, move to Cloudflare Pages/Netlify or pay |
 | **LLM provider** | M5 to M6 (optional) | Answers and analysis | **Google AI Studio free tier** (rate-limited; content may be used to improve products). Or the fake provider with no key |
@@ -92,7 +92,7 @@ Everything below must stay on the free tier. Numbers are what I could verify on 
 | **Open VSX** | Extension release | Cursor, VSCodium, Antigravity users | Free |
 | **Resend** | M11 | Invitation emails | You already verified `warishlabs.in`; free tier has daily and monthly send limits [VERIFY] |
 | **GitHub OAuth app** | M11 | Connect GitHub repos | Free; create it under the `Warish-Labs` org |
-| **Cloudflare R2** | M12 (probably never needed) | Exports and uploads | Free allotment exists but may need a payment method on file [VERIFY]; skip it, DevMind does not need object storage for the MVP |
+| **Cloudflare R2** | Deferred / Not used by MVP | Exports and uploads | Deferred: not needed for the MVP. Zero buckets or accounts required. |
 | **Error monitoring** | M10 (optional) | Error reports | Render logs are enough; a free monitoring tier is optional (OQ-15) |
 
 **If you ever must pay for something**, do it later under the `warishlabs` account and record it as a decision. Nothing in this plan requires it.
@@ -282,8 +282,8 @@ Local development uses the Docker Postgres from `infra/docker-compose.yml`. Neon
 DevMind needs a Redis-compatible store for the Celery job queue and rate limits.
 
 - **Local:** nothing to sign up for. `docker compose -f infra/docker-compose.yml up -d` starts it.
-- **Hosted:** **Render Key Value (free)**, created by the Blueprint (§11). It is internal-only (no public access), has no persistence and only 25 MB. That is acceptable because PostgreSQL holds job state and a startup sweep re-enqueues stranded jobs.
-- **Important limit: one free Key Value per Render workspace.** If ForgeFlow-AI or another project already uses your free one, choose one of these: (a) share it and let DevMind use a key prefix (`DEVMIND_REDIS_KEY_PREFIX`, supported via Celery's `global_keyprefix`); (b) create the DevMind service in a different Render workspace if your account allows it [VERIFY]; (c) use a free Upstash Redis, but note Celery polls Redis and may exhaust a command-count-based free quota [VERIFY]. Tell Antigravity which you chose.
+- **Hosted:** **Upstash Redis (free)** on `console.upstash.com`. Connect using standard TLS Redis protocol: `rediss://default:<password>@<host>.upstash.io:6379` (do NOT use the Upstash HTTP REST URL). PostgreSQL holds persistent job state and a startup sweep re-enqueues stranded jobs.
+
 
 ### 6.4 LLM and embedding keys (free; needed from M5/M6, optional before)
 
@@ -298,6 +298,17 @@ In `server/.env`: `DEVMIND_LLM_PRIMARY_API_KEY=...` and `DEVMIND_EMBED_API_KEY=.
 
 ### 6.5 Services for later milestones
 
+- **Cloudflare Turnstile (Public forms bot protection):**
+  1. Go to `dash.cloudflare.com` → **Turnstile** → **Add Site**.
+  2. Set Widget name to `DevMind Production`.
+  3. Domain: add `devmind.warishlabs.in` (and `localhost` if testing production widget locally).
+  4. Widget Mode: **Managed** (Cloudflare automatically decides whether an interactive challenge is needed).
+  5. Click **Create** to obtain:
+     - **Site Key**: Public key configured in Vercel as `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
+     - **Secret Key**: Private key configured in Render as `DEVMIND_TURNSTILE_SECRET_KEY` (never expose to frontend).
+  6. **Local Development & Automated Testing:** Use Cloudflare's official dummy test keys:
+     - Site Key (always passes): `1x00000000000000000000AA`
+     - Secret Key (always passes): `1x0000000000000000000000000000000AA`
 - **Resend (M11):** you already verified `warishlabs.in`. In Resend create a **new API key for DevMind** (sending access only) → `DEVMIND_RESEND_API_KEY`. Send from an address on your verified domain (for example `devmind@warishlabs.in`); no new DNS should be needed [VERIFY]. Check the free daily and monthly limits.
 - **GitHub OAuth app (M11):** `github.com/organizations/Warish-Labs/settings/applications` → **New OAuth App** (create it under the org, not a personal account). Homepage URL = `https://devmind.warishlabs.in`; callback URL = `https://api.devmind.warishlabs.in/api/v1/integrations/github/callback` (local: `http://localhost:8000/api/v1/integrations/github/callback`). Client ID and secret → `DEVMIND_GITHUB_OAUTH_CLIENT_ID` / `DEVMIND_GITHUB_OAUTH_CLIENT_SECRET`. Webhook secret = a random string you generate (§6.7).
 - **Cloudflare R2:** not needed for the MVP; skip.
@@ -334,6 +345,7 @@ Local files: `client/.env.local`, `server/.env` (both git-ignored; copy from the
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` locally; `https://devmind.warishlabs.in` in production | S1 (metadata) |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000` locally; `https://api.devmind.warishlabs.in` (or the Render URL) | M2 |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk → API keys | M2 |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Dashboard → Turnstile (or `1x00000000000000000000AA` locally) | S1 / M8 |
 | `CLERK_SECRET_KEY` | Clerk → API keys (server-side only) | M2 |
 
 ### Server (`server/.env`, Render)
@@ -349,6 +361,7 @@ Local files: `client/.env.local`, `server/.env` (both git-ignored; copy from the
 | `DEVMIND_REDIS_URL` | Local Docker Redis; Render free Key Value **Internal** URL when hosted | M1 |
 | `DEVMIND_CLERK_ISSUER`, `DEVMIND_CLERK_JWKS_URL`, `DEVMIND_CLERK_AUTHORIZED_PARTIES` | Clerk (§6.1) | M2 |
 | `DEVMIND_CLERK_WEBHOOK_SECRET` | Clerk webhook signing secret | M2 |
+| `DEVMIND_TURNSTILE_SECRET_KEY` | Cloudflare Dashboard → Turnstile (or `1x0000000000000000000000000000000AA` locally) | S1 / M8 |
 | `DEVMIND_CORS_ORIGINS` | `http://localhost:3000`; `https://devmind.warishlabs.in` | M2 |
 | `DEVMIND_ENCRYPTION_KEYS`, `DEVMIND_EXT_TOKEN_PEPPER` | You generate (§6.6) | M2 to M3 |
 | `DEVMIND_LLM_PRIMARY_API_KEY`, `DEVMIND_LLM_ALT_API_KEY`, `DEVMIND_EMBED_API_KEY` | Provider consoles (§6.4) | M5 to M6 |
@@ -482,13 +495,17 @@ code --install-extension extension/devmind-0.0.1.vsix    # install it in your VS
 
 1. Sign in at **dev.azure.com** with a Microsoft account and create an organization (any name).
 2. In Azure DevOps: User settings → **Personal access tokens → New Token**. Organization: **All accessible organizations**. Scopes: **Custom defined → Marketplace → Manage**. Copy the token once.
-3. Go to **marketplace.visualstudio.com/manage** → **Create publisher**. The publisher **ID must equal `"publisher"` in `extension/package.json`** (the placeholder is `warishlabs`; Antigravity will ask you to confirm).
+3. Go to **marketplace.visualstudio.com/manage** → **Create publisher**. The publisher **ID is `WarishLabs`** (`WarishLabs.devmind-vscode`).
 4. Publish:
    ```bash
-   npx @vscode/vsce login <publisher>        # paste the token
+   npx @vscode/vsce login WarishLabs        # paste the token
    npx @vscode/vsce publish --pre-release    # use a pre-release first; drop the flag for a stable release
    ```
-5. The listing appears at `marketplace.visualstudio.com/items?itemName=<publisher>.devmind` and users find it by searching "DevMind" in the Extensions view.
+5. The listing is published at **[https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode](https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode)**, installable via:
+   ```text
+   ext install WarishLabs.devmind-vscode
+   ```
+   Users also find it by searching "DevMind" in the VS Code Extensions view.
 
 **Important:** VS Code's documentation says global Azure DevOps tokens **retire on 2026-12-01** and `vsce publish --azure-credential` (Microsoft Entra credentials) is the replacement [VERIFY at publish time]. Publish manually with the token now if you are before that date; Antigravity documents the credential-based path in `docs/runbooks/release-extension.md` for CI.
 

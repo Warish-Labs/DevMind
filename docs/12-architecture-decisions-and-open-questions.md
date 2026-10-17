@@ -319,7 +319,7 @@ Source of each decision is stated as **Source: prompt** (confirmed by the owner)
 | OQ-01 | Which generation provider(s) and models? (same as ADR-017) | Quality, cost, data terms | Benchmark in doc 05 §16 | Placeholders that fail validation |
 | OQ-02 | Which embedding model and dimension? | Vector column dimension, retrieval quality, cost | Retrieval evaluation set, doc 04 §14 | One configurable space; dimension read from config |
 | OQ-03 | Retention defaults and provider data terms | Privacy promise to users | Review each candidate provider's current terms; legal read | Doc 07 §9 proposals; providers flagged `terms_reviewed: false` cannot be enabled in production |
-| OQ-04 | Which managed Redis? | Persistence, cost model under Celery polling | Run Celery against candidates; confirm persistence on chosen plan | Render Key Value |
+| OQ-04 | Which managed Redis? | Persistence, cost model under Celery polling | Confirmed: Upstash Redis with standard TLS connection string (`rediss://`) | Upstash Redis |
 | OQ-05 | Extension manifest store technology | Packaging, performance | Prototype with 10k and 50k files | WASM SQLite |
 | OQ-06 | Default sync mode and whether `metadata_only` is useful enough | Core product value vs privacy | Usability test with 5 real projects | `metadata_only` default, easy opt-in to `indexed` |
 | OQ-07 | Pattern-engine rule licensing and whether to rely only on custom rules | Legal and maintenance | Read current license terms before bundling any third-party rules | DevMind-authored rules only |

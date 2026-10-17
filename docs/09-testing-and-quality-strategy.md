@@ -157,7 +157,7 @@ Recorded baselines (to be filled by the owning milestone):
 
 | Eval | Date | Commit | Result file | Summary |
 |---|---|---|---|---|
-| (none yet) | | | | |
+| Retrieval + Fusion Ablation (M5) | 2026-10-17 | `3b381fb` | `evals/results/retrieval/latest.json` | Fused RRF: Recall@5: 0.5544, MRR: 0.9375, nDCG@5: 0.7377; Fused+1Hop: Recall@5: 0.5775, MRR: 0.9375, nDCG@5: 0.7658 (outperforming keyword 0.6803, vector 0.6779, symbol 0.4209). Regression gate tolerance: max 0.02 nDCG@5 regression. |
 
 ## 10. LangGraph workflow tests
 

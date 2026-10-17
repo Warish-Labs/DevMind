@@ -24,6 +24,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/health": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Liveness probe
+     * @description Returns 200 OK if the application process is running. Does not check downstream dependencies.
+     */
+    get: operations["healthz_health_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/readyz": {
     parameters: {
       query?: never;
@@ -55,6 +75,50 @@ export interface paths {
     get: operations["v1_root_api_v1_get"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/public/waitlist": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Register for early access waitlist
+     * @description Submit developer email for early access notification.
+     *
+     *     Protected against bot automated submissions via Cloudflare Turnstile and IP rate limiting.
+     */
+    post: operations["register_waitlist_api_v1_public_waitlist_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/public/contact": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Submit contact / inquiry message
+     * @description Submit a contact or architecture inquiry message.
+     *
+     *     Protected against bot spam and abuse via Cloudflare Turnstile and IP rate limiting.
+     */
+    post: operations["submit_contact_api_v1_public_contact_post"];
     delete?: never;
     options?: never;
     head?: never;
@@ -175,6 +239,77 @@ export interface paths {
      * @description Create a new codebase project inside the specified workspace.
      */
     post: operations["create_project_api_v1_workspaces__wid__projects_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/workspaces/{wid}/integrations/github": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get GitHub connection status for workspace
+     * @description List active GitHub connection records for the workspace (tokens are never returned).
+     */
+    get: operations["get_workspace_github_connections_api_v1_workspaces__wid__integrations_github_get"];
+    put?: never;
+    post?: never;
+    /**
+     * Revoke GitHub connection for workspace
+     * @description Revoke GitHub connection for the current user in this workspace.
+     */
+    delete: operations["delete_workspace_github_connection_api_v1_workspaces__wid__integrations_github_delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/integrations/github/authorize": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Initiate GitHub OAuth authorization
+     * @description Redirect user to GitHub to authorize DevMind OAuth access.
+     *
+     *     Requires valid DevMind user authentication. State parameter is HMAC-signed
+     *     with user/workspace binding to prevent CSRF and session fixation.
+     */
+    get: operations["github_authorize_api_v1_integrations_github_authorize_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/integrations/github/callback": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Receive GitHub OAuth callback
+     * @description Handle callback redirect from GitHub after user authorization.
+     *
+     *     Validates state signature and expiration, exchanges authorization code for an
+     *     access token, fetches GitHub user identity, encrypts the credential at rest,
+     *     and redirects user safely back to the allowed frontend return destination.
+     */
+    get: operations["github_callback_api_v1_integrations_github_callback_get"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -417,6 +552,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{pid}/brain/search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Multi-channel hybrid brain search with fusion and context pack
+     * @description Execute multi-channel hybrid search (symbols, keywords, vectors) with RRF fusion and context pack.
+     */
+    post: operations["search_brain_api_v1_projects__pid__brain_search_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{pid}/scans": {
     parameters: {
       query?: never;
@@ -639,6 +794,26 @@ export interface paths {
      * @description Receives and verifies Clerk user lifecycle webhooks (user.created, user.updated, user.deleted).
      */
     post: operations["clerk_webhook_api_v1_webhooks_clerk_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/webhooks/github": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * GitHub webhook receiver
+     * @description Receives and verifies GitHub webhooks with X-Hub-Signature-256 HMAC-SHA256.
+     */
+    post: operations["github_webhook_api_v1_webhooks_github_post"];
     delete?: never;
     options?: never;
     head?: never;
@@ -963,6 +1138,27 @@ export interface components {
       symbols?: components["schemas"]["CodeSymbolItem"][];
     };
     /**
+     * BrainCitation
+     * @description Provenance citation guaranteeing verifiable code attribution (docs/04 §8.7).
+     */
+    BrainCitation: {
+      /**
+       * File Version Id
+       * Format: uuid
+       */
+      file_version_id: string;
+      /** Path */
+      path: string;
+      /** Start Line */
+      start_line: number;
+      /** End Line */
+      end_line: number;
+      /** Content Hash */
+      content_hash?: string | null;
+      /** Symbol Key */
+      symbol_key?: string | null;
+    };
+    /**
      * BrainFileDetail
      * @description File detail including historical versions.
      */
@@ -1073,6 +1269,91 @@ export interface components {
        * Format: date-time
        */
       created_at: string;
+    };
+    /**
+     * BrainSearchItem
+     * @description Individual retrieved and fused code item with ranking score and attribution.
+     */
+    BrainSearchItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Kind */
+      kind: string;
+      /** Path */
+      path: string;
+      /** Start Line */
+      start_line: number;
+      /** End Line */
+      end_line: number;
+      /** Symbol Key */
+      symbol_key?: string | null;
+      /** Content */
+      content: string;
+      /** Score */
+      score: number;
+      /** Matched By */
+      matched_by?: string[];
+      citation: components["schemas"]["BrainCitation"];
+      /**
+       * Is Expanded
+       * @default false
+       */
+      is_expanded: boolean;
+    };
+    /**
+     * BrainSearchRequest
+     * @description Request payload for hybrid brain search.
+     */
+    BrainSearchRequest: {
+      /**
+       * Query
+       * @description Search query or question
+       */
+      query: string;
+      /**
+       * Modes
+       * @description Active retrieval channels to query
+       * @default [
+       *       "symbol",
+       *       "keyword",
+       *       "vector"
+       *     ]
+       */
+      modes: ("symbol" | "keyword" | "vector")[];
+      /**
+       * Limit
+       * @description Maximum direct results to return
+       * @default 10
+       */
+      limit: number;
+      /**
+       * Expand Relationships
+       * @description Whether to perform 1-hop relationship expansion for discovered symbols
+       * @default true
+       */
+      expand_relationships: boolean;
+      /**
+       * Token Budget
+       * @description Maximum token budget for context pack generation
+       * @default 2000
+       */
+      token_budget: number;
+    };
+    /**
+     * BrainSearchResponse
+     * @description Response payload containing ranked results and assembled context pack.
+     */
+    BrainSearchResponse: {
+      /** Query */
+      query: string;
+      /** Total Results */
+      total_results: number;
+      /** Items */
+      items?: components["schemas"]["BrainSearchItem"][];
+      context_pack: components["schemas"]["ContextPack"];
     };
     /**
      * BrainSummaryResponse
@@ -1299,6 +1580,68 @@ export interface components {
       items: components["schemas"]["ConsentItem"][];
       /** Total */
       total: number;
+    };
+    /**
+     * ContactSubmissionRequest
+     * @description Payload for submitting a contact or inquiry message.
+     */
+    ContactSubmissionRequest: {
+      /**
+       * Name
+       * @description Sender name
+       */
+      name: string;
+      /**
+       * Email
+       * @description Sender email address
+       */
+      email: string;
+      /**
+       * Subject
+       * @description Inquiry subject
+       */
+      subject: string;
+      /**
+       * Message
+       * @description Message content
+       */
+      message: string;
+      /**
+       * Turnstile Token
+       * @description Cloudflare Turnstile verification response token
+       */
+      turnstile_token: string;
+    };
+    /**
+     * ContactSubmissionResponse
+     * @description Response returned upon contact message receipt.
+     */
+    ContactSubmissionResponse: {
+      /**
+       * Status
+       * @default received
+       * @constant
+       */
+      status: "received";
+      /**
+       * Message
+       * @default Your inquiry has been received. Our team will review and respond shortly.
+       */
+      message: string;
+    };
+    /**
+     * ContextPack
+     * @description Assembled prompt context bounded by token budget with complete citations.
+     */
+    ContextPack: {
+      /** Formatted Context */
+      formatted_context: string;
+      /** Total Tokens Estimate */
+      total_tokens_estimate: number;
+      /** Item Count */
+      item_count: number;
+      /** Citations */
+      citations?: components["schemas"]["BrainCitation"][];
     };
     /**
      * CreateConsentRequest
@@ -1837,6 +2180,35 @@ export interface components {
       to_status: string;
       /** Reason */
       reason?: string | null;
+    };
+    /**
+     * GitHubConnectionSummary
+     * @description Safe public representation of a GitHub connection without credentials.
+     */
+    GitHubConnectionSummary: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * User Id
+       * Format: uuid
+       */
+      user_id: string;
+      /** Kind */
+      kind: string;
+      /** External Account */
+      external_account: string;
+      /** Scopes */
+      scopes: string[];
+      /** Created At */
+      created_at: unknown;
     };
     /**
      * GraphEdge
@@ -2457,6 +2829,41 @@ export interface components {
       ctx?: Record<string, never>;
     };
     /**
+     * WaitlistSubmissionRequest
+     * @description Payload for registering on the early access waitlist.
+     */
+    WaitlistSubmissionRequest: {
+      /**
+       * Email
+       * @description Developer email address
+       */
+      email: string;
+      /**
+       * Turnstile Token
+       * @description Cloudflare Turnstile verification response token
+       */
+      turnstile_token: string;
+    };
+    /**
+     * WaitlistSubmissionResponse
+     * @description Response returned upon waitlist registration.
+     */
+    WaitlistSubmissionResponse: {
+      /**
+       * Status
+       * @default received
+       * @constant
+       */
+      status: "received";
+      /**
+       * Message
+       * @default Thank you for joining the early access waitlist. We will notify you when developer preview builds are ready.
+       */
+      message: string;
+      /** Email */
+      email: string;
+    };
+    /**
      * WorkspaceMemberResponse
      * @description Serialized workspace member record.
      */
@@ -2537,6 +2944,26 @@ export interface operations {
       };
     };
   };
+  healthz_health_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HealthResponse"];
+        };
+      };
+    };
+  };
   readyz_readyz_get: {
     parameters: {
       query?: never;
@@ -2575,6 +3002,72 @@ export interface operations {
           "application/json": {
             [key: string]: unknown;
           };
+        };
+      };
+    };
+  };
+  register_waitlist_api_v1_public_waitlist_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["WaitlistSubmissionRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WaitlistSubmissionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  submit_contact_api_v1_public_contact_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ContactSubmissionRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ContactSubmissionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };
@@ -2883,6 +3376,138 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ProjectResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_workspace_github_connections_api_v1_workspaces__wid__integrations_github_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        wid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GitHubConnectionSummary"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_workspace_github_connection_api_v1_workspaces__wid__integrations_github_delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        wid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  github_authorize_api_v1_integrations_github_authorize_get: {
+    parameters: {
+      query: {
+        /** @description Target workspace ID for connection */
+        workspace_id: string;
+        /** @description Frontend destination after authorization */
+        return_to?: string | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      302: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  github_callback_api_v1_integrations_github_callback_get: {
+    parameters: {
+      query?: {
+        /** @description GitHub authorization code */
+        code?: string | null;
+        /** @description HMAC-signed state token */
+        state?: string | null;
+        /** @description Error reported by GitHub */
+        error?: string | null;
+        /** @description Error explanation */
+        error_description?: string | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      302: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": unknown;
         };
       };
       /** @description Validation Error */
@@ -3384,6 +4009,41 @@ export interface operations {
       };
     };
   };
+  search_brain_api_v1_projects__pid__brain_search_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BrainSearchRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BrainSearchResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   list_scans_api_v1_projects__pid__scans_get: {
     parameters: {
       query?: {
@@ -3760,6 +4420,41 @@ export interface operations {
         "svix-id"?: string | null;
         "svix-timestamp"?: string | null;
         "svix-signature"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            [key: string]: unknown;
+          };
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  github_webhook_api_v1_webhooks_github_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        "X-Hub-Signature-256"?: string | null;
+        "X-GitHub-Delivery"?: string | null;
+        "X-GitHub-Event"?: string | null;
       };
       path?: never;
       cookie?: never;

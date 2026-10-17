@@ -89,3 +89,62 @@ async def clerk_webhook(
         "event": event_type,
         "result": result,
     }
+
+
+@router.post(
+    "/github",
+    status_code=status.HTTP_200_OK,
+    summary="GitHub webhook receiver",
+    description="Receives and verifies GitHub webhooks with X-Hub-Signature-256 HMAC-SHA256.",
+)
+@declare_permission(PERMISSION_WEBHOOK)
+async def github_webhook(
+    request: Request,
+    x_hub_signature_256: str | None = Header(default=None, alias="X-Hub-Signature-256"),
+    x_github_delivery: str | None = Header(default=None, alias="X-GitHub-Delivery"),
+    x_github_event: str | None = Header(default="ping", alias="X-GitHub-Event"),
+    settings: Settings = Depends(get_settings),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, Any]:
+    """Verify GitHub HMAC-SHA256 signature and process event."""
+    from app.domain.webhooks.github_webhook_service import GitHubWebhookService
+
+    # 1. Signature presence validation
+    if not x_hub_signature_256:
+        raise AuthenticationError(detail="Missing required X-Hub-Signature-256 header")
+
+    # 2. Read raw request body for HMAC verification
+    raw_body = await request.body()
+
+    # 3. Verify HMAC signature
+    service = GitHubWebhookService(session=session, settings=settings)
+    if not service.verify_signature(x_hub_signature_256, raw_body):
+        raise AuthenticationError(detail="Invalid GitHub webhook signature")
+
+    delivery_id = x_github_delivery or "unknown"
+
+    # 4. Delivery deduplication
+    if not service.is_new_delivery(delivery_id):
+        logger.info("Ignoring duplicate GitHub webhook delivery: %s", delivery_id)
+        return {
+            "status": "ignored",
+            "reason": "duplicate_delivery",
+            "id": delivery_id,
+        }
+
+    # 5. Parse JSON payload
+    try:
+        payload = json.loads(raw_body) if raw_body else {}
+    except Exception as exc:
+        raise ValidationError(detail=f"Malformed GitHub webhook JSON payload: {exc}") from exc
+
+    event_type = x_github_event or "ping"
+    result = await service.handle_event(event_type, delivery_id, payload)
+    await session.commit()
+
+    return {
+        "status": "processed",
+        "id": delivery_id,
+        "event": event_type,
+        "result": result,
+    }

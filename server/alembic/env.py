@@ -27,8 +27,19 @@ target_metadata = Base.metadata
 
 def get_url() -> str:
     """Retrieve database URL from application settings, prioritizing direct migration URL."""
-    settings = get_settings()
-    url = settings.database_url_direct or settings.database_url
+    import os
+
+    main_url = config.get_main_option("sqlalchemy.url")
+    if main_url and not main_url.startswith("driver://") and "%(" not in main_url:
+        url = main_url
+    else:
+        env_url = os.getenv("DEVMIND_DATABASE_URL_DIRECT") or os.getenv("DEVMIND_DATABASE_URL")
+        if env_url:
+            url = env_url
+        else:
+            settings = get_settings()
+            url = settings.database_url_direct or settings.database_url
+
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+psycopg://", 1)
     return url

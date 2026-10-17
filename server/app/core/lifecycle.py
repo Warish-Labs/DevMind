@@ -50,12 +50,24 @@ def run_migrations_with_advisory_lock(
     if migration_runner is not None:
         return migration_runner()
 
-    # Pre-M2: Alembic and database tables land in Milestone M2.
-    # Record structured log and verify configuration parameters.
-    logger.info(
-        "Advisory lock migration check: pre-M2 baseline verified (database_url configured=%s)",
-        bool(settings.database_url),
-    )
+    import os
+    import sys
+
+    if settings.is_test or os.getenv("DEVMIND_ENV") == "test" or "pytest" in sys.modules:
+        logger.info("Test/pytest environment detected; skipping automatic runtime migrations")
+        return True
+
+    if settings.database_url:
+        try:
+            from app.core.bootstrap import run_alembic_migrations
+
+            return run_alembic_migrations(settings)
+        except Exception as exc:
+            logger.error("Automatic database migration on startup failed: %s", exc)
+            if settings.is_production:
+                raise
+            return False
+
     return True
 
 

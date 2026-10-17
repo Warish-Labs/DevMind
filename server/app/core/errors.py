@@ -240,6 +240,26 @@ class ServiceUnavailableError(DevMindError):
         )
 
 
+class TurnstileError(DevMindError):
+    """Cloudflare Turnstile challenge verification failure (400, 403, 502, 504)."""
+
+    def __init__(
+        self,
+        detail: str = "Turnstile verification failed",
+        code: str = "turnstile.verification_failed",
+        status_code: int = 403,
+        title: str = "Turnstile Verification Failed",
+        errors: list[dict[str, Any]] | None = None,
+    ) -> None:
+        super().__init__(
+            detail=detail,
+            code=code,
+            status_code=status_code,
+            title=title,
+            errors=errors,
+        )
+
+
 def _get_request_id(request: Request) -> str | None:
     return getattr(request.state, "request_id", None) or request_id_ctx.get()
 

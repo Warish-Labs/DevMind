@@ -6,10 +6,14 @@ import { Section05Walkthrough } from "../components/sections/Section05Walkthroug
 import { Section06Diptych } from "../components/sections/Section06Diptych";
 import { Section07PrivacyLedger } from "../components/sections/Section07PrivacyLedger";
 import { Section08CTA } from "../components/sections/Section08CTA";
+import { HomepageHealthTrigger } from "../components/health/HomepageHealthTrigger";
 
 export default function HomePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-28">
+      {/* 00: Non-blocking liveness probe trigger (throttled 1h) */}
+      <HomepageHealthTrigger />
+
       {/* 01: Hero Trace Section */}
       <Hero />
 

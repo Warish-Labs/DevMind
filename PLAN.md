@@ -237,9 +237,9 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M5-05 Chunk storage, tsvector full-text, and trigram indices (feature/m5-chunk-storage)
 - [x] M5-06 Embedding gateway slice: adapter interface, embedding spaces, embed_chunks job (feature/m5-embedding-gateway)
 - [x] M5-07 Chunk embeddings with pgvector and per-space HNSW vector index (feature/m5-vector-index)
-- [ ] M5-08 Hybrid retrieval with fusion and context-pack builder (POST /api/v1/projects/{pid}/brain/search) (feature/m5-hybrid-retrieval)
-- [ ] M5-09 Retrieval evaluation harness and test dataset (feature/m5-eval-harness)
-- [ ] M5-10 Record retrieval baselines in docs/09 §9 (feature/m5-retrieval-baselines)
+- [x] M5-08 Hybrid retrieval with fusion and context-pack builder (POST /api/v1/projects/{pid}/brain/search) (feature/m5-hybrid-retrieval)
+- [x] M5-09 Retrieval evaluation harness and test dataset (feature/m5-eval-harness)
+- [x] M5-10 Record retrieval baselines in docs/09 §9 (feature/m5-retrieval-baselines)
 - [ ] M5-11 Failure-state behavior: embedding provider outage degradation to keyword/symbol (feature/m5-outage-degradation)
 
 ### M6 · LLM gateway and config
