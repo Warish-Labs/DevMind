@@ -6,14 +6,14 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                                                 |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                                                |
-| **Last commit**    | `3b381fb` (feat(server): implement M5-07 chunk embeddings with pgvector and per-space HNSW vector index)                              |
-| **Working tree**   | M5-10 complete; retrieval baselines recorded; extension v0.1.1 packaged with env vars; Neon migrations applied (head 0008, 28 tables) |
-| **Open PR**        | None (working directly on main)                                                                                                       |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 245/249 pass (4 skipped), extension 70/70 pass                              |
-| **Date**           | 2026-10-17                                                                                                                            |
+| Field              | Value                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                         |
+| **Last commit**    | `860b2ad` (feat: implement M5-08..M5-10 hybrid retrieval and release extension v0.1.1)                         |
+| **Working tree**   | Clean; M5-10 complete; extension v0.1.1 packaged with env vars; Neon migrations applied (head 0008, 28 tables) |
+| **Open PR**        | None (working directly on main)                                                                                |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 245/249 pass (4 skipped), extension 70/70 pass       |
+| **Date**           | 2026-10-17                                                                                                     |
 
 ---
 
