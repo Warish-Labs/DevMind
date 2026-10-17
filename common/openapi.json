@@ -1169,6 +1169,243 @@
         }
       }
     },
+    "/api/v1/projects/{pid}/findings": {
+      "get": {
+        "tags": ["Findings"],
+        "summary": "List project findings with optional filters",
+        "description": "List findings for a project filtered by status, severity, and category.",
+        "operationId": "list_findings_api_v1_projects__pid__findings_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (open, stale, etc.)",
+              "title": "Status"
+            },
+            "description": "Filter by status (open, stale, etc.)"
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by severity (critical, high, etc.)",
+              "title": "Severity"
+            },
+            "description": "Filter by severity (critical, high, etc.)"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by category (authorization, etc.)",
+              "title": "Category"
+            },
+            "description": "Filter by category (authorization, etc.)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FindingItem"
+                  },
+                  "title": "Response List Findings Api V1 Projects  Pid  Findings Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/findings/{fid}": {
+      "get": {
+        "tags": ["Findings"],
+        "summary": "Get finding detail with evidence and status history",
+        "description": "Retrieve full finding detail including machine-checkable evidence and status history.",
+        "operationId": "get_finding_detail_api_v1_projects__pid__findings__fid__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "fid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Fid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingDetailItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/findings/{fid}/transitions": {
+      "post": {
+        "tags": ["Findings"],
+        "summary": "Transition finding lifecycle status",
+        "description": "Transition finding status through lifecycle state machine (docs/03 \u00a75.1).\n\nPermissions:\n- Triage transitions (dismissed, accepted_risk) strictly require finding:triage (maintainer).\n- Progress transitions require finding:progress (contributor+).",
+        "operationId": "transition_finding_status_api_v1_projects__pid__findings__fid__transitions_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "fid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Fid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindingStatusTransitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingDetailItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me": {
       "get": {
         "tags": ["Identity"],
@@ -1651,6 +1888,58 @@
           }
         }
       }
+    },
+    "/api/v1/ext/projects/{pid}/findings:batch": {
+      "post": {
+        "tags": ["Extension"],
+        "summary": "Batch upload scanner findings",
+        "description": "Batch ingest security and quality findings detected during local scanning (docs/03 \u00a712.5).",
+        "operationId": "post_findings_batch_api_v1_ext_projects__pid__findings_batch_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchFindingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchFindingsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1692,6 +1981,62 @@
         "required": ["user_id"],
         "title": "AddWorkspaceMemberRequest",
         "description": "Payload for adding a member to a workspace."
+      },
+      "BatchFindingsRequest": {
+        "properties": {
+          "scan_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scan Run Id"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/FindingPayload"
+            },
+            "type": "array",
+            "title": "Findings"
+          }
+        },
+        "type": "object",
+        "required": ["findings"],
+        "title": "BatchFindingsRequest"
+      },
+      "BatchFindingsResponse": {
+        "properties": {
+          "ingested": {
+            "type": "integer",
+            "title": "Ingested"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "updated": {
+            "type": "integer",
+            "title": "Updated"
+          },
+          "reopened": {
+            "type": "integer",
+            "title": "Reopened"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/FindingItem"
+            },
+            "type": "array",
+            "title": "Findings"
+          }
+        },
+        "type": "object",
+        "required": ["ingested", "created", "updated", "reopened", "findings"],
+        "title": "BatchFindingsResponse"
       },
       "BatchRelationshipsRequest": {
         "properties": {
@@ -2369,6 +2714,735 @@
         "required": ["path", "content_hash", "size_bytes", "line_count", "language"],
         "title": "FileManifestEntry",
         "description": "File metadata entry within an extension scan manifest."
+      },
+      "FindingDetailItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence"
+          },
+          "evidence_level": {
+            "type": "string",
+            "title": "Evidence Level"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "first_seen_scan_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Seen Scan Run Id"
+          },
+          "last_seen_scan_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Seen Scan Run Id"
+          },
+          "primary_file_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary File Id"
+          },
+          "primary_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Path"
+          },
+          "primary_start_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Start Line"
+          },
+          "primary_end_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary End Line"
+          },
+          "suggested_fix": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Fix"
+          },
+          "status_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Reason"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/FindingEvidenceItem"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/FindingStatusHistoryItem"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "fingerprint",
+          "rule_id",
+          "source",
+          "category",
+          "title",
+          "summary",
+          "severity",
+          "confidence",
+          "evidence_level",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "FindingDetailItem"
+      },
+      "FindingEvidenceItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "finding_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Finding Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "start_line": {
+            "type": "integer",
+            "title": "Start Line"
+          },
+          "end_line": {
+            "type": "integer",
+            "title": "End Line"
+          },
+          "snippet_hash": {
+            "type": "string",
+            "title": "Snippet Hash"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "detail": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Detail"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "finding_id",
+          "path",
+          "start_line",
+          "end_line",
+          "snippet_hash",
+          "role",
+          "detail",
+          "is_current",
+          "created_at"
+        ],
+        "title": "FindingEvidenceItem"
+      },
+      "FindingEvidencePayload": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "start_line": {
+            "type": "integer",
+            "title": "Start Line"
+          },
+          "end_line": {
+            "type": "integer",
+            "title": "End Line"
+          },
+          "snippet_hash": {
+            "type": "string",
+            "title": "Snippet Hash"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "default": "primary"
+          },
+          "file_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Version Id"
+          },
+          "detail": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": ["path", "start_line", "end_line", "snippet_hash"],
+        "title": "FindingEvidencePayload"
+      },
+      "FindingItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence"
+          },
+          "evidence_level": {
+            "type": "string",
+            "title": "Evidence Level"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "first_seen_scan_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Seen Scan Run Id"
+          },
+          "last_seen_scan_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Seen Scan Run Id"
+          },
+          "primary_file_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary File Id"
+          },
+          "primary_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Path"
+          },
+          "primary_start_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Start Line"
+          },
+          "primary_end_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary End Line"
+          },
+          "suggested_fix": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Fix"
+          },
+          "status_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Reason"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "fingerprint",
+          "rule_id",
+          "source",
+          "category",
+          "title",
+          "summary",
+          "severity",
+          "confidence",
+          "evidence_level",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "FindingItem"
+      },
+      "FindingLocationPayload": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "start_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Line"
+          },
+          "end_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Line"
+          }
+        },
+        "type": "object",
+        "required": ["path"],
+        "title": "FindingLocationPayload"
+      },
+      "FindingPayload": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence",
+            "default": "medium"
+          },
+          "evidence_level": {
+            "type": "string",
+            "title": "Evidence Level",
+            "default": "E1"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "open"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FindingLocationPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "canonical_identifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canonical Identifier"
+          },
+          "fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fingerprint"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/FindingEvidencePayload"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "suggested_fix": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SuggestedFixPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["rule_id", "category", "title", "summary", "severity"],
+        "title": "FindingPayload"
+      },
+      "FindingStatusHistoryItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "finding_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Finding Id"
+          },
+          "from_status": {
+            "type": "string",
+            "title": "From Status"
+          },
+          "to_status": {
+            "type": "string",
+            "title": "To Status"
+          },
+          "actor_kind": {
+            "type": "string",
+            "title": "Actor Kind"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "finding_id", "from_status", "to_status", "actor_kind", "created_at"],
+        "title": "FindingStatusHistoryItem"
+      },
+      "FindingStatusTransitionRequest": {
+        "properties": {
+          "to_status": {
+            "type": "string",
+            "title": "To Status"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": ["to_status"],
+        "title": "FindingStatusTransitionRequest"
       },
       "GraphEdge": {
         "properties": {
@@ -3066,6 +4140,33 @@
         "required": ["id", "project_id", "kind", "ref", "created_at"],
         "title": "SnapshotItem",
         "description": "Serialized summary of a project snapshot."
+      },
+      "SuggestedFixPayload": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "default": "proposal"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "diff": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diff"
+          }
+        },
+        "type": "object",
+        "required": ["description"],
+        "title": "SuggestedFixPayload"
       },
       "UpdateProjectRequest": {
         "properties": {

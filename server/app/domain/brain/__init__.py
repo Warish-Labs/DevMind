@@ -1,6 +1,21 @@
 """Project Brain domain services, symbols, snapshot versioning, and manifest sync schemas."""
 
 from app.domain.brain.context import resolve_project_context
+from app.domain.brain.findings_service import (
+    BatchFindingsRequest,
+    BatchFindingsResponse,
+    FindingDetailItem,
+    FindingEvidenceItem,
+    FindingEvidencePayload,
+    FindingItem,
+    FindingLocationPayload,
+    FindingPayload,
+    FindingsService,
+    FindingStatusHistoryItem,
+    FindingStatusTransitionRequest,
+    SuggestedFixPayload,
+    compute_finding_fingerprint,
+)
 from app.domain.brain.manifest_service import (
     FileManifestEntry,
     ManifestDiffRequest,
@@ -35,6 +50,8 @@ from app.domain.brain.symbol_service import (
 )
 
 __all__ = [
+    "BatchFindingsRequest",
+    "BatchFindingsResponse",
     "BatchRelationshipsRequest",
     "BatchRelationshipsResponse",
     "BatchSymbolsRequest",
@@ -45,6 +62,15 @@ __all__ = [
     "CodeSymbolPayload",
     "CreateSnapshotRequest",
     "FileManifestEntry",
+    "FindingDetailItem",
+    "FindingEvidenceItem",
+    "FindingEvidencePayload",
+    "FindingItem",
+    "FindingLocationPayload",
+    "FindingPayload",
+    "FindingStatusHistoryItem",
+    "FindingStatusTransitionRequest",
+    "FindingsService",
     "GraphEdge",
     "GraphNode",
     "GraphResponse",
@@ -60,6 +86,8 @@ __all__ = [
     "SnapshotFileItem",
     "SnapshotItem",
     "SnapshotService",
+    "SuggestedFixPayload",
     "SymbolService",
+    "compute_finding_fingerprint",
     "resolve_project_context",
 ]

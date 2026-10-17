@@ -223,7 +223,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M4-03 Manifest diff and upload endpoint with sync.stale_base (feature/m4-manifest-diff)
 - [x] M4-04 Snapshot and file versioning logic with current version tracking (feature/m4-snapshots)
 - [x] M4-05 Symbol and relationship batch upsert and graph derivation (feature/m4-symbols)
-- [ ] M4-06 Findings batch ingestion with fingerprinting and lifecycle state machine (docs/03 §5.1) (feature/m4-findings)
+- [x] M4-06 Findings batch ingestion with fingerprinting and lifecycle state machine (docs/03 §5.1) (feature/m4-findings)
 - [ ] M4-07 Staleness marking on file change/removal (feature/m4-staleness)
 - [ ] M4-08 Browser read endpoints for scans, findings, Brain summary, symbols, graph, snapshots (feature/m4-browser-api)
 - [ ] M4-09 Extension metadata-only sync client and command integration (feature/m4-sync-client)

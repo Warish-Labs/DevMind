@@ -16,6 +16,8 @@ from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas import (
+    BatchFindingsRequest,
+    BatchFindingsResponse,
     BatchRelationshipsRequest,
     BatchRelationshipsResponse,
     BatchSymbolsRequest,
@@ -40,7 +42,7 @@ from app.domain.auth import (
     get_db_session,
     get_extension_auth_context,
 )
-from app.domain.brain import ManifestService, SymbolService
+from app.domain.brain import FindingsService, ManifestService, SymbolService
 from app.domain.extension.service import ExtensionService
 
 router = APIRouter(
@@ -259,3 +261,25 @@ async def put_relationships(
     service = SymbolService(session)
     scoped_ctx = await service.resolve_project_context(ctx, pid)
     return await service.upsert_relationships(scoped_ctx, pid, payload)
+
+
+@router.post(
+    "/projects/{pid}/findings:batch",
+    response_model=BatchFindingsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Batch upload scanner findings",
+)
+@declare_permission(PERM_PROJECT_SYNC)
+async def post_findings_batch(
+    pid: UUID,
+    payload: BatchFindingsRequest,
+    ctx: AuthContext = Depends(get_extension_auth_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> BatchFindingsResponse:
+    """Batch ingest security and quality findings detected during local scanning (docs/03 §12.5)."""
+    if not ctx.has_permission(PERM_PROJECT_SYNC):
+        raise ForbiddenError(detail="Forbidden: extension token lacks 'project:sync' scope")
+
+    service = FindingsService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.batch_ingest_findings(scoped_ctx, pid, payload, source="scanner")

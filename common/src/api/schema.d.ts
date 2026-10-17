@@ -357,6 +357,70 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{pid}/findings": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List project findings with optional filters
+     * @description List findings for a project filtered by status, severity, and category.
+     */
+    get: operations["list_findings_api_v1_projects__pid__findings_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/findings/{fid}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get finding detail with evidence and status history
+     * @description Retrieve full finding detail including machine-checkable evidence and status history.
+     */
+    get: operations["get_finding_detail_api_v1_projects__pid__findings__fid__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/findings/{fid}/transitions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Transition finding lifecycle status
+     * @description Transition finding status through lifecycle state machine (docs/03 §5.1).
+     *
+     *     Permissions:
+     *     - Triage transitions (dismissed, accepted_risk) strictly require finding:triage (maintainer).
+     *     - Progress transitions require finding:progress (contributor+).
+     */
+    post: operations["transition_finding_status_api_v1_projects__pid__findings__fid__transitions_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/me": {
     parameters: {
       query?: never;
@@ -589,6 +653,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/ext/projects/{pid}/findings:batch": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch upload scanner findings
+     * @description Batch ingest security and quality findings detected during local scanning (docs/03 §12.5).
+     */
+    post: operations["post_findings_batch_api_v1_ext_projects__pid__findings_batch_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -626,6 +710,26 @@ export interface components {
        * @default member
        */
       role: string;
+    };
+    /** BatchFindingsRequest */
+    BatchFindingsRequest: {
+      /** Scan Run Id */
+      scan_run_id?: string | null;
+      /** Findings */
+      findings: components["schemas"]["FindingPayload"][];
+    };
+    /** BatchFindingsResponse */
+    BatchFindingsResponse: {
+      /** Ingested */
+      ingested: number;
+      /** Created */
+      created: number;
+      /** Updated */
+      updated: number;
+      /** Reopened */
+      reopened: number;
+      /** Findings */
+      findings: components["schemas"]["FindingItem"][];
     };
     /**
      * BatchRelationshipsRequest
@@ -1040,6 +1144,278 @@ export interface components {
        */
       tier: number;
     };
+    /** FindingDetailItem */
+    FindingDetailItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Fingerprint */
+      fingerprint: string;
+      /** Rule Id */
+      rule_id: string;
+      /** Source */
+      source: string;
+      /** Category */
+      category: string;
+      /** Title */
+      title: string;
+      /** Summary */
+      summary: string;
+      /** Explanation */
+      explanation?: string | null;
+      /** Severity */
+      severity: string;
+      /** Confidence */
+      confidence: string;
+      /** Evidence Level */
+      evidence_level: string;
+      /** Status */
+      status: string;
+      /** First Seen Scan Run Id */
+      first_seen_scan_run_id?: string | null;
+      /** Last Seen Scan Run Id */
+      last_seen_scan_run_id?: string | null;
+      /** Primary File Id */
+      primary_file_id?: string | null;
+      /** Primary Path */
+      primary_path?: string | null;
+      /** Primary Start Line */
+      primary_start_line?: number | null;
+      /** Primary End Line */
+      primary_end_line?: number | null;
+      /** Suggested Fix */
+      suggested_fix?: {
+        [key: string]: unknown;
+      } | null;
+      /** Status Reason */
+      status_reason?: string | null;
+      /** Resolved At */
+      resolved_at?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Evidence */
+      evidence?: components["schemas"]["FindingEvidenceItem"][];
+      /** History */
+      history?: components["schemas"]["FindingStatusHistoryItem"][];
+    };
+    /** FindingEvidenceItem */
+    FindingEvidenceItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Finding Id
+       * Format: uuid
+       */
+      finding_id: string;
+      /** Path */
+      path: string;
+      /** Start Line */
+      start_line: number;
+      /** End Line */
+      end_line: number;
+      /** Snippet Hash */
+      snippet_hash: string;
+      /** Role */
+      role: string;
+      /** Detail */
+      detail: {
+        [key: string]: unknown;
+      };
+      /** Is Current */
+      is_current: boolean;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /** FindingEvidencePayload */
+    FindingEvidencePayload: {
+      /** Path */
+      path: string;
+      /** Start Line */
+      start_line: number;
+      /** End Line */
+      end_line: number;
+      /** Snippet Hash */
+      snippet_hash: string;
+      /**
+       * Role
+       * @default primary
+       */
+      role: string;
+      /** File Version Id */
+      file_version_id?: string | null;
+      /** Detail */
+      detail?: {
+        [key: string]: unknown;
+      };
+    };
+    /** FindingItem */
+    FindingItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Fingerprint */
+      fingerprint: string;
+      /** Rule Id */
+      rule_id: string;
+      /** Source */
+      source: string;
+      /** Category */
+      category: string;
+      /** Title */
+      title: string;
+      /** Summary */
+      summary: string;
+      /** Explanation */
+      explanation?: string | null;
+      /** Severity */
+      severity: string;
+      /** Confidence */
+      confidence: string;
+      /** Evidence Level */
+      evidence_level: string;
+      /** Status */
+      status: string;
+      /** First Seen Scan Run Id */
+      first_seen_scan_run_id?: string | null;
+      /** Last Seen Scan Run Id */
+      last_seen_scan_run_id?: string | null;
+      /** Primary File Id */
+      primary_file_id?: string | null;
+      /** Primary Path */
+      primary_path?: string | null;
+      /** Primary Start Line */
+      primary_start_line?: number | null;
+      /** Primary End Line */
+      primary_end_line?: number | null;
+      /** Suggested Fix */
+      suggested_fix?: {
+        [key: string]: unknown;
+      } | null;
+      /** Status Reason */
+      status_reason?: string | null;
+      /** Resolved At */
+      resolved_at?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /** FindingLocationPayload */
+    FindingLocationPayload: {
+      /** Path */
+      path: string;
+      /** Start Line */
+      start_line?: number | null;
+      /** End Line */
+      end_line?: number | null;
+    };
+    /** FindingPayload */
+    FindingPayload: {
+      /** Rule Id */
+      rule_id: string;
+      /** Category */
+      category: string;
+      /** Title */
+      title: string;
+      /** Summary */
+      summary: string;
+      /** Explanation */
+      explanation?: string | null;
+      /** Severity */
+      severity: string;
+      /**
+       * Confidence
+       * @default medium
+       */
+      confidence: string;
+      /**
+       * Evidence Level
+       * @default E1
+       */
+      evidence_level: string;
+      /**
+       * Status
+       * @default open
+       */
+      status: string;
+      location?: components["schemas"]["FindingLocationPayload"] | null;
+      /** Canonical Identifier */
+      canonical_identifier?: string | null;
+      /** Fingerprint */
+      fingerprint?: string | null;
+      /** Evidence */
+      evidence?: components["schemas"]["FindingEvidencePayload"][];
+      suggested_fix?: components["schemas"]["SuggestedFixPayload"] | null;
+    };
+    /** FindingStatusHistoryItem */
+    FindingStatusHistoryItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Finding Id
+       * Format: uuid
+       */
+      finding_id: string;
+      /** From Status */
+      from_status: string;
+      /** To Status */
+      to_status: string;
+      /** Actor Kind */
+      actor_kind: string;
+      /** Actor Id */
+      actor_id?: string | null;
+      /** Reason */
+      reason?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /** FindingStatusTransitionRequest */
+    FindingStatusTransitionRequest: {
+      /** To Status */
+      to_status: string;
+      /** Reason */
+      reason?: string | null;
+    };
     /**
      * GraphEdge
      * @description Edge in the architectural symbol graph.
@@ -1392,6 +1768,18 @@ export interface components {
        * @default 0
        */
       file_count: number;
+    };
+    /** SuggestedFixPayload */
+    SuggestedFixPayload: {
+      /**
+       * Kind
+       * @default proposal
+       */
+      kind: string;
+      /** Description */
+      description: string;
+      /** Diff */
+      diff?: string | null;
     };
     /**
      * UpdateProjectRequest
@@ -2324,6 +2712,114 @@ export interface operations {
       };
     };
   };
+  list_findings_api_v1_projects__pid__findings_get: {
+    parameters: {
+      query?: {
+        /** @description Filter by status (open, stale, etc.) */
+        status?: string | null;
+        /** @description Filter by severity (critical, high, etc.) */
+        severity?: string | null;
+        /** @description Filter by category (authorization, etc.) */
+        category?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["FindingItem"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_finding_detail_api_v1_projects__pid__findings__fid__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+        fid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["FindingDetailItem"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  transition_finding_status_api_v1_projects__pid__findings__fid__transitions_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+        fid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FindingStatusTransitionRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["FindingDetailItem"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   get_my_profile_api_v1_me_get: {
     parameters: {
       query?: never;
@@ -2646,6 +3142,41 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["BatchRelationshipsResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  post_findings_batch_api_v1_ext_projects__pid__findings_batch_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BatchFindingsRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BatchFindingsResponse"];
         };
       };
       /** @description Validation Error */

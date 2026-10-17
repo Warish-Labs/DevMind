@@ -8,6 +8,8 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.domain.brain import (
+    BatchFindingsRequest,
+    BatchFindingsResponse,
     BatchRelationshipsRequest,
     BatchRelationshipsResponse,
     BatchSymbolsRequest,
@@ -18,6 +20,14 @@ from app.domain.brain import (
     CodeSymbolPayload,
     CreateSnapshotRequest,
     FileManifestEntry,
+    FindingDetailItem,
+    FindingEvidenceItem,
+    FindingEvidencePayload,
+    FindingItem,
+    FindingLocationPayload,
+    FindingPayload,
+    FindingStatusHistoryItem,
+    FindingStatusTransitionRequest,
     GraphEdge,
     GraphNode,
     GraphResponse,
@@ -31,6 +41,7 @@ from app.domain.brain import (
     SnapshotDiffResponse,
     SnapshotFileItem,
     SnapshotItem,
+    SuggestedFixPayload,
 )
 
 # ---------------------------------------------------------------------------
@@ -258,6 +269,8 @@ class ExtensionHeartbeatResponse(BaseModel):
 
 __all__ = [
     "AddProjectMemberRequest",
+    "BatchFindingsRequest",
+    "BatchFindingsResponse",
     "BatchRelationshipsRequest",
     "BatchRelationshipsResponse",
     "BatchSymbolsRequest",
@@ -274,6 +287,14 @@ __all__ = [
     "ExtensionTokenRequest",
     "ExtensionTokenResponse",
     "FileManifestEntry",
+    "FindingDetailItem",
+    "FindingEvidenceItem",
+    "FindingEvidencePayload",
+    "FindingItem",
+    "FindingLocationPayload",
+    "FindingPayload",
+    "FindingStatusHistoryItem",
+    "FindingStatusTransitionRequest",
     "GraphEdge",
     "GraphNode",
     "GraphResponse",
@@ -289,6 +310,7 @@ __all__ = [
     "SnapshotDiffResponse",
     "SnapshotFileItem",
     "SnapshotItem",
+    "SuggestedFixPayload",
     "UpdateProjectMemberRequest",
     "UpdateProjectRequest",
     "UpdateWorkspaceRequest",

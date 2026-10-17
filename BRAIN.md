@@ -6,30 +6,27 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                         |
-| **Last commit**    | `f3a47f1` (feat(server): implement M4-04 snapshot service, file versioning, and diff APIs)     |
-| **Working tree**   | clean; working directly on main per user instruction                                           |
-| **Open PR**        | None (working directly on main)                                                                |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 135/135 pass, boundaries:server pass |
-| **Date**           | 2026-10-17                                                                                     |
+| Field              | Value                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                        |
+| **Last commit**    | `7133151` (feat(server): implement M4-05 symbol, relationship batch upsert, and graph derivation)             |
+| **Working tree**   | clean; working directly on main per user instruction                                                          |
+| **Open PR**        | None (working directly on main)                                                                               |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 143/143 pass, boundaries:server pass (31 API paths) |
+| **Date**           | 2026-10-17                                                                                                    |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M4-06: Findings Batch Ingestion with Fingerprinting and Lifecycle State Machine**:
-   - Inspect `docs/03 §5.1` and `server/app/persistence/models/brain.py` (`findings`, `finding_evidence`, `finding_status_history`).
-   - Implement domain service (`FindingsService` in `server/app/domain/brain/findings_service.py`):
-     - Batch ingestion of scanner findings (`POST /api/v1/ext/projects/{pid}/findings:batch`).
-     - Fingerprint calculation (`sha256(rule_id + file_path + canonical_identifier)`).
-     - State machine lifecycle transitions (`open` -> `triaged` -> `suppressed` / `false_positive` / `fixed` / `stale` / `reopened`).
-     - Structured machine-checkable evidence storage (`E0` / `E1` extension findings capped at E1, no unconsented raw source at rest per ADR-047).
-     - Sequential status history logging (`finding_status_history`).
-   - Wire extension endpoint in `server/app/api/extension.py` with `@declare_permission(PERM_PROJECT_SYNC)`.
-   - Write unit and integration tests in `server/tests/test_findings.py`.
-   - Run tests, regenerate OpenAPI specs/types, verify 100% boundary check passes.
+1. Implement **Milestone M4-07: Staleness Marking on File Change/Removal**:
+   - Inspect `docs/03 §5.1` rule 3 ("Any change to evidence files moves the finding to stale until verification re-runs").
+   - Wire staleness transition into `ManifestService.put_manifest`:
+     - When a file has a new version (`content_hash` changed) or is marked removed (`removed_at IS NOT NULL`), find all active findings where primary file or evidence matches this file path.
+     - Move them from `open` / `acknowledged` / `in_progress` / `fix_proposed` to `stale`.
+     - Record immutable status history audit log (`actor_kind="system"`, `reason="evidence file modified or removed"`).
+   - Write unit and integration tests in `server/tests/test_staleness.py`.
+   - Run verification suite `node scripts/test-all.mjs --fast`.
 
 ---
 
@@ -42,6 +39,29 @@
 ---
 
 ## 4. Done log
+
+### M4-06 — Findings Batch Ingestion with Fingerprinting and Lifecycle State Machine
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented findings batch ingestion, stable line-shift resilient fingerprinting, evidence ceiling enforcement (capping scanner evidence at E1), complete lifecycle state machine transitions, and browser/extension endpoints:
+  - **Findings Domain Service** (`server/app/domain/brain/findings_service.py`):
+    - `compute_finding_fingerprint`: Stable 64-character SHA-256 fingerprint generation prioritizing `rule_id:normalized_path:canonical_identifier` over volatile line numbers.
+    - `batch_ingest_findings`: Ingests findings batches, validates categories/severities/confidences, caps extension evidence level at E1 (Rule 5 invariant), deduplicates against existing findings by `(project_id, fingerprint)`, merges new machine-checkable evidence, automatically reopens previously `resolved` findings upon recurrence, and restores `stale` findings back to `open` upon scan re-verification.
+    - `transition_status`: Validates requested state transition against `ALLOWED_TRANSITIONS` matrix (docs/03 §5.1). Enforces mandatory reason code on dismissal (`false_positive`, `not_applicable`, `duplicate`, `other`), stamps `resolved_at` on resolution, and records append-only `FindingStatusHistory` entries.
+    - `list_findings` & `get_finding_detail`: Filtered finding queries by status, severity, category, with eager-loaded evidence and complete status audit history.
+  - **REST Endpoints & Permission Enforcement**:
+    - Extension: `POST /api/v1/ext/projects/{pid}/findings:batch` (@declare_permission(PERM_PROJECT_SYNC)).
+    - Browser: `GET /api/v1/projects/{pid}/findings` (@declare_permission(PERM_FINDINGS_READ)).
+    - Browser: `GET /api/v1/projects/{pid}/findings/{fid}` (@declare_permission(PERM_FINDINGS_READ)).
+    - Browser: `POST /api/v1/projects/{pid}/findings/{fid}/transitions` (@declare_permission(PERM_FINDING_PROGRESS), additionally requiring `PERM_FINDING_TRIAGE` for `dismissed` or `accepted_risk`).
+  - **OpenAPI & Layer Boundaries**:
+    - Regenerated TypeScript types via `pnpm gen:api` (31 OpenAPI paths).
+    - Preserved 7/7 import linter contracts (`lint-imports` clean).
+  - **Tests & Verification**:
+    - Added 8 tests in `server/tests/test_findings.py`.
+    - Full server pytest suite: 143 passed, 0 failed, 4 skipped.
+    - Full monorepo fast suite: 13 passed, 0 failed, 1 skipped.
 
 ### M4-05 — Symbol and Relationship Batch Upsert and Graph Derivation
 

@@ -62,11 +62,14 @@ class NotFoundError(DevMindError):
     """Resource not found (404)."""
 
     def __init__(
-        self, detail: str = "Resource not found", errors: list[dict[str, Any]] | None = None
+        self,
+        detail: str = "Resource not found",
+        errors: list[dict[str, Any]] | None = None,
+        code: str = "resource.not_found",
     ) -> None:
         super().__init__(
             detail=detail,
-            code="resource.not_found",
+            code=code,
             status_code=404,
             title="Resource Not Found",
             errors=errors,
@@ -107,11 +110,14 @@ class ValidationError(DevMindError):
     """Business validation or schema validation failure (422)."""
 
     def __init__(
-        self, detail: str = "Validation failed", errors: list[dict[str, Any]] | None = None
+        self,
+        detail: str = "Validation failed",
+        errors: list[dict[str, Any]] | None = None,
+        code: str = "validation.failed",
     ) -> None:
         super().__init__(
             detail=detail,
-            code="validation.failed",
+            code=code,
             status_code=422,
             title="Validation Failed",
             errors=errors,

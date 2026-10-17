@@ -7,6 +7,10 @@ from app.domain.auth.dependencies import (
 from app.domain.auth.extension_dependencies import get_extension_auth_context
 from app.domain.auth.policy import (
     PERM_BRAIN_READ,
+    PERM_FINDING_ACKNOWLEDGE,
+    PERM_FINDING_PROGRESS,
+    PERM_FINDING_TRIAGE,
+    PERM_FINDINGS_READ,
     PERM_MEMBERS_MANAGE,
     PERM_MEMBERS_MANAGE_WORKSPACE,
     PERM_PROJECT_DELETE,
@@ -29,6 +33,10 @@ from app.domain.auth.policy import (
 
 __all__ = [
     "PERM_BRAIN_READ",
+    "PERM_FINDING_ACKNOWLEDGE",
+    "PERM_FINDING_PROGRESS",
+    "PERM_FINDING_TRIAGE",
+    "PERM_FINDINGS_READ",
     "PERM_PROJECT_READ",
     "PERM_PROJECT_SYNC",
     "PERM_PROJECT_UPDATE",
