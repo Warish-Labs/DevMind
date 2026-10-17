@@ -4,6 +4,7 @@ from app.domain.auth.dependencies import (
     get_db_session,
     get_token_verifier,
 )
+from app.domain.auth.extension_dependencies import get_extension_auth_context
 from app.domain.auth.policy import (
     PERM_MEMBERS_MANAGE,
     PERM_MEMBERS_MANAGE_WORKSPACE,
@@ -43,6 +44,7 @@ __all__ = [
     "get_auth_context",
     "get_current_user_claims",
     "get_db_session",
+    "get_extension_auth_context",
     "get_token_verifier",
     "require_permission",
     "route_permission_registry",

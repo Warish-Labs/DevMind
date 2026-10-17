@@ -44,6 +44,8 @@ describe("Extension Quality and Packaging (Slice B12)", () => {
       expect(registeredCommands).toContain("devmind.cancelScan");
       expect(registeredCommands).toContain("devmind.openFindingLocation");
       expect(registeredCommands).toContain("devmind.refreshAll");
+      expect(registeredCommands).toContain("devmind.signIn");
+      expect(registeredCommands).toContain("devmind.signOut");
 
       // Verify zero network calls were made
       expect(fetchSpy).not.toHaveBeenCalled();

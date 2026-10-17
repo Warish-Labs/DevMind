@@ -18,11 +18,11 @@ def test_alembic_config_and_revisions() -> None:
 
     heads = script_dir.get_heads()
     assert len(heads) == 1, f"Expected exactly 1 migration head, got: {heads}"
-    assert heads[0] == "0001_initial_tenancy"
+    assert heads[0] == "0002_extension_tokens"
 
 
 def test_migration_models_match_metadata() -> None:
-    """Verify that Base.metadata contains the tables declared in 0001_initial_tenancy."""
+    """Verify that Base.metadata contains the tables declared in migrations."""
     expected_tables = {
         "users",
         "workspaces",
@@ -31,5 +31,7 @@ def test_migration_models_match_metadata() -> None:
         "project_memberships",
         "audit_events",
         "usage_records",
+        "extension_registrations",
+        "extension_tokens",
     }
     assert expected_tables.issubset(Base.metadata.tables.keys())

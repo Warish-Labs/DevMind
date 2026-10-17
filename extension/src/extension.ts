@@ -13,9 +13,12 @@ import { SyncViewProvider } from "./views/syncView";
 import { DatabaseViewProvider } from "./views/databaseView";
 import { ConsentWebviewManager } from "./views/consentWebview";
 
+import { ExtensionAuthService } from "./services/auth";
+
 let findingsSource: LocalScanFindingsSource;
 let diagnosticService: DiagnosticService;
 let statusBarService: StatusBarService;
+let authService: ExtensionAuthService;
 let findingsProvider: FindingsViewProvider;
 let structureProvider: StructureViewProvider;
 let scanProvider: ScanViewProvider;
@@ -30,6 +33,14 @@ export function activate(context: vscode.ExtensionContext): void {
     fixtureMode: settings.fixtureMode,
     syncMode: settings.syncMode,
   });
+
+  const secrets = context.secrets ?? {
+    store: async () => {},
+    get: async () => undefined,
+    delete: async () => {},
+    onDidChange: () => ({ dispose: () => {} }),
+  };
+  authService = ExtensionAuthService.init(secrets as vscode.SecretStorage);
 
   const storageDir = context.storageUri?.fsPath || context.globalStorageUri?.fsPath;
   findingsSource = new LocalScanFindingsSource(storageDir);
@@ -204,6 +215,46 @@ export function activate(context: vscode.ExtensionContext): void {
     }
   });
 
+  // Register devmind.signIn & devmind.signOut commands (ADR-012)
+  const signInCmd = vscode.commands.registerCommand("devmind.signIn", async () => {
+    const isFixture = SettingsService.get().fixtureMode;
+    if (isFixture) {
+      await authService.saveTokens({
+        accessToken: "dme_at_simulated_fixture_token",
+        refreshToken: "dme_rt_simulated_fixture_token",
+        registrationId: "01920000-0000-7000-8000-000000000001",
+        expiresIn: 3600,
+      });
+      vscode.window.showInformationMessage("DevMind: Signed in (Simulated fixture session).");
+      return;
+    }
+
+    const tokenInput = await vscode.window.showInputBox({
+      title: "DevMind Sign In",
+      prompt: "Paste your DevMind extension token (dme_at_...)",
+      password: true,
+      ignoreFocusOut: true,
+    });
+
+    if (tokenInput && tokenInput.trim()) {
+      const cleanToken = tokenInput.trim();
+      await authService.saveTokens({
+        accessToken: cleanToken,
+        refreshToken: "dme_rt_" + cleanToken.replace("dme_at_", ""),
+        registrationId: "01920000-0000-7000-8000-000000000001",
+        expiresIn: 3600,
+      });
+      vscode.window.showInformationMessage("DevMind: Extension signed in successfully.");
+    }
+  });
+
+  const signOutCmd = vscode.commands.registerCommand("devmind.signOut", async () => {
+    await authService.clearTokens();
+    vscode.window.showInformationMessage(
+      "DevMind: Signed out. Extension tokens cleared from SecretStorage."
+    );
+  });
+
   context.subscriptions.push(
     diagnosticService.getCollection(),
     statusBarService.getItem(),
@@ -221,6 +272,8 @@ export function activate(context: vscode.ExtensionContext): void {
     reviewSyncCmd,
     openLocCmd,
     refreshAllCmd,
+    signInCmd,
+    signOutCmd,
     settingsSub
   );
 

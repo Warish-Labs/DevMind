@@ -64,6 +64,16 @@
         "command": "devmind.refreshAll",
         "title": "DevMind: Refresh All Views",
         "category": "DevMind"
+      },
+      {
+        "command": "devmind.signIn",
+        "title": "DevMind: Sign In",
+        "category": "DevMind"
+      },
+      {
+        "command": "devmind.signOut",
+        "title": "DevMind: Sign Out",
+        "category": "DevMind"
       }
     ],
     "viewsContainers": {

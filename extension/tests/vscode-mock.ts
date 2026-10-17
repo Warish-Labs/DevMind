@@ -224,3 +224,21 @@ export const env = {
 export const ProgressLocation = {
   Notification: 15,
 };
+
+export class MockSecretStorage {
+  private storage = new Map<string, string>();
+
+  public async get(key: string): Promise<string | undefined> {
+    return this.storage.get(key);
+  }
+
+  public async store(key: string, value: string): Promise<void> {
+    this.storage.set(key, value);
+  }
+
+  public async delete(key: string): Promise<void> {
+    this.storage.delete(key);
+  }
+
+  public onDidChange = new EventEmitter<{ key: string }>().event;
+}

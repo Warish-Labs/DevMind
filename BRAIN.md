@@ -6,25 +6,32 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                               |
-| ------------------ | --------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                              |
-| **Last commit**    | `99d615d` (feat(extension): implement M3-04 local rule engine and E0/E1 security finding evaluator) |
-| **Working tree**   | clean; working directly on main per user instruction                                                |
-| **Open PR**        | None (working directly on main)                                                                     |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 89/89 pass, boundaries:server pass        |
-| **Date**           | 2026-10-17                                                                                          |
+| Field              | Value                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| **Branch**         | `main`                                                                                                 |
+| **Last commit**    | `ab51727` (feat(extension): implement M3-05 LocalScanFindingsSource and wire to views and diagnostics) |
+| **Working tree**   | clean; working directly on main per user instruction                                                   |
+| **Open PR**        | None (working directly on main)                                                                        |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 96/96 pass, boundaries:server pass           |
+| **Date**           | 2026-10-17                                                                                             |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Task M3-06: Backend extension tokens table, authentication endpoints, and SecretStorage integration**:
-   - Create Alembic migration for `extension_tokens` table (UUIDv7 PK, `workspace_id`, `project_id`, `user_id`, token hash, name, scopes, expiry, revoked_at).
-   - Implement `ExtensionTokenRepository` and domain model.
-   - Implement authentication router endpoint `POST /api/v1/ext/token` and token verification dependency for extension routes.
-   - Wire VS Code `SecretStorage` in companion extension for secure token persistence and sign-in flow.
-   - Write comprehensive unit, integration, and security tests.
+1. Implement **Milestone M4-01: Project Brain Ingestion Database Migrations**:
+   - Create Alembic migration for Project Brain tables (docs/03 §3.2):
+     - `local_workspace_registrations`
+     - `files`
+     - `file_versions`
+     - `project_snapshots`
+     - `snapshot_files`
+     - `code_symbols`
+     - `code_relationships`
+     - `scan_runs`
+   - Implement SQLAlchemy models in `server/app/persistence/models/brain.py`.
+   - Implement repository layer in `server/app/persistence/repositories/brain_repo.py`.
+   - Write migration and repository tests.
 
 ---
 
@@ -38,6 +45,33 @@
 ---
 
 ## 4. Done log
+
+### M3-06 — Backend Extension Tokens Table, Authentication Endpoints, and SecretStorage Integration
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented complete backend extension token lifecycle and VS Code SecretStorage client integration:
+  - **Alembic Migration** (`server/alembic/versions/0002_extension_tokens.py`):
+    - Created `extension_registrations` table (UUIDv7 PK, `user_id` FK -> `users.id`, `name`, `platform`, `extension_version`, `last_seen_at`, `revoked_at`).
+    - Created `extension_tokens` table (UUIDv7 PK, `registration_id` FK, `token_hash` unique index, `kind`, `scope`, `expires_at`, `rotated_from`, `revoked_at`).
+  - **Persistence Models & Repository**:
+    - Created `ExtensionRegistration` and `ExtensionToken` models (`server/app/persistence/models/extension.py`).
+    - Created `ExtensionRepository` (`server/app/persistence/repositories/extension_repo.py`) with strict AuthContext/SystemContext enforcement. Raw tokens are never stored at rest; only SHA-256 hashes are persisted.
+  - **Domain Service & Authentication Dependency**:
+    - `ExtensionService` (`server/app/domain/extension/service.py`): Token issuance, SHA-256 hashing, token rotation, and replay detection revocation (reusing an already rotated token revokes the entire registration per docs/07 §3).
+    - `get_extension_auth_context` (`server/app/domain/auth/extension_dependencies.py`): Validates `Bearer dme_at_...` header, verifies token hash and expiration, checks registration active state, and resolves AuthContext.
+  - **Extension REST Endpoints** (`server/app/api/extension.py`):
+    - `POST /api/v1/ext/token`: Registers extension installation and issues access/refresh token pair.
+    - `POST /api/v1/ext/token/refresh`: Rotates refresh token and issues new access token.
+    - `POST /api/v1/ext/registrations/self/heartbeat`: Activity heartbeat using extension token.
+    - `DELETE /api/v1/ext/registrations/self`: Revokes registration and tokens.
+    - Mounted under `api_v1_router` in `server/app/main.py` with declared permissions for CI verification.
+  - **VS Code Extension SecretStorage Integration**:
+    - `ExtensionAuthService` (`extension/src/services/auth.ts`): Securely persists tokens in `vscode.SecretStorage`. Performs transparent automatic token refresh on expired access tokens and purges credentials on revocation.
+    - Registered `devmind.signIn` and `devmind.signOut` commands in `extension.ts` and `package.json`.
+  - **Comprehensive Tests**:
+    - Server: 9 unit and endpoint tests in `server/tests/test_extension_auth.py` verifying token hashing, lifecycle, rotation, replay revocation, and Rule 10 scheme separation. All 96 server tests pass.
+    - Extension: 5 tests in `extension/tests/auth.test.ts` verifying SecretStorage token storage, auto-refresh, sign-out, and 401 handling. All 53 extension tests pass.
 
 ### M3-05 — LocalScanFindingsSource Implementation and View Wiring
 

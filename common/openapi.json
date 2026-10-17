@@ -936,6 +936,128 @@
           }
         }
       }
+    },
+    "/api/v1/ext/token": {
+      "post": {
+        "tags": ["Extension"],
+        "summary": "Issue extension access and refresh tokens",
+        "description": "Issue a new scoped extension access and rotating refresh token for an authenticated user.\n\nThe user initiates sign-in from the browser/CLI, authenticating with Clerk, and this\nendpoint registers the extension installation and issues DevMind-scoped tokens (ADR-012).",
+        "operationId": "issue_extension_token_api_v1_ext_token_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtensionTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtensionTokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ext/token/refresh": {
+      "post": {
+        "tags": ["Extension"],
+        "summary": "Rotate extension refresh token and issue new access token",
+        "description": "Rotate an extension refresh token.\n\nIssues a new access token and a new rotating refresh token.\nIf a previously rotated token is reused, the entire extension registration is\nimmediately revoked (replay detection per docs/07 \u00a73).",
+        "operationId": "refresh_extension_token_api_v1_ext_token_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtensionRefreshTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtensionTokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ext/registrations/self/heartbeat": {
+      "post": {
+        "tags": ["Extension"],
+        "summary": "Record heartbeat for active extension installation",
+        "description": "Record extension activity and verify token validity.",
+        "operationId": "record_heartbeat_api_v1_ext_registrations_self_heartbeat_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtensionHeartbeatResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ext/registrations/self": {
+      "delete": {
+        "tags": ["Extension"],
+        "summary": "Revoke current extension registration",
+        "description": "Revoke the current extension registration and all of its issued tokens.",
+        "operationId": "revoke_self_registration_api_v1_ext_registrations_self_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Revoke Self Registration Api V1 Ext Registrations Self Delete"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1063,6 +1185,120 @@
         "required": ["name", "slug"],
         "title": "CreateWorkspaceRequest",
         "description": "Payload for creating a new workspace."
+      },
+      "ExtensionHeartbeatResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "ok"
+          },
+          "registration_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Registration Id"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At"
+          }
+        },
+        "type": "object",
+        "required": ["registration_id", "last_seen_at"],
+        "title": "ExtensionHeartbeatResponse",
+        "description": "Heartbeat response confirming active registration."
+      },
+      "ExtensionRefreshTokenRequest": {
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "minLength": 10,
+            "title": "Refresh Token",
+            "description": "Rotating refresh token issued previously"
+          }
+        },
+        "type": "object",
+        "required": ["refresh_token"],
+        "title": "ExtensionRefreshTokenRequest",
+        "description": "Payload for rotating extension refresh token."
+      },
+      "ExtensionTokenRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Name of the client installation",
+            "default": "VS Code"
+          },
+          "platform": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Platform",
+            "description": "Operating system/platform (e.g. linux, darwin, win32)",
+            "default": "unknown"
+          },
+          "extension_version": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Extension Version",
+            "description": "Installed extension semver string",
+            "default": "0.1.0"
+          },
+          "scope": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Scope",
+            "description": "Requested scope permissions",
+            "default": "project:sync"
+          }
+        },
+        "type": "object",
+        "title": "ExtensionTokenRequest",
+        "description": "Payload for registering an extension installation and requesting scoped tokens."
+      },
+      "ExtensionTokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "description": "Opaque scoped access token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "Bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In",
+            "description": "Access token lifetime in seconds"
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token",
+            "description": "Rotating refresh token"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Authorized scopes"
+          },
+          "registration_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Registration Id",
+            "description": "Assigned extension registration ID"
+          }
+        },
+        "type": "object",
+        "required": ["access_token", "expires_in", "refresh_token", "scope", "registration_id"],
+        "title": "ExtensionTokenResponse",
+        "description": "Issued extension scoped access and refresh token pair."
       },
       "HTTPValidationError": {
         "properties": {

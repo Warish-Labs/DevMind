@@ -163,3 +163,64 @@ class UserPermissionsResponse(BaseModel):
     project_id: UUID | None = None
     project_role: str | None = None
     permissions: list[str]
+
+
+# ---------------------------------------------------------------------------
+# Extension Schemas (docs/03 §11.2, ADR-012)
+# ---------------------------------------------------------------------------
+
+
+class ExtensionTokenRequest(BaseModel):
+    """Payload for registering an extension installation and requesting scoped tokens."""
+
+    name: str = Field(
+        default="VS Code",
+        min_length=1,
+        max_length=255,
+        description="Name of the client installation",
+    )
+    platform: str = Field(
+        default="unknown",
+        min_length=1,
+        max_length=64,
+        description="Operating system/platform (e.g. linux, darwin, win32)",
+    )
+    extension_version: str = Field(
+        default="0.1.0",
+        min_length=1,
+        max_length=64,
+        description="Installed extension semver string",
+    )
+    scope: str = Field(
+        default="project:sync",
+        max_length=255,
+        description="Requested scope permissions",
+    )
+
+
+class ExtensionTokenResponse(BaseModel):
+    """Issued extension scoped access and refresh token pair."""
+
+    access_token: str = Field(description="Opaque scoped access token")
+    token_type: str = Field(default="Bearer")
+    expires_in: int = Field(description="Access token lifetime in seconds")
+    refresh_token: str = Field(description="Rotating refresh token")
+    scope: str = Field(description="Authorized scopes")
+    registration_id: UUID = Field(description="Assigned extension registration ID")
+
+
+class ExtensionRefreshTokenRequest(BaseModel):
+    """Payload for rotating extension refresh token."""
+
+    refresh_token: str = Field(
+        min_length=10,
+        description="Rotating refresh token issued previously",
+    )
+
+
+class ExtensionHeartbeatResponse(BaseModel):
+    """Heartbeat response confirming active registration."""
+
+    status: str = "ok"
+    registration_id: UUID
+    last_seen_at: datetime

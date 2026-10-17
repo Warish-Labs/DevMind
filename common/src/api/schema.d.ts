@@ -313,6 +313,93 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/ext/token": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Issue extension access and refresh tokens
+     * @description Issue a new scoped extension access and rotating refresh token for an authenticated user.
+     *
+     *     The user initiates sign-in from the browser/CLI, authenticating with Clerk, and this
+     *     endpoint registers the extension installation and issues DevMind-scoped tokens (ADR-012).
+     */
+    post: operations["issue_extension_token_api_v1_ext_token_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/ext/token/refresh": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Rotate extension refresh token and issue new access token
+     * @description Rotate an extension refresh token.
+     *
+     *     Issues a new access token and a new rotating refresh token.
+     *     If a previously rotated token is reused, the entire extension registration is
+     *     immediately revoked (replay detection per docs/07 §3).
+     */
+    post: operations["refresh_extension_token_api_v1_ext_token_refresh_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/ext/registrations/self/heartbeat": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Record heartbeat for active extension installation
+     * @description Record extension activity and verify token validity.
+     */
+    post: operations["record_heartbeat_api_v1_ext_registrations_self_heartbeat_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/ext/registrations/self": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Revoke current extension registration
+     * @description Revoke the current extension registration and all of its issued tokens.
+     */
+    delete: operations["revoke_self_registration_api_v1_ext_registrations_self_delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -413,6 +500,105 @@ export interface components {
        * @default personal
        */
       kind: string;
+    };
+    /**
+     * ExtensionHeartbeatResponse
+     * @description Heartbeat response confirming active registration.
+     */
+    ExtensionHeartbeatResponse: {
+      /**
+       * Status
+       * @default ok
+       */
+      status: string;
+      /**
+       * Registration Id
+       * Format: uuid
+       */
+      registration_id: string;
+      /**
+       * Last Seen At
+       * Format: date-time
+       */
+      last_seen_at: string;
+    };
+    /**
+     * ExtensionRefreshTokenRequest
+     * @description Payload for rotating extension refresh token.
+     */
+    ExtensionRefreshTokenRequest: {
+      /**
+       * Refresh Token
+       * @description Rotating refresh token issued previously
+       */
+      refresh_token: string;
+    };
+    /**
+     * ExtensionTokenRequest
+     * @description Payload for registering an extension installation and requesting scoped tokens.
+     */
+    ExtensionTokenRequest: {
+      /**
+       * Name
+       * @description Name of the client installation
+       * @default VS Code
+       */
+      name: string;
+      /**
+       * Platform
+       * @description Operating system/platform (e.g. linux, darwin, win32)
+       * @default unknown
+       */
+      platform: string;
+      /**
+       * Extension Version
+       * @description Installed extension semver string
+       * @default 0.1.0
+       */
+      extension_version: string;
+      /**
+       * Scope
+       * @description Requested scope permissions
+       * @default project:sync
+       */
+      scope: string;
+    };
+    /**
+     * ExtensionTokenResponse
+     * @description Issued extension scoped access and refresh token pair.
+     */
+    ExtensionTokenResponse: {
+      /**
+       * Access Token
+       * @description Opaque scoped access token
+       */
+      access_token: string;
+      /**
+       * Token Type
+       * @default Bearer
+       */
+      token_type: string;
+      /**
+       * Expires In
+       * @description Access token lifetime in seconds
+       */
+      expires_in: number;
+      /**
+       * Refresh Token
+       * @description Rotating refresh token
+       */
+      refresh_token: string;
+      /**
+       * Scope
+       * @description Authorized scopes
+       */
+      scope: string;
+      /**
+       * Registration Id
+       * Format: uuid
+       * @description Assigned extension registration ID
+       */
+      registration_id: string;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -1322,6 +1508,114 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  issue_extension_token_api_v1_ext_token_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ExtensionTokenRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ExtensionTokenResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  refresh_extension_token_api_v1_ext_token_refresh_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ExtensionRefreshTokenRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ExtensionTokenResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  record_heartbeat_api_v1_ext_registrations_self_heartbeat_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ExtensionHeartbeatResponse"];
+        };
+      };
+    };
+  };
+  revoke_self_registration_api_v1_ext_registrations_self_delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            [key: string]: unknown;
+          };
         };
       };
     };
