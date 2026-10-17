@@ -213,7 +213,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M3-02 Local manifest store outside repository tracking file hashes, language tiers, parse statuses, and findings (feature/m3-manifest-store)
 - [x] M3-03 Semantic parser and extractor for TypeScript/JavaScript (Next.js/Express, Prisma) and Python (FastAPI, SQLAlchemy) (feature/m3-parser-extractor)
 - [x] M3-04 Local rule engine and E0/E1 security finding evaluator with redaction (unprotected routes, missing guards, hardcoded secrets) (feature/m3-rules-engine)
-- [ ] M3-05 LocalScanFindingsSource implementation replacing FixtureFindingsSource, wired to TreeViews, Status Bar, and DiagnosticsCollection (feature/m3-local-scanner)
+- [x] M3-05 LocalScanFindingsSource implementation replacing FixtureFindingsSource, wired to TreeViews, Status Bar, and DiagnosticsCollection (feature/m3-local-scanner)
 - [ ] M3-06 Backend extension tokens table, authentication endpoints (POST /api/v1/ext/token), and VS Code SecretStorage auth integration (feature/m3-extension-auth)
 
 ### M4 · Project Brain ingestion: metadata, symbols, relationships, snapshots

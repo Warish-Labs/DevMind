@@ -109,7 +109,7 @@ describe("Extension Views", () => {
       expect(getRoute?.label).toBe("GET /admin/users");
       expect(getRoute?.description).toBe("Missing Role Guard");
       expect(getRoute?.tooltip).toContain("Authentication: Required");
-      expect(getRoute?.tooltip).toContain("Role Guard: Missing (Vulnerability)");
+      expect(getRoute?.tooltip).toContain("Role Guard: Missing (E1 Possible)");
 
       const deleteRoute = routes.find(
         (r): r is RouteTreeItem => r instanceof RouteTreeItem && r.route.method === "DELETE"

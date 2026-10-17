@@ -112,10 +112,13 @@ export class ScanViewProvider implements vscode.TreeDataProvider<ScanTreeItem> {
     this.refresh();
   }
 
-  public setCompleted(analyzedCount = 18): void {
+  public setCompleted(analyzedCount = 18, skippedFiles?: SkippedFile[]): void {
     this.status = "completed";
     this.progress = 100;
     this.analyzedFilesCount = analyzedCount;
+    if (skippedFiles) {
+      this.skippedFiles = skippedFiles;
+    }
     this.refresh();
   }
 

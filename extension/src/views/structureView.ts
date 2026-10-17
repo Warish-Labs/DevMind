@@ -63,7 +63,7 @@ function createRouteTooltip(route: RouteDetail, moduleFile: string): string {
     `Route: ${route.method.toUpperCase()} ${route.path}`,
     `Source File: ${moduleFile}`,
     `Authentication: ${route.auth ? "Required" : "Public / None"}`,
-    `Role Guard: ${route.roleGuard ? "Enforced" : route.auth ? "Missing (Vulnerability)" : "N/A"}`,
+    `Role Guard: ${route.roleGuard ? "Enforced" : route.auth ? "Missing (E1 Possible)" : "N/A"}`,
   ];
 
   if (route.findingId) {

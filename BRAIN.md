@@ -6,24 +6,25 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                         |
-| **Last commit**    | `652af03` (feat(extension): implement M3-01 file discovery, ignore engine, and SHA-256 hasher) |
-| **Working tree**   | clean; working directly on main per user instruction                                           |
-| **Open PR**        | None (working directly on main)                                                                |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 89/89 pass, boundaries:server pass   |
-| **Date**           | 2026-10-16                                                                                     |
+| Field              | Value                                                                                               |
+| ------------------ | --------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                              |
+| **Last commit**    | `99d615d` (feat(extension): implement M3-04 local rule engine and E0/E1 security finding evaluator) |
+| **Working tree**   | clean; working directly on main per user instruction                                                |
+| **Open PR**        | None (working directly on main)                                                                     |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 89/89 pass, boundaries:server pass        |
+| **Date**           | 2026-10-17                                                                                          |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Task M3-05: LocalScanFindingsSource implementation**:
-   - Implement `LocalScanFindingsSource` implementing `FindingsSource` interface.
-   - Wire `FileDiscoveryEngine`, `SemanticExtractor`, `LocalRuleEngine`, and `LocalManifestStore` into a unified scanning pipeline.
-   - Replace default source in `extension/src/extension.ts` with real `LocalScanFindingsSource`, keeping fixture fallback only when `devmind.fixtureMode: true`.
-   - Update `FindingsViewProvider`, `StructureViewProvider`, `DatabaseViewProvider`, and `DiagnosticService` from real scan results.
+1. Implement **Task M3-06: Backend extension tokens table, authentication endpoints, and SecretStorage integration**:
+   - Create Alembic migration for `extension_tokens` table (UUIDv7 PK, `workspace_id`, `project_id`, `user_id`, token hash, name, scopes, expiry, revoked_at).
+   - Implement `ExtensionTokenRepository` and domain model.
+   - Implement authentication router endpoint `POST /api/v1/ext/token` and token verification dependency for extension routes.
+   - Wire VS Code `SecretStorage` in companion extension for secure token persistence and sign-in flow.
+   - Write comprehensive unit, integration, and security tests.
 
 ---
 
@@ -37,6 +38,26 @@
 ---
 
 ## 4. Done log
+
+### M3-05 — LocalScanFindingsSource Implementation and View Wiring
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented `LocalScanFindingsSource` coordinating discovery, manifest dirty-checking, AST extraction, and local rule evaluation into a unified scanning pipeline:
+  - **LocalScanFindingsSource** (`extension/src/sources/localScanFindingsSource.ts`):
+    - Implements `FindingsSource` interface (`getFindings`, `getStructure`, `getDatabaseModels`).
+    - Unified pipeline coordinating `FileDiscoveryEngine`, `LocalManifestStore`, `SemanticExtractor`, and `LocalRuleEngine`.
+    - Real local scanning with incremental dirty checking, evidence ceiling capping (`<= E1`), zero network calls, zero live DB connections (ADR-034), and deterministic secret redaction (ADR-047).
+    - Preserves seamless fixture fallback when `devmind.fixtureMode: true`.
+  - **Extension Wiring** (`extension/src/extension.ts`):
+    - Default source upgraded to `LocalScanFindingsSource(storageDir)`.
+    - Wired `devmind.scanWorkspace` command and notification progress to real scan execution, updating tree views, diagnostics, and status bar.
+    - Synchronized settings listener to clear cache and refresh all views on mode change.
+  - **View & Diagnostics Integration**:
+    - `ScanViewProvider` updated to accept real `analyzedFilesCount` and dynamic `skippedFiles` list.
+    - `StructureViewProvider` cleaned to enforce non-negotiable invariant: removed forbidden "vulnerable" wording in route tooltips.
+  - **Unit & Integration Tests** (`extension/tests/localScanFindingsSource.test.ts`):
+    - 5 tests validating real scanning on `express-admin` and `fastapi-admin`, ADR-047 deterministic secret redaction, treeview and diagnostics wiring, and fixture delegation. All 48 extension tests pass.
 
 ### M3-04 — Local Rule Engine and E0/E1 Security Finding Evaluator
 

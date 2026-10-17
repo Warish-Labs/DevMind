@@ -5,8 +5,7 @@ import { DevMindLogger } from "./services/logger";
 import { SettingsService } from "./services/settings";
 import { DiagnosticService } from "./services/diagnostics";
 import { StatusBarService } from "./services/statusBar";
-import { FixtureFindingsSource } from "./sources/fixtureFindingsSource";
-import { FindingsSource } from "./types";
+import { LocalScanFindingsSource } from "./sources/localScanFindingsSource";
 import { FindingsViewProvider } from "./views/findingsView";
 import { StructureViewProvider } from "./views/structureView";
 import { ScanViewProvider } from "./views/scanView";
@@ -14,7 +13,7 @@ import { SyncViewProvider } from "./views/syncView";
 import { DatabaseViewProvider } from "./views/databaseView";
 import { ConsentWebviewManager } from "./views/consentWebview";
 
-let findingsSource: FindingsSource;
+let findingsSource: LocalScanFindingsSource;
 let diagnosticService: DiagnosticService;
 let statusBarService: StatusBarService;
 let findingsProvider: FindingsViewProvider;
@@ -32,7 +31,8 @@ export function activate(context: vscode.ExtensionContext): void {
     syncMode: settings.syncMode,
   });
 
-  findingsSource = new FixtureFindingsSource();
+  const storageDir = context.storageUri?.fsPath || context.globalStorageUri?.fsPath;
+  findingsSource = new LocalScanFindingsSource(storageDir);
   diagnosticService = new DiagnosticService();
   statusBarService = new StatusBarService(settings.fixtureMode);
 
@@ -63,6 +63,13 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBarService.setScanning(1, 2);
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
+    if (!workspaceRoot) {
+      vscode.window.showWarningMessage("DevMind: No workspace folder open to scan.");
+      scanProvider.cancelScan();
+      statusBarService.setIdle();
+      return;
+    }
+
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -70,22 +77,28 @@ export function activate(context: vscode.ExtensionContext): void {
         cancellable: false,
       },
       async (progress) => {
-        progress.report({ increment: 30, message: "Parsing routes & guards..." });
-        scanProvider.setScanning(true, 50);
+        progress.report({ increment: 20, message: "Discovering workspace files..." });
+        scanProvider.setScanning(true, 30);
 
-        const findings = await findingsSource.getFindings(workspaceRoot);
-        progress.report({ increment: 70, message: "Resolving policy invariants..." });
+        const scanResult = await findingsSource.scan(workspaceRoot, (msg, pct) => {
+          progress.report({ message: msg, increment: 10 });
+          scanProvider.setScanning(true, pct);
+        });
 
-        diagnosticService.updateDiagnostics(findings, workspaceRoot);
-        scanProvider.setCompleted(18);
+        diagnosticService.updateDiagnostics(scanResult.findings, workspaceRoot);
+        scanProvider.setCompleted(scanResult.analyzedFilesCount, scanResult.skippedFiles);
         statusBarService.setIdle();
         findingsProvider.refresh();
         structureProvider.refresh();
         databaseProvider.refresh();
 
-        logger.info("Scan complete", { findingsCount: findings.length });
+        logger.info("Scan complete", {
+          findingsCount: scanResult.findings.length,
+          analyzedFilesCount: scanResult.analyzedFilesCount,
+          skippedCount: scanResult.skippedFiles.length,
+        });
         vscode.window.showInformationMessage(
-          `DevMind scan complete: ${findings.length} finding(s) detected.`
+          `DevMind scan complete: ${scanResult.findings.length} finding(s) detected.`
         );
       }
     );
@@ -177,7 +190,18 @@ export function activate(context: vscode.ExtensionContext): void {
       syncMode: newSettings.syncMode,
     });
     statusBarService.setFixtureMode(newSettings.fixtureMode);
+    findingsSource.clearCache();
+    findingsProvider.refresh();
+    structureProvider.refresh();
+    databaseProvider.refresh();
     syncProvider.refresh();
+
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (workspaceRoot) {
+      findingsSource.getFindings(workspaceRoot).then((findings) => {
+        diagnosticService.updateDiagnostics(findings, workspaceRoot);
+      });
+    }
   });
 
   context.subscriptions.push(
@@ -200,9 +224,9 @@ export function activate(context: vscode.ExtensionContext): void {
     settingsSub
   );
 
-  // Initial load for fixture mode
-  if (settings.fixtureMode) {
-    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  // Initial load
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (workspaceRoot) {
     findingsSource.getFindings(workspaceRoot).then((findings) => {
       diagnosticService.updateDiagnostics(findings, workspaceRoot);
     });
