@@ -218,7 +218,15 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 ### M4 · Project Brain ingestion: metadata, symbols, relationships, snapshots
 
-- [ ] Brain tables, manifest diff, snapshot logic, staleness, job lifecycle (feature/m4-*)
+- [x] M4-01 Project Brain database migrations, persistence models (13 tables), and BrainRepository with AuthContext tenant isolation (feature/m4-brain-models)
+- [ ] M4-02 Job lifecycle (claim, heartbeat, reaper, sweep) and Celery worker configuration (docs/10 §9) (feature/m4-job-lifecycle)
+- [ ] M4-03 Manifest diff and upload endpoint with sync.stale_base (feature/m4-manifest-diff)
+- [ ] M4-04 Snapshot and file versioning logic with current version tracking (feature/m4-snapshots)
+- [ ] M4-05 Symbol and relationship batch upsert and graph derivation (feature/m4-symbols)
+- [ ] M4-06 Findings batch ingestion with fingerprinting and lifecycle state machine (docs/03 §5.1) (feature/m4-findings)
+- [ ] M4-07 Staleness marking on file change/removal (feature/m4-staleness)
+- [ ] M4-08 Browser read endpoints for scans, findings, Brain summary, symbols, graph, snapshots (feature/m4-browser-api)
+- [ ] M4-09 Extension metadata-only sync client and command integration (feature/m4-sync-client)
 
 ### M5 · Indexed mode, consent, embeddings, hybrid retrieval
 

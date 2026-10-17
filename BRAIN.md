@@ -6,32 +6,24 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                  |
-| ------------------ | ------------------------------------------------------------------------------------------------------ |
-| **Branch**         | `main`                                                                                                 |
-| **Last commit**    | `ab51727` (feat(extension): implement M3-05 LocalScanFindingsSource and wire to views and diagnostics) |
-| **Working tree**   | clean; working directly on main per user instruction                                                   |
-| **Open PR**        | None (working directly on main)                                                                        |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 96/96 pass, boundaries:server pass           |
-| **Date**           | 2026-10-17                                                                                             |
+| Field              | Value                                                                                               |
+| ------------------ | --------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                              |
+| **Last commit**    | `e9258ee` (feat(server,extension): implement M3-06 backend extension tokens and SecretStorage auth) |
+| **Working tree**   | clean; working directly on main per user instruction                                                |
+| **Open PR**        | None (working directly on main)                                                                     |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 102/102 pass, boundaries:server pass      |
+| **Date**           | 2026-10-17                                                                                          |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M4-01: Project Brain Ingestion Database Migrations**:
-   - Create Alembic migration for Project Brain tables (docs/03 §3.2):
-     - `local_workspace_registrations`
-     - `files`
-     - `file_versions`
-     - `project_snapshots`
-     - `snapshot_files`
-     - `code_symbols`
-     - `code_relationships`
-     - `scan_runs`
-   - Implement SQLAlchemy models in `server/app/persistence/models/brain.py`.
-   - Implement repository layer in `server/app/persistence/repositories/brain_repo.py`.
-   - Write migration and repository tests.
+1. Implement **Milestone M4-02: Job Lifecycle and Celery Worker Configuration**:
+   - Implement worker job claiming, heartbeats, dead-worker job reaping, and startup sweep logic (`docs/10` §9).
+   - Configure Celery task queues (`default`, `ingest`, `analysis`) and concurrency profiles.
+   - Implement idempotent claim and state transitions in `server/app/workers/runner.py`.
+   - Write comprehensive tests for worker kill/recovery, timeout handling, and sweep recovery.
 
 ---
 
@@ -45,6 +37,37 @@
 ---
 
 ## 4. Done log
+
+### M4-01 — Project Brain Database Migrations, Models, and Repository
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented Project Brain schema migrations, SQLAlchemy persistence models, and repository layer with tenant isolation:
+  - **Alembic Migration** (`server/alembic/versions/0003_project_brain.py`):
+    - Created 13 core Brain tables (docs/03 §3.2-§3.4) with UUIDv7 PKs, tenant foreign keys, cascading deletions, and uniqueness constraints:
+      - `scan_runs`: Scanning passes over projects with status, rules_version, stats JSONB, and idempotency key.
+      - `local_workspace_registrations`: Folder mappings with SHA-256 root fingerprint (never raw paths).
+      - `files`: Repo-relative file paths, language tiering (1/2/3), removed_at tracking, and current_version_id FK.
+      - `file_versions`: Immutable content versions by `(file_id, content_hash)` with line/size metrics.
+      - `project_snapshots` & `snapshot_files`: Point-in-time immutable file version snapshots.
+      - `code_symbols`: Extracted program elements with qualified names, lines, framework tags JSONB, and `is_current` partial indexing.
+      - `code_relationships`: Structural edges (`imports`, `calls`, `defines_route`, `guarded_by`, etc.).
+      - `analysis_jobs` & `job_events`: Asynchronous work queue state machine and sequential event logging.
+      - `findings`, `finding_evidence`, & `finding_status_history`: Security/auth findings, machine-checkable evidence (unconsented code forbidden at rest per ADR-047), and immutable lifecycle status history (docs/03 §5.1).
+  - **SQLAlchemy Persistence Models** (`server/app/persistence/models/brain.py`):
+    - Declared all 13 entities with strict typed mapped columns, foreign keys, relationships, and check constraints.
+    - Exported in `server/app/persistence/models/__init__.py`.
+  - **Brain Repository** (`server/app/persistence/repositories/brain_repo.py`):
+    - Subclasses `BaseRepository` with mandatory `AuthContext` or `SystemContext` validation.
+    - Implemented `_verify_project_access` enforcing cross-workspace isolation (`PermissionError` on alien workspace access).
+    - Operations for scan runs, workspace registrations, files, versions, snapshots, symbols, relationships, jobs, and findings.
+    - Exported in `server/app/persistence/repositories/__init__.py`.
+  - **Automated Verification**:
+    - `server/tests/test_brain_models.py`: Model instantiations, field defaults, AuthContext validation, and mock/live tenant isolation.
+    - `server/tests/test_migrations.py`: Updated to assert migration head is `0003_project_brain` and all 22 tables registered in metadata.
+    - Server pytest: 102 passed, 3 skipped, 0 failed.
+    - Import boundaries: 7 kept, 0 broken.
+    - Monorepo fast verification: 13 passed, 0 failed, 1 skipped.
 
 ### M3-06 — Backend Extension Tokens Table, Authentication Endpoints, and SecretStorage Integration
 
