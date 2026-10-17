@@ -41,6 +41,27 @@ export interface TurnstileWidgetProps {
 const SCRIPT_ID = "cf-turnstile-script";
 const SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
+export function getResolvedSiteKey(explicitKey?: string): string {
+  if (explicitKey) return explicitKey;
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    const isLocalOrPreview =
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "0.0.0.0" ||
+      host.endsWith(".local") ||
+      host.endsWith(".localhost") ||
+      host.startsWith("192.168.") ||
+      host.startsWith("10.") ||
+      host.startsWith("172.") ||
+      host.endsWith(".vercel.app");
+    if (isLocalOrPreview) {
+      return CLOUDFLARE_TEST_SITE_KEY;
+    }
+  }
+  return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || CLOUDFLARE_TEST_SITE_KEY;
+}
+
 export function TurnstileWidget({
   siteKey,
   onVerify,
@@ -52,6 +73,7 @@ export function TurnstileWidget({
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
+  const renderAttemptedRef = useRef<boolean>(false);
   const [scriptLoaded, setScriptLoaded] = useState<boolean>(
     () => typeof window !== "undefined" && Boolean(window.turnstile)
   );
@@ -67,18 +89,6 @@ export function TurnstileWidget({
     onErrorRef.current = onError;
     onExpireRef.current = onExpire;
   }, [onVerify, onError, onExpire]);
-
-  const isLocalhost =
-    typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1" ||
-      window.location.hostname.endsWith(".local"));
-
-  const activeSiteKey =
-    siteKey ||
-    (isLocalhost
-      ? CLOUDFLARE_TEST_SITE_KEY
-      : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || CLOUDFLARE_TEST_SITE_KEY);
 
   // Load the Turnstile explicit script once
   useEffect(() => {
@@ -113,19 +123,27 @@ export function TurnstileWidget({
     }
   }, []);
 
-  // Render the Turnstile widget inside the container
+  // Render the Turnstile widget inside the container exactly once
   useEffect(() => {
     if (!scriptLoaded || !containerRef.current || !window.turnstile) return;
 
-    // If already rendered for this container, do not re-render
-    if (widgetIdRef.current) return;
+    // Prevent duplicate render attempts
+    if (widgetIdRef.current || renderAttemptedRef.current) return;
+    renderAttemptedRef.current = true;
 
     // Clear previous elements in container to prevent duplicate iframes
     containerRef.current.innerHTML = "";
 
+    const activeSiteKey = getResolvedSiteKey(siteKey);
+
     try {
       const id = window.turnstile.render(containerRef.current, {
         sitekey: activeSiteKey,
+        // Disable automatic retries to prevent endless refresh loops on domain mismatch/errors
+        // @ts-expect-error - Cloudflare Turnstile supports retry and refresh options
+        retry: "never",
+        "refresh-expired": "manual",
+        "refresh-timeout": "never",
         callback: (token: string) => {
           onVerifyRef.current(token);
         },
@@ -154,9 +172,10 @@ export function TurnstileWidget({
           // Ignored
         }
         widgetIdRef.current = null;
+        renderAttemptedRef.current = false;
       }
     };
-  }, [scriptLoaded, activeSiteKey, theme, size]);
+  }, [scriptLoaded, siteKey, theme, size]);
 
   if (loadError) {
     return (

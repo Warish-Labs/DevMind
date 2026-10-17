@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { CLOUDFLARE_TEST_SITE_KEY } from "../components/turnstile/TurnstileWidget";
+import {
+  CLOUDFLARE_TEST_SITE_KEY,
+  getResolvedSiteKey,
+} from "../components/turnstile/TurnstileWidget";
 
 describe("Cloudflare Turnstile Client Configuration & Integrity", () => {
   it("exports official Cloudflare dummy test sitekey", () => {
@@ -16,6 +19,24 @@ describe("Cloudflare Turnstile Client Configuration & Integrity", () => {
       process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY = "0x4AAAAAAtestkey123";
       const customKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || CLOUDFLARE_TEST_SITE_KEY;
       expect(customKey).toBe("0x4AAAAAAtestkey123");
+    } finally {
+      if (originalEnv !== undefined) {
+        process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY = originalEnv;
+      } else {
+        delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+      }
+    }
+  });
+
+  it("resolves sitekey using getResolvedSiteKey correctly", () => {
+    // Explicit key always takes precedence
+    expect(getResolvedSiteKey("custom-key-xyz")).toBe("custom-key-xyz");
+
+    // Local / fallback resolves to test key when env unset
+    const originalEnv = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    try {
+      delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+      expect(getResolvedSiteKey()).toBe(CLOUDFLARE_TEST_SITE_KEY);
     } finally {
       if (originalEnv !== undefined) {
         process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY = originalEnv;

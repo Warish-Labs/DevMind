@@ -247,7 +247,10 @@ export default function ContactPage() {
                   setError(null);
                 }}
                 onExpire={() => setTurnstileToken("")}
-                onError={() => setError("Turnstile verification error. Please retry.")}
+                onError={() => {
+                  setTurnstileToken("");
+                  setError("Security verification error or challenge blocked. Please refresh.");
+                }}
               />
 
               {error && (
@@ -262,21 +265,25 @@ export default function ContactPage() {
               <button
                 type={turnstileToken ? "submit" : "button"}
                 disabled={submitting || !turnstileToken}
-                onClick={(e) => {
-                  if (!turnstileToken) {
-                    e.preventDefault();
-                    setError(
-                      "Please complete the Cloudflare security verification challenge above."
-                    );
-                  }
-                }}
-                title={!turnstileToken ? "Please verify the security challenge above" : undefined}
-                className="w-full py-3 rounded-control bg-[var(--signal)] text-[var(--bg-0)] font-medium font-mono text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-disabled={submitting || !turnstileToken}
+                tabIndex={!turnstileToken ? -1 : 0}
+                title={
+                  !turnstileToken
+                    ? "Please complete security verification above to send message"
+                    : undefined
+                }
+                className={`w-full py-3 rounded-control font-medium font-mono text-xs shadow-sm transition-all ${
+                  !turnstileToken
+                    ? "bg-[var(--line-2)] text-[var(--fg-2)] opacity-50 cursor-not-allowed pointer-events-none select-none"
+                    : submitting
+                      ? "bg-[var(--signal)] text-[var(--bg-0)] opacity-70 cursor-wait"
+                      : "bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 cursor-pointer"
+                }`}
               >
                 {submitting
                   ? "Sending..."
                   : !turnstileToken
-                    ? "Verify Security Challenge to Send →"
+                    ? "Security Verification Required to Send"
                     : "Send Message →"}
               </button>
             </form>

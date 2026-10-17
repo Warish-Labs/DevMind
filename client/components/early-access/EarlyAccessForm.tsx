@@ -95,16 +95,24 @@ export function EarlyAccessForm() {
         <button
           type={turnstileToken ? "submit" : "button"}
           disabled={submitting || !turnstileToken}
-          onClick={(e) => {
-            if (!turnstileToken) {
-              e.preventDefault();
-              setError("Please complete the Cloudflare security verification challenge below.");
-            }
-          }}
-          title={!turnstileToken ? "Please verify the security challenge below" : undefined}
-          className="px-6 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          aria-disabled={submitting || !turnstileToken}
+          tabIndex={!turnstileToken ? -1 : 0}
+          title={
+            !turnstileToken ? "Please complete security verification below to join" : undefined
+          }
+          className={`px-6 py-2.5 rounded-control text-sm font-medium whitespace-nowrap transition-all ${
+            !turnstileToken
+              ? "bg-[var(--line-2)] text-[var(--fg-2)] opacity-50 cursor-not-allowed pointer-events-none select-none"
+              : submitting
+                ? "bg-[var(--signal)] text-[var(--bg-0)] opacity-70 cursor-wait"
+                : "bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 cursor-pointer"
+          }`}
         >
-          {submitting ? "Submitting..." : !turnstileToken ? "Verify to Join" : "Join Waitlist"}
+          {submitting
+            ? "Submitting..."
+            : !turnstileToken
+              ? "Verification Required"
+              : "Join Waitlist"}
         </button>
       </div>
 
@@ -115,7 +123,10 @@ export function EarlyAccessForm() {
           setError(null);
         }}
         onExpire={() => setTurnstileToken("")}
-        onError={() => setError("Turnstile verification error. Please retry.")}
+        onError={() => {
+          setTurnstileToken("");
+          setError("Turnstile verification error or challenge blocked. Please refresh.");
+        }}
       />
 
       {error && (
