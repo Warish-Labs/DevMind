@@ -6,26 +6,28 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                   |
-| ------------------ | ------------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                  |
-| **Last commit**    | `bfe4ed1` (feat(server): implement M6-01 LLM provider adapter interfaces and types)                     |
-| **Working tree**   | M6-02 complete; Turnstile refresh fixed & buttons guarded; website GitHub links removed; 13 checks pass |
-| **Open PR**        | None (working directly on main)                                                                         |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 270/274 pass (4 skipped), client 45/45 pass   |
-| **Date**           | 2026-10-17                                                                                              |
+| Field              | Value                                                                                                 |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                |
+| **Last commit**    | `3be9ea6` (fix(client): harden turnstile button guards and script loading)                            |
+| **Working tree**   | M6-03 complete; M6-04 ready to begin; all 13 checks pass                                              |
+| **Open PR**        | None (working directly on main)                                                                       |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 281/285 pass (4 skipped), client 45/45 pass |
+| **Date**           | 2026-10-17                                                                                            |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-03: Gateway YAML config loaders (providers.yaml, models.yaml, tasks.yaml) with Pydantic validation** per `PLAN.md`:
-   - Inspect `docs/05 §11` and create `server/configs/llm/`:
-     - `providers.yaml`: provider adapter mappings, environments, data policy flags (`source_code_allowed`), timeouts, concurrency.
-     - `models.yaml`: models registry with verified capabilities, context limits, price units.
-     - `tasks.yaml`: task routing, primary models, fallbacks, capability constraints, params, and token budgets.
-   - Implement configuration loader in `server/app/llm/config.py` with strict Pydantic schemas (`extra="forbid"`), referential integrity validation, and startup verification.
-   - Add unit tests in `server/tests/test_llm_config.py`.
+1. Implement **Milestone M6-04: First real generation adapter (Google Gemini via official SDK with free tier key support)** per `PLAN.md`:
+   - Inspect `docs/05 §11.1, §12` and `server/app/llm/`:
+     - Implement `GoogleGeminiAdapter(LLMAdapter)` in `server/app/llm/adapters/google_genai.py`.
+     - Support official `google-genai` SDK with `GEMINI_API_KEY` / `DEVMIND_LLM_PRIMARY_API_KEY` free tier support.
+     - Implement request mapping (system instructions, user/model messages, generation options, temperature).
+     - Support structured output via `response_mime_type="application/json"` and `response_schema`.
+     - Support function calling and streaming tokens.
+     - Register `google` adapter in the provider registry.
+     - Add recorded-shape unit tests in `server/tests/test_gemini_adapter.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -39,6 +41,20 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-03: Gateway YAML Config Loaders with Pydantic Validation
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Implemented versioned YAML configuration files and validation engine for the LLM Gateway (docs/05 §11, M6-03):
+  - Created configuration schemas: `server/configs/llm/providers.yaml`, `models.yaml`, and `tasks.yaml`.
+  - Implemented `server/app/llm/config.py` with strict Pydantic schemas (`extra="forbid"`): `ProvidersConfig`, `ModelsConfig`, `TasksConfig`, and `GatewayConfig`.
+  - Implemented referential integrity checks (model $\rightarrow$ provider, task $\rightarrow$ model, fallback $\rightarrow$ model).
+  - Implemented capability constraint validation (tool calling, structured output, streaming) matching tasks against model capabilities.
+  - Implemented source-code privacy guard: tasks with `may_contain_source=True` cannot route to providers where `source_code_allowed=False` or `terms_reviewed=False` in staging/production.
+  - Implemented placeholder rejection (`.invalid`, `REPLACE_*`, missing token limits) and missing secret environment variable checks for staging and production.
+  - Added deterministic SHA-256 `config_hash` computation across configuration files for reproducible run auditing.
+  - Added 11 unit tests in `server/tests/test_llm_config.py`. Server test suite grew to 281 passing tests.
 
 ### Feature — M6-02: Fake LLM Provider Adapter with Scripted Responses and Fault Injection
 

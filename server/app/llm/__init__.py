@@ -2,6 +2,12 @@
 
 from app.llm.adapter import LLMAdapter
 from app.llm.adapters.fake import FakeFaultInjection, FakeLLMAdapter
+from app.llm.config import (
+    ConfigValidationError,
+    GatewayConfig,
+    load_gateway_config,
+    validate_gateway_config,
+)
 from app.llm.embedding_adapter import (
     EmbeddingAdapter,
     EmbeddingInputType,
@@ -61,6 +67,11 @@ __all__ = [
     "get_adapter_class",
     "list_supported_adapters",
     "create_adapter",
+    # Gateway Configuration
+    "GatewayConfig",
+    "load_gateway_config",
+    "validate_gateway_config",
+    "ConfigValidationError",
     # Models & types
     "ChatMessage",
     "MessageRole",

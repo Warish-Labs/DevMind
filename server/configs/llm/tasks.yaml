@@ -1,0 +1,75 @@
+version: 1
+defaults:
+  timeout_s: 60
+  retry:
+    max_attempts: 3
+    backoff: exponential
+    initial_delay_s: 1
+    max_delay_s: 30
+    jitter: true
+    retry_on: [timeout, rate_limit, provider_5xx, connection]
+tasks:
+  agent_manager_routing:
+    model: fast_light
+    fallbacks: [fallback_reasoning]
+    required_capabilities: [structured_output]
+    output_schema: AgentPlan
+    params:
+      temperature: 0.0
+      max_output_tokens: 500
+    budget:
+      max_input_tokens: 6000
+  code_answer:
+    model: primary_reasoning
+    fallbacks: [fallback_reasoning]
+    required_capabilities: [streaming]
+    params:
+      temperature: 0.2
+      max_output_tokens: 1500
+    budget:
+      max_input_tokens: null
+    data:
+      may_contain_source: true
+  security_explanation:
+    model: primary_reasoning
+    fallbacks: []
+    required_capabilities: [structured_output]
+    output_schema: FindingExplanation
+    params:
+      temperature: 0.0
+      max_output_tokens: 1200
+    data:
+      may_contain_source: true
+  final_synthesis:
+    model: primary_reasoning
+    fallbacks: [fallback_reasoning]
+    required_capabilities: [structured_output]
+    output_schema: SynthesizedAnswer
+    params:
+      temperature: 0.2
+      max_output_tokens: 1500
+  query_rewrite:
+    model: fast_light
+    fallbacks: []
+    required_capabilities: [structured_output]
+    output_schema: RewrittenQuery
+    params:
+      temperature: 0.0
+      max_output_tokens: 200
+  embedding_code:
+    kind: embedding
+    model: embed_code
+    batch:
+      max_items: null
+  embedding_query:
+    kind: embedding
+    model: embed_code
+  test_task:
+    model: test_model
+    fallbacks: []
+    required_capabilities: [structured_output, tool_calling, streaming]
+    params:
+      temperature: 0.0
+      max_output_tokens: 1000
+    data:
+      may_contain_source: true

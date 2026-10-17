@@ -1,0 +1,55 @@
+version: 1
+providers:
+  primary_provider:
+    adapter: openai_compatible # anthropic | openai | google | openai_compatible | fake
+    base_url: "https://api.provider-a.invalid/v1"
+    api_key_env: DEVMIND_LLM_PRIMARY_API_KEY
+    enabled: true
+    environments: [development, staging, production]
+    terms_reviewed: false # must be true before production use (OQ-03)
+    data_policy:
+      source_code_allowed: false # set true only after terms review is recorded
+      note: "REPLACE with the reviewed retention/training terms reference and date"
+    timeouts:
+      connect_s: 5
+      read_s: 60
+    concurrency:
+      max_in_flight: 8
+  alternative_provider:
+    adapter: anthropic
+    api_key_env: DEVMIND_LLM_ALT_API_KEY
+    enabled: false
+    environments: [staging, production]
+    terms_reviewed: false
+    data_policy:
+      source_code_allowed: false
+      note: "REPLACE with reviewed terms"
+    timeouts:
+      connect_s: 5
+      read_s: 60
+  embedding_provider:
+    adapter: openai_compatible
+    base_url: "https://api.provider-b.invalid/v1"
+    api_key_env: DEVMIND_EMBED_API_KEY
+    enabled: true
+    environments: [development, staging, production]
+    terms_reviewed: false
+    data_policy:
+      source_code_allowed: false
+      note: "REPLACE with reviewed terms"
+    timeouts:
+      connect_s: 5
+      read_s: 30
+  fake_provider:
+    adapter: fake
+    enabled: true
+    environments: [development, test]
+    terms_reviewed: true
+    data_policy:
+      source_code_allowed: true
+      note: "Deterministic in-memory fake provider for dev/testing"
+    timeouts:
+      connect_s: 1
+      read_s: 5
+    concurrency:
+      max_in_flight: 50

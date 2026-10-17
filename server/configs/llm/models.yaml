@@ -1,0 +1,71 @@
+version: 1
+models:
+  primary_reasoning:
+    provider: primary_provider
+    model_id: "REPLACE_WITH_EVALUATED_MODEL_ID"
+    kind: generation
+    status: unvalidated # unvalidated | evaluated | deprecated
+    capabilities: # declare only what has been verified for this model
+      tool_calling: true
+      structured_output: native # native | json_mode | prompt_only | none
+      streaming: true
+    limits:
+      max_input_tokens: null # REQUIRED before use outside dev
+      max_output_tokens: null
+    price_units:
+      input_per_1k: null # from official pricing; for cost accounting only
+      output_per_1k: null
+  fast_light:
+    provider: primary_provider
+    model_id: "REPLACE_WITH_EVALUATED_MODEL_ID"
+    kind: generation
+    status: unvalidated
+    capabilities:
+      tool_calling: false
+      structured_output: json_mode
+      streaming: true
+    limits:
+      max_input_tokens: null
+      max_output_tokens: null
+    price_units:
+      input_per_1k: null
+      output_per_1k: null
+  fallback_reasoning:
+    provider: alternative_provider
+    model_id: "REPLACE_WITH_EVALUATED_MODEL_ID"
+    kind: generation
+    status: unvalidated
+    capabilities:
+      tool_calling: true
+      structured_output: prompt_only
+      streaming: true
+    limits:
+      max_input_tokens: null
+      max_output_tokens: null
+    price_units:
+      input_per_1k: null
+      output_per_1k: null
+  embed_code:
+    provider: embedding_provider
+    model_id: "REPLACE_WITH_EVALUATED_EMBEDDING_MODEL_ID"
+    kind: embedding
+    status: unvalidated
+    dimension: null # REQUIRED; must match the active embedding space
+    limits:
+      max_input_tokens: null
+    normalize: true
+  test_model:
+    provider: fake_provider
+    model_id: "fake-deterministic"
+    kind: generation
+    status: evaluated
+    capabilities:
+      tool_calling: true
+      structured_output: native
+      streaming: true
+    limits:
+      max_input_tokens: 100000
+      max_output_tokens: 4000
+    price_units:
+      input_per_1k: 0
+      output_per_1k: 0
