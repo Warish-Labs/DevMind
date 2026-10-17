@@ -250,7 +250,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M6-04 First real generation adapter (Google Gemini via official SDK with free tier key support) (feature/m6-gemini-adapter)
 - [x] M6-05 Second generation adapter (alternative provider, e.g. Groq/OpenAI, disabled until configured) (feature/m6-alternative-adapter)
 - [x] M6-06 Gateway router with capability matching, fallback rules, and source-code-allowed privacy guard (feature/m6-gateway-router)
-- [ ] M6-07 Quotas, concurrency semaphores, and sliding-window rate limiting for LLM calls (feature/m6-llm-quotas)
+- [x] M6-07 Quotas, concurrency semaphores, and sliding-window rate limiting for LLM calls (feature/m6-llm-quotas)
 - [ ] M6-08 Usage recording (input/output tokens, latency, cost tracking) persisted to usage_records (feature/m6-usage-records)
 - [ ] M6-09 Structured-output schema repair and validation layer (feature/m6-output-repair)
 - [ ] M6-10 Versioned prompt template loader with untrusted context escaping (feature/m6-prompt-loader)

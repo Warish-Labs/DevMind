@@ -8,23 +8,23 @@
 
 | Field              | Value                                                                                                 |
 | ------------------ | ----------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                |
-| **Last commit**    | `f972bc8` (feat(server): implement M6-06 LLM gateway router and fallback policy)                      |
-| **Working tree**   | Clean; M6-06 complete; all 13 checks pass; 322 server tests pass                                      |
-| **Open PR**        | None (working directly on main)                                                                       |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 322/326 pass (4 skipped), client 46/46 pass |
+| **Branch**         | `feature/m6-llm-quotas`                                                                               |
+| **Last commit**    | `9e57aec` (fix(client): remove tech stack and render mentions from footer)                            |
+| **Working tree**   | M6-07 complete; all 13 checks pass; 332 server tests pass                                             |
+| **Open PR**        | None (working on feature/m6-llm-quotas)                                                               |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 332/336 pass (4 skipped), client 46/46 pass |
 | **Date**           | 2026-10-17                                                                                            |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-07: Quotas, concurrency semaphores, and sliding-window rate limiting for LLM calls** per `PLAN.md`:
-   - Inspect `docs/05 §13, §14` and `server/app/llm/`:
-     - Implement per-provider concurrency semaphore (limiting in-flight requests per `concurrency.max_in_flight` from `providers.yaml`).
-     - Implement sliding-window rate limiter per provider (e.g. Groq 30 RPM, Gemini 15 RPM) using Redis or in-memory fallback.
-     - Enforce quota checks before dispatch (`quota.exceeded`).
-     - Add unit tests in `server/tests/test_llm_quotas.py`.
+1. Implement **Milestone M6-08: Usage recording (input/output tokens, latency, cost tracking) persisted to usage_records** per `PLAN.md`:
+   - Inspect `docs/05 §13`, `docs/03 §4`, and `server/app/llm/`:
+     - Implement usage recorder service that records gateway calls into `usage_records` table (workspace_id, project_id, job_id, task, provider, model, tokens, latency, outcome).
+     - Calculate cost accounting units using official pricing units from `models.yaml`.
+     - Wire usage recorder into gateway router generation & streaming lifecycle.
+     - Add unit and integration tests in `server/tests/test_llm_usage_records.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -38,6 +38,35 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-07: LLM Quotas, Concurrency Semaphores, and Rate Limiting
+
+- **Date**: 2026-10-17
+- **Branch**: `feature/m6-llm-quotas`
+- **What**:
+  - Implemented `LLMConcurrencyManager` in [`server/app/llm/quotas.py`](server/app/llm/quotas.py) (docs/05 §13):
+    - Provider-level concurrency semaphores based on `concurrency.max_in_flight` from `providers.yaml`.
+    - Tenant-level concurrency caps (`max_workspace_concurrency`) preventing one workspace from monopolizing workers.
+  - Implemented `LLMRateLimiter` in [`server/app/llm/quotas.py`](server/app/llm/quotas.py) (docs/05 §13):
+    - Sliding-window rate limiter per provider (e.g. Gemini 15 RPM, Groq 30 RPM) backed by Redis sorted sets with in-memory fallback.
+    - Dynamic backoff penalty tracking upon receiving upstream HTTP 429 (`Retry-After`).
+  - Implemented `LLMQuotaEnforcer` in [`server/app/llm/quotas.py`](server/app/llm/quotas.py) (docs/05 §13, ADR-046):
+    - Pre-call context length verification against `model_entry.limits.max_input_tokens`.
+    - Pre-call task budget verification against `task_entry.budget.max_input_tokens`.
+    - Monthly workspace token quota enforcement (`monthly_token_allowance_per_workspace`).
+  - Integrated into [`server/app/llm/router.py`](server/app/llm/router.py):
+    - Automatic fallback when primary provider is rate-limited or context ceiling is exceeded.
+    - Token usage deduction towards tenant allowances upon generation completion.
+  - Added 10 unit tests in [`server/tests/test_llm_quotas.py`](server/tests/test_llm_quotas.py). All 51 LLM tests and 332 server tests pass.
+
+### Fix — Client Footer Tech Stack & Cloud / Host Mentions Cleanup
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (commit `9e57aec`)
+- **What**:
+  - Removed "Render + Neon Free Profile" and "Next.js · FastAPI · PostgreSQL · Redis" from [`client/components/layout/Footer.tsx`](client/components/layout/Footer.tsx).
+  - Replaced with clean "Operational · System Active" status indicator and "Continuous Project Brain" tag.
+  - All 46 client tests pass.
 
 ### Feature — M6-06: LLM Gateway Router with Fallbacks and Privacy Guard
 

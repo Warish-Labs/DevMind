@@ -45,6 +45,7 @@ from app.llm.models import (
     ToolCall,
     ToolDefinition,
 )
+from app.llm.quotas import LLMConcurrencyManager, LLMQuotaEnforcer, LLMRateLimiter
 from app.llm.registry import (
     create_adapter,
     get_adapter_class,
@@ -70,8 +71,11 @@ __all__ = [
     "get_adapter_class",
     "list_supported_adapters",
     "create_adapter",
-    # Gateway Router & Configuration
+    # Gateway Router, Quotas & Configuration
     "LLMGatewayRouter",
+    "LLMConcurrencyManager",
+    "LLMRateLimiter",
+    "LLMQuotaEnforcer",
     "GatewayConfig",
     "load_gateway_config",
     "validate_gateway_config",

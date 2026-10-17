@@ -23,6 +23,7 @@ from app.llm.exceptions import (
     LLMInvalidOutputError,
     LLMPermissionError,
     LLMProviderError,
+    LLMQuotaExceededError,
     LLMRateLimitError,
     LLMRefusalError,
     LLMTimeoutError,
@@ -35,6 +36,7 @@ from app.llm.models import (
     ModelCapabilities,
     ProviderDataPolicy,
 )
+from app.llm.quotas import LLMConcurrencyManager, LLMQuotaEnforcer, LLMRateLimiter
 from app.llm.registry import create_adapter
 
 logger = logging.getLogger(__name__)
@@ -48,6 +50,9 @@ class LLMGatewayRouter:
         config: GatewayConfig | None = None,
         environment: str | None = None,
         adapter_overrides: dict[str, LLMAdapter] | None = None,
+        concurrency_manager: LLMConcurrencyManager | None = None,
+        rate_limiter: LLMRateLimiter | None = None,
+        quota_enforcer: LLMQuotaEnforcer | None = None,
     ) -> None:
         self.config = config or load_gateway_config()
         self.environment = (
@@ -62,6 +67,9 @@ class LLMGatewayRouter:
         )
         self._adapter_cache: dict[str, LLMAdapter] = {}
         self._adapter_overrides: dict[str, LLMAdapter] = adapter_overrides or {}
+        self.concurrency_manager = concurrency_manager or LLMConcurrencyManager(self.config)
+        self.rate_limiter = rate_limiter or LLMRateLimiter(self.config)
+        self.quota_enforcer = quota_enforcer or LLMQuotaEnforcer(self.config)
 
     def register_adapter_override(self, model_key: str, adapter: LLMAdapter) -> None:
         """Register a mock or pre-instantiated adapter for a specific logical model key."""
@@ -267,9 +275,46 @@ class LLMGatewayRouter:
             model_override=request.model_alias,
         )
 
+        task_entry = self.config.tasks.tasks[request.task]
+        workspace_id = request.metadata.get("workspace_id")
         last_exception: Exception | None = None
 
         for idx, model_key in enumerate(candidates):
+            model_entry = self.config.models.models[model_key]
+            provider_key = model_entry.provider
+
+            # 1. Pre-call quota & context length checks (docs/05 §11.6 rule 5 & §13)
+            try:
+                self.quota_enforcer.check_pre_call(request, task_entry, model_entry)
+            except LLMContextLengthExceededError as exc:
+                logger.warning(
+                    "Model '%s' context length exceeded for task '%s': %s; trying fallback",
+                    model_key,
+                    request.task,
+                    exc,
+                )
+                last_exception = exc
+                continue
+            except LLMQuotaExceededError:
+                # Quota or budget exhausted stops immediately (docs/05 §12)
+                raise
+
+            # 2. Sliding-window rate limit check per provider (docs/05 §13)
+            allowed, remaining, retry_after = await self.rate_limiter.check_and_acquire(
+                provider_key
+            )
+            if not allowed:
+                logger.warning(
+                    "Provider '%s' rate limited (retry_after=%.1fs); trying fallback candidate",
+                    provider_key,
+                    retry_after,
+                )
+                last_exception = LLMRateLimitError(
+                    f"Provider '{provider_key}' rate limit exceeded",
+                    retry_after_s=retry_after,
+                )
+                continue
+
             adapter = self.get_adapter(model_key)
             is_fallback = idx > 0
 
@@ -283,8 +328,12 @@ class LLMGatewayRouter:
                 )
 
             try:
-                response = await adapter.generate(request)
-                return response
+                # 3. Concurrency semaphore acquisition per provider and workspace (docs/05 §13)
+                async with self.concurrency_manager.acquire(provider_key, workspace_id):
+                    response = await adapter.generate(request)
+                    if workspace_id and response.usage:
+                        self.quota_enforcer.record_usage(workspace_id, response.usage.total_tokens)
+                    return response
             except LLMRefusalError:
                 # ADR-027 / docs/05 §12 Table: Content refusal must NEVER be retried on fallbacks to bypass
                 logger.info(
@@ -302,9 +351,15 @@ class LLMGatewayRouter:
             except LLMPermissionError:
                 # Policy/privacy violations must fail immediately
                 raise
+            except LLMRateLimitError as exc:
+                self.rate_limiter.record_backoff(provider_key, exc.retry_after_s)
+                logger.warning(
+                    "Provider '%s' returned HTTP 429 rate limit; recorded backoff", provider_key
+                )
+                last_exception = exc
+                continue
             except (
                 LLMTimeoutError,
-                LLMRateLimitError,
                 LLMProviderError,
                 LLMUnavailableError,
                 LLMContextLengthExceededError,
@@ -342,9 +397,45 @@ class LLMGatewayRouter:
             model_override=request.model_alias,
         )
 
+        task_entry = self.config.tasks.tasks[request.task]
+        workspace_id = request.metadata.get("workspace_id")
         last_exception: Exception | None = None
 
         for idx, model_key in enumerate(candidates):
+            model_entry = self.config.models.models[model_key]
+            provider_key = model_entry.provider
+
+            # 1. Pre-call quota & context length checks
+            try:
+                self.quota_enforcer.check_pre_call(request, task_entry, model_entry)
+            except LLMContextLengthExceededError as exc:
+                logger.warning(
+                    "Streaming model '%s' context length exceeded for task '%s': %s",
+                    model_key,
+                    request.task,
+                    exc,
+                )
+                last_exception = exc
+                continue
+            except LLMQuotaExceededError:
+                raise
+
+            # 2. Sliding-window rate limit check per provider
+            allowed, remaining, retry_after = await self.rate_limiter.check_and_acquire(
+                provider_key
+            )
+            if not allowed:
+                logger.warning(
+                    "Streaming provider '%s' rate limited (retry_after=%.1fs); trying fallback",
+                    provider_key,
+                    retry_after,
+                )
+                last_exception = LLMRateLimitError(
+                    f"Provider '{provider_key}' rate limit exceeded",
+                    retry_after_s=retry_after,
+                )
+                continue
+
             adapter = self.get_adapter(model_key)
             is_fallback = idx > 0
 
@@ -357,9 +448,12 @@ class LLMGatewayRouter:
 
             stream_started = False
             try:
-                async for chunk in adapter.stream_generate(request):
-                    stream_started = True
-                    yield chunk
+                async with self.concurrency_manager.acquire(provider_key, workspace_id):
+                    async for chunk in adapter.stream_generate(request):
+                        stream_started = True
+                        if workspace_id and chunk.usage:
+                            self.quota_enforcer.record_usage(workspace_id, chunk.usage.total_tokens)
+                        yield chunk
                 # Stream finished successfully
                 return
             except LLMRefusalError:
@@ -368,6 +462,12 @@ class LLMGatewayRouter:
                 raise
             except LLMPermissionError:
                 raise
+            except LLMRateLimitError as exc:
+                if stream_started:
+                    raise
+                self.rate_limiter.record_backoff(provider_key, exc.retry_after_s)
+                last_exception = exc
+                continue
             except Exception as exc:
                 if stream_started:
                     # If stream already began emitting tokens to the client, we cannot silently switch providers mid-stream
