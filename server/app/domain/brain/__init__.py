@@ -1,5 +1,12 @@
 """Project Brain domain services, symbols, snapshot versioning, and manifest sync schemas."""
 
+from app.domain.brain.brain_service import (
+    BrainFileDetail,
+    BrainFileItem,
+    BrainFileVersionItem,
+    BrainService,
+    BrainSummaryResponse,
+)
 from app.domain.brain.context import resolve_project_context
 from app.domain.brain.findings_service import (
     BatchFindingsRequest,
@@ -24,6 +31,10 @@ from app.domain.brain.manifest_service import (
     MissingFileEntry,
     PutManifestRequest,
     PutManifestResponse,
+)
+from app.domain.brain.scan_service import (
+    ScanRunItem,
+    ScanService,
 )
 from app.domain.brain.snapshot_service import (
     CreateSnapshotRequest,
@@ -56,6 +67,11 @@ __all__ = [
     "BatchRelationshipsResponse",
     "BatchSymbolsRequest",
     "BatchSymbolsResponse",
+    "BrainFileDetail",
+    "BrainFileItem",
+    "BrainFileVersionItem",
+    "BrainService",
+    "BrainSummaryResponse",
     "CodeRelationshipItem",
     "CodeRelationshipPayload",
     "CodeSymbolItem",
@@ -80,6 +96,8 @@ __all__ = [
     "MissingFileEntry",
     "PutManifestRequest",
     "PutManifestResponse",
+    "ScanRunItem",
+    "ScanService",
     "SnapshotDetail",
     "SnapshotDiffItem",
     "SnapshotDiffResponse",

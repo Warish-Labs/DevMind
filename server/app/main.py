@@ -98,6 +98,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     from app.api.findings import router as findings_router
     from app.api.me import router as me_router
     from app.api.projects import projects_router, workspace_projects_router
+    from app.api.scans import router as scans_router
     from app.api.webhooks import router as webhooks_router
     from app.api.workspaces import router as workspaces_router
     from app.domain.auth import PERMISSION_PUBLIC, declare_permission
@@ -116,6 +117,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_v1_router.include_router(workspace_projects_router)
     api_v1_router.include_router(projects_router)
     api_v1_router.include_router(brain_router)
+    api_v1_router.include_router(scans_router)
     api_v1_router.include_router(findings_router)
     api_v1_router.include_router(me_router)
     api_v1_router.include_router(webhooks_router)

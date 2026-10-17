@@ -1169,6 +1169,285 @@
         }
       }
     },
+    "/api/v1/projects/{pid}/brain/summary": {
+      "get": {
+        "tags": ["Project Brain"],
+        "summary": "Get aggregated Project Brain summary metrics",
+        "description": "Retrieve health and structural aggregation metrics for the project brain.",
+        "operationId": "get_brain_summary_api_v1_projects__pid__brain_summary_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrainSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/brain/files": {
+      "get": {
+        "tags": ["Project Brain"],
+        "summary": "List active files with current version metadata",
+        "description": "List all non-removed files with their current content hash and metrics.",
+        "operationId": "list_brain_files_api_v1_projects__pid__brain_files_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BrainFileItem"
+                  },
+                  "title": "Response List Brain Files Api V1 Projects  Pid  Brain Files Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/brain/files/{fid}": {
+      "get": {
+        "tags": ["Project Brain"],
+        "summary": "Get file detail and version history",
+        "description": "Retrieve detailed file metadata and all historical versions.",
+        "operationId": "get_brain_file_detail_api_v1_projects__pid__brain_files__fid__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "fid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Fid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrainFileDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/scans": {
+      "get": {
+        "tags": ["Scans"],
+        "summary": "List project scan runs",
+        "description": "List recent scan runs for a project ordered by start time descending.",
+        "operationId": "list_scans_api_v1_projects__pid__scans_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (running, completed, failed, cancelled)",
+              "title": "Status"
+            },
+            "description": "Filter by status (running, completed, failed, cancelled)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScanRunItem"
+                  },
+                  "title": "Response List Scans Api V1 Projects  Pid  Scans Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/scans/{sid}": {
+      "get": {
+        "tags": ["Scans"],
+        "summary": "Get scan run details and statistics",
+        "description": "Retrieve details and statistics of a specific scan run.",
+        "operationId": "get_scan_detail_api_v1_projects__pid__scans__sid__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "sid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanRunItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{pid}/findings": {
       "get": {
         "tags": ["Findings"],
@@ -2111,6 +2390,289 @@
         "required": ["upserted", "superseded_marked_non_current"],
         "title": "BatchSymbolsResponse",
         "description": "Result receipt for batch symbol ingestion."
+      },
+      "BrainFileDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "tier": {
+            "type": "integer",
+            "title": "Tier"
+          },
+          "current_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Version Id"
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Bytes"
+          },
+          "line_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/BrainFileVersionItem"
+            },
+            "type": "array",
+            "title": "Versions"
+          }
+        },
+        "type": "object",
+        "required": ["id", "project_id", "path", "language", "tier", "created_at", "updated_at"],
+        "title": "BrainFileDetail",
+        "description": "File detail including historical versions."
+      },
+      "BrainFileItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "tier": {
+            "type": "integer",
+            "title": "Tier"
+          },
+          "current_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Version Id"
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Bytes"
+          },
+          "line_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "project_id", "path", "language", "tier", "created_at", "updated_at"],
+        "title": "BrainFileItem",
+        "description": "Active file summary in project brain."
+      },
+      "BrainFileVersionItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "file_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "File Id"
+          },
+          "content_hash": {
+            "type": "string",
+            "title": "Content Hash"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "line_count": {
+            "type": "integer",
+            "title": "Line Count"
+          },
+          "scan_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scan Run Id"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin",
+            "default": "extension"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "file_id", "content_hash", "size_bytes", "line_count", "created_at"],
+        "title": "BrainFileVersionItem",
+        "description": "Historical file version record."
+      },
+      "BrainSummaryResponse": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "total_files": {
+            "type": "integer",
+            "title": "Total Files"
+          },
+          "languages": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Languages"
+          },
+          "total_versions": {
+            "type": "integer",
+            "title": "Total Versions"
+          },
+          "total_snapshots": {
+            "type": "integer",
+            "title": "Total Snapshots"
+          },
+          "total_symbols": {
+            "type": "integer",
+            "title": "Total Symbols"
+          },
+          "total_relationships": {
+            "type": "integer",
+            "title": "Total Relationships"
+          },
+          "findings_summary": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Findings Summary"
+          },
+          "latest_snapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SnapshotItem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "latest_scan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScanRunItem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "total_files",
+          "languages",
+          "total_versions",
+          "total_snapshots",
+          "total_symbols",
+          "total_relationships",
+          "findings_summary"
+        ],
+        "title": "BrainSummaryResponse",
+        "description": "Aggregated metrics and health overview for Project Brain."
       },
       "CodeRelationshipItem": {
         "properties": {
@@ -3918,6 +4480,94 @@
         "type": "object",
         "required": ["status"],
         "title": "ReadinessResponse"
+      },
+      "ScanRunItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "registration_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registration Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "rules_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rules Version"
+          },
+          "stats": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Stats"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "project_id", "origin", "status", "created_at", "updated_at"],
+        "title": "ScanRunItem",
+        "description": "Serialized summary of a scan run."
       },
       "SnapshotDetail": {
         "properties": {

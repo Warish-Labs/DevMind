@@ -6,26 +6,28 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                           |
-| ------------------ | --------------------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                          |
-| **Last commit**    | `0ef8231` (feat(server): implement M4-06 findings batch ingestion, fingerprinting, and lifecycle state machine) |
-| **Working tree**   | clean; working directly on main per user instruction                                                            |
-| **Open PR**        | None (working directly on main)                                                                                 |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 149/149 pass, boundaries:server pass (31 API paths)   |
-| **Date**           | 2026-10-17                                                                                                      |
+| Field              | Value                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                        |
+| **Last commit**    | `f2df5cf` (feat(server): implement M4-07 staleness marking on file change and removal)                        |
+| **Working tree**   | clean; working directly on main per user instruction                                                          |
+| **Open PR**        | None (working directly on main)                                                                               |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 154/154 pass, boundaries:server pass (36 API paths) |
+| **Date**           | 2026-10-17                                                                                                    |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M4-08: Browser Read Endpoints**:
-   - Inspect `docs/03 §11.1` and `docs/02 §4.1` for browser REST endpoints:
-     - Scans: `GET /api/v1/projects/{pid}/scans`, `GET /api/v1/projects/{pid}/scans/{sid}` (@declare_permission(PERM_PROJECT_READ)).
-     - Brain Summary: `GET /api/v1/projects/{pid}/brain/summary` returning total files, languages, versions, snapshots, symbols, relationships, findings summary.
-     - Verify existing browser read endpoints (`/findings`, `/brain/symbols`, `/brain/graph`, `/brain/snapshots`) align with docs/03.
-   - Write comprehensive tests in `server/tests/test_browser_api.py`.
-   - Export OpenAPI schema and regenerate TypeScript client (`pnpm gen:api`).
+1. Implement **Milestone M4-09: Extension Metadata-Only Sync Client and Command Integration**:
+   - Inspect `docs/06 §9` and `docs/03 §11.2` for extension sync behavior:
+     - Client calls `POST /api/v1/ext/projects/{pid}/manifest/diff` with local manifest files.
+     - Upserts missing or modified files via `PUT /api/v1/ext/projects/{pid}/manifest`.
+     - Syncs extracted code symbols via `PUT /api/v1/ext/projects/{pid}/symbols` and relationships via `PUT /api/v1/ext/projects/{pid}/relationships`.
+     - Batches E0/E1 scanner findings via `POST /api/v1/ext/projects/{pid}/findings:batch`.
+     - Automatically handles `409 sync.stale_base` by triggering full clean manifest re-sync.
+     - Integrates into `devmind.syncProject` VS Code command with progress notifications and status bar indication.
+   - Write extension unit and integration tests in `extension/tests/syncClient.test.ts`.
    - Run verification suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -39,6 +41,36 @@
 ---
 
 ## 4. Done log
+
+### M4-08 — Browser Read Endpoints for Scans, Brain Summary, Files, Symbols, and Graph
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented browser-facing REST read endpoints for scan runs, Project Brain summary metrics, active files, and version history per `docs/03 §11.1`:
+  - **BrainRepository Read Extensions** (`server/app/persistence/repositories/brain_repo.py`):
+    - `list_scan_runs`: Paginated scan query ordered by `created_at desc` with optional status filtering.
+    - `get_latest_scan_run`: Efficient single query retrieving the most recent project scan run.
+    - `get_file_by_id`: Retrieves project file by ID with `current_version` and eagerly loaded historical `versions`.
+    - `get_brain_summary_stats`: Aggregates active file counts, language distribution, total content versions, snapshots, current symbols, structural relationships, findings by status, latest snapshot, and latest scan.
+  - **Domain Services & Schemas**:
+    - `ScanService` (`server/app/domain/brain/scan_service.py`): `ScanRunItem`, `list_scans`, `get_scan` (with RFC 9457 NotFoundError).
+    - `BrainService` (`server/app/domain/brain/brain_service.py`): `BrainSummaryResponse`, `BrainFileItem`, `BrainFileVersionItem`, `BrainFileDetail`, `get_summary`, `list_files`, `get_file_detail`.
+  - **REST Endpoints & Permission Enforcement**:
+    - `GET /api/v1/projects/{pid}/scans` (@declare_permission(PERM_PROJECT_READ)).
+    - `GET /api/v1/projects/{pid}/scans/{sid}` (@declare_permission(PERM_PROJECT_READ)).
+    - `GET /api/v1/projects/{pid}/brain/summary` (@declare_permission(PERM_BRAIN_READ)).
+    - `GET /api/v1/projects/{pid}/brain/files` (@declare_permission(PERM_BRAIN_READ)).
+    - `GET /api/v1/projects/{pid}/brain/files/{fid}` (@declare_permission(PERM_BRAIN_READ)).
+    - Mounted `scans_router` in `server/app/main.py`.
+  - **OpenAPI Schema & Client Generation**:
+    - Re-exported OpenAPI schema (36 paths) to `common/openapi.json`.
+    - Regenerated TypeScript API client SDK via `pnpm gen:api` (`common/src/api/schema.d.ts`).
+  - **Tests & Verification**:
+    - Added 5 comprehensive tests in `server/tests/test_browser_api.py`.
+    - Verified route permissions registry check (`test_all_api_routes_declare_permission`).
+    - Verified 7/7 architecture boundary import contracts kept.
+    - Full server pytest suite: 154 passed, 0 failed, 4 skipped.
+    - Full monorepo fast suite: 13 passed, 0 failed, 1 skipped.
 
 ### M4-07 — Staleness Marking on File Change and Removal
 

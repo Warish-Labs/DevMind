@@ -357,6 +357,106 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{pid}/brain/summary": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get aggregated Project Brain summary metrics
+     * @description Retrieve health and structural aggregation metrics for the project brain.
+     */
+    get: operations["get_brain_summary_api_v1_projects__pid__brain_summary_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/brain/files": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List active files with current version metadata
+     * @description List all non-removed files with their current content hash and metrics.
+     */
+    get: operations["list_brain_files_api_v1_projects__pid__brain_files_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/brain/files/{fid}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get file detail and version history
+     * @description Retrieve detailed file metadata and all historical versions.
+     */
+    get: operations["get_brain_file_detail_api_v1_projects__pid__brain_files__fid__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/scans": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List project scan runs
+     * @description List recent scan runs for a project ordered by start time descending.
+     */
+    get: operations["list_scans_api_v1_projects__pid__scans_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/scans/{sid}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get scan run details and statistics
+     * @description Retrieve details and statistics of a specific scan run.
+     */
+    get: operations["get_scan_detail_api_v1_projects__pid__scans__sid__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{pid}/findings": {
     parameters: {
       query?: never;
@@ -770,6 +870,149 @@ export interface components {
       superseded_marked_non_current: number;
       /** Symbols */
       symbols?: components["schemas"]["CodeSymbolItem"][];
+    };
+    /**
+     * BrainFileDetail
+     * @description File detail including historical versions.
+     */
+    BrainFileDetail: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Path */
+      path: string;
+      /** Language */
+      language: string;
+      /** Tier */
+      tier: number;
+      /** Current Version Id */
+      current_version_id?: string | null;
+      /** Size Bytes */
+      size_bytes?: number | null;
+      /** Line Count */
+      line_count?: number | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Versions */
+      versions?: components["schemas"]["BrainFileVersionItem"][];
+    };
+    /**
+     * BrainFileItem
+     * @description Active file summary in project brain.
+     */
+    BrainFileItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Path */
+      path: string;
+      /** Language */
+      language: string;
+      /** Tier */
+      tier: number;
+      /** Current Version Id */
+      current_version_id?: string | null;
+      /** Size Bytes */
+      size_bytes?: number | null;
+      /** Line Count */
+      line_count?: number | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /**
+     * BrainFileVersionItem
+     * @description Historical file version record.
+     */
+    BrainFileVersionItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * File Id
+       * Format: uuid
+       */
+      file_id: string;
+      /** Content Hash */
+      content_hash: string;
+      /** Size Bytes */
+      size_bytes: number;
+      /** Line Count */
+      line_count: number;
+      /** Scan Run Id */
+      scan_run_id?: string | null;
+      /**
+       * Origin
+       * @default extension
+       */
+      origin: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /**
+     * BrainSummaryResponse
+     * @description Aggregated metrics and health overview for Project Brain.
+     */
+    BrainSummaryResponse: {
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Total Files */
+      total_files: number;
+      /** Languages */
+      languages: {
+        [key: string]: number;
+      };
+      /** Total Versions */
+      total_versions: number;
+      /** Total Snapshots */
+      total_snapshots: number;
+      /** Total Symbols */
+      total_symbols: number;
+      /** Total Relationships */
+      total_relationships: number;
+      /** Findings Summary */
+      findings_summary: {
+        [key: string]: number;
+      };
+      latest_snapshot?: components["schemas"]["SnapshotItem"] | null;
+      latest_scan?: components["schemas"]["ScanRunItem"] | null;
     };
     /**
      * CodeRelationshipItem
@@ -1660,6 +1903,48 @@ export interface components {
       details?: {
         [key: string]: unknown;
       } | null;
+    };
+    /**
+     * ScanRunItem
+     * @description Serialized summary of a scan run.
+     */
+    ScanRunItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Origin */
+      origin: string;
+      /** Registration Id */
+      registration_id?: string | null;
+      /** Status */
+      status: string;
+      /** Started At */
+      started_at?: string | null;
+      /** Finished At */
+      finished_at?: string | null;
+      /** Rules Version */
+      rules_version?: string | null;
+      /** Stats */
+      stats?: {
+        [key: string]: unknown;
+      };
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
     };
     /**
      * SnapshotDetail
@@ -2704,6 +2989,168 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["GraphResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_brain_summary_api_v1_projects__pid__brain_summary_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BrainSummaryResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_brain_files_api_v1_projects__pid__brain_files_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BrainFileItem"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_brain_file_detail_api_v1_projects__pid__brain_files__fid__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+        fid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BrainFileDetail"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_scans_api_v1_projects__pid__scans_get: {
+    parameters: {
+      query?: {
+        /** @description Filter by status (running, completed, failed, cancelled) */
+        status?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ScanRunItem"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_scan_detail_api_v1_projects__pid__scans__sid__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+        sid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ScanRunItem"];
         };
       };
       /** @description Validation Error */

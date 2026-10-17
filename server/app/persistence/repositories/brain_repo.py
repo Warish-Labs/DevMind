@@ -199,6 +199,42 @@ class BrainRepository(BaseRepository):
         await self.session.flush()
         return scan
 
+    async def list_scan_runs(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        status: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[ScanRun]:
+        """List scan runs for a project ordered by creation time descending."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = (
+            select(ScanRun)
+            .where(ScanRun.project_id == project_id)
+            .order_by(ScanRun.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        if status:
+            stmt = stmt.where(ScanRun.status == status)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_latest_scan_run(
+        self, ctx: AuthContext | SystemContext, project_id: UUID
+    ) -> ScanRun | None:
+        """Get the most recent scan run for a project."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = (
+            select(ScanRun)
+            .where(ScanRun.project_id == project_id)
+            .order_by(ScanRun.created_at.desc())
+            .limit(1)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
+
     # --- Files and Versions ---
 
     async def upsert_file(
@@ -263,6 +299,25 @@ class BrainRepository(BaseRepository):
         )
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+
+    async def get_file_by_id(
+        self, ctx: AuthContext | SystemContext, project_id: UUID, file_id: UUID
+    ) -> ProjectFile | None:
+        """Retrieve a project file by its primary key with current version and historical versions."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = (
+            select(ProjectFile)
+            .options(
+                selectinload(ProjectFile.current_version),
+                selectinload(ProjectFile.versions),
+            )
+            .where(
+                ProjectFile.id == file_id,
+                ProjectFile.project_id == project_id,
+            )
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
 
     async def mark_files_removed(
         self, ctx: AuthContext | SystemContext, project_id: UUID, paths: list[str]
@@ -1146,3 +1201,76 @@ class BrainRepository(BaseRepository):
             await self.session.flush()
 
         return len(stale_findings)
+
+    async def get_brain_summary_stats(
+        self, ctx: AuthContext | SystemContext, project_id: UUID
+    ) -> dict[str, Any]:
+        """Aggregate summary counts and metrics for the project brain."""
+        await self._verify_project_access(ctx, project_id)
+
+        # 1. Active files count and language distribution
+        files_stmt = (
+            select(ProjectFile.language, func.count(ProjectFile.id))
+            .where(
+                ProjectFile.project_id == project_id,
+                ProjectFile.removed_at.is_(None),
+            )
+            .group_by(ProjectFile.language)
+        )
+        lang_rows = (await self.session.execute(files_stmt)).all()
+        languages: dict[str, int] = {str(row[0]): int(row[1]) for row in lang_rows}
+        total_files = sum(languages.values())
+
+        # 2. File versions count
+        ver_stmt = (
+            select(func.count(FileVersion.id))
+            .join(ProjectFile, FileVersion.file_id == ProjectFile.id)
+            .where(ProjectFile.project_id == project_id)
+        )
+        total_versions = int((await self.session.execute(ver_stmt)).scalar() or 0)
+
+        # 3. Snapshots count
+        snap_stmt = select(func.count(ProjectSnapshot.id)).where(
+            ProjectSnapshot.project_id == project_id
+        )
+        total_snapshots = int((await self.session.execute(snap_stmt)).scalar() or 0)
+
+        # 4. Current Symbols count
+        sym_stmt = select(func.count(CodeSymbol.id)).where(
+            CodeSymbol.project_id == project_id,
+            CodeSymbol.is_current.is_(True),
+        )
+        total_symbols = int((await self.session.execute(sym_stmt)).scalar() or 0)
+
+        # 5. Current Relationships count
+        rel_stmt = select(func.count(CodeRelationship.id)).where(
+            CodeRelationship.project_id == project_id,
+            CodeRelationship.is_current.is_(True),
+        )
+        total_relationships = int((await self.session.execute(rel_stmt)).scalar() or 0)
+
+        # 6. Findings summary by status
+        find_stmt = (
+            select(Finding.status, func.count(Finding.id))
+            .where(Finding.project_id == project_id)
+            .group_by(Finding.status)
+        )
+        find_rows = (await self.session.execute(find_stmt)).all()
+        findings_summary: dict[str, int] = {str(row[0]): int(row[1]) for row in find_rows}
+
+        # 7. Latest snapshot and latest scan run
+        latest_snapshot = await self.get_latest_snapshot(ctx, project_id)
+        latest_scan = await self.get_latest_scan_run(ctx, project_id)
+
+        return {
+            "project_id": project_id,
+            "total_files": total_files,
+            "languages": languages,
+            "total_versions": total_versions,
+            "total_snapshots": total_snapshots,
+            "total_symbols": total_symbols,
+            "total_relationships": total_relationships,
+            "findings_summary": findings_summary,
+            "latest_snapshot": latest_snapshot,
+            "latest_scan": latest_scan,
+        }

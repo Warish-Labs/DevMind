@@ -8,6 +8,9 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas import (
+    BrainFileDetail,
+    BrainFileItem,
+    BrainSummaryResponse,
     CodeSymbolItem,
     CreateSnapshotRequest,
     GraphResponse,
@@ -24,7 +27,7 @@ from app.domain.auth import (
     get_db_session,
     require_permission,
 )
-from app.domain.brain import SnapshotService, SymbolService
+from app.domain.brain import BrainService, SnapshotService, SymbolService
 
 router = APIRouter(
     prefix="/projects/{pid}/brain",
@@ -148,3 +151,55 @@ async def get_graph(
     return await service.get_graph(
         scoped_ctx, pid, root_symbol_key=symbol_key, depth=depth, limit=limit
     )
+
+
+@router.get(
+    "/summary",
+    response_model=BrainSummaryResponse,
+    summary="Get aggregated Project Brain summary metrics",
+)
+@declare_permission(PERM_BRAIN_READ)
+async def get_brain_summary(
+    pid: UUID,
+    ctx: AuthContext = Depends(require_permission(PERM_BRAIN_READ)),
+    session: AsyncSession = Depends(get_db_session),
+) -> BrainSummaryResponse:
+    """Retrieve health and structural aggregation metrics for the project brain."""
+    service = BrainService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.get_summary(scoped_ctx, pid)
+
+
+@router.get(
+    "/files",
+    response_model=list[BrainFileItem],
+    summary="List active files with current version metadata",
+)
+@declare_permission(PERM_BRAIN_READ)
+async def list_brain_files(
+    pid: UUID,
+    ctx: AuthContext = Depends(require_permission(PERM_BRAIN_READ)),
+    session: AsyncSession = Depends(get_db_session),
+) -> list[BrainFileItem]:
+    """List all non-removed files with their current content hash and metrics."""
+    service = BrainService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.list_files(scoped_ctx, pid)
+
+
+@router.get(
+    "/files/{fid}",
+    response_model=BrainFileDetail,
+    summary="Get file detail and version history",
+)
+@declare_permission(PERM_BRAIN_READ)
+async def get_brain_file_detail(
+    pid: UUID,
+    fid: UUID,
+    ctx: AuthContext = Depends(require_permission(PERM_BRAIN_READ)),
+    session: AsyncSession = Depends(get_db_session),
+) -> BrainFileDetail:
+    """Retrieve detailed file metadata and all historical versions."""
+    service = BrainService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.get_file_detail(scoped_ctx, pid, fid)
