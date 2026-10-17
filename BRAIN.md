@@ -9,23 +9,25 @@
 | Field              | Value                                                                                                       |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                      |
-| **Last commit**    | `ecf3526` (feat(server): implement M5-03 redaction pipeline and consented snippet upload)                   |
+| **Last commit**    | `4a12486` (chore(repo): ignore env.production and env.productions variants in gitignore)                    |
 | **Working tree**   | clean; working directly on main per user instruction                                                        |
 | **Open PR**        | None (working directly on main)                                                                             |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 170/170 pass, extension 70/70 pass (40 API paths) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 179/179 pass, extension 70/70 pass (40 API paths) |
 | **Date**           | 2026-10-17                                                                                                  |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M5-04: Code-aware chunker per language (TypeScript/JavaScript, Python)**:
-   - Inspect `docs/04 §4` for chunking specification:
-     - Language-aware AST/block boundaries preserving semantic units (classes, functions, interface definitions, routes).
-     - Target chunk sizes: 200–500 tokens / 30–80 lines with header/context preservation.
-     - Fallback line/paragraph chunker for Tier 2/3 text files.
-     - Deterministic chunk content hashing: `sha256(normalized_content)`.
-   - Add unit tests in `server/tests/test_chunker.py`.
+1. Implement **Milestone M5-05: Chunk storage, tsvector full-text, and trigram indices**:
+   - Inspect `docs/03 §3.2` and `docs/04 §4` for `code_chunks` specification:
+     - Table `code_chunks`: `id` (UUIDv7), `file_version_id` (FK), `symbol_id` (FK nullable), `kind` (module_prelude, function, class, statement, heading, window), `start_line`, `end_line`, `content` (redacted, consented), `content_hash`, `search_text`, `token_estimate`, `redaction_count`, `is_current` (boolean).
+     - Constraints: unique (`file_version_id`, `start_line`, `end_line`, `content_hash`).
+     - Indices: GIN on `to_tsvector('english', search_text)`, trigram (GIN pg_trgm) on identifiers / search_text, partial index where `is_current = true`.
+     - Alembic migration `0010_code_chunks.py` (or next revision) with rollback support.
+     - SQLAlchemy model `CodeChunk` in `server/app/persistence/models/brain.py`.
+     - BrainRepository chunk persistence and transactional `is_current` batch invalidation.
+     - Unit tests in `server/tests/test_chunk_storage.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -39,6 +41,29 @@
 ---
 
 ## 4. Done log
+
+### M5-04 — Code-Aware Chunker per Language (TypeScript/JavaScript, Python, Markdown)
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented language-aware chunking pipeline in `server/app/domain/brain/chunker.py` conforming to `docs/04 §4` and `docs/03 §3.2`:
+  - **Python AST Chunker** (`PythonChunker`):
+    - Parses Python source using stdlib `ast`, extracting module preludes (docstrings, imports), top-level and nested functions, classes, decorated definitions, and statement groups.
+    - Captures precise 1-indexed line ranges (`start_line`, `end_line`).
+    - Graceful fallback to window chunker on syntax errors.
+  - **TypeScript / JavaScript Semantic Chunker** (`TypeScriptChunker`):
+    - Block-aware chunker tracking exports, functions, classes, interfaces, type aliases, and route handlers (`app.get`, `router.post`).
+    - Respects brace nesting levels for accurate symbol boundary extraction.
+  - **Markdown Chunker** (`MarkdownChunker`):
+    - Heading-aware section chunker (`#`, `##`, `###`) grouping headings with their section bodies.
+  - **Fallback Sliding-Window Chunker** (`FallbackLineChunker`):
+    - Sliding line window with overlap (default 60 lines, 15 overlap) for general text, config files, and Tier 2/3 documents.
+  - **Unified Dispatcher & Metadata Enrichment** (`CodeAwareChunker`):
+    - Contextual header attachment (`// File: {path}` or `# File: {path}`) into `search_text` for BM25/vector retrieval context.
+    - Redaction integration via `RedactionService.redact` ensuring zero unredacted secrets in chunk storage.
+    - Deterministic SHA-256 chunk content hashing (`sha256:...`) and token estimation (~4 chars/token).
+  - **Unit Tests** (`server/tests/test_chunker.py`):
+    - 9 comprehensive tests verifying Python AST chunking, TypeScript symbol extraction, Markdown sections, window chunking, line range validity, deterministic content hashing, and redaction integration.
 
 ### M5-03 — Redaction Pipeline: Extension Client + Server-Side Redaction Re-check
 

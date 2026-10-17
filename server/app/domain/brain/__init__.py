@@ -7,6 +7,13 @@ from app.domain.brain.brain_service import (
     BrainService,
     BrainSummaryResponse,
 )
+from app.domain.brain.chunker import (
+    CodeAwareChunker,
+    CodeChunk,
+    compute_chunk_content_hash,
+    detect_language,
+    estimate_token_count,
+)
 from app.domain.brain.context import resolve_project_context
 from app.domain.brain.findings_service import (
     BatchFindingsRequest,
@@ -78,11 +85,16 @@ __all__ = [
     "BrainFileVersionItem",
     "BrainService",
     "BrainSummaryResponse",
+    "CodeAwareChunker",
+    "CodeChunk",
     "CodeRelationshipItem",
     "CodeRelationshipPayload",
     "CodeSymbolItem",
     "CodeSymbolPayload",
     "CreateSnapshotRequest",
+    "compute_chunk_content_hash",
+    "detect_language",
+    "estimate_token_count",
     "FileManifestEntry",
     "FindingDetailItem",
     "FindingEvidenceItem",
