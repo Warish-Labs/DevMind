@@ -317,6 +317,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{pid}/brain/symbols": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List active code symbols in project
+     * @description List current active semantic code symbols discovered in the project.
+     */
+    get: operations["list_symbols_api_v1_projects__pid__brain_symbols_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/brain/graph": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get architectural symbol and relationship graph
+     * @description Derive and return the architectural symbol dependency graph.
+     */
+    get: operations["get_graph_api_v1_projects__pid__brain_graph_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/me": {
     parameters: {
       query?: never;
@@ -509,6 +549,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/ext/projects/{pid}/symbols": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Batch upload extracted semantic code symbols
+     * @description Batch ingest semantic program symbols extracted during extension scan.
+     */
+    put: operations["put_symbols_api_v1_ext_projects__pid__symbols_put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/ext/projects/{pid}/relationships": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Batch upload code relationships and graph edges
+     * @description Batch ingest structural edges between symbols or external references.
+     */
+    put: operations["put_relationships_api_v1_ext_projects__pid__relationships_put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -546,6 +626,197 @@ export interface components {
        * @default member
        */
       role: string;
+    };
+    /**
+     * BatchRelationshipsRequest
+     * @description Payload for batch uploading structural code relationships.
+     */
+    BatchRelationshipsRequest: {
+      /** Relationships */
+      relationships?: components["schemas"]["CodeRelationshipPayload"][];
+    };
+    /**
+     * BatchRelationshipsResponse
+     * @description Result receipt for batch relationship ingestion.
+     */
+    BatchRelationshipsResponse: {
+      /** Upserted */
+      upserted: number;
+      /** Resolved Count */
+      resolved_count: number;
+      /** Relationships */
+      relationships?: components["schemas"]["CodeRelationshipItem"][];
+    };
+    /**
+     * BatchSymbolsRequest
+     * @description Payload for batch uploading code symbols from an extension scan.
+     */
+    BatchSymbolsRequest: {
+      /** Symbols */
+      symbols?: components["schemas"]["CodeSymbolPayload"][];
+    };
+    /**
+     * BatchSymbolsResponse
+     * @description Result receipt for batch symbol ingestion.
+     */
+    BatchSymbolsResponse: {
+      /** Upserted */
+      upserted: number;
+      /** Superseded Marked Non Current */
+      superseded_marked_non_current: number;
+      /** Symbols */
+      symbols?: components["schemas"]["CodeSymbolItem"][];
+    };
+    /**
+     * CodeRelationshipItem
+     * @description Serialized structural relationship edge.
+     */
+    CodeRelationshipItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /**
+       * From Symbol Id
+       * Format: uuid
+       */
+      from_symbol_id: string;
+      /** To Symbol Id */
+      to_symbol_id?: string | null;
+      /** To External */
+      to_external?: string | null;
+      /** Kind */
+      kind: string;
+      /** Resolution */
+      resolution: string;
+      /**
+       * File Version Id
+       * Format: uuid
+       */
+      file_version_id: string;
+      /** Is Current */
+      is_current: boolean;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /**
+     * CodeRelationshipPayload
+     * @description Payload representing a typed structural edge between symbols.
+     */
+    CodeRelationshipPayload: {
+      /**
+       * File Version Id
+       * Format: uuid
+       */
+      file_version_id: string;
+      /** From Symbol Id */
+      from_symbol_id?: string | null;
+      /** From Symbol Key */
+      from_symbol_key?: string | null;
+      /** To Symbol Id */
+      to_symbol_id?: string | null;
+      /** To Symbol Key */
+      to_symbol_key?: string | null;
+      /** To External */
+      to_external?: string | null;
+      /**
+       * Kind
+       * @description imports | calls | defines_route | guarded_by | reads_model | writes_model | tests | documents
+       */
+      kind: string;
+      /**
+       * Resolution
+       * @description resolved | inferred | unresolved
+       * @default resolved
+       */
+      resolution: string;
+    };
+    /**
+     * CodeSymbolItem
+     * @description Serialized code symbol representation.
+     */
+    CodeSymbolItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /**
+       * File Version Id
+       * Format: uuid
+       */
+      file_version_id: string;
+      /** Symbol Key */
+      symbol_key: string;
+      /** Name */
+      name: string;
+      /** Qualified Name */
+      qualified_name: string;
+      /** Kind */
+      kind: string;
+      /** Signature */
+      signature?: string | null;
+      /** Start Line */
+      start_line: number;
+      /** End Line */
+      end_line: number;
+      /** Framework Tags */
+      framework_tags?: string[];
+      /** Is Current */
+      is_current: boolean;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /**
+     * CodeSymbolPayload
+     * @description Payload representing an extracted program symbol.
+     */
+    CodeSymbolPayload: {
+      /**
+       * File Version Id
+       * Format: uuid
+       */
+      file_version_id: string;
+      /** Symbol Key */
+      symbol_key: string;
+      /** Name */
+      name: string;
+      /** Qualified Name */
+      qualified_name: string;
+      /**
+       * Kind
+       * @description function | method | class | route_handler | server_action | model | constant | module
+       */
+      kind: string;
+      /** Signature */
+      signature?: string | null;
+      /** Start Line */
+      start_line: number;
+      /** End Line */
+      end_line: number;
+      /** Framework Tags */
+      framework_tags?: string[];
+      /** Metadata */
+      metadata?: {
+        [key: string]: unknown;
+      };
     };
     /**
      * CreateProjectRequest
@@ -768,6 +1039,66 @@ export interface components {
        * @default 1
        */
       tier: number;
+    };
+    /**
+     * GraphEdge
+     * @description Edge in the architectural symbol graph.
+     */
+    GraphEdge: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * From Symbol Id
+       * Format: uuid
+       */
+      from_symbol_id: string;
+      /** To Symbol Id */
+      to_symbol_id?: string | null;
+      /** To External */
+      to_external?: string | null;
+      /** Kind */
+      kind: string;
+      /** Resolution */
+      resolution: string;
+    };
+    /**
+     * GraphNode
+     * @description Node in the architectural symbol graph.
+     */
+    GraphNode: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Symbol Key */
+      symbol_key: string;
+      /** Name */
+      name: string;
+      /** Kind */
+      kind: string;
+      /** Start Line */
+      start_line: number;
+      /** End Line */
+      end_line: number;
+    };
+    /**
+     * GraphResponse
+     * @description Project architectural knowledge graph structure.
+     */
+    GraphResponse: {
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Nodes */
+      nodes?: components["schemas"]["GraphNode"][];
+      /** Edges */
+      edges?: components["schemas"]["GraphEdge"][];
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -1924,6 +2255,75 @@ export interface operations {
       };
     };
   };
+  list_symbols_api_v1_projects__pid__brain_symbols_get: {
+    parameters: {
+      query?: {
+        kind?: string | null;
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CodeSymbolItem"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_graph_api_v1_projects__pid__brain_graph_get: {
+    parameters: {
+      query?: {
+        symbol_key?: string | null;
+        depth?: number;
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GraphResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   get_my_profile_api_v1_me_get: {
     parameters: {
       query?: never;
@@ -2176,6 +2576,76 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PutManifestResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  put_symbols_api_v1_ext_projects__pid__symbols_put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BatchSymbolsRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BatchSymbolsResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  put_relationships_api_v1_ext_projects__pid__relationships_put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BatchRelationshipsRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BatchRelationshipsResponse"];
         };
       };
       /** @description Validation Error */

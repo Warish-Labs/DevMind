@@ -1013,6 +1013,162 @@
         }
       }
     },
+    "/api/v1/projects/{pid}/brain/symbols": {
+      "get": {
+        "tags": ["Project Brain"],
+        "summary": "List active code symbols in project",
+        "description": "List current active semantic code symbols discovered in the project.",
+        "operationId": "list_symbols_api_v1_projects__pid__brain_symbols_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CodeSymbolItem"
+                  },
+                  "title": "Response List Symbols Api V1 Projects  Pid  Brain Symbols Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/brain/graph": {
+      "get": {
+        "tags": ["Project Brain"],
+        "summary": "Get architectural symbol and relationship graph",
+        "description": "Derive and return the architectural symbol dependency graph.",
+        "operationId": "get_graph_api_v1_projects__pid__brain_graph_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "symbol_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Symbol Key"
+            }
+          },
+          {
+            "name": "depth",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5,
+              "minimum": 1,
+              "default": 2,
+              "title": "Depth"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me": {
       "get": {
         "tags": ["Identity"],
@@ -1391,6 +1547,110 @@
           }
         }
       }
+    },
+    "/api/v1/ext/projects/{pid}/symbols": {
+      "put": {
+        "tags": ["Extension"],
+        "summary": "Batch upload extracted semantic code symbols",
+        "description": "Batch ingest semantic program symbols extracted during extension scan.",
+        "operationId": "put_symbols_api_v1_ext_projects__pid__symbols_put",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchSymbolsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchSymbolsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ext/projects/{pid}/relationships": {
+      "put": {
+        "tags": ["Extension"],
+        "summary": "Batch upload code relationships and graph edges",
+        "description": "Batch ingest structural edges between symbols or external references.",
+        "operationId": "put_relationships_api_v1_ext_projects__pid__relationships_put",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchRelationshipsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchRelationshipsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1432,6 +1692,401 @@
         "required": ["user_id"],
         "title": "AddWorkspaceMemberRequest",
         "description": "Payload for adding a member to a workspace."
+      },
+      "BatchRelationshipsRequest": {
+        "properties": {
+          "relationships": {
+            "items": {
+              "$ref": "#/components/schemas/CodeRelationshipPayload"
+            },
+            "type": "array",
+            "title": "Relationships"
+          }
+        },
+        "type": "object",
+        "title": "BatchRelationshipsRequest",
+        "description": "Payload for batch uploading structural code relationships."
+      },
+      "BatchRelationshipsResponse": {
+        "properties": {
+          "upserted": {
+            "type": "integer",
+            "title": "Upserted"
+          },
+          "resolved_count": {
+            "type": "integer",
+            "title": "Resolved Count"
+          },
+          "relationships": {
+            "items": {
+              "$ref": "#/components/schemas/CodeRelationshipItem"
+            },
+            "type": "array",
+            "title": "Relationships"
+          }
+        },
+        "type": "object",
+        "required": ["upserted", "resolved_count"],
+        "title": "BatchRelationshipsResponse",
+        "description": "Result receipt for batch relationship ingestion."
+      },
+      "BatchSymbolsRequest": {
+        "properties": {
+          "symbols": {
+            "items": {
+              "$ref": "#/components/schemas/CodeSymbolPayload"
+            },
+            "type": "array",
+            "title": "Symbols"
+          }
+        },
+        "type": "object",
+        "title": "BatchSymbolsRequest",
+        "description": "Payload for batch uploading code symbols from an extension scan."
+      },
+      "BatchSymbolsResponse": {
+        "properties": {
+          "upserted": {
+            "type": "integer",
+            "title": "Upserted"
+          },
+          "superseded_marked_non_current": {
+            "type": "integer",
+            "title": "Superseded Marked Non Current"
+          },
+          "symbols": {
+            "items": {
+              "$ref": "#/components/schemas/CodeSymbolItem"
+            },
+            "type": "array",
+            "title": "Symbols"
+          }
+        },
+        "type": "object",
+        "required": ["upserted", "superseded_marked_non_current"],
+        "title": "BatchSymbolsResponse",
+        "description": "Result receipt for batch symbol ingestion."
+      },
+      "CodeRelationshipItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "from_symbol_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "From Symbol Id"
+          },
+          "to_symbol_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Symbol Id"
+          },
+          "to_external": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To External"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "resolution": {
+            "type": "string",
+            "title": "Resolution"
+          },
+          "file_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "File Version Id"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "from_symbol_id",
+          "kind",
+          "resolution",
+          "file_version_id",
+          "is_current",
+          "created_at"
+        ],
+        "title": "CodeRelationshipItem",
+        "description": "Serialized structural relationship edge."
+      },
+      "CodeRelationshipPayload": {
+        "properties": {
+          "file_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "File Version Id"
+          },
+          "from_symbol_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Symbol Id"
+          },
+          "from_symbol_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Symbol Key"
+          },
+          "to_symbol_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Symbol Id"
+          },
+          "to_symbol_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Symbol Key"
+          },
+          "to_external": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To External"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "imports | calls | defines_route | guarded_by | reads_model | writes_model | tests | documents"
+          },
+          "resolution": {
+            "type": "string",
+            "title": "Resolution",
+            "description": "resolved | inferred | unresolved",
+            "default": "resolved"
+          }
+        },
+        "type": "object",
+        "required": ["file_version_id", "kind"],
+        "title": "CodeRelationshipPayload",
+        "description": "Payload representing a typed structural edge between symbols."
+      },
+      "CodeSymbolItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "file_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "File Version Id"
+          },
+          "symbol_key": {
+            "type": "string",
+            "title": "Symbol Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "qualified_name": {
+            "type": "string",
+            "title": "Qualified Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature"
+          },
+          "start_line": {
+            "type": "integer",
+            "title": "Start Line"
+          },
+          "end_line": {
+            "type": "integer",
+            "title": "End Line"
+          },
+          "framework_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Framework Tags"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "file_version_id",
+          "symbol_key",
+          "name",
+          "qualified_name",
+          "kind",
+          "start_line",
+          "end_line",
+          "is_current",
+          "created_at"
+        ],
+        "title": "CodeSymbolItem",
+        "description": "Serialized code symbol representation."
+      },
+      "CodeSymbolPayload": {
+        "properties": {
+          "file_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "File Version Id"
+          },
+          "symbol_key": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Symbol Key"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "qualified_name": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Qualified Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "function | method | class | route_handler | server_action | model | constant | module"
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature"
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Start Line"
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "End Line"
+          },
+          "framework_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Framework Tags"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_version_id",
+          "symbol_key",
+          "name",
+          "qualified_name",
+          "kind",
+          "start_line",
+          "end_line"
+        ],
+        "title": "CodeSymbolPayload",
+        "description": "Payload representing an extracted program symbol."
       },
       "CreateProjectRequest": {
         "properties": {
@@ -1714,6 +2369,115 @@
         "required": ["path", "content_hash", "size_bytes", "line_count", "language"],
         "title": "FileManifestEntry",
         "description": "File metadata entry within an extension scan manifest."
+      },
+      "GraphEdge": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "from_symbol_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "From Symbol Id"
+          },
+          "to_symbol_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Symbol Id"
+          },
+          "to_external": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To External"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "resolution": {
+            "type": "string",
+            "title": "Resolution"
+          }
+        },
+        "type": "object",
+        "required": ["id", "from_symbol_id", "kind", "resolution"],
+        "title": "GraphEdge",
+        "description": "Edge in the architectural symbol graph."
+      },
+      "GraphNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "symbol_key": {
+            "type": "string",
+            "title": "Symbol Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "start_line": {
+            "type": "integer",
+            "title": "Start Line"
+          },
+          "end_line": {
+            "type": "integer",
+            "title": "End Line"
+          }
+        },
+        "type": "object",
+        "required": ["id", "symbol_key", "name", "kind", "start_line", "end_line"],
+        "title": "GraphNode",
+        "description": "Node in the architectural symbol graph."
+      },
+      "GraphResponse": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          }
+        },
+        "type": "object",
+        "required": ["project_id"],
+        "title": "GraphResponse",
+        "description": "Project architectural knowledge graph structure."
       },
       "HTTPValidationError": {
         "properties": {

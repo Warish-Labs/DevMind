@@ -1,4 +1,4 @@
-"""Project Brain domain services, snapshot versioning, and manifest sync schemas."""
+"""Project Brain domain services, symbols, snapshot versioning, and manifest sync schemas."""
 
 from app.domain.brain.context import resolve_project_context
 from app.domain.brain.manifest_service import (
@@ -19,10 +19,35 @@ from app.domain.brain.snapshot_service import (
     SnapshotItem,
     SnapshotService,
 )
+from app.domain.brain.symbol_service import (
+    BatchRelationshipsRequest,
+    BatchRelationshipsResponse,
+    BatchSymbolsRequest,
+    BatchSymbolsResponse,
+    CodeRelationshipItem,
+    CodeRelationshipPayload,
+    CodeSymbolItem,
+    CodeSymbolPayload,
+    GraphEdge,
+    GraphNode,
+    GraphResponse,
+    SymbolService,
+)
 
 __all__ = [
+    "BatchRelationshipsRequest",
+    "BatchRelationshipsResponse",
+    "BatchSymbolsRequest",
+    "BatchSymbolsResponse",
+    "CodeRelationshipItem",
+    "CodeRelationshipPayload",
+    "CodeSymbolItem",
+    "CodeSymbolPayload",
     "CreateSnapshotRequest",
     "FileManifestEntry",
+    "GraphEdge",
+    "GraphNode",
+    "GraphResponse",
     "ManifestDiffRequest",
     "ManifestDiffResponse",
     "ManifestService",
@@ -35,5 +60,6 @@ __all__ = [
     "SnapshotFileItem",
     "SnapshotItem",
     "SnapshotService",
+    "SymbolService",
     "resolve_project_context",
 ]

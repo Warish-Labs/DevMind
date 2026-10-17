@@ -8,7 +8,9 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas import (
+    CodeSymbolItem,
     CreateSnapshotRequest,
+    GraphResponse,
     SnapshotDetail,
     SnapshotDiffResponse,
     SnapshotItem,
@@ -22,7 +24,7 @@ from app.domain.auth import (
     get_db_session,
     require_permission,
 )
-from app.domain.brain import SnapshotService
+from app.domain.brain import SnapshotService, SymbolService
 
 router = APIRouter(
     prefix="/projects/{pid}/brain",
@@ -104,4 +106,45 @@ async def compare_snapshots(
     scoped_ctx = await service.resolve_project_context(ctx, pid)
     return await service.compare_snapshots(
         scoped_ctx, pid, base_snapshot_id=sid, target_snapshot_id=target_snapshot_id
+    )
+
+
+@router.get(
+    "/symbols",
+    response_model=list[CodeSymbolItem],
+    summary="List active code symbols in project",
+)
+@declare_permission(PERM_BRAIN_READ)
+async def list_symbols(
+    pid: UUID,
+    kind: str | None = Query(default=None),
+    limit: int = Query(default=100, ge=1, le=500),
+    ctx: AuthContext = Depends(require_permission(PERM_BRAIN_READ)),
+    session: AsyncSession = Depends(get_db_session),
+) -> list[CodeSymbolItem]:
+    """List current active semantic code symbols discovered in the project."""
+    service = SymbolService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.list_current_symbols(scoped_ctx, pid, kind=kind, limit=limit)
+
+
+@router.get(
+    "/graph",
+    response_model=GraphResponse,
+    summary="Get architectural symbol and relationship graph",
+)
+@declare_permission(PERM_BRAIN_READ)
+async def get_graph(
+    pid: UUID,
+    symbol_key: str | None = Query(default=None),
+    depth: int = Query(default=2, ge=1, le=5),
+    limit: int = Query(default=200, ge=1, le=500),
+    ctx: AuthContext = Depends(require_permission(PERM_BRAIN_READ)),
+    session: AsyncSession = Depends(get_db_session),
+) -> GraphResponse:
+    """Derive and return the architectural symbol dependency graph."""
+    service = SymbolService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.get_graph(
+        scoped_ctx, pid, root_symbol_key=symbol_key, depth=depth, limit=limit
     )

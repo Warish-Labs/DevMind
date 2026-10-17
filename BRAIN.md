@@ -6,25 +6,30 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                            |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| **Branch**         | `main`                                                                                           |
-| **Last commit**    | `6b22b24` (feat(server,extension): implement M4-03 manifest diff, sync endpoints, and publisher) |
-| **Working tree**   | clean; working directly on main per user instruction                                             |
-| **Open PR**        | None (working directly on main)                                                                  |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 129/129 pass, boundaries:server pass   |
-| **Date**           | 2026-10-17                                                                                       |
+| Field              | Value                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                         |
+| **Last commit**    | `f3a47f1` (feat(server): implement M4-04 snapshot service, file versioning, and diff APIs)     |
+| **Working tree**   | clean; working directly on main per user instruction                                           |
+| **Open PR**        | None (working directly on main)                                                                |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 135/135 pass, boundaries:server pass |
+| **Date**           | 2026-10-17                                                                                     |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M4-05: Symbol and Relationship Batch Upsert and Graph Derivation**:
-   - Define symbol extraction and graph edge schemas (`CodeSymbolPayload`, `CodeRelationshipPayload`, `BatchSymbolsRequest`, `BatchRelationshipsRequest`).
-   - Implement domain service (`SymbolService` in `server/app/domain/brain/symbol_service.py`) maintaining `is_current` transactional invariant (when a file version is updated, old symbol and edge rows flip `is_current = false`).
-   - Wire extension endpoints `PUT /api/v1/ext/projects/{pid}/symbols` and `PUT /api/v1/ext/projects/{pid}/relationships` with `@declare_permission(PERM_PROJECT_SYNC)`.
-   - Implement architectural graph derivation (call graph, inheritance, import/export edges).
-   - Write unit and integration tests in `server/tests/test_symbols.py`.
+1. Implement **Milestone M4-06: Findings Batch Ingestion with Fingerprinting and Lifecycle State Machine**:
+   - Inspect `docs/03 §5.1` and `server/app/persistence/models/brain.py` (`findings`, `finding_evidence`, `finding_status_history`).
+   - Implement domain service (`FindingsService` in `server/app/domain/brain/findings_service.py`):
+     - Batch ingestion of scanner findings (`POST /api/v1/ext/projects/{pid}/findings:batch`).
+     - Fingerprint calculation (`sha256(rule_id + file_path + canonical_identifier)`).
+     - State machine lifecycle transitions (`open` -> `triaged` -> `suppressed` / `false_positive` / `fixed` / `stale` / `reopened`).
+     - Structured machine-checkable evidence storage (`E0` / `E1` extension findings capped at E1, no unconsented raw source at rest per ADR-047).
+     - Sequential status history logging (`finding_status_history`).
+   - Wire extension endpoint in `server/app/api/extension.py` with `@declare_permission(PERM_PROJECT_SYNC)`.
+   - Write unit and integration tests in `server/tests/test_findings.py`.
+   - Run tests, regenerate OpenAPI specs/types, verify 100% boundary check passes.
 
 ---
 
@@ -37,6 +42,35 @@
 ---
 
 ## 4. Done log
+
+### M4-05 — Symbol and Relationship Batch Upsert and Graph Derivation
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented symbol batch upsert with transactional `is_current` invariants, graph relationship resolution, and recursive architectural graph derivation:
+  - **BrainRepository Graph & Symbol Extensions** (`server/app/persistence/repositories/brain_repo.py`):
+    - `get_symbol_by_id` & `get_symbols_by_keys`: Querying symbols with workspace/project tenant scoping.
+    - `list_relationships`: Filtered relationship queries by target and relationship kind.
+    - `resolve_relationships`: Auto-resolution of pending or external relationships against active project symbols.
+    - `get_graph_data`: Recursive depth traversal building graph nodes and directional structural edges.
+  - **Symbol Domain Service** (`server/app/domain/brain/symbol_service.py`):
+    - Models: `CodeSymbolPayload`, `BatchSymbolsRequest`, `CodeSymbolItem`, `BatchSymbolsResponse`, `CodeRelationshipPayload`, `BatchRelationshipsRequest`, `CodeRelationshipItem`, `BatchRelationshipsResponse`, `GraphNode`, `GraphEdge`, `GraphResponse`.
+    - `upsert_symbols`: Validates kinds against allowed vocabulary (`function`, `class`, `interface`, `method`, `variable`, `type`, `route`, `model`), marks previous versions of updated files `is_current = False`, inserts new symbol versions, and automatically attempts resolution of pending unresolved relationships.
+    - `upsert_relationships`: Resolves keys to symbol IDs, validates kind vocabulary (`imports`, `calls`, `defines_route`, `guarded_by`, `reads_model`, `writes_model`, `implements`, `extends`), marks existing relationships non-current on version bumps, and tracks resolution status (`resolved` vs `unresolved`).
+    - `list_current_symbols`: Efficient listing of active symbols by kind/limit.
+    - `get_graph`: Traverses architectural dependencies up to specified max depth (default 3, max 10) for full project or centered at a root symbol.
+  - **REST Endpoints & Permission Enforcement**:
+    - Extension: `PUT /api/v1/ext/projects/{pid}/symbols` (@declare_permission(PERM_PROJECT_SYNC)).
+    - Extension: `PUT /api/v1/ext/projects/{pid}/relationships` (@declare_permission(PERM_PROJECT_SYNC)).
+    - Browser: `GET /api/v1/projects/{pid}/brain/symbols` (@declare_permission(PERM_BRAIN_READ)).
+    - Browser: `GET /api/v1/projects/{pid}/brain/graph` (@declare_permission(PERM_BRAIN_READ)).
+  - **OpenAPI & Layer Boundary Cleanliness**:
+    - Regenerated TypeScript types via `pnpm gen:api` (27 OpenAPI paths).
+    - Preserved 7/7 import linter contracts (`lint-imports` clean).
+  - **Tests & Verification**:
+    - Added 6 tests in `server/tests/test_symbols.py`.
+    - Full server pytest suite: 135 passed, 0 failed, 4 skipped.
+    - Full monorepo fast suite: 13 passed, 0 failed, 1 skipped.
 
 ### M4-04 — Snapshot and File Versioning Logic with Current Version Tracking
 

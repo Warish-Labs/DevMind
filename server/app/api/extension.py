@@ -16,6 +16,10 @@ from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas import (
+    BatchRelationshipsRequest,
+    BatchRelationshipsResponse,
+    BatchSymbolsRequest,
+    BatchSymbolsResponse,
     ExtensionHeartbeatResponse,
     ExtensionRefreshTokenRequest,
     ExtensionTokenRequest,
@@ -36,7 +40,7 @@ from app.domain.auth import (
     get_db_session,
     get_extension_auth_context,
 )
-from app.domain.brain import ManifestService
+from app.domain.brain import ManifestService, SymbolService
 from app.domain.extension.service import ExtensionService
 
 router = APIRouter(
@@ -211,3 +215,47 @@ async def put_manifest(
     service = ManifestService(session)
     scoped_ctx = await service.resolve_project_context(ctx, pid)
     return await service.put_manifest(scoped_ctx, pid, payload)
+
+
+@router.put(
+    "/projects/{pid}/symbols",
+    response_model=BatchSymbolsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Batch upload extracted semantic code symbols",
+)
+@declare_permission(PERM_PROJECT_SYNC)
+async def put_symbols(
+    pid: UUID,
+    payload: BatchSymbolsRequest,
+    ctx: AuthContext = Depends(get_extension_auth_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> BatchSymbolsResponse:
+    """Batch ingest semantic program symbols extracted during extension scan."""
+    if not ctx.has_permission(PERM_PROJECT_SYNC):
+        raise ForbiddenError(detail="Forbidden: extension token lacks 'project:sync' scope")
+
+    service = SymbolService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.upsert_symbols(scoped_ctx, pid, payload)
+
+
+@router.put(
+    "/projects/{pid}/relationships",
+    response_model=BatchRelationshipsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Batch upload code relationships and graph edges",
+)
+@declare_permission(PERM_PROJECT_SYNC)
+async def put_relationships(
+    pid: UUID,
+    payload: BatchRelationshipsRequest,
+    ctx: AuthContext = Depends(get_extension_auth_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> BatchRelationshipsResponse:
+    """Batch ingest structural edges between symbols or external references."""
+    if not ctx.has_permission(PERM_PROJECT_SYNC):
+        raise ForbiddenError(detail="Forbidden: extension token lacks 'project:sync' scope")
+
+    service = SymbolService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.upsert_relationships(scoped_ctx, pid, payload)

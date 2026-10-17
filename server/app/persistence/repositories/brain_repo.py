@@ -594,6 +594,182 @@ class BrainRepository(BaseRepository):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
+    async def get_symbol_by_id(
+        self, ctx: AuthContext | SystemContext, project_id: UUID, symbol_id: UUID
+    ) -> CodeSymbol | None:
+        """Find symbol by ID within a project."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = select(CodeSymbol).where(
+            CodeSymbol.id == symbol_id,
+            CodeSymbol.project_id == project_id,
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
+
+    async def get_symbols_by_keys(
+        self, ctx: AuthContext | SystemContext, project_id: UUID, symbol_keys: list[str]
+    ) -> list[CodeSymbol]:
+        """Find symbols by their unique keys within a project."""
+        if not symbol_keys:
+            return []
+        await self._verify_project_access(ctx, project_id)
+        stmt = select(CodeSymbol).where(
+            CodeSymbol.project_id == project_id,
+            CodeSymbol.symbol_key.in_(symbol_keys),
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def list_relationships(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        is_current: bool = True,
+        limit: int = 200,
+    ) -> list[CodeRelationship]:
+        """List code relationships within a project."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = (
+            select(CodeRelationship)
+            .where(
+                CodeRelationship.project_id == project_id,
+                CodeRelationship.is_current == is_current,
+            )
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def resolve_relationships(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+    ) -> int:
+        """Attempt to resolve unresolved relationships where to_external matches an active symbol."""
+        await self._verify_project_access(ctx, project_id)
+
+        stmt = select(CodeRelationship).where(
+            CodeRelationship.project_id == project_id,
+            CodeRelationship.to_symbol_id.is_(None),
+            CodeRelationship.to_external.isnot(None),
+            CodeRelationship.is_current.is_(True),
+        )
+        rels = list((await self.session.execute(stmt)).scalars().all())
+        if not rels:
+            return 0
+
+        target_names = [r.to_external for r in rels if r.to_external]
+        if not target_names:
+            return 0
+
+        sym_stmt = select(CodeSymbol).where(
+            CodeSymbol.project_id == project_id,
+            CodeSymbol.is_current.is_(True),
+            (
+                CodeSymbol.symbol_key.in_(target_names)
+                | CodeSymbol.qualified_name.in_(target_names)
+                | CodeSymbol.name.in_(target_names)
+            ),
+        )
+        target_symbols = list((await self.session.execute(sym_stmt)).scalars().all())
+
+        sym_by_key = {s.symbol_key: s for s in target_symbols}
+        sym_by_qname = {s.qualified_name: s for s in target_symbols}
+        sym_by_name = {s.name: s for s in target_symbols}
+
+        resolved_count = 0
+        for rel in rels:
+            matched = (
+                sym_by_key.get(rel.to_external)
+                or sym_by_qname.get(rel.to_external)
+                or sym_by_name.get(rel.to_external)
+            )
+            if matched:
+                rel.to_symbol_id = matched.id
+                rel.resolution = "resolved"
+                resolved_count += 1
+
+        if resolved_count > 0:
+            await self.session.flush()
+
+        return resolved_count
+
+    async def get_graph_data(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        root_symbol_key: str | None = None,
+        depth: int = 2,
+        limit: int = 200,
+    ) -> tuple[list[CodeSymbol], list[CodeRelationship]]:
+        """Retrieve architectural graph nodes and edges for visualization and derivation."""
+        await self._verify_project_access(ctx, project_id)
+
+        if root_symbol_key is None:
+            symbols = await self.list_current_symbols(ctx, project_id, limit=limit)
+            symbol_ids = {s.id for s in symbols}
+            if not symbol_ids:
+                return [], []
+
+            stmt_edges = select(CodeRelationship).where(
+                CodeRelationship.project_id == project_id,
+                CodeRelationship.is_current.is_(True),
+                CodeRelationship.from_symbol_id.in_(symbol_ids),
+            )
+            edges = list((await self.session.execute(stmt_edges)).scalars().all())
+            return symbols, edges
+
+        stmt_root = select(CodeSymbol).where(
+            CodeSymbol.project_id == project_id,
+            CodeSymbol.symbol_key == root_symbol_key,
+            CodeSymbol.is_current.is_(True),
+        )
+        root = (await self.session.execute(stmt_root)).scalars().first()
+        if not root:
+            return [], []
+
+        visited_symbol_ids: set[UUID] = {root.id}
+        collected_symbols: dict[UUID, CodeSymbol] = {root.id: root}
+        collected_edges: list[CodeRelationship] = []
+        current_layer_ids: set[UUID] = {root.id}
+
+        for _ in range(depth):
+            if not current_layer_ids:
+                break
+
+            stmt_rels = select(CodeRelationship).where(
+                CodeRelationship.project_id == project_id,
+                CodeRelationship.is_current.is_(True),
+                (
+                    CodeRelationship.from_symbol_id.in_(current_layer_ids)
+                    | CodeRelationship.to_symbol_id.in_(current_layer_ids)
+                ),
+            )
+            layer_rels = list((await self.session.execute(stmt_rels)).scalars().all())
+
+            next_layer_ids: set[UUID] = set()
+            for r in layer_rels:
+                collected_edges.append(r)
+                if r.from_symbol_id not in visited_symbol_ids:
+                    next_layer_ids.add(r.from_symbol_id)
+                if r.to_symbol_id and r.to_symbol_id not in visited_symbol_ids:
+                    next_layer_ids.add(r.to_symbol_id)
+
+            if next_layer_ids:
+                syms_stmt = select(CodeSymbol).where(
+                    CodeSymbol.id.in_(next_layer_ids),
+                    CodeSymbol.project_id == project_id,
+                )
+                found_syms = list((await self.session.execute(syms_stmt)).scalars().all())
+                for s in found_syms:
+                    collected_symbols[s.id] = s
+                    visited_symbol_ids.add(s.id)
+
+            current_layer_ids = next_layer_ids
+
+        unique_edges = {e.id: e for e in collected_edges}
+        return list(collected_symbols.values()), list(unique_edges.values())
+
     # --- Analysis Jobs and Job Events ---
 
     async def create_job(
