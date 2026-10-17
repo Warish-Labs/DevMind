@@ -6,14 +6,13 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                 |
-| ------------------ | ----------------------------------------------------------------------------------------------------- |
-| **Branch**         | `feature/m6-llm-quotas`                                                                               |
-| **Last commit**    | `9e57aec` (fix(client): remove tech stack and render mentions from footer)                            |
-| **Working tree**   | M6-07 complete; all 13 checks pass; 332 server tests pass                                             |
-| **Open PR**        | None (working on feature/m6-llm-quotas)                                                               |
+| Field | Value |
+| **Branch** | `main` |
+| **Last commit** | `0aa807c` (feat(server): implement M6-07 LLM quotas, concurrency, and rate limiting) |
+| **Working tree** | Clean; M6-07 complete; all 13 checks pass; 332 server tests pass |
+| **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 332/336 pass (4 skipped), client 46/46 pass |
-| **Date**           | 2026-10-17                                                                                            |
+| **Date** | 2026-10-17 |
 
 ---
 
