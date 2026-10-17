@@ -94,6 +94,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_v1_router = APIRouter(prefix="/api/v1")
 
     from app.api.brain import router as brain_router
+    from app.api.consents import router as consents_router
     from app.api.extension import router as extension_router
     from app.api.findings import router as findings_router
     from app.api.me import router as me_router
@@ -119,6 +120,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_v1_router.include_router(brain_router)
     api_v1_router.include_router(scans_router)
     api_v1_router.include_router(findings_router)
+    api_v1_router.include_router(consents_router)
     api_v1_router.include_router(me_router)
     api_v1_router.include_router(webhooks_router)
     api_v1_router.include_router(extension_router)

@@ -521,6 +521,70 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{pid}/consents": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Project Consents
+     * @description List consent records for a project.
+     */
+    get: operations["list_project_consents_api_v1_projects__pid__consents_get"];
+    put?: never;
+    /**
+     * Create Project Consent
+     * @description Grant source transmission or cloud indexing consent for a project.
+     */
+    post: operations["create_project_consent_api_v1_projects__pid__consents_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/consents/{cid}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Revoke Project Consent
+     * @description Revoke a previously granted consent record immediately.
+     */
+    delete: operations["revoke_project_consent_api_v1_projects__pid__consents__cid__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/consents/check": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Check Project Consent
+     * @description Check if active consent exists for a specific scope and provider.
+     */
+    get: operations["check_project_consent_api_v1_projects__pid__consents_check_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/me": {
     parameters: {
       query?: never;
@@ -1164,6 +1228,94 @@ export interface components {
       metadata?: {
         [key: string]: unknown;
       };
+    };
+    /**
+     * ConsentItem
+     * @description Consent record representation returned by API.
+     */
+    ConsentItem: {
+      /** Id */
+      id: string;
+      /** Workspace Id */
+      workspace_id: string;
+      /** Project Id */
+      project_id: string;
+      /** User Id */
+      user_id: string;
+      /** Scope */
+      scope: string;
+      /** Provider Ids */
+      provider_ids: string[];
+      /** Data Categories */
+      data_categories: string[];
+      /** Granted For */
+      granted_for: string;
+      /** Policy Version */
+      policy_version: string;
+      /** Preview Hash */
+      preview_hash: string | null;
+      /** Granted At */
+      granted_at: string;
+      /** Expires At */
+      expires_at: string | null;
+      /** Revoked At */
+      revoked_at: string | null;
+      /** Is Active */
+      is_active: boolean;
+    };
+    /**
+     * ConsentListResponse
+     * @description List of consent records.
+     */
+    ConsentListResponse: {
+      /** Items */
+      items: components["schemas"]["ConsentItem"][];
+      /** Total */
+      total: number;
+    };
+    /**
+     * CreateConsentRequest
+     * @description Payload for granting source-transmission or indexing consent.
+     */
+    CreateConsentRequest: {
+      /**
+       * Scope
+       * @description Scope of consent: snippet_transmission | cloud_index | llm_processing
+       * @example snippet_transmission
+       */
+      scope: string;
+      /**
+       * Provider Ids
+       * @description List of AI/embedding provider IDs consented to receive data.
+       */
+      provider_ids?: string[];
+      /**
+       * Data Categories
+       * @description Categories of data consented (e.g. ['code_snippets', 'ast_metadata']).
+       */
+      data_categories?: string[];
+      /**
+       * Granted For
+       * @description Duration/lifetime: 'single_request' or 'project'.
+       * @default project
+       */
+      granted_for: string;
+      /**
+       * Policy Version
+       * @description Policy version agreed to by the user.
+       * @default 1.0
+       */
+      policy_version: string;
+      /**
+       * Preview Hash
+       * @description SHA-256 hash of the exact consent preview payload shown to the user.
+       */
+      preview_hash?: string | null;
+      /**
+       * Expires At
+       * @description Optional ISO timestamp when consent expires.
+       */
+      expires_at?: string | null;
     };
     /**
      * CreateProjectRequest
@@ -3259,6 +3411,147 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["FindingDetailItem"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_project_consents_api_v1_projects__pid__consents_get: {
+    parameters: {
+      query?: {
+        /** @description Filter to only currently active (unrevoked, unexpired) consents */
+        active_only?: boolean;
+        /** @description Optional scope filter (e.g. snippet_transmission, cloud_index) */
+        scope?: string | null;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConsentListResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_project_consent_api_v1_projects__pid__consents_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateConsentRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConsentItem"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  revoke_project_consent_api_v1_projects__pid__consents__cid__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+        cid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConsentItem"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  check_project_consent_api_v1_projects__pid__consents_check_get: {
+    parameters: {
+      query: {
+        /** @description Scope to check */
+        scope: string;
+        /** @description Optional provider ID to check */
+        provider_id?: string | null;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            [key: string]: unknown;
+          };
         };
       };
       /** @description Validation Error */

@@ -1685,6 +1685,253 @@
         }
       }
     },
+    "/api/v1/projects/{pid}/consents": {
+      "get": {
+        "tags": ["Consent"],
+        "summary": "List Project Consents",
+        "description": "List consent records for a project.",
+        "operationId": "list_project_consents_api_v1_projects__pid__consents_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Filter to only currently active (unrevoked, unexpired) consents",
+              "default": false,
+              "title": "Active Only"
+            },
+            "description": "Filter to only currently active (unrevoked, unexpired) consents"
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional scope filter (e.g. snippet_transmission, cloud_index)",
+              "title": "Scope"
+            },
+            "description": "Optional scope filter (e.g. snippet_transmission, cloud_index)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Consent"],
+        "summary": "Create Project Consent",
+        "description": "Grant source transmission or cloud indexing consent for a project.",
+        "operationId": "create_project_consent_api_v1_projects__pid__consents_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConsentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/consents/{cid}": {
+      "delete": {
+        "tags": ["Consent"],
+        "summary": "Revoke Project Consent",
+        "description": "Revoke a previously granted consent record immediately.",
+        "operationId": "revoke_project_consent_api_v1_projects__pid__consents__cid__delete",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "cid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/consents/check": {
+      "get": {
+        "tags": ["Consent"],
+        "summary": "Check Project Consent",
+        "description": "Check if active consent exists for a specific scope and provider.",
+        "operationId": "check_project_consent_api_v1_projects__pid__consents_check_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Scope to check",
+              "title": "Scope"
+            },
+            "description": "Scope to check"
+          },
+          {
+            "name": "provider_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional provider ID to check",
+              "title": "Provider Id"
+            },
+            "description": "Optional provider ID to check"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Check Project Consent Api V1 Projects  Pid  Consents Check Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me": {
       "get": {
         "tags": ["Identity"],
@@ -2994,6 +3241,198 @@
         ],
         "title": "CodeSymbolPayload",
         "description": "Payload representing an extracted program symbol."
+      },
+      "ConsentItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "provider_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Provider Ids"
+          },
+          "data_categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Data Categories"
+          },
+          "granted_for": {
+            "type": "string",
+            "title": "Granted For"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "preview_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Hash"
+          },
+          "granted_at": {
+            "type": "string",
+            "title": "Granted At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "project_id",
+          "user_id",
+          "scope",
+          "provider_ids",
+          "data_categories",
+          "granted_for",
+          "policy_version",
+          "preview_hash",
+          "granted_at",
+          "expires_at",
+          "revoked_at",
+          "is_active"
+        ],
+        "title": "ConsentItem",
+        "description": "Consent record representation returned by API."
+      },
+      "ConsentListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ConsentItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": ["items", "total"],
+        "title": "ConsentListResponse",
+        "description": "List of consent records."
+      },
+      "CreateConsentRequest": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Scope of consent: snippet_transmission | cloud_index | llm_processing",
+            "examples": ["snippet_transmission"]
+          },
+          "provider_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Provider Ids",
+            "description": "List of AI/embedding provider IDs consented to receive data."
+          },
+          "data_categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Data Categories",
+            "description": "Categories of data consented (e.g. ['code_snippets', 'ast_metadata'])."
+          },
+          "granted_for": {
+            "type": "string",
+            "title": "Granted For",
+            "description": "Duration/lifetime: 'single_request' or 'project'.",
+            "default": "project"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version",
+            "description": "Policy version agreed to by the user.",
+            "default": "1.0"
+          },
+          "preview_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Hash",
+            "description": "SHA-256 hash of the exact consent preview payload shown to the user."
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At",
+            "description": "Optional ISO timestamp when consent expires."
+          }
+        },
+        "type": "object",
+        "required": ["scope"],
+        "title": "CreateConsentRequest",
+        "description": "Payload for granting source-transmission or indexing consent."
       },
       "CreateProjectRequest": {
         "properties": {

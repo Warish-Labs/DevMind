@@ -18,7 +18,7 @@ def test_alembic_config_and_revisions() -> None:
 
     heads = script_dir.get_heads()
     assert len(heads) == 1, f"Expected exactly 1 migration head, got: {heads}"
-    assert heads[0] == "0003_project_brain"
+    assert heads[0] == "0004_consent_records"
 
 
 def test_migration_models_match_metadata() -> None:
@@ -46,5 +46,6 @@ def test_migration_models_match_metadata() -> None:
         "findings",
         "finding_evidence",
         "finding_status_history",
+        "consent_records",
     }
     assert expected_tables.issubset(Base.metadata.tables.keys())

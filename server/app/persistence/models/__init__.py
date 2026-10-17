@@ -23,6 +23,7 @@ from app.persistence.models.brain import (
     ScanRun,
     SnapshotFile,
 )
+from app.persistence.models.consent import ConsentRecord
 from app.persistence.models.extension import ExtensionRegistration, ExtensionToken
 from app.persistence.models.project import Project, ProjectMembership
 from app.persistence.models.usage import UsageRecord
@@ -35,6 +36,7 @@ __all__ = [
     "Base",
     "CodeRelationship",
     "CodeSymbol",
+    "ConsentRecord",
     "ExtensionRegistration",
     "ExtensionToken",
     "File",

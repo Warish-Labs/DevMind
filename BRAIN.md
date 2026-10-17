@@ -9,22 +9,22 @@
 | Field              | Value                                                                                                         |
 | ------------------ | ------------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                        |
-| **Last commit**    | `0d57555` (feat(server): implement M4-08 browser read endpoints for scans, brain summary, and files)          |
+| **Last commit**    | `5fb92bf` (feat(extension): implement M4-09 metadata-only sync client and command integration)                |
 | **Working tree**   | clean; working directly on main per user instruction                                                          |
 | **Open PR**        | None (working directly on main)                                                                               |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 154/154 pass, boundaries:server pass (36 API paths) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 158/158 pass, boundaries:server pass (39 API paths) |
 | **Date**           | 2026-10-17                                                                                                    |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M5-01: Consent Model, Consent Records Table, and consent.required Enforcement**:
-   - Inspect `docs/03 §4`, `docs/07 §3-§5`, and `docs/06 §12` for the DevMind consent architecture:
-     - `consent_records` database table (tenant-scoped by `workspace_id` + `project_id`, records timestamp, user/device identifier, consent mode, explicit scope of hashes/patterns, revoked_at).
-     - Alembic migration creating `consent_records` table with indexes.
-     - `ConsentRepository` and `ConsentService` verifying whether an upload or operation has valid consent.
-     - Enforce `403 consent.required` on any route or service attempting to ingest or index file content chunks without active recorded consent.
+1. Implement **Milestone M5-02: Extension Consent Preview Webview and Sent-Bytes Equality Check**:
+   - Inspect `docs/06 §12` and `docs/07 §7` for consent preview requirements:
+     - Interactive consent preview webview rendering exact payload: files table, tokenized/redacted preview, destination AI providers, data categories, and calculated `preview_hash`.
+     - Cryptographic sent-bytes equality check: verify that the uploaded snippet/index payload matches byte-for-byte the `preview_hash` shown to and consented by the user.
+     - Disallow transmission if `preview_hash` differs or user denies/cancels consent.
+   - Write extension unit and webview tests in `extension/tests/consentWebview.test.ts`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -38,6 +38,34 @@
 ---
 
 ## 4. Done log
+
+### M5-01 — Consent Model, Consent Records Table, and consent.required Enforcement
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented the consent records architecture, database migration, tenant-scoped repository, domain service with `403 consent.required` enforcement, and browser REST endpoints per `docs/03 §3.5, §11.1`, and `docs/07 §7`:
+  - **Alembic Migration** (`server/alembic/versions/0004_consent_records.py`):
+    - Created `consent_records` table with UUIDv7 PK, `workspace_id` (FK CASCADE), `project_id` (FK CASCADE), `user_id` (FK CASCADE).
+    - Added columns: `scope` (check constraint for `snippet_transmission`, `cloud_index`, `llm_processing`), `provider_ids` (text[]), `data_categories` (text[]), `granted_for` (check constraint for `single_request`, `project`), `policy_version`, `preview_hash`, `granted_at`, `expires_at`, `revoked_at`.
+    - Added composite indexes: `ix_consent_records_project_scope`, `ix_consent_records_workspace_id`, `ix_consent_records_user_id`.
+  - **Persistence Model** (`server/app/persistence/models/consent.py`):
+    - `ConsentRecord` model with `is_active` helper method evaluating non-revocation and expiration timestamps.
+    - Exported in `server/app/persistence/models/__init__.py`.
+  - **ConsentRepository** (`server/app/persistence/repositories/consent_repo.py`):
+    - Enforces workspace-level tenant isolation via `AuthContext`.
+    - Methods: `create_consent`, `get_consent`, `list_consents` (with `active_only` and `scope` filters), `revoke_consent`, and `has_active_consent` (supporting provider-specific evaluation).
+  - **ConsentService & ProblemDetails Enforcement** (`server/app/domain/consent/consent_service.py`):
+    - Validates scopes and durations before recording grants.
+    - `verify_consent`: checks whether active consent exists; immediately raises RFC 9457 `ConsentRequiredError` (`403 consent.required`) if unconsented, expired, or revoked.
+  - **REST Endpoints & Permission Registry** (`server/app/api/consents.py`):
+    - `GET /api/v1/projects/{pid}/consents` (@declare_permission(PERM_CONSENT_MANAGE)).
+    - `POST /api/v1/projects/{pid}/consents` (@declare_permission(PERM_CONSENT_MANAGE)) requiring `Idempotency-Key`.
+    - `DELETE /api/v1/projects/{pid}/consents/{cid}` (@declare_permission(PERM_CONSENT_MANAGE)).
+    - `GET /api/v1/projects/{pid}/consents/check` (@declare_permission(PERM_CONSENT_MANAGE)).
+    - Regenerated TypeScript API schema with 39 OpenAPI paths (`pnpm gen:api`).
+  - **Unit & Integration Test Suite** (`server/tests/test_consent.py`):
+    - Tests for model active/expired/revoked states, repository tenant boundaries, service validation, `ConsentRequiredError` raising, and REST endpoints with idempotency and permissions.
+    - All 158 server tests pass.
 
 ### M4-09 — Extension Metadata-Only Sync Client and Command Integration
 
