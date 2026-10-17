@@ -112,14 +112,14 @@ export default function ContactPage() {
                 </a>
               </div>
               <div>
-                <span className="text-[var(--fg-2)]">GitHub: </span>
+                <span className="text-[var(--fg-2)]">Extension: </span>
                 <a
-                  href="https://github.com/Warish-Labs/DevMind"
+                  href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[var(--ref)] hover:underline"
                 >
-                  Warish-Labs/DevMind
+                  VS Code Marketplace ↗
                 </a>
               </div>
             </div>
@@ -261,10 +261,15 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                disabled={submitting}
-                className="w-full py-3 rounded-control bg-[var(--signal)] text-[var(--bg-0)] font-medium font-mono text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-sm disabled:opacity-50"
+                disabled={submitting || !turnstileToken}
+                title={!turnstileToken ? "Please verify the security challenge above" : undefined}
+                className="w-full py-3 rounded-control bg-[var(--signal)] text-[var(--bg-0)] font-medium font-mono text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {submitting ? "Sending..." : "Send Message →"}
+                {submitting
+                  ? "Sending..."
+                  : !turnstileToken
+                    ? "Verify Security Challenge to Send →"
+                    : "Send Message →"}
               </button>
             </form>
           )}

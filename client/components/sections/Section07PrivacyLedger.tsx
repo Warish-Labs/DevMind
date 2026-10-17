@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { privacyLedgerData } from "../../lib/sections-data";
 
 export function Section07PrivacyLedger() {
@@ -52,14 +53,12 @@ export function Section07PrivacyLedger() {
           </div>
         </div>
 
-        <a
-          href="https://github.com/Warish-Labs/DevMind/blob/main/docs/07-security-privacy-and-threat-model.md"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href="/privacy"
           className="text-[var(--ref)] hover:underline inline-flex items-center gap-1 text-[11px]"
         >
-          <span>Read Security &amp; Threat Model (docs/07) ↗</span>
-        </a>
+          <span>Read Security &amp; Privacy Policy →</span>
+        </Link>
       </div>
 
       {/* Auditable Privacy Matrix Table */}

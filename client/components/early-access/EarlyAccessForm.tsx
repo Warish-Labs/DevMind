@@ -94,10 +94,11 @@ export function EarlyAccessForm() {
         />
         <button
           type="submit"
-          disabled={submitting}
-          className="px-6 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer disabled:opacity-50"
+          disabled={submitting || !turnstileToken}
+          title={!turnstileToken ? "Please verify the security challenge below" : undefined}
+          className="px-6 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {submitting ? "Submitting..." : "Join Waitlist"}
+          {submitting ? "Submitting..." : !turnstileToken ? "Verify to Join" : "Join Waitlist"}
         </button>
       </div>
 

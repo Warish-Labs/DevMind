@@ -103,12 +103,12 @@ export default function EarlyAccessPage() {
           ← Back to Homepage
         </Link>
         <a
-          href="https://github.com/Warish-Labs/DevMind"
+          href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:text-[var(--fg-0)] transition-colors"
+          className="hover:text-[var(--fg-0)] transition-colors text-[var(--signal)]"
         >
-          GitHub Repository (Warish-Labs/DevMind) ↗
+          VS Code Extension (Marketplace) ↗
         </a>
       </div>
     </div>

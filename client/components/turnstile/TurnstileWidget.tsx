@@ -57,6 +57,17 @@ export function TurnstileWidget({
   );
   const [loadError, setLoadError] = useState<boolean>(false);
 
+  // Store latest callbacks in refs to prevent unnecessary re-rendering/teardown of the widget
+  const onVerifyRef = useRef(onVerify);
+  const onErrorRef = useRef(onError);
+  const onExpireRef = useRef(onExpire);
+
+  useEffect(() => {
+    onVerifyRef.current = onVerify;
+    onErrorRef.current = onError;
+    onExpireRef.current = onExpire;
+  }, [onVerify, onError, onExpire]);
+
   const activeSiteKey =
     siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || CLOUDFLARE_TEST_SITE_KEY;
 
@@ -74,7 +85,7 @@ export function TurnstileWidget({
       script.onload = () => setScriptLoaded(true);
       script.onerror = () => {
         setLoadError(true);
-        onError?.("script-load-error");
+        onErrorRef.current?.("script-load-error");
       };
       document.head.appendChild(script);
     } else {
@@ -82,33 +93,26 @@ export function TurnstileWidget({
       script.addEventListener("load", handleLoad);
       return () => script?.removeEventListener("load", handleLoad);
     }
-  }, [onError]);
+  }, []);
 
   // Render the Turnstile widget inside the container
   useEffect(() => {
     if (!scriptLoaded || !containerRef.current || !window.turnstile) return;
 
-    // Clean up any previously rendered widget
-    if (widgetIdRef.current) {
-      try {
-        window.turnstile.remove(widgetIdRef.current);
-      } catch {
-        // Ignored
-      }
-      widgetIdRef.current = null;
-    }
+    // If already rendered for this container, do not re-render
+    if (widgetIdRef.current) return;
 
     try {
       const id = window.turnstile.render(containerRef.current, {
         sitekey: activeSiteKey,
         callback: (token: string) => {
-          onVerify(token);
+          onVerifyRef.current(token);
         },
         "error-callback": (errorCode?: string) => {
-          onError?.(errorCode);
+          onErrorRef.current?.(errorCode);
         },
         "expired-callback": () => {
-          onExpire?.();
+          onExpireRef.current?.();
         },
         theme,
         size,
@@ -118,7 +122,7 @@ export function TurnstileWidget({
       queueMicrotask(() => {
         setLoadError(true);
       });
-      onError?.("render-error");
+      onErrorRef.current?.("render-error");
     }
 
     return () => {
@@ -131,7 +135,7 @@ export function TurnstileWidget({
         widgetIdRef.current = null;
       }
     };
-  }, [scriptLoaded, activeSiteKey, onVerify, onError, onExpire, theme, size]);
+  }, [scriptLoaded, activeSiteKey, theme, size]);
 
   if (loadError) {
     return (

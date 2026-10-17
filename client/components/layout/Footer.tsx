@@ -97,48 +97,35 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a
-                  href="https://github.com/Warish-Labs/DevMind"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-[var(--fg-0)] transition-colors inline-flex items-center gap-1"
+                <Link
+                  href="/early-access"
+                  className="hover:text-[var(--fg-0)] transition-colors inline-flex items-center gap-1 text-[var(--signal)]"
                 >
-                  GitHub Source ↗
-                </a>
+                  Early Access Waitlist →
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://github.com/Warish-Labs/DevMind/tree/main/docs/12-architecture-decisions-and-open-questions.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/privacy"
                   className="hover:text-[var(--fg-0)] transition-colors inline-flex items-center gap-1"
                 >
-                  Architecture Decisions (ADRs) ↗
-                </a>
+                  Privacy Ledger &amp; Security →
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://github.com/Warish-Labs/DevMind/tree/main/docs/07-security-privacy-and-threat-model.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/disclaimer"
                   className="hover:text-[var(--fg-0)] transition-colors inline-flex items-center gap-1"
                 >
-                  Threat Model & Security ↗
-                </a>
+                  Security Disclaimer →
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://github.com/Warish-Labs/DevMind/tree/main/docs/11-mvp-and-implementation-roadmap.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/contact"
                   className="hover:text-[var(--fg-0)] transition-colors inline-flex items-center gap-1"
                 >
-                  Implementation Roadmap ↗
-                </a>
-              </li>
-              <li>
-                <Link href="/early-access" className="text-[var(--signal)] hover:underline">
-                  Early Access Program →
+                  Developer Support →
                 </Link>
               </li>
             </ul>

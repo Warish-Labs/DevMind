@@ -101,14 +101,6 @@ export function Section08CTA() {
             <span className="w-2 h-2 rounded-full bg-[var(--signal)] animate-pulse" />
             <span>Install VS Code Extension ↗</span>
           </a>
-          <a
-            href="https://github.com/Warish-Labs/DevMind"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-2)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-2)] transition-colors font-mono"
-          >
-            Inspect Source on GitHub ↗
-          </a>
         </div>
       </div>
 
