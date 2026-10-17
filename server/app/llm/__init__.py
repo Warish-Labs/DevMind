@@ -1,6 +1,7 @@
 """DevMind LLM gateway: provider adapters, model router, prompts (docs/05 §11-§12, docs/11 M6)."""
 
 from app.llm.adapter import LLMAdapter
+from app.llm.adapters.fake import FakeFaultInjection, FakeLLMAdapter
 from app.llm.embedding_adapter import (
     EmbeddingAdapter,
     EmbeddingInputType,
@@ -54,6 +55,8 @@ __all__ = [
     "get_embedding_adapter",
     # LLM adapter & registry
     "LLMAdapter",
+    "FakeLLMAdapter",
+    "FakeFaultInjection",
     "register_adapter",
     "get_adapter_class",
     "list_supported_adapters",

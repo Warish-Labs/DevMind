@@ -6,26 +6,26 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                    |
-| ------------------ | -------------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                   |
-| **Last commit**    | `4850b67` (feat(server): implement M5-11 embedding provider outage degradation)                          |
-| **Working tree**   | M6-01 complete; M6-02 ready to begin; all 13 checks pass                                                 |
-| **Open PR**        | None (working directly on main)                                                                          |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 258/262 pass (4 skipped), extension 70/70 pass |
-| **Date**           | 2026-10-17                                                                                               |
+| Field              | Value                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                  |
+| **Last commit**    | `bfe4ed1` (feat(server): implement M6-01 LLM provider adapter interfaces and types)                     |
+| **Working tree**   | M6-02 complete; Turnstile refresh fixed & buttons guarded; website GitHub links removed; 13 checks pass |
+| **Open PR**        | None (working directly on main)                                                                         |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 270/274 pass (4 skipped), client 45/45 pass   |
+| **Date**           | 2026-10-17                                                                                              |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-02: Fake LLM provider adapter with scripted responses and fault injection** per `PLAN.md`:
-   - Inspect `docs/05 §11.1, §12, §15` and `server/app/llm/`:
-     - Implement `FakeLLMAdapter(LLMAdapter)` in `server/app/llm/adapters/fake.py`.
-     - Support deterministic scripted completions, structured JSON responses, mock tool calls, and streaming chunks.
-     - Implement fault injection: configurable simulated timeouts, rate limits (HTTP 429), provider 5xx errors, malformed outputs, and partial stream interruptions.
-     - Register `fake` provider in the adapter registry.
-     - Add comprehensive unit tests in `server/tests/test_fake_adapter.py`.
+1. Implement **Milestone M6-03: Gateway YAML config loaders (providers.yaml, models.yaml, tasks.yaml) with Pydantic validation** per `PLAN.md`:
+   - Inspect `docs/05 §11` and create `server/configs/llm/`:
+     - `providers.yaml`: provider adapter mappings, environments, data policy flags (`source_code_allowed`), timeouts, concurrency.
+     - `models.yaml`: models registry with verified capabilities, context limits, price units.
+     - `tasks.yaml`: task routing, primary models, fallbacks, capability constraints, params, and token budgets.
+   - Implement configuration loader in `server/app/llm/config.py` with strict Pydantic schemas (`extra="forbid"`), referential integrity validation, and startup verification.
+   - Add unit tests in `server/tests/test_llm_config.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -39,6 +39,25 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-02: Fake LLM Provider Adapter with Scripted Responses and Fault Injection
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Implemented deterministic `FakeLLMAdapter` and fault injection engine for test environments (docs/05 §11.1, §12, §15, M6-02):
+  - Created `FakeFaultInjection` model in `server/app/llm/adapters/fake.py` supporting simulated timeouts, rate limits (HTTP 429), provider 5xx errors, content refusals, malformed JSON outputs, and partial stream connection aborts.
+  - Implemented `FakeLLMAdapter` supporting FIFO queue scripted responses, task-specific response mappings, synthesized schema-compliant structured outputs, tool call generation, and word-by-word streaming with token usage statistics.
+  - Registered `fake` provider in the adapter registry (`register_adapter("fake", FakeLLMAdapter)`).
+  - Added 12 unit tests in `server/tests/test_fake_adapter.py` verifying all generation modes, streaming, fault injections, and registry factory creation.
+
+### Fix — Turnstile Refresh Loop, Unverified Submit Button Guard, and Website GitHub Removal
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Resolved Cloudflare Turnstile refresh loop, prevented unverified form submissions, and removed GitHub repository links from website:
+  - **Turnstile Refresh Loop**: In `client/components/turnstile/TurnstileWidget.tsx`, stored `onVerify`, `onError`, `onExpire` callbacks in `useRef` and added a single-render guard on `widgetIdRef.current` to prevent widget teardown/reconstruction loops caused by parent re-renders when typing into inputs.
+  - **Form Submit Button Guards**: Updated `EarlyAccessForm.tsx` and `contact/page.tsx` submit buttons to `disabled={submitting || !turnstileToken}` with `disabled:opacity-40 disabled:cursor-not-allowed` and dynamic status labels (`"Verify to Join"` / `"Verify Security Challenge to Send →"`).
+  - **Website GitHub Links Removal**: Removed GitHub repository links and promotion buttons from `Section08CTA.tsx`, `Footer.tsx`, `Section07PrivacyLedger.tsx`, `early-access/page.tsx`, and `contact/page.tsx`, redirecting users to the official VS Code Extension on Marketplace and internal policy pages. Preserved README links intact.
 
 ### Feature — M6-01: LLM Provider Adapter Interfaces, Capabilities, and Common Models
 

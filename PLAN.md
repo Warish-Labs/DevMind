@@ -245,7 +245,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 ### M6 · LLM gateway, adapters, model configuration
 
 - [x] M6-01 LLM provider adapter interfaces, capabilities, and common request/response types (feature/m6-llm-interfaces)
-- [ ] M6-02 Fake LLM provider adapter with scripted responses and fault injection (feature/m6-fake-provider)
+- [x] M6-02 Fake LLM provider adapter with scripted responses and fault injection (feature/m6-fake-provider)
 - [ ] M6-03 Gateway YAML config loaders (providers.yaml, models.yaml, tasks.yaml) with Pydantic validation (feature/m6-gateway-config)
 - [ ] M6-04 First real generation adapter (Google Gemini via official SDK with free tier key support) (feature/m6-gemini-adapter)
 - [ ] M6-05 Second generation adapter (alternative provider, e.g. Groq/OpenAI, disabled until configured) (feature/m6-alternative-adapter)
