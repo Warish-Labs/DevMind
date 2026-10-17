@@ -79,8 +79,24 @@ def test_metrics_no_answer_accuracy() -> None:
 def test_metrics_aggregation_by_category() -> None:
     """Verify query aggregation produces both overall and category breakdown."""
     records = [
-        {"id": "q1", "category": "identifier", "recall_at_1": 1.0, "recall_at_3": 1.0, "recall_at_5": 1.0, "mrr": 1.0, "ndcg_at_5": 1.0},
-        {"id": "q2", "category": "concept", "recall_at_1": 0.0, "recall_at_3": 0.5, "recall_at_5": 1.0, "mrr": 0.5, "ndcg_at_5": 0.7},
+        {
+            "id": "q1",
+            "category": "identifier",
+            "recall_at_1": 1.0,
+            "recall_at_3": 1.0,
+            "recall_at_5": 1.0,
+            "mrr": 1.0,
+            "ndcg_at_5": 1.0,
+        },
+        {
+            "id": "q2",
+            "category": "concept",
+            "recall_at_1": 0.0,
+            "recall_at_3": 0.5,
+            "recall_at_5": 1.0,
+            "mrr": 0.5,
+            "ndcg_at_5": 0.7,
+        },
     ]
     summary = aggregate_query_metrics(records)
     assert summary["total_queries"] == 2

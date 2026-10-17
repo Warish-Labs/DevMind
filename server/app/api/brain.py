@@ -224,4 +224,3 @@ async def search_brain(
     scoped_ctx = await service.resolve_project_context(ctx, pid)
     retrieval_service = RetrievalService(session)
     return await retrieval_service.search(scoped_ctx, pid, payload)
-

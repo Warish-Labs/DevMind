@@ -419,7 +419,9 @@ async def test_retrieval_outage_degradation_to_keyword_and_symbol() -> None:
 
     # Mock embedding adapter failing with simulated 503 outage
     mock_adapter = MagicMock()
-    mock_adapter.embed = AsyncMock(side_effect=RuntimeError("Google AI 503 Service Unavailable: connection timed out"))
+    mock_adapter.embed = AsyncMock(
+        side_effect=RuntimeError("Google AI 503 Service Unavailable: connection timed out")
+    )
     service.embedding_adapter = mock_adapter
 
     active_space = EmbeddingSpace(
@@ -483,4 +485,3 @@ async def test_retrieval_no_active_space_degradation() -> None:
     assert res.degraded is True
     assert res.degraded_reason is not None
     assert "No active embedding space" in res.degraded_reason
-

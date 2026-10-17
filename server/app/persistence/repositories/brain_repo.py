@@ -682,10 +682,7 @@ class BrainRepository(BaseRepository):
             .where(
                 CodeSymbol.project_id == project_id,
                 CodeSymbol.is_current.is_(True),
-                (
-                    CodeSymbol.name.ilike(f"%{clean}%")
-                    | CodeSymbol.symbol_key.ilike(f"%{clean}%")
-                ),
+                (CodeSymbol.name.ilike(f"%{clean}%") | CodeSymbol.symbol_key.ilike(f"%{clean}%")),
             )
             .order_by(
                 (CodeSymbol.name == clean).desc(),

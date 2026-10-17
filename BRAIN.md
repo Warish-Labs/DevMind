@@ -9,22 +9,23 @@
 | Field              | Value                                                                                                    |
 | ------------------ | -------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                   |
-| **Last commit**    | `1fb5943` (docs(docs): update working memory for M5-10 baselines)                                        |
-| **Working tree**   | M5-11 complete; Milestone M5 100% finished; Phase M6 initiated; extension v0.1.1 packaged with env vars  |
+| **Last commit**    | `4850b67` (feat(server): implement M5-11 embedding provider outage degradation)                          |
+| **Working tree**   | M6-01 complete; M6-02 ready to begin; all 13 checks pass                                                 |
 | **Open PR**        | None (working directly on main)                                                                          |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 247/251 pass (4 skipped), extension 70/70 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 258/262 pass (4 skipped), extension 70/70 pass |
 | **Date**           | 2026-10-17                                                                                               |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-01: LLM provider adapter interfaces, capabilities, and common request/response types** per `PLAN.md`:
-   - Inspect `docs/05 §11-§12` and `server/app/llm/`:
-     - Base `LLMAdapter` interface defining `generate(request: LLMGenerationRequest) -> LLMGenerationResponse` and `stream_generate(...)`.
-     - Request / response models: messages (`system`, `user`, `assistant`), tools/schema definitions, temperature, max_tokens, token usage stats (`input_tokens`, `output_tokens`).
-     - Capability flags: `supports_structured_output`, `supports_tool_calling`, `supports_streaming`, `source_code_allowed`.
-     - Adapter registry and factory functions.
+1. Implement **Milestone M6-02: Fake LLM provider adapter with scripted responses and fault injection** per `PLAN.md`:
+   - Inspect `docs/05 §11.1, §12, §15` and `server/app/llm/`:
+     - Implement `FakeLLMAdapter(LLMAdapter)` in `server/app/llm/adapters/fake.py`.
+     - Support deterministic scripted completions, structured JSON responses, mock tool calls, and streaming chunks.
+     - Implement fault injection: configurable simulated timeouts, rate limits (HTTP 429), provider 5xx errors, malformed outputs, and partial stream interruptions.
+     - Register `fake` provider in the adapter registry.
+     - Add comprehensive unit tests in `server/tests/test_fake_adapter.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -38,6 +39,18 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-01: LLM Provider Adapter Interfaces, Capabilities, and Common Models
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Implemented base LLM provider adapter interfaces, capability flags, unified request/response types, and exception hierarchy (docs/05 §11-§12, M6-01):
+  - Created `server/app/llm/exceptions.py` with RFC 9457-aligned exception hierarchy: `LLMError`, `LLMTimeoutError`, `LLMRateLimitError`, `LLMProviderError`, `LLMInvalidOutputError`, `LLMUnavailableError`, `LLMRefusalError`, `LLMQuotaExceededError`, `LLMPermissionError`, `LLMContextLengthExceededError`.
+  - Created `server/app/llm/models.py` with standard models: `ChatMessage`, `MessageRole`, `FunctionCall`, `ToolCall`, `FunctionDefinition`, `ToolDefinition`, `StructuredOutputSpec`, `LLMGenerationOptions`, `TokenUsage`, `LLMGenerationRequest`, `LLMGenerationResponse`, `LLMStreamChunk`, `ModelCapabilities`, `ProviderDataPolicy`.
+  - Created `server/app/llm/adapter.py` defining base `LLMAdapter` abstract class with `generate()`, `stream_generate()`, `validate_request_capabilities()`, and `validate_data_policy()` guards.
+  - Created `server/app/llm/registry.py` providing adapter registration and factory mechanisms.
+  - Exported all classes and types in `server/app/llm/__init__.py`.
+  - Added 11 unit tests in `server/tests/test_llm_gateway.py` verifying model validation, capability enforcement, data policy privacy guards, streaming, exceptions, and registry operations. All 258 server tests pass.
 
 ### Feature — M5-11: Failure-State Behavior: Embedding Provider Outage Degradation
 

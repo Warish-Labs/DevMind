@@ -147,7 +147,9 @@ class RetrievalService:
         possible_paths = [
             config_path,
             os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "configs", "retrieval.yaml"
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                "configs",
+                "retrieval.yaml",
             ),
             os.path.join("server", "configs", "retrieval.yaml"),
         ]
@@ -237,7 +239,11 @@ class RetrievalService:
         for rank, sym in enumerate(symbol_results, start=1):
             key = f"symbol:{sym.id}"
             rrf_score = weight_symbol * (1.0 / (rrf_k + rank))
-            path = sym.file_version.file.path if sym.file_version and sym.file_version.file else "unknown"
+            path = (
+                sym.file_version.file.path
+                if sym.file_version and sym.file_version.file
+                else "unknown"
+            )
             content = sym.signature or f"// Symbol: {sym.name} ({sym.kind})"
 
             if key not in fused_items:
@@ -270,7 +276,11 @@ class RetrievalService:
         for rank, chunk in enumerate(keyword_results, start=1):
             key = f"chunk:{chunk.id}"
             rrf_score = weight_keyword * (1.0 / (rrf_k + rank))
-            path = chunk.file_version.file.path if chunk.file_version and chunk.file_version.file else "unknown"
+            path = (
+                chunk.file_version.file.path
+                if chunk.file_version and chunk.file_version.file
+                else "unknown"
+            )
 
             if key not in fused_items:
                 fused_items[key] = {
@@ -302,7 +312,11 @@ class RetrievalService:
         for rank, (chunk, _similarity) in enumerate(vector_results, start=1):
             key = f"chunk:{chunk.id}"
             rrf_score = weight_vector * (1.0 / (rrf_k + rank))
-            path = chunk.file_version.file.path if chunk.file_version and chunk.file_version.file else "unknown"
+            path = (
+                chunk.file_version.file.path
+                if chunk.file_version and chunk.file_version.file
+                else "unknown"
+            )
 
             if key not in fused_items:
                 fused_items[key] = {
@@ -465,7 +479,9 @@ class RetrievalService:
         if not related_ids:
             return []
 
-        expanded_symbols = await self.repo.list_current_symbols(ctx=ctx, project_id=project_id, limit=100)
+        expanded_symbols = await self.repo.list_current_symbols(
+            ctx=ctx, project_id=project_id, limit=100
+        )
         sym_map = {s.id: s for s in expanded_symbols if s.id in related_ids}
 
         expanded_results: list[dict[str, Any]] = []
@@ -474,7 +490,11 @@ class RetrievalService:
             if not sym:
                 continue
 
-            path = sym.file_version.file.path if sym.file_version and sym.file_version.file else "unknown"
+            path = (
+                sym.file_version.file.path
+                if sym.file_version and sym.file_version.file
+                else "unknown"
+            )
             content = sym.signature or f"// Related {sym.kind}: {sym.name}"
 
             expanded_results.append(
