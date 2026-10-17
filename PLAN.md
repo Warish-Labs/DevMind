@@ -219,7 +219,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 ### M4 · Project Brain ingestion: metadata, symbols, relationships, snapshots
 
 - [x] M4-01 Project Brain database migrations, persistence models (13 tables), and BrainRepository with AuthContext tenant isolation (feature/m4-brain-models)
-- [ ] M4-02 Job lifecycle (claim, heartbeat, reaper, sweep) and Celery worker configuration (docs/10 §9) (feature/m4-job-lifecycle)
+- [x] M4-02 Job lifecycle (claim, heartbeat, reaper, sweep) and Celery worker configuration (docs/10 §9) (feature/m4-job-lifecycle)
 - [ ] M4-03 Manifest diff and upload endpoint with sync.stale_base (feature/m4-manifest-diff)
 - [ ] M4-04 Snapshot and file versioning logic with current version tracking (feature/m4-snapshots)
 - [ ] M4-05 Symbol and relationship batch upsert and graph derivation (feature/m4-symbols)

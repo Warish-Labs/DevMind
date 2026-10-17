@@ -6,24 +6,25 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                               |
-| ------------------ | --------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                              |
-| **Last commit**    | `e9258ee` (feat(server,extension): implement M3-06 backend extension tokens and SecretStorage auth) |
-| **Working tree**   | clean; working directly on main per user instruction                                                |
-| **Open PR**        | None (working directly on main)                                                                     |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 102/102 pass, boundaries:server pass      |
-| **Date**           | 2026-10-17                                                                                          |
+| Field              | Value                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                  |
+| **Last commit**    | `0a9bf6a` (feat(server): implement M4-01 Project Brain schema migrations, persistence models, and repo) |
+| **Working tree**   | clean; working directly on main per user instruction                                                    |
+| **Open PR**        | None (working directly on main)                                                                         |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 111/111 pass, boundaries:server pass          |
+| **Date**           | 2026-10-17                                                                                              |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M4-02: Job Lifecycle and Celery Worker Configuration**:
-   - Implement worker job claiming, heartbeats, dead-worker job reaping, and startup sweep logic (`docs/10` §9).
-   - Configure Celery task queues (`default`, `ingest`, `analysis`) and concurrency profiles.
-   - Implement idempotent claim and state transitions in `server/app/workers/runner.py`.
-   - Write comprehensive tests for worker kill/recovery, timeout handling, and sweep recovery.
+1. Implement **Milestone M4-03: Manifest Diff and Upload Endpoint with sync.stale_base**:
+   - Define manifest diff schemas (`ManifestDiffRequest`, `ManifestDiffResponse`, `FileSyncEntry`).
+   - Implement `POST /api/v1/ext/projects/{pid}/manifest/diff` accepting repo-relative paths, content hashes, languages, and returning missing file hashes to upload alongside a `sync_base_token`.
+   - Implement conflict detection (`sync.stale_base` Problem Details) if a concurrent sync advanced the project snapshot base.
+   - Enforce Rule 10 (`Bearer dme_at_...` extension token only).
+   - Write unit and integration tests in `server/tests/test_manifest_diff.py`.
 
 ---
 
@@ -37,6 +38,33 @@
 ---
 
 ## 4. Done log
+
+### M4-02 — Job Lifecycle (Claim, Heartbeat, Reaper, Sweep) and Celery Worker Configuration
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented asynchronous job state machine, worker claiming, heartbeat lease tracking, stale worker reaping, enqueuer sweep, and Celery multi-queue topology:
+  - **Job Lifecycle Domain Service** (`server/app/domain/jobs/service.py`):
+    - `claim_job`: Atomic compare-and-set query (`UPDATE analysis_jobs SET status='running', attempt=attempt+1, heartbeat_at=now WHERE id=:id AND status='queued'`), preventing double execution across distributed workers.
+    - `record_heartbeat`: Updates active worker heartbeat lease.
+    - `is_cancelled_or_requested`: Cooperative cancellation check between processing steps, updating status to `cancelled`.
+    - `complete_job`: Marks status `succeeded` and records `result_ref` JSONB.
+    - `fail_job`: Budgeted retry handling — requeues to `queued` if `attempt < max_attempts` and error is retryable, otherwise sets `failed` and records failure reason.
+    - `reap_stale_jobs`: Finds running jobs with expired heartbeats (>120s timeout), requeuing if attempts remain or permanently failing on exhausted budgets with `DEAD_WORKER_HEARTBEAT_TIMEOUT`.
+    - `sweep_stranded_jobs`: Identifies stranded queued jobs (>60s old) across container reboots/sleeps for re-enqueuing.
+    - Sequential audit logging to `job_events` for all lifecycle transitions.
+  - **Celery Worker Configuration & Queue Topology** (`server/app/workers/celery_app.py`):
+    - Multi-queue separation (docs/10 §9): `default`, `ingest`, `embed`, `analysis` with prefix isolation (`redis_key_prefix`).
+    - Task routes mapping `devmind.ingest_*` -> `ingest`, `devmind.embed_*` -> `embed`, `devmind.analysis_*` -> `analysis`, and `devmind.*` -> `default`.
+    - Reliability settings: `task_acks_late=True`, `task_reject_on_worker_lost=True`, `worker_prefetch_multiplier=1`, `visibility_timeout=3600`.
+    - JSON-only serialization (`task_serializer="json"`, `accept_content=["json"]`).
+    - Periodic beat schedule for `devmind.enqueuer_sweep` (60s) and `devmind.stale_job_reaper` (60s).
+    - `devmind.process_job` worker task coordinating atomic claim, cancellation check, handler execution, and failure recording.
+  - **Automated Verification**:
+    - `server/tests/test_job_lifecycle.py`: 10 comprehensive unit tests verifying Celery queues/routing, compare-and-set claim uniqueness, heartbeat leasing, cooperative cancellation, retry budgeting, dead-worker reaping, and stranded job sweep.
+    - Server pytest: 111 passed, 4 skipped, 0 failed.
+    - Import boundaries: 7 kept, 0 broken.
+    - Monorepo fast verification: 13 passed, 0 failed, 1 skipped.
 
 ### M4-01 — Project Brain Database Migrations, Models, and Repository
 
