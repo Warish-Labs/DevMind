@@ -63,10 +63,7 @@ class GoogleGeminiAdapter(LLMAdapter):
     ) -> None:
         self._model_id = model_id
         self._api_key = (
-            api_key
-            or os.getenv("GEMINI_API_KEY")
-            or os.getenv("DEVMIND_LLM_PRIMARY_API_KEY")
-            or ""
+            api_key or os.getenv("GEMINI_API_KEY") or os.getenv("DEVMIND_LLM_PRIMARY_API_KEY") or ""
         )
         self._base_url = base_url.rstrip("/")
         self._timeout_seconds = timeout_seconds
@@ -142,12 +139,14 @@ class GoogleGeminiAdapter(LLMAdapter):
                         args = json.loads(tc.function.arguments) if tc.function.arguments else {}
                     except json.JSONDecodeError:
                         args = {"raw_arguments": tc.function.arguments}
-                    parts.append({
-                        "functionCall": {
-                            "name": tc.function.name,
-                            "args": args,
+                    parts.append(
+                        {
+                            "functionCall": {
+                                "name": tc.function.name,
+                                "args": args,
+                            }
                         }
-                    })
+                    )
 
             # Tool response
             if msg.role == "tool":
@@ -156,12 +155,14 @@ class GoogleGeminiAdapter(LLMAdapter):
                     tool_resp = json.loads(msg.content or "{}")
                 except json.JSONDecodeError:
                     tool_resp = {"output": msg.content}
-                parts.append({
-                    "functionResponse": {
-                        "name": tool_name,
-                        "response": tool_resp,
+                parts.append(
+                    {
+                        "functionResponse": {
+                            "name": tool_name,
+                            "response": tool_resp,
+                        }
                     }
-                })
+                )
 
             gemini_role = "model" if msg.role == "assistant" else "user"
             contents.append({"role": gemini_role, "parts": parts})
@@ -214,7 +215,9 @@ class GoogleGeminiAdapter(LLMAdapter):
 
         return payload
 
-    def _parse_candidate(self, candidate: dict[str, Any]) -> tuple[str | None, list[ToolCall], FinishReason]:
+    def _parse_candidate(
+        self, candidate: dict[str, Any]
+    ) -> tuple[str | None, list[ToolCall], FinishReason]:
         """Parse Gemini candidate parts into unified content, tool calls, and finish reason."""
         content_parts: list[str] = []
         tool_calls: list[ToolCall] = []
@@ -285,7 +288,9 @@ class GoogleGeminiAdapter(LLMAdapter):
         # Rate limit (HTTP 429 / RESOURCE_EXHAUSTED)
         if status_code == 429 or err_status == "RESOURCE_EXHAUSTED":
             retry_header = response.headers.get("retry-after")
-            retry_after_s: float | None = float(retry_header) if retry_header and retry_header.isdigit() else 2.0
+            retry_after_s: float | None = (
+                float(retry_header) if retry_header and retry_header.isdigit() else 2.0
+            )
             raise LLMRateLimitError(
                 message=f"Gemini API rate limit exceeded: {err_message}",
                 retry_after_s=retry_after_s,
@@ -406,9 +411,7 @@ class GoogleGeminiAdapter(LLMAdapter):
             latency_ms=latency_ms,
         )
 
-    async def stream_generate(
-        self, request: LLMGenerationRequest
-    ) -> AsyncIterator[LLMStreamChunk]:
+    async def stream_generate(self, request: LLMGenerationRequest) -> AsyncIterator[LLMStreamChunk]:
         """Execute a streaming completion using Google Gemini streamGenerateContent (SSE)."""
         self.validate_request_capabilities(request)
         api_key = self._get_api_key()
@@ -454,9 +457,7 @@ class GoogleGeminiAdapter(LLMAdapter):
                 raw_error=str(exc),
             ) from exc
 
-    async def _process_sse_stream(
-        self, response: httpx.Response
-    ) -> AsyncIterator[LLMStreamChunk]:
+    async def _process_sse_stream(self, response: httpx.Response) -> AsyncIterator[LLMStreamChunk]:
         """Process SSE event stream lines from Gemini streamGenerateContent."""
         async for line in response.aiter_lines():
             line = line.strip()

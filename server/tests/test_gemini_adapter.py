@@ -79,7 +79,9 @@ async def test_gemini_adapter_metadata_and_capabilities() -> None:
 
 
 @pytest.mark.asyncio
-async def test_gemini_adapter_missing_api_key_raises_auth_error(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_gemini_adapter_missing_api_key_raises_auth_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Verify invocation without API key raises LLMError authentication error."""
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("DEVMIND_LLM_PRIMARY_API_KEY", raising=False)
@@ -141,7 +143,10 @@ async def test_gemini_adapter_generate_text_success() -> None:
     sent_req = requests[0]
     assert sent_req.headers["x-goog-api-key"] == "test-api-key"
     payload = json.loads(sent_req.content.decode("utf-8"))
-    assert payload["systemInstruction"]["parts"][0]["text"] == "You are DevMind code intelligence assistant."
+    assert (
+        payload["systemInstruction"]["parts"][0]["text"]
+        == "You are DevMind code intelligence assistant."
+    )
     assert payload["contents"][0]["role"] == "user"
     assert payload["contents"][0]["parts"][0]["text"] == "Explain repository architecture."
     assert payload["generationConfig"]["temperature"] == 0.3
@@ -299,9 +304,9 @@ async def test_gemini_adapter_tool_calling_request_and_response() -> None:
 async def test_gemini_adapter_streaming_sse_chunks() -> None:
     """Verify streaming token deltas and usage extraction from Server-Sent Events."""
     sse_body = (
-        "data: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"Hello \"}]}}]}\n\n"
-        "data: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"world!\"}]}}]}\n\n"
-        "data: {\"candidates\": [{\"finishReason\": \"STOP\"}], \"usageMetadata\": {\"promptTokenCount\": 10, \"candidatesTokenCount\": 5}}\n\n"
+        'data: {"candidates": [{"content": {"parts": [{"text": "Hello "}]}}]}\n\n'
+        'data: {"candidates": [{"content": {"parts": [{"text": "world!"}]}}]}\n\n'
+        'data: {"candidates": [{"finishReason": "STOP"}], "usageMetadata": {"promptTokenCount": 10, "candidatesTokenCount": 5}}\n\n'
         "data: [DONE]\n\n"
     )
 

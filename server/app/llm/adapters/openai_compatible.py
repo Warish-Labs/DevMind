@@ -265,7 +265,9 @@ class OpenAICompatibleAdapter(LLMAdapter):
         # Rate limits (HTTP 429)
         if status_code == 429:
             retry_header = response.headers.get("retry-after")
-            retry_after_s: float | None = float(retry_header) if retry_header and retry_header.isdigit() else 2.0
+            retry_after_s: float | None = (
+                float(retry_header) if retry_header and retry_header.isdigit() else 2.0
+            )
             raise LLMRateLimitError(
                 message=f"LLM provider rate limit exceeded: {err_message}",
                 retry_after_s=retry_after_s,
@@ -378,9 +380,7 @@ class OpenAICompatibleAdapter(LLMAdapter):
             latency_ms=latency_ms,
         )
 
-    async def stream_generate(
-        self, request: LLMGenerationRequest
-    ) -> AsyncIterator[LLMStreamChunk]:
+    async def stream_generate(self, request: LLMGenerationRequest) -> AsyncIterator[LLMStreamChunk]:
         """Execute streaming completion yielding incremental stream chunks."""
         self.validate_request_capabilities(request)
         api_key = self._get_api_key()
@@ -425,9 +425,7 @@ class OpenAICompatibleAdapter(LLMAdapter):
                 raw_error=str(exc),
             ) from exc
 
-    async def _process_sse_stream(
-        self, response: httpx.Response
-    ) -> AsyncIterator[LLMStreamChunk]:
+    async def _process_sse_stream(self, response: httpx.Response) -> AsyncIterator[LLMStreamChunk]:
         """Process SSE event stream from /chat/completions."""
         async for line in response.aiter_lines():
             line = line.strip()

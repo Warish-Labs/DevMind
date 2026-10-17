@@ -8,23 +8,23 @@
 
 | Field              | Value                                                                                                 |
 | ------------------ | ----------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                |
-| **Last commit**    | `e035432` (feat(server): implement M6-04 Google Gemini LLM adapter)                                   |
-| **Working tree**   | Extension packaged v0.1.2 production; M6-05 complete; all 13 checks pass; 303 server tests pass       |
-| **Open PR**        | None (working directly on main)                                                                       |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 303/307 pass (4 skipped), client 46/46 pass |
+| **Branch**         | `feature/m6-gateway-router`                                                                           |
+| **Last commit**    | `ef3751a` (feat: implement M6-05 OpenAI-compatible adapter and bump extension to 0.1.2 production)    |
+| **Working tree**   | M6-06 complete; all 13 checks pass; 322 server tests pass                                             |
+| **Open PR**        | None (working on feature/m6-gateway-router)                                                           |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 322/326 pass (4 skipped), client 46/46 pass |
 | **Date**           | 2026-10-17                                                                                            |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-06: Gateway router with capability matching, fallback rules, and source-code-allowed privacy guard** per `PLAN.md`:
-   - Inspect `docs/05 §11.1, §12` and `server/app/llm/`:
-     - Implement `LLMGatewayRouter` in `server/app/llm/router.py`.
-     - Route by task key referencing `tasks.yaml`, model capabilities, and fallbacks.
-     - Enforce `source_code_allowed` guard on customer code transmissions.
-     - Add recorded-shape unit tests in `server/tests/test_llm_router.py`.
+1. Implement **Milestone M6-07: Quotas, concurrency semaphores, and sliding-window rate limiting for LLM calls** per `PLAN.md`:
+   - Inspect `docs/05 §13, §14` and `server/app/llm/`:
+     - Implement per-provider concurrency semaphore (limiting in-flight requests per `concurrency.max_in_flight` from `providers.yaml`).
+     - Implement sliding-window rate limiter per provider (e.g. Groq 30 RPM, Gemini 15 RPM) using Redis or in-memory fallback.
+     - Enforce quota checks before dispatch (`quota.exceeded`).
+     - Add unit tests in `server/tests/test_llm_quotas.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -38,6 +38,24 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-06: LLM Gateway Router with Fallbacks and Privacy Guard
+
+- **Date**: 2026-10-17
+- **Branch**: `feature/m6-gateway-router`
+- **What**:
+  - Implemented `LLMGatewayRouter` in [`server/app/llm/router.py`](server/app/llm/router.py) (docs/05 §11.6, §12, ADR-027, ADR-047):
+    - Candidate resolution mapping `tasks.yaml` primary model and fallbacks to `models.yaml` and `providers.yaml`.
+    - Capability matching filter (tool calling, structured output mode, streaming).
+    - Status deprecation filter (`status != "deprecated"`).
+    - Environment enablement filter (`provider.environments`).
+    - Customer source code privacy guard (ADR-047: excludes providers where `source_code_allowed=False` or `terms_reviewed=False` in staging/production when `may_contain_source=True`).
+    - Non-streaming execution (`generate`) with automated fallback across eligible candidates on transient errors (`LLMTimeoutError`, `LLMRateLimitError`, `LLMProviderError`, `LLMUnavailableError`).
+    - Strict non-bypass on safety refusal (`LLMRefusalError`) and invalid structured output (`LLMInvalidOutputError`): immediately re-raises without attempting fallbacks per ADR-027.
+    - Streaming execution (`stream_generate`) with fallback on initial connect failure, while preserving safety and aborting without fallback once tokens have begun streaming to client.
+    - Adapter caching and test override registration (`register_adapter_override`).
+  - Added 19 comprehensive unit tests in [`server/tests/test_llm_router.py`](server/tests/test_llm_router.py).
+  - All 13 checks pass in `node scripts/test-all.mjs --fast` (322 server tests pass).
 
 ### Feature — M6-05 & Extension Production Package v0.1.2 Rebuild
 

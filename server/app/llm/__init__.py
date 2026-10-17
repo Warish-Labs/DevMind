@@ -51,6 +51,7 @@ from app.llm.registry import (
     list_supported_adapters,
     register_adapter,
 )
+from app.llm.router import LLMGatewayRouter
 
 __all__ = [
     # Embedding gateway exports
@@ -69,7 +70,8 @@ __all__ = [
     "get_adapter_class",
     "list_supported_adapters",
     "create_adapter",
-    # Gateway Configuration
+    # Gateway Router & Configuration
+    "LLMGatewayRouter",
     "GatewayConfig",
     "load_gateway_config",
     "validate_gateway_config",
