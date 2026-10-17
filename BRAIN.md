@@ -19,13 +19,11 @@
 
 ## 2. Next action (exact)
 
-1. Implement **Task M3-04: Local rule engine and E0/E1 security finding evaluator**:
-   - Build rule evaluator executing on extracted facts:
-     - `devmind.authz.missing_role_check` (E1): administrative routes verifying auth but missing role checks.
-     - `devmind.authn.unprotected_route` (E1): sensitive API routes missing authentication entirely.
-     - `devmind.secrets.hardcoded_credential` (E0/E1): hardcoded API keys, tokens, and private keys with deterministic hash redaction `[REDACTED:token:hash8]`.
-     - `devmind.secrets.exposed_env_file` (E1): unignored `.env` or credential files in workspace.
-   - Attach accurate line ranges, code snippets, and remediation instructions.
+1. Implement **Task M3-05: LocalScanFindingsSource implementation**:
+   - Implement `LocalScanFindingsSource` implementing `FindingsSource` interface.
+   - Wire `FileDiscoveryEngine`, `SemanticExtractor`, `LocalRuleEngine`, and `LocalManifestStore` into a unified scanning pipeline.
+   - Replace default source in `extension/src/extension.ts` with real `LocalScanFindingsSource`, keeping fixture fallback only when `devmind.fixtureMode: true`.
+   - Update `FindingsViewProvider`, `StructureViewProvider`, `DatabaseViewProvider`, and `DiagnosticService` from real scan results.
 
 ---
 
@@ -39,6 +37,25 @@
 ---
 
 ## 4. Done log
+
+### M3-04 — Local Rule Engine and E0/E1 Security Finding Evaluator
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented local rule engine evaluating authorization invariants, authentication gaps, hardcoded credentials with deterministic redaction, and path-only credential file exposure:
+  - **Secret Scanner with Redaction** (`extension/src/scanner/rules/secretScanner.ts`):
+    - Identifies Stripe keys (`sk_live_...`), GitHub PATs (`ghp_...`), AWS keys (`AKIA...`), private key headers, Clerk keys, and webhook secrets.
+    - Strictly enforces ADR-047 redaction: replaces all secret tokens with `[REDACTED:token:hash8]` using `computeRedactedTokenHash()`. Never exposes raw secrets in snippets, messages, or logs.
+  - **Authorization & Authentication Rules** (`extension/src/scanner/rules/authRules.ts`):
+    - `devmind.authz.missing_role_check` (E1): Identifies sensitive administrative routes (`/admin`, `/manage`, `/internal`, etc.) having `auth: true` but lacking role/permission checks (`roleGuard: false`). Matches `expected.json` fixtures for Express and FastAPI.
+    - `devmind.authn.unprotected_route` (E1): Identifies sensitive administrative endpoints lacking authentication entirely.
+  - **Credential File Rule** (`extension/src/scanner/rules/credentialFileRule.ts`):
+    - `devmind.secrets.exposed_env_file` (E1): Path-only detection for unignored `.env` or credential files without reading file content.
+  - **Unified Local Rule Engine** (`extension/src/scanner/rulesEngine.ts`):
+    - Evaluates discovered files and extracted route modules.
+    - Strictly caps extension-local evidence at `E1` (`E0` or `E1` only; never `E2` or `E3`).
+  - **Comprehensive Unit Tests** (`extension/tests/rules.test.ts`):
+    - 5 unit tests validating exact matches against `express-admin` and `fastapi-admin` expected findings, deterministic secret redaction verification, path-only credential handling, and the evidence ceiling invariant. All 43 extension tests pass.
 
 ### M3-03 — Semantic Parsers and Extractors for TS/JS and Python
 
