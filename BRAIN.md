@@ -6,38 +6,61 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                   |
-| ------------------ | ------------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                  |
-| **Last commit**    | `0a9bf6a` (feat(server): implement M4-01 Project Brain schema migrations, persistence models, and repo) |
-| **Working tree**   | clean; working directly on main per user instruction                                                    |
-| **Open PR**        | None (working directly on main)                                                                         |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 111/111 pass, boundaries:server pass          |
-| **Date**           | 2026-10-17                                                                                              |
+| Field              | Value                                                                                           |
+| ------------------ | ----------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                          |
+| **Last commit**    | `fc3351f` (feat(server): implement M4-02 job lifecycle service and Celery worker configuration) |
+| **Working tree**   | clean; working directly on main per user instruction                                            |
+| **Open PR**        | None (working directly on main)                                                                 |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 121/121 pass, boundaries:server pass  |
+| **Date**           | 2026-10-17                                                                                      |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M4-03: Manifest Diff and Upload Endpoint with sync.stale_base**:
-   - Define manifest diff schemas (`ManifestDiffRequest`, `ManifestDiffResponse`, `FileSyncEntry`).
-   - Implement `POST /api/v1/ext/projects/{pid}/manifest/diff` accepting repo-relative paths, content hashes, languages, and returning missing file hashes to upload alongside a `sync_base_token`.
-   - Implement conflict detection (`sync.stale_base` Problem Details) if a concurrent sync advanced the project snapshot base.
-   - Enforce Rule 10 (`Bearer dme_at_...` extension token only).
-   - Write unit and integration tests in `server/tests/test_manifest_diff.py`.
+1. Implement **Milestone M4-04: Snapshot and File Versioning Logic with Current Version Tracking**:
+   - Create snapshot creation domain service orchestration (`SnapshotService` in `server/app/domain/brain/snapshot_service.py`).
+   - Implement point-in-time snapshot composition linking active file versions via `snapshot_files` mapping.
+   - Enforce immutability of historical snapshots while maintaining pointer to `current_version_id` on `files`.
+   - Implement snapshot comparison / diff logic between two snapshot IDs.
+   - Wire unit and integration tests in `server/tests/test_snapshots.py`.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                                                           | Reference              |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| 1   | **SETUP-GUIDE.md §4.4**: After the first CI run is green on B3, enable the branch ruleset `protect-main` requiring `ci-gate` status check | P0-15                  |
-| 2   | **VS Marketplace publisher**: Confirm the publisher id is `warishlabs` (or tell me the correct one)                                       | S2 extension packaging |
+| #   | Action required                                                                                                                           | Reference |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 1   | **SETUP-GUIDE.md §4.4**: After the first CI run is green on B3, enable the branch ruleset `protect-main` requiring `ci-gate` status check | P0-15     |
 
 ---
 
 ## 4. Done log
+
+### M4-03 — Manifest Diff, Sync Upload Endpoints, Stale Base Detection, and Extension Publisher Configuration
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented cloud-to-local manifest diffing, atomic file metadata sync, stale snapshot base conflict detection, and extension publisher configuration:
+  - **Extension Publisher Configuration**:
+    - Configured `"publisher": "WarishLabs"` in `extension/package.json` and updated `extension/tests/quality.test.ts`. Verified VSIX package builds cleanly (47.75 KB).
+  - **Manifest Domain Service** (`server/app/domain/brain/manifest_service.py`):
+    - `resolve_project_context`: Verifies caller workspace/project membership and scopes AuthContext to target project tenant.
+    - `compute_diff`: Computes diff between client manifest files and cloud active files, detecting `unchanged`, `new`, `changed`, `removed`, and missing files requiring symbol extractions.
+    - `put_manifest`: Upserts file records, creates immutable `FileVersion` entries, updates `current_version_id` pointers, and marks absent files as removed.
+    - `StaleBaseError`: Detects concurrent base snapshot drift (`sync.stale_base`) returning HTTP 409 Problem Details for automatic client re-sync.
+  - **REST API Endpoints** (`server/app/api/extension.py`):
+    - `POST /api/v1/ext/projects/{pid}/manifest/diff` (@declare_permission(PERM_PROJECT_SYNC)).
+    - `PUT /api/v1/ext/projects/{pid}/manifest` (@declare_permission(PERM_PROJECT_SYNC)).
+    - Strictly enforces Rule 10 (`Bearer dme_at_...` extension token only; rejects browser Clerk tokens with 401).
+    - Strictly enforces permission check (`project:sync`) and cross-tenant boundary isolation with HTTP 403.
+  - **Architecture & Layer Boundary Compliance**:
+    - Manifest schemas (`FileManifestEntry`, `MissingFileEntry`, `ManifestDiffRequest`, `ManifestDiffResponse`, `PutManifestRequest`, `PutManifestResponse`) defined in domain layer and re-exported in API schemas, ensuring zero forbidden `domain -> api` imports (`lint-imports` 7/7 contracts kept).
+  - **Tests & Verification**:
+    - Added 10 tests in `server/tests/test_manifest_diff.py`.
+    - Full server pytest suite: 121 passed, 0 failed, 4 skipped.
+    - Full monorepo fast suite: 13 passed, 0 failed, 1 skipped.
 
 ### M4-02 — Job Lifecycle (Claim, Heartbeat, Reaper, Sweep) and Celery Worker Configuration
 

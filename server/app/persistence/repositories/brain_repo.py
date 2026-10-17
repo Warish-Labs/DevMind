@@ -8,6 +8,7 @@ from uuid import UUID
 
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.auth_context import AuthContext, SystemContext
 from app.persistence.models.brain import (
@@ -249,11 +250,15 @@ class BrainRepository(BaseRepository):
     async def list_active_files(
         self, ctx: AuthContext | SystemContext, project_id: UUID
     ) -> list[ProjectFile]:
-        """List all non-removed files for a project."""
+        """List all non-removed files for a project with current_version eagerly loaded."""
         await self._verify_project_access(ctx, project_id)
-        stmt = select(ProjectFile).where(
-            ProjectFile.project_id == project_id,
-            ProjectFile.removed_at.is_(None),
+        stmt = (
+            select(ProjectFile)
+            .options(selectinload(ProjectFile.current_version))
+            .where(
+                ProjectFile.project_id == project_id,
+                ProjectFile.removed_at.is_(None),
+            )
         )
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
@@ -391,6 +396,20 @@ class BrainRepository(BaseRepository):
         )
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+
+    async def get_latest_snapshot(
+        self, ctx: AuthContext | SystemContext, project_id: UUID
+    ) -> ProjectSnapshot | None:
+        """Get the latest snapshot for a project."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = (
+            select(ProjectSnapshot)
+            .where(ProjectSnapshot.project_id == project_id)
+            .order_by(ProjectSnapshot.created_at.desc())
+            .limit(1)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
 
     # --- Code Symbols and Relationships ---
 

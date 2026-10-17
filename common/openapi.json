@@ -1058,6 +1058,110 @@
           }
         }
       }
+    },
+    "/api/v1/ext/projects/{pid}/manifest/diff": {
+      "post": {
+        "tags": ["Extension"],
+        "summary": "Compute manifest diff against cloud Project Brain",
+        "description": "Compute manifest diff between client local files and current cloud Brain state.\n\nDetects:\n- New, changed, unchanged, and removed files.\n- Missing files whose full symbol extractions must be uploaded.\n- Stale base snapshot conflict (409 sync.stale_base).",
+        "operationId": "compute_manifest_diff_api_v1_ext_projects__pid__manifest_diff_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManifestDiffRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManifestDiffResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ext/projects/{pid}/manifest": {
+      "put": {
+        "tags": ["Extension"],
+        "summary": "Register or update file manifest metadata in Project Brain",
+        "description": "Upsert file manifest metadata and immutable content versions from an extension scan.",
+        "operationId": "put_manifest_api_v1_ext_projects__pid__manifest_put",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutManifestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PutManifestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1300,6 +1404,55 @@
         "title": "ExtensionTokenResponse",
         "description": "Issued extension scoped access and refresh token pair."
       },
+      "FileManifestEntry": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Path",
+            "description": "Repository-relative file path"
+          },
+          "content_hash": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 64,
+            "title": "Content Hash",
+            "description": "SHA-256 hash of file content"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Size Bytes",
+            "description": "File size in bytes"
+          },
+          "line_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Line Count",
+            "description": "Total line count"
+          },
+          "language": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Language",
+            "description": "Detected language (e.g. typescript, python)"
+          },
+          "tier": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Tier",
+            "description": "Parser tier: 1=semantic, 2=text, 3=unsupported",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": ["path", "content_hash", "size_bytes", "line_count", "language"],
+        "title": "FileManifestEntry",
+        "description": "File metadata entry within an extension scan manifest."
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1323,6 +1476,110 @@
         },
         "type": "object",
         "title": "HealthResponse"
+      },
+      "ManifestDiffRequest": {
+        "properties": {
+          "scan_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scan Run Id"
+          },
+          "base_snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Snapshot Id"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/FileManifestEntry"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "title": "ManifestDiffRequest",
+        "description": "Payload for computing cloud-to-local manifest diff."
+      },
+      "ManifestDiffResponse": {
+        "properties": {
+          "unchanged": {
+            "type": "integer",
+            "title": "Unchanged"
+          },
+          "new": {
+            "type": "integer",
+            "title": "New"
+          },
+          "changed": {
+            "type": "integer",
+            "title": "Changed"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Removed"
+          },
+          "stale_base": {
+            "type": "boolean",
+            "title": "Stale Base",
+            "default": false
+          },
+          "missing_files": {
+            "items": {
+              "$ref": "#/components/schemas/MissingFileEntry"
+            },
+            "type": "array",
+            "title": "Missing Files"
+          },
+          "sync_base_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sync Base Token"
+          }
+        },
+        "type": "object",
+        "required": ["unchanged", "new", "changed"],
+        "title": "ManifestDiffResponse",
+        "description": "Cloud manifest diff results identifying missing or changed files."
+      },
+      "MissingFileEntry": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "content_hash": {
+            "type": "string",
+            "title": "Content Hash"
+          }
+        },
+        "type": "object",
+        "required": ["path", "content_hash"],
+        "title": "MissingFileEntry",
+        "description": "File item requiring full metadata/symbol extraction upload."
       },
       "ProjectMemberResponse": {
         "properties": {
@@ -1436,6 +1693,93 @@
         ],
         "title": "ProjectResponse",
         "description": "Serialized codebase project entity."
+      },
+      "PutManifestRequest": {
+        "properties": {
+          "scan_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scan Run Id"
+          },
+          "base_snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Snapshot Id"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/FileManifestEntry"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "removed_paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Removed Paths"
+          }
+        },
+        "type": "object",
+        "title": "PutManifestRequest",
+        "description": "Payload for registering synced files and versions in Project Brain."
+      },
+      "PutManifestResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "synced"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "scan_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scan Run Id"
+          },
+          "files_count": {
+            "type": "integer",
+            "title": "Files Count"
+          },
+          "versions_created": {
+            "type": "integer",
+            "title": "Versions Created"
+          },
+          "removed_count": {
+            "type": "integer",
+            "title": "Removed Count"
+          }
+        },
+        "type": "object",
+        "required": ["project_id", "files_count", "versions_created", "removed_count"],
+        "title": "PutManifestResponse",
+        "description": "Result receipt for manifest metadata sync."
       },
       "ReadinessResponse": {
         "properties": {

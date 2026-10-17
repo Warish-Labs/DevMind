@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,9 +20,15 @@ from app.api.schemas import (
     ExtensionRefreshTokenRequest,
     ExtensionTokenRequest,
     ExtensionTokenResponse,
+    ManifestDiffRequest,
+    ManifestDiffResponse,
+    PutManifestRequest,
+    PutManifestResponse,
 )
 from app.core.auth_context import AuthContext, SystemContext
+from app.core.errors import ForbiddenError
 from app.domain.auth import (
+    PERM_PROJECT_SYNC,
     PERMISSION_AUTHENTICATED,
     PERMISSION_PUBLIC,
     declare_permission,
@@ -29,6 +36,7 @@ from app.domain.auth import (
     get_db_session,
     get_extension_auth_context,
 )
+from app.domain.brain import ManifestService
 from app.domain.extension.service import ExtensionService
 
 router = APIRouter(
@@ -153,3 +161,53 @@ async def revoke_self_registration(
         await service.revoke_registration(ctx, reg.id)
 
     return {"status": "revoked"}
+
+
+@router.post(
+    "/projects/{pid}/manifest/diff",
+    response_model=ManifestDiffResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Compute manifest diff against cloud Project Brain",
+)
+@declare_permission(PERM_PROJECT_SYNC)
+async def compute_manifest_diff(
+    pid: UUID,
+    payload: ManifestDiffRequest,
+    ctx: AuthContext = Depends(get_extension_auth_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> ManifestDiffResponse:
+    """Compute manifest diff between client local files and current cloud Brain state.
+
+    Detects:
+    - New, changed, unchanged, and removed files.
+    - Missing files whose full symbol extractions must be uploaded.
+    - Stale base snapshot conflict (409 sync.stale_base).
+    """
+    if not ctx.has_permission(PERM_PROJECT_SYNC):
+        raise ForbiddenError(detail="Forbidden: extension token lacks 'project:sync' scope")
+
+    service = ManifestService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.compute_diff(scoped_ctx, pid, payload)
+
+
+@router.put(
+    "/projects/{pid}/manifest",
+    response_model=PutManifestResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Register or update file manifest metadata in Project Brain",
+)
+@declare_permission(PERM_PROJECT_SYNC)
+async def put_manifest(
+    pid: UUID,
+    payload: PutManifestRequest,
+    ctx: AuthContext = Depends(get_extension_auth_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> PutManifestResponse:
+    """Upsert file manifest metadata and immutable content versions from an extension scan."""
+    if not ctx.has_permission(PERM_PROJECT_SYNC):
+        raise ForbiddenError(detail="Forbidden: extension token lacks 'project:sync' scope")
+
+    service = ManifestService(session)
+    scoped_ctx = await service.resolve_project_context(ctx, pid)
+    return await service.put_manifest(scoped_ctx, pid, payload)

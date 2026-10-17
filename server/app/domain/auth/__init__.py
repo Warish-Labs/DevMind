@@ -10,6 +10,7 @@ from app.domain.auth.policy import (
     PERM_MEMBERS_MANAGE_WORKSPACE,
     PERM_PROJECT_DELETE,
     PERM_PROJECT_READ,
+    PERM_PROJECT_SYNC,
     PERM_PROJECT_UPDATE,
     PERM_WORKSPACE_MANAGE,
     PERM_WORKSPACE_READ,
@@ -27,6 +28,7 @@ from app.domain.auth.policy import (
 
 __all__ = [
     "PERM_PROJECT_READ",
+    "PERM_PROJECT_SYNC",
     "PERM_PROJECT_UPDATE",
     "PERM_PROJECT_DELETE",
     "PERM_MEMBERS_MANAGE",

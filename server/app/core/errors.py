@@ -122,13 +122,31 @@ class ConflictError(DevMindError):
     """Invalid state transition or resource conflict (409)."""
 
     def __init__(
-        self, detail: str = "Resource state conflict", errors: list[dict[str, Any]] | None = None
+        self,
+        detail: str = "Resource state conflict",
+        code: str = "conflict.state",
+        errors: list[dict[str, Any]] | None = None,
     ) -> None:
         super().__init__(
             detail=detail,
-            code="conflict.state",
+            code=code,
             status_code=409,
             title="Conflict",
+            errors=errors,
+        )
+
+
+class StaleBaseError(ConflictError):
+    """Client manifest base snapshot is outdated (409 sync.stale_base)."""
+
+    def __init__(
+        self,
+        detail: str = "Client manifest base is outdated",
+        errors: list[dict[str, Any]] | None = None,
+    ) -> None:
+        super().__init__(
+            detail=detail,
+            code="sync.stale_base",
             errors=errors,
         )
 

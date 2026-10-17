@@ -7,6 +7,15 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.domain.brain import (
+    FileManifestEntry,
+    ManifestDiffRequest,
+    ManifestDiffResponse,
+    MissingFileEntry,
+    PutManifestRequest,
+    PutManifestResponse,
+)
+
 # ---------------------------------------------------------------------------
 # Workspace Schemas
 # ---------------------------------------------------------------------------
@@ -224,3 +233,31 @@ class ExtensionHeartbeatResponse(BaseModel):
     status: str = "ok"
     registration_id: UUID
     last_seen_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# Manifest and Brain Sync Schemas (docs/03 §12.3)
+# ---------------------------------------------------------------------------
+
+__all__ = [
+    "AddProjectMemberRequest",
+    "CreateProjectRequest",
+    "CreateWorkspaceRequest",
+    "ExtensionHeartbeatResponse",
+    "ExtensionRefreshTokenRequest",
+    "ExtensionTokenRequest",
+    "ExtensionTokenResponse",
+    "FileManifestEntry",
+    "ManifestDiffRequest",
+    "ManifestDiffResponse",
+    "MissingFileEntry",
+    "ProjectMemberResponse",
+    "ProjectResponse",
+    "PutManifestRequest",
+    "PutManifestResponse",
+    "UpdateProjectMemberRequest",
+    "UpdateProjectRequest",
+    "UpdateWorkspaceRequest",
+    "WorkspaceMemberResponse",
+    "WorkspaceResponse",
+]

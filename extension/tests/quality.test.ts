@@ -71,7 +71,7 @@ describe("Extension Quality and Packaging (Slice B12)", () => {
       const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
 
       expect(pkg.name).toBe("devmind-vscode");
-      expect(pkg.publisher).toBe("warishlabs");
+      expect(pkg.publisher).toBe("WarishLabs");
       expect(pkg.version).toBe("0.1.0");
       expect(pkg.license).toBe("MIT");
       expect(pkg.main).toBe("./dist/extension.js");

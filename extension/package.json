@@ -3,7 +3,7 @@
   "displayName": "DevMind Companion",
   "description": "Continuous Project Brain Companion for VS Code: local scanner, architectural map, and privacy-first sync.",
   "version": "0.1.0",
-  "publisher": "warishlabs",
+  "publisher": "WarishLabs",
   "license": "MIT",
   "icon": "media/icon.png",
   "engines": {
