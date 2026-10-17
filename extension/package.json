@@ -51,6 +51,16 @@
         "category": "DevMind"
       },
       {
+        "command": "devmind.syncProject",
+        "title": "DevMind: Sync Project Metadata",
+        "category": "DevMind"
+      },
+      {
+        "command": "devmind.linkProject",
+        "title": "DevMind: Link Workspace to Project",
+        "category": "DevMind"
+      },
+      {
         "command": "devmind.showWhatLeaves",
         "title": "DevMind: Review What Leaves Machine",
         "category": "DevMind"
@@ -156,6 +166,12 @@
           "default": "metadata_only",
           "scope": "resource",
           "description": "Synchronization mode governing what information can be transmitted with consent."
+        },
+        "devmind.projectId": {
+          "type": "string",
+          "default": "",
+          "scope": "window",
+          "description": "Active DevMind project UUID linked to this workspace folder."
         }
       }
     }

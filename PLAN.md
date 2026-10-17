@@ -226,11 +226,21 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M4-06 Findings batch ingestion with fingerprinting and lifecycle state machine (docs/03 §5.1) (feature/m4-findings)
 - [x] M4-07 Staleness marking on file change/removal (feature/m4-staleness)
 - [x] M4-08 Browser read endpoints for scans, findings, Brain summary, symbols, graph, snapshots (feature/m4-browser-api)
-- [ ] M4-09 Extension metadata-only sync client and command integration (feature/m4-sync-client)
+- [x] M4-09 Extension metadata-only sync client and command integration (feature/m4-sync-client)
 
 ### M5 · Indexed mode, consent, embeddings, hybrid retrieval
 
-- [ ] Consent model, chunking, embeddings, pgvector, fusion, baselines (feature/m5-*)
+- [ ] M5-01 Consent model, consent records table, and consent.required enforcement (feature/m5-consent-enforcement)
+- [ ] M5-02 Extension consent preview webview and sent-bytes equality check (feature/m5-consent-preview)
+- [ ] M5-03 Redaction pipeline: extension client + server-side redaction re-check (feature/m5-redaction-pipeline)
+- [ ] M5-04 Code-aware chunker per language (TypeScript/JavaScript, Python) (feature/m5-chunker)
+- [ ] M5-05 Chunk storage, tsvector full-text, and trigram indices (feature/m5-chunk-storage)
+- [ ] M5-06 Embedding gateway slice: adapter interface, embedding spaces, embed_chunks job (feature/m5-embedding-gateway)
+- [ ] M5-07 Chunk embeddings with pgvector and per-space HNSW vector index (feature/m5-vector-index)
+- [ ] M5-08 Hybrid retrieval with fusion and context-pack builder (POST /api/v1/projects/{pid}/brain/search) (feature/m5-hybrid-retrieval)
+- [ ] M5-09 Retrieval evaluation harness and test dataset (feature/m5-eval-harness)
+- [ ] M5-10 Record retrieval baselines in docs/09 §9 (feature/m5-retrieval-baselines)
+- [ ] M5-11 Failure-state behavior: embedding provider outage degradation to keyword/symbol (feature/m5-outage-degradation)
 
 ### M6 · LLM gateway and config
 

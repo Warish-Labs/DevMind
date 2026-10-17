@@ -14,6 +14,7 @@ import { DatabaseViewProvider } from "./views/databaseView";
 import { ConsentWebviewManager } from "./views/consentWebview";
 
 import { ExtensionAuthService } from "./services/auth";
+import { SyncClient } from "./services/syncClient";
 
 let findingsSource: LocalScanFindingsSource;
 let diagnosticService: DiagnosticService;
@@ -136,16 +137,119 @@ export function activate(context: vscode.ExtensionContext): void {
     logger.show();
   });
 
-  // Register devmind.syncNow command
-  const syncNowCmd = vscode.commands.registerCommand("devmind.syncNow", () => {
+  // Real sync implementation coordinating SyncClient and Project Brain
+  const runSync = async () => {
     const currentSettings = SettingsService.get();
     if (currentSettings.fixtureMode) {
       vscode.window.showInformationMessage(
         "DevMind is in Fixture Mode. Sync is simulated locally (zero network calls)."
       );
       logger.info("Sync requested in fixture mode: simulated local sync complete.");
-    } else {
-      vscode.window.showInformationMessage("Syncing with DevMind Project Brain...");
+      return;
+    }
+
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!workspaceRoot) {
+      vscode.window.showWarningMessage("DevMind: No workspace folder open to sync.");
+      return;
+    }
+
+    const isAuthed = await authService.isAuthenticated();
+    if (!isAuthed) {
+      const choice = await vscode.window.showWarningMessage(
+        "DevMind: You must sign in before syncing with Project Brain.",
+        "Sign In"
+      );
+      if (choice === "Sign In") {
+        await vscode.commands.executeCommand("devmind.signIn");
+      }
+      return;
+    }
+
+    let projectId = currentSettings.projectId;
+    if (!projectId) {
+      const input = await vscode.window.showInputBox({
+        title: "DevMind: Link Project",
+        prompt: "Enter your DevMind Project ID (UUID) to sync this workspace",
+        placeHolder: "01920000-0000-7000-8000-000000000001",
+        validateInput: (val) => (val.trim().length === 0 ? "Project ID cannot be empty" : null),
+      });
+      if (!input) {
+        return;
+      }
+      projectId = input.trim();
+      await vscode.workspace
+        .getConfiguration("devmind")
+        .update("projectId", projectId, vscode.ConfigurationTarget.Workspace);
+    }
+
+    statusBarService.setScanning(1, 1);
+
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "DevMind: Syncing with Project Brain...",
+        cancellable: false,
+      },
+      async (progress) => {
+        try {
+          const syncClient = new SyncClient(authService);
+          const manifestStore = findingsSource.getManifestStore(workspaceRoot);
+          await manifestStore.load();
+
+          const lastScan = findingsSource.getLastResult();
+          const findings = lastScan?.findings ?? (await findingsSource.getFindings(workspaceRoot));
+          const modules = lastScan?.modules ?? (await findingsSource.getStructure(workspaceRoot));
+          const databaseModels =
+            lastScan?.databaseModels ?? (await findingsSource.getDatabaseModels(workspaceRoot));
+
+          const res = await syncClient.sync({
+            projectId,
+            workspaceRoot,
+            manifestStore,
+            findings,
+            modules,
+            databaseModels,
+            onProgress: (msg, pct) => {
+              progress.report({ message: msg, increment: pct / 5 });
+            },
+          });
+
+          statusBarService.setIdle();
+
+          if (res.success) {
+            vscode.window.showInformationMessage(
+              `DevMind sync complete: ${res.filesCount} file(s), ${res.symbolsCount} symbol(s), ${res.findingsIngested} finding(s) synced.`
+            );
+          } else {
+            vscode.window.showErrorMessage(`DevMind sync failed: ${res.error || "Unknown error"}`);
+          }
+        } catch (err) {
+          statusBarService.setIdle();
+          vscode.window.showErrorMessage(`DevMind sync encountered an error: ${String(err)}`);
+        }
+      }
+    );
+  };
+
+  // Register devmind.syncNow and devmind.syncProject commands
+  const syncNowCmd = vscode.commands.registerCommand("devmind.syncNow", runSync);
+  const syncProjectCmd = vscode.commands.registerCommand("devmind.syncProject", runSync);
+
+  // Register devmind.linkProject command
+  const linkProjectCmd = vscode.commands.registerCommand("devmind.linkProject", async () => {
+    const current = SettingsService.get().projectId || "";
+    const input = await vscode.window.showInputBox({
+      title: "DevMind: Link Project",
+      prompt: "Enter your DevMind Project ID (UUID)",
+      value: current,
+      validateInput: (val) => (val.trim().length === 0 ? "Project ID cannot be empty" : null),
+    });
+    if (input) {
+      await vscode.workspace
+        .getConfiguration("devmind")
+        .update("projectId", input.trim(), vscode.ConfigurationTarget.Workspace);
+      vscode.window.showInformationMessage(`DevMind: Workspace linked to Project ${input.trim()}`);
     }
   });
 
@@ -268,6 +372,8 @@ export function activate(context: vscode.ExtensionContext): void {
     openFindingsCmd,
     showLogsCmd,
     syncNowCmd,
+    syncProjectCmd,
+    linkProjectCmd,
     showWhatLeavesCmd,
     reviewSyncCmd,
     openLocCmd,

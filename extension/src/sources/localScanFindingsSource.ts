@@ -299,6 +299,17 @@ export class LocalScanFindingsSource implements FindingsSource {
     return this.lastResult?.analyzedFilesCount ?? 0;
   }
 
+  public getManifestStore(workspaceRoot: string): LocalManifestStore {
+    const workspaceHash = crypto
+      .createHash("sha256")
+      .update(path.resolve(workspaceRoot))
+      .digest("hex")
+      .slice(0, 16);
+    const manifestDir =
+      this.storageDir || path.join(os.tmpdir(), "devmind", "manifests", workspaceHash);
+    return new LocalManifestStore(manifestDir, workspaceRoot);
+  }
+
   public clearCache(): void {
     this.lastResult = null;
     this.cachedWorkspaceRoot = undefined;

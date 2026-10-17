@@ -52,6 +52,7 @@ export interface ExtensionSettings {
   apiBaseUrl: string;
   fixtureMode: boolean;
   syncMode: SyncMode;
+  projectId?: string;
 }
 
 export interface FindingsSource {

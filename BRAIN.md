@@ -9,7 +9,7 @@
 | Field              | Value                                                                                                         |
 | ------------------ | ------------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                        |
-| **Last commit**    | `f2df5cf` (feat(server): implement M4-07 staleness marking on file change and removal)                        |
+| **Last commit**    | `0d57555` (feat(server): implement M4-08 browser read endpoints for scans, brain summary, and files)          |
 | **Working tree**   | clean; working directly on main per user instruction                                                          |
 | **Open PR**        | None (working directly on main)                                                                               |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 154/154 pass, boundaries:server pass (36 API paths) |
@@ -19,16 +19,13 @@
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M4-09: Extension Metadata-Only Sync Client and Command Integration**:
-   - Inspect `docs/06 §9` and `docs/03 §11.2` for extension sync behavior:
-     - Client calls `POST /api/v1/ext/projects/{pid}/manifest/diff` with local manifest files.
-     - Upserts missing or modified files via `PUT /api/v1/ext/projects/{pid}/manifest`.
-     - Syncs extracted code symbols via `PUT /api/v1/ext/projects/{pid}/symbols` and relationships via `PUT /api/v1/ext/projects/{pid}/relationships`.
-     - Batches E0/E1 scanner findings via `POST /api/v1/ext/projects/{pid}/findings:batch`.
-     - Automatically handles `409 sync.stale_base` by triggering full clean manifest re-sync.
-     - Integrates into `devmind.syncProject` VS Code command with progress notifications and status bar indication.
-   - Write extension unit and integration tests in `extension/tests/syncClient.test.ts`.
-   - Run verification suite `node scripts/test-all.mjs --fast`.
+1. Implement **Milestone M5-01: Consent Model, Consent Records Table, and consent.required Enforcement**:
+   - Inspect `docs/03 §4`, `docs/07 §3-§5`, and `docs/06 §12` for the DevMind consent architecture:
+     - `consent_records` database table (tenant-scoped by `workspace_id` + `project_id`, records timestamp, user/device identifier, consent mode, explicit scope of hashes/patterns, revoked_at).
+     - Alembic migration creating `consent_records` table with indexes.
+     - `ConsentRepository` and `ConsentService` verifying whether an upload or operation has valid consent.
+     - Enforce `403 consent.required` on any route or service attempting to ingest or index file content chunks without active recorded consent.
+   - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
 
@@ -41,6 +38,30 @@
 ---
 
 ## 4. Done log
+
+### M4-09 — Extension Metadata-Only Sync Client and Command Integration
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented the complete VS Code extension cloud sync client and commands for Project Brain metadata-only synchronization per `docs/06 §9`, `docs/06 §11`, and `docs/03 §11.2`:
+  - **Extension Sync Client** (`extension/src/services/syncClient.ts`):
+    - Computes cloud diff against Project Brain via `POST /api/v1/ext/projects/{pid}/manifest/diff`.
+    - Handles base snapshot drift automatically: detects `409 sync.stale_base` and re-diffs cleanly from scratch.
+    - Uploads file manifests and registers file versions via `PUT /api/v1/ext/projects/{pid}/manifest`.
+    - Upserts extracted code symbols via `PUT /api/v1/ext/projects/{pid}/symbols`.
+    - Upserts structural relationships via `PUT /api/v1/ext/projects/{pid}/relationships`.
+    - Batches scanner findings via `POST /api/v1/ext/projects/{pid}/findings:batch`, enforcing the Rule 5 evidence ceiling (capped strictly at `<= E1` with deterministic snippet hashing).
+    - Single-retry automatic token refresh on `401 Unauthorized` via `ExtensionAuthService.refreshTokens`.
+    - Records cryptographic sync receipts in `LocalManifestStore` outside the workspace.
+  - **VS Code Commands & UI Wiring** (`extension/src/extension.ts`, `extension/package.json`):
+    - Added `devmind.projectId` setting in extension settings.
+    - Wired `devmind.syncNow` and `devmind.syncProject` with progress notification (`vscode.window.withProgress`) and status bar indicator.
+    - Added `devmind.linkProject` command to set or update the project ID in workspace configuration.
+    - Exported `getManifestStore` on `LocalScanFindingsSource`.
+  - **Unit & Integration Test Suite** (`extension/tests/syncClient.test.ts`):
+    - 5 tests covering unauthenticated abort, end-to-end sync, 409 stale base recovery, 401 token refresh retry, and network error handling.
+    - Verified all 12 extension test files (58 tests) pass.
+    - Successfully built and packaged `dist/devmind-vscode.vsix` (49.9 KB) under publisher `WarishLabs`.
 
 ### M4-08 — Browser Read Endpoints for Scans, Brain Summary, Files, Symbols, and Graph
 
