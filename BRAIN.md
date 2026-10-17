@@ -9,10 +9,10 @@
 | Field              | Value                                                                                                 |
 | ------------------ | ----------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                |
-| **Last commit**    | `3be9ea6` (fix(client): harden turnstile button guards and script loading)                            |
-| **Working tree**   | M6-03 complete; M6-04 ready to begin; all 13 checks pass                                              |
+| **Last commit**    | `6d6d483` (fix(client): eliminate turnstile refresh loop and lock submit button when unverified)      |
+| **Working tree**   | Turnstile hardening pushed to origin/main; all 13 checks pass; M6-04 ready to begin                   |
 | **Open PR**        | None (working directly on main)                                                                       |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 281/285 pass (4 skipped), client 45/45 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 281/285 pass (4 skipped), client 46/46 pass |
 | **Date**           | 2026-10-17                                                                                            |
 
 ---
@@ -41,6 +41,22 @@
 ---
 
 ## 4. Done log
+
+### Fix — Turnstile Refresh Loop Elimination & Strict Button Lock When Unverified
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**:
+  - Eliminated Cloudflare Turnstile infinite iframe reload loop by configuring explicit `retry: "never"`, `refresh-expired: "manual"`, and `refresh-timeout: "never"` on the Turnstile widget render parameters.
+  - Added `getResolvedSiteKey()` with domain inspection that routes localhost, LAN IP addresses, and `*.vercel.app` preview deployments to Cloudflare's official dummy test sitekey `1x00000000000000000000AA`, avoiding domain-mismatch (e.g. error 110200) loops when a production-only sitekey is configured.
+  - Render widget strictly once per container lifecycle (`renderAttemptedRef`), avoiding duplicate iframes.
+  - Locked the submit button completely when unverified across both `EarlyAccessForm` and `contact/page.tsx`:
+    - Native `disabled` and `aria-disabled="true"`
+    - `pointer-events-none select-none cursor-not-allowed` (physically impossible to click in browser)
+    - `tabIndex={-1}` to prevent keyboard activation
+    - Explicit label `Verification Required` / `Security Verification Required to Send`
+    - Removed `onClick` handler when unverified so no click actions or error popups fire.
+  - Verified with 46 client vitest tests passing and all 13 test-all fast suite checks passing. Committed and pushed to `origin/main`.
 
 ### Feature — M6-03: Gateway YAML Config Loaders with Pydantic Validation
 
