@@ -253,6 +253,70 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{pid}/brain/snapshots": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List recent project snapshots
+     * @description List recent snapshots captured for the project.
+     */
+    get: operations["list_snapshots_api_v1_projects__pid__brain_snapshots_get"];
+    put?: never;
+    /**
+     * Capture a point-in-time project snapshot
+     * @description Capture an immutable point-in-time snapshot of current project files and versions.
+     */
+    post: operations["create_snapshot_api_v1_projects__pid__brain_snapshots_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/brain/snapshots/{sid}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get snapshot details and file version mappings
+     * @description Retrieve complete metadata and all file version mappings for a specific snapshot.
+     */
+    get: operations["get_snapshot_detail_api_v1_projects__pid__brain_snapshots__sid__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/brain/snapshots/{sid}/diff": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Compare snapshot against another snapshot or active state
+     * @description Compare a base snapshot against a target snapshot or the current active project state.
+     */
+    get: operations["compare_snapshots_api_v1_projects__pid__brain_snapshots__sid__diff_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/me": {
     parameters: {
       query?: never;
@@ -523,6 +587,29 @@ export interface components {
        * @default main
        */
       default_branch: string;
+    };
+    /**
+     * CreateSnapshotRequest
+     * @description Payload for capturing a point-in-time project snapshot.
+     */
+    CreateSnapshotRequest: {
+      /**
+       * Kind
+       * @description Snapshot trigger origin: scan | commit | manual
+       * @default scan
+       */
+      kind: string;
+      /**
+       * Ref
+       * @description External reference (e.g. commit SHA or scan run ID)
+       * @default
+       */
+      ref: string;
+      /**
+       * Label
+       * @description Optional human-readable label
+       */
+      label?: string | null;
     };
     /**
      * CreateWorkspaceRequest
@@ -861,6 +948,119 @@ export interface components {
       details?: {
         [key: string]: unknown;
       } | null;
+    };
+    /**
+     * SnapshotDetail
+     * @description Full snapshot details including file composition.
+     */
+    SnapshotDetail: {
+      snapshot: components["schemas"]["SnapshotItem"];
+      /** Files */
+      files?: components["schemas"]["SnapshotFileItem"][];
+    };
+    /**
+     * SnapshotDiffItem
+     * @description Comparison item for a single file between two snapshots.
+     */
+    SnapshotDiffItem: {
+      /** Path */
+      path: string;
+      /**
+       * Status
+       * @description added | removed | modified | unchanged
+       */
+      status: string;
+      /** Base Version Id */
+      base_version_id?: string | null;
+      /** Base Content Hash */
+      base_content_hash?: string | null;
+      /** Target Version Id */
+      target_version_id?: string | null;
+      /** Target Content Hash */
+      target_content_hash?: string | null;
+    };
+    /**
+     * SnapshotDiffResponse
+     * @description Complete diff report between two snapshots or against active state.
+     */
+    SnapshotDiffResponse: {
+      /**
+       * Base Snapshot Id
+       * Format: uuid
+       */
+      base_snapshot_id: string;
+      /** Target Snapshot Id */
+      target_snapshot_id?: string | null;
+      /** Added */
+      added: number;
+      /** Removed */
+      removed: number;
+      /** Modified */
+      modified: number;
+      /** Unchanged */
+      unchanged: number;
+      /** Differences */
+      differences?: components["schemas"]["SnapshotDiffItem"][];
+    };
+    /**
+     * SnapshotFileItem
+     * @description File version metadata linked to a snapshot.
+     */
+    SnapshotFileItem: {
+      /**
+       * File Id
+       * Format: uuid
+       */
+      file_id: string;
+      /**
+       * File Version Id
+       * Format: uuid
+       */
+      file_version_id: string;
+      /** Path */
+      path: string;
+      /** Language */
+      language: string;
+      /** Tier */
+      tier: number;
+      /** Content Hash */
+      content_hash: string;
+      /** Size Bytes */
+      size_bytes: number;
+      /** Line Count */
+      line_count: number;
+    };
+    /**
+     * SnapshotItem
+     * @description Serialized summary of a project snapshot.
+     */
+    SnapshotItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Kind */
+      kind: string;
+      /** Ref */
+      ref: string;
+      /** Label */
+      label?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * File Count
+       * @default 0
+       */
+      file_count: number;
     };
     /**
      * UpdateProjectRequest
@@ -1578,6 +1778,140 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_snapshots_api_v1_projects__pid__brain_snapshots_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SnapshotItem"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_snapshot_api_v1_projects__pid__brain_snapshots_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateSnapshotRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SnapshotItem"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_snapshot_detail_api_v1_projects__pid__brain_snapshots__sid__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+        sid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SnapshotDetail"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  compare_snapshots_api_v1_projects__pid__brain_snapshots__sid__diff_get: {
+    parameters: {
+      query?: {
+        target_snapshot_id?: string | null;
+      };
+      header?: never;
+      path: {
+        pid: string;
+        sid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SnapshotDiffResponse"];
+        };
       };
       /** @description Validation Error */
       422: {

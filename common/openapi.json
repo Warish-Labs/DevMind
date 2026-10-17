@@ -784,6 +784,235 @@
         }
       }
     },
+    "/api/v1/projects/{pid}/brain/snapshots": {
+      "post": {
+        "tags": ["Project Brain"],
+        "summary": "Capture a point-in-time project snapshot",
+        "description": "Capture an immutable point-in-time snapshot of current project files and versions.",
+        "operationId": "create_snapshot_api_v1_projects__pid__brain_snapshots_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSnapshotRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Project Brain"],
+        "summary": "List recent project snapshots",
+        "description": "List recent snapshots captured for the project.",
+        "operationId": "list_snapshots_api_v1_projects__pid__brain_snapshots_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SnapshotItem"
+                  },
+                  "title": "Response List Snapshots Api V1 Projects  Pid  Brain Snapshots Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/brain/snapshots/{sid}": {
+      "get": {
+        "tags": ["Project Brain"],
+        "summary": "Get snapshot details and file version mappings",
+        "description": "Retrieve complete metadata and all file version mappings for a specific snapshot.",
+        "operationId": "get_snapshot_detail_api_v1_projects__pid__brain_snapshots__sid__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "sid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/brain/snapshots/{sid}/diff": {
+      "get": {
+        "tags": ["Project Brain"],
+        "summary": "Compare snapshot against another snapshot or active state",
+        "description": "Compare a base snapshot against a target snapshot or the current active project state.",
+        "operationId": "compare_snapshots_api_v1_projects__pid__brain_snapshots__sid__diff_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "sid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sid"
+            }
+          },
+          {
+            "name": "target_snapshot_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Target Snapshot Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotDiffResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me": {
       "get": {
         "tags": ["Identity"],
@@ -1261,6 +1490,39 @@
         "required": ["name", "slug"],
         "title": "CreateProjectRequest",
         "description": "Payload for creating a new codebase project."
+      },
+      "CreateSnapshotRequest": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "Snapshot trigger origin: scan | commit | manual",
+            "default": "scan"
+          },
+          "ref": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Ref",
+            "description": "External reference (e.g. commit SHA or scan run ID)",
+            "default": ""
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "Optional human-readable label"
+          }
+        },
+        "type": "object",
+        "title": "CreateSnapshotRequest",
+        "description": "Payload for capturing a point-in-time project snapshot."
       },
       "CreateWorkspaceRequest": {
         "properties": {
@@ -1813,6 +2075,233 @@
         "type": "object",
         "required": ["status"],
         "title": "ReadinessResponse"
+      },
+      "SnapshotDetail": {
+        "properties": {
+          "snapshot": {
+            "$ref": "#/components/schemas/SnapshotItem"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotFileItem"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": ["snapshot"],
+        "title": "SnapshotDetail",
+        "description": "Full snapshot details including file composition."
+      },
+      "SnapshotDiffItem": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "added | removed | modified | unchanged"
+          },
+          "base_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Version Id"
+          },
+          "base_content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Content Hash"
+          },
+          "target_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Version Id"
+          },
+          "target_content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Content Hash"
+          }
+        },
+        "type": "object",
+        "required": ["path", "status"],
+        "title": "SnapshotDiffItem",
+        "description": "Comparison item for a single file between two snapshots."
+      },
+      "SnapshotDiffResponse": {
+        "properties": {
+          "base_snapshot_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Base Snapshot Id"
+          },
+          "target_snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Snapshot Id"
+          },
+          "added": {
+            "type": "integer",
+            "title": "Added"
+          },
+          "removed": {
+            "type": "integer",
+            "title": "Removed"
+          },
+          "modified": {
+            "type": "integer",
+            "title": "Modified"
+          },
+          "unchanged": {
+            "type": "integer",
+            "title": "Unchanged"
+          },
+          "differences": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotDiffItem"
+            },
+            "type": "array",
+            "title": "Differences"
+          }
+        },
+        "type": "object",
+        "required": ["base_snapshot_id", "added", "removed", "modified", "unchanged"],
+        "title": "SnapshotDiffResponse",
+        "description": "Complete diff report between two snapshots or against active state."
+      },
+      "SnapshotFileItem": {
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "File Id"
+          },
+          "file_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "File Version Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "tier": {
+            "type": "integer",
+            "title": "Tier"
+          },
+          "content_hash": {
+            "type": "string",
+            "title": "Content Hash"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "line_count": {
+            "type": "integer",
+            "title": "Line Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_id",
+          "file_version_id",
+          "path",
+          "language",
+          "tier",
+          "content_hash",
+          "size_bytes",
+          "line_count"
+        ],
+        "title": "SnapshotFileItem",
+        "description": "File version metadata linked to a snapshot."
+      },
+      "SnapshotItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "ref": {
+            "type": "string",
+            "title": "Ref"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "file_count": {
+            "type": "integer",
+            "title": "File Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": ["id", "project_id", "kind", "ref", "created_at"],
+        "title": "SnapshotItem",
+        "description": "Serialized summary of a project snapshot."
       },
       "UpdateProjectRequest": {
         "properties": {

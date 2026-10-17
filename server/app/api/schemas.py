@@ -8,12 +8,18 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.domain.brain import (
+    CreateSnapshotRequest,
     FileManifestEntry,
     ManifestDiffRequest,
     ManifestDiffResponse,
     MissingFileEntry,
     PutManifestRequest,
     PutManifestResponse,
+    SnapshotDetail,
+    SnapshotDiffItem,
+    SnapshotDiffResponse,
+    SnapshotFileItem,
+    SnapshotItem,
 )
 
 # ---------------------------------------------------------------------------
@@ -242,6 +248,7 @@ class ExtensionHeartbeatResponse(BaseModel):
 __all__ = [
     "AddProjectMemberRequest",
     "CreateProjectRequest",
+    "CreateSnapshotRequest",
     "CreateWorkspaceRequest",
     "ExtensionHeartbeatResponse",
     "ExtensionRefreshTokenRequest",
@@ -255,6 +262,11 @@ __all__ = [
     "ProjectResponse",
     "PutManifestRequest",
     "PutManifestResponse",
+    "SnapshotDetail",
+    "SnapshotDiffItem",
+    "SnapshotDiffResponse",
+    "SnapshotFileItem",
+    "SnapshotItem",
     "UpdateProjectMemberRequest",
     "UpdateProjectRequest",
     "UpdateWorkspaceRequest",

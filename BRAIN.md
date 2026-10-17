@@ -6,25 +6,25 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                           |
-| ------------------ | ----------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                          |
-| **Last commit**    | `fc3351f` (feat(server): implement M4-02 job lifecycle service and Celery worker configuration) |
-| **Working tree**   | clean; working directly on main per user instruction                                            |
-| **Open PR**        | None (working directly on main)                                                                 |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 121/121 pass, boundaries:server pass  |
-| **Date**           | 2026-10-17                                                                                      |
+| Field              | Value                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| **Branch**         | `main`                                                                                           |
+| **Last commit**    | `6b22b24` (feat(server,extension): implement M4-03 manifest diff, sync endpoints, and publisher) |
+| **Working tree**   | clean; working directly on main per user instruction                                             |
+| **Open PR**        | None (working directly on main)                                                                  |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 129/129 pass, boundaries:server pass   |
+| **Date**           | 2026-10-17                                                                                       |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M4-04: Snapshot and File Versioning Logic with Current Version Tracking**:
-   - Create snapshot creation domain service orchestration (`SnapshotService` in `server/app/domain/brain/snapshot_service.py`).
-   - Implement point-in-time snapshot composition linking active file versions via `snapshot_files` mapping.
-   - Enforce immutability of historical snapshots while maintaining pointer to `current_version_id` on `files`.
-   - Implement snapshot comparison / diff logic between two snapshot IDs.
-   - Wire unit and integration tests in `server/tests/test_snapshots.py`.
+1. Implement **Milestone M4-05: Symbol and Relationship Batch Upsert and Graph Derivation**:
+   - Define symbol extraction and graph edge schemas (`CodeSymbolPayload`, `CodeRelationshipPayload`, `BatchSymbolsRequest`, `BatchRelationshipsRequest`).
+   - Implement domain service (`SymbolService` in `server/app/domain/brain/symbol_service.py`) maintaining `is_current` transactional invariant (when a file version is updated, old symbol and edge rows flip `is_current = false`).
+   - Wire extension endpoints `PUT /api/v1/ext/projects/{pid}/symbols` and `PUT /api/v1/ext/projects/{pid}/relationships` with `@declare_permission(PERM_PROJECT_SYNC)`.
+   - Implement architectural graph derivation (call graph, inheritance, import/export edges).
+   - Write unit and integration tests in `server/tests/test_symbols.py`.
 
 ---
 
@@ -37,6 +37,35 @@
 ---
 
 ## 4. Done log
+
+### M4-04 — Snapshot and File Versioning Logic with Current Version Tracking
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented point-in-time immutable snapshot creation, current version tracking, historical snapshot comparison, and Project Brain REST endpoints:
+  - **BrainRepository Snapshot Enhancements** (`server/app/persistence/repositories/brain_repo.py`):
+    - `create_snapshot_from_active_files`: Captures active files (`removed_at IS NULL` and `current_version_id IS NOT NULL`), persisting immutable `SnapshotFile` mappings.
+    - `get_snapshot_files`: Retrieves all file version associations for a snapshot with eagerly loaded `ProjectFile` and `FileVersion`.
+    - `count_snapshot_files`: Efficient scalar count of files captured within a snapshot.
+  - **Snapshot Domain Service** (`server/app/domain/brain/snapshot_service.py`):
+    - `create_snapshot`: Validates origin (`scan`, `commit`, `manual`) and captures point-in-time snapshot.
+    - `get_snapshot` and `get_snapshot_detail`: Returns serialized snapshot summary and full file composition.
+    - `list_snapshots`: Lists recent project snapshots with file counts.
+    - `compare_snapshots`: Computes file-level diff between two snapshots or against current active workspace state (`added`, `removed`, `modified`, `unchanged`).
+    - Immutability guarantee: Historical snapshots remain completely unaltered when files are modified or deleted subsequently.
+  - **Project Brain REST Router** (`server/app/api/brain.py`):
+    - `POST /api/v1/projects/{pid}/brain/snapshots` (@declare_permission(PERM_PROJECT_UPDATE)).
+    - `GET /api/v1/projects/{pid}/brain/snapshots` (@declare_permission(PERM_BRAIN_READ)).
+    - `GET /api/v1/projects/{pid}/brain/snapshots/{sid}` (@declare_permission(PERM_BRAIN_READ)).
+    - `GET /api/v1/projects/{pid}/brain/snapshots/{sid}/diff` (@declare_permission(PERM_BRAIN_READ)).
+    - Enforced tenant boundary isolation and permission checks with HTTP 403 Forbidden.
+  - **OpenAPI & Layer Boundaries**:
+    - Regenerated TypeScript types via `pnpm gen:api` (23 OpenAPI paths).
+    - Preserved 7/7 import linter contracts (`lint-imports` clean).
+  - **Tests & Verification**:
+    - Added 8 tests in `server/tests/test_snapshots.py`.
+    - Full server pytest suite: 129 passed, 0 failed, 4 skipped.
+    - Full monorepo fast suite: 13 passed, 0 failed, 1 skipped.
 
 ### M4-03 — Manifest Diff, Sync Upload Endpoints, Stale Base Detection, and Extension Publisher Configuration
 

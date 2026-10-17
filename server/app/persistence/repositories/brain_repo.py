@@ -411,6 +411,66 @@ class BrainRepository(BaseRepository):
         result = await self.session.execute(stmt)
         return result.scalars().first()
 
+    async def create_snapshot_from_active_files(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        kind: str = "scan",
+        ref: str = "",
+        label: str | None = None,
+    ) -> ProjectSnapshot:
+        """Create a point-in-time snapshot capturing all currently active files and their versions."""
+        await self._verify_project_access(ctx, project_id)
+        active_files = await self.list_active_files(ctx, project_id)
+        file_mappings = [
+            (f.id, f.current_version_id) for f in active_files if f.current_version_id is not None
+        ]
+        return await self.create_snapshot(
+            ctx,
+            project_id=project_id,
+            kind=kind,
+            ref=ref,
+            label=label,
+            file_mappings=file_mappings,
+        )
+
+    async def get_snapshot_files(
+        self, ctx: AuthContext | SystemContext, project_id: UUID, snapshot_id: UUID
+    ) -> list[SnapshotFile]:
+        """List all file mappings for a given snapshot with eagerly loaded file and file_version."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = (
+            select(SnapshotFile)
+            .join(ProjectSnapshot, SnapshotFile.snapshot_id == ProjectSnapshot.id)
+            .options(
+                selectinload(SnapshotFile.file),
+                selectinload(SnapshotFile.file_version),
+            )
+            .where(
+                SnapshotFile.snapshot_id == snapshot_id,
+                ProjectSnapshot.project_id == project_id,
+            )
+            .order_by(SnapshotFile.created_at.asc())
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def count_snapshot_files(
+        self, ctx: AuthContext | SystemContext, project_id: UUID, snapshot_id: UUID
+    ) -> int:
+        """Count total files captured in a snapshot."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = (
+            select(func.count(SnapshotFile.id))
+            .join(ProjectSnapshot, SnapshotFile.snapshot_id == ProjectSnapshot.id)
+            .where(
+                SnapshotFile.snapshot_id == snapshot_id,
+                ProjectSnapshot.project_id == project_id,
+            )
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar() or 0
+
     # --- Code Symbols and Relationships ---
 
     async def batch_upsert_symbols(
