@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.auth_context import AuthContext, SystemContext
+from app.core.ids import generate_uuid7
 from app.persistence.models.brain import (
     AnalysisJob,
     CodeRelationship,
@@ -1012,3 +1013,136 @@ class BrainRepository(BaseRepository):
         self.session.add(evidence)
         await self.session.flush()
         return evidence
+
+    async def mark_findings_stale_for_files(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        paths: list[str],
+    ) -> int:
+        """Mark active findings stale when their primary file or evidence files are changed or removed (docs/03 §5.1 rule 3)."""
+        if not paths:
+            return 0
+        await self._verify_project_access(ctx, project_id)
+
+        # 1. Look up file_ids for the specified paths
+        file_stmt = select(ProjectFile.id).where(
+            ProjectFile.project_id == project_id,
+            ProjectFile.path.in_(paths),
+        )
+        file_ids = list((await self.session.execute(file_stmt)).scalars().all())
+
+        # 2. Find active findings where primary_file_id is in file_ids OR evidence path is in paths
+        ev_subquery = select(FindingEvidence.finding_id).where(
+            FindingEvidence.project_id == project_id,
+            FindingEvidence.path.in_(paths),
+        )
+
+        active_statuses = ["open", "acknowledged", "in_progress", "fix_proposed"]
+        clauses = []
+        if file_ids:
+            clauses.append(Finding.primary_file_id.in_(file_ids))
+        clauses.append(Finding.id.in_(ev_subquery))
+
+        from sqlalchemy import or_
+
+        finding_stmt = select(Finding).where(
+            Finding.project_id == project_id,
+            Finding.status.in_(active_statuses),
+            or_(*clauses),
+        )
+        findings_to_stale = list((await self.session.execute(finding_stmt)).scalars().all())
+
+        # Mark matching evidence records as non-current
+        ev_update_stmt = (
+            update(FindingEvidence)
+            .where(
+                FindingEvidence.project_id == project_id,
+                FindingEvidence.path.in_(paths),
+                FindingEvidence.is_current.is_(True),
+            )
+            .values(is_current=False)
+        )
+        await self.session.execute(ev_update_stmt)
+
+        if not findings_to_stale:
+            await self.session.flush()
+            return 0
+
+        for f in findings_to_stale:
+            prev_status = f.status
+            f.status = "stale"
+            history = FindingStatusHistory(
+                id=generate_uuid7(),
+                finding_id=f.id,
+                from_status=prev_status,
+                to_status="stale",
+                actor_kind="system",
+                reason="evidence file modified or removed",
+            )
+            self.session.add(history)
+
+        await self.session.flush()
+        return len(findings_to_stale)
+
+    async def resolve_stale_findings_for_files(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        scanned_paths: list[str],
+        detected_fingerprints: set[str],
+        scan_run_id: UUID | None = None,
+    ) -> int:
+        """Resolve stale findings on scanned files when re-verification confirms the issue is gone (docs/03 §5.1 rule 1)."""
+        if not scanned_paths:
+            return 0
+        await self._verify_project_access(ctx, project_id)
+
+        file_stmt = select(ProjectFile.id).where(
+            ProjectFile.project_id == project_id,
+            ProjectFile.path.in_(scanned_paths),
+        )
+        file_ids = list((await self.session.execute(file_stmt)).scalars().all())
+
+        ev_subquery = select(FindingEvidence.finding_id).where(
+            FindingEvidence.project_id == project_id,
+            FindingEvidence.path.in_(scanned_paths),
+        )
+
+        clauses = []
+        if file_ids:
+            clauses.append(Finding.primary_file_id.in_(file_ids))
+        clauses.append(Finding.id.in_(ev_subquery))
+
+        from sqlalchemy import or_
+
+        stmt = select(Finding).where(
+            Finding.project_id == project_id,
+            Finding.status == "stale",
+            or_(*clauses),
+        )
+        if detected_fingerprints:
+            stmt = stmt.where(Finding.fingerprint.notin_(list(detected_fingerprints)))
+
+        stale_findings = list((await self.session.execute(stmt)).scalars().all())
+        now = datetime.now(UTC)
+        for f in stale_findings:
+            f.status = "resolved"
+            f.resolved_at = now
+            if scan_run_id:
+                f.last_seen_scan_run_id = scan_run_id
+            f.status_reason = "re-verification: no longer detected in scan"
+            history = FindingStatusHistory(
+                id=generate_uuid7(),
+                finding_id=f.id,
+                from_status="stale",
+                to_status="resolved",
+                actor_kind="system",
+                reason="re-verification: no longer detected in scan",
+            )
+            self.session.add(history)
+
+        if stale_findings:
+            await self.session.flush()
+
+        return len(stale_findings)

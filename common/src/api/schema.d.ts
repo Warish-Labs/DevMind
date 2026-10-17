@@ -1636,6 +1636,11 @@ export interface components {
       versions_created: number;
       /** Removed Count */
       removed_count: number;
+      /**
+       * Stale Findings Count
+       * @default 0
+       */
+      stale_findings_count: number;
     };
     /** ReadinessResponse */
     ReadinessResponse: {

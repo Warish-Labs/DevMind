@@ -264,8 +264,14 @@ async def test_put_manifest_success() -> None:
     service.repo.upsert_file = AsyncMock(return_value=file_rec)
     service.repo.create_file_version = AsyncMock(return_value=MagicMock())
     service.repo.mark_files_removed = AsyncMock(return_value=1)
+    service.repo.mark_findings_stale_for_files = AsyncMock(return_value=0)
 
-    ctx = AuthContext(user_id=generate_uuid7(), clerk_user_id="c1", email="test@local")
+    ctx = AuthContext(
+        user_id=generate_uuid7(),
+        clerk_user_id="c1",
+        email="test@local",
+        workspace_id=generate_uuid7(),
+    )
     project_id = generate_uuid7()
 
     req = PutManifestRequest(
@@ -286,9 +292,13 @@ async def test_put_manifest_success() -> None:
     assert res.files_count == 1
     assert res.versions_created == 1
     assert res.removed_count == 1
+    assert res.stale_findings_count == 0
     service.repo.upsert_file.assert_called_once()
     service.repo.create_file_version.assert_called_once()
     service.repo.mark_files_removed.assert_called_once_with(ctx, project_id, ["old_file.py"])
+    service.repo.mark_findings_stale_for_files.assert_called_once_with(
+        ctx, project_id, ["old_file.py"]
+    )
 
 
 def test_manifest_endpoints_via_test_client(test_settings: Settings) -> None:

@@ -6,26 +6,26 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                         |
-| ------------------ | ------------------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                        |
-| **Last commit**    | `7133151` (feat(server): implement M4-05 symbol, relationship batch upsert, and graph derivation)             |
-| **Working tree**   | clean; working directly on main per user instruction                                                          |
-| **Open PR**        | None (working directly on main)                                                                               |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 143/143 pass, boundaries:server pass (31 API paths) |
-| **Date**           | 2026-10-17                                                                                                    |
+| Field              | Value                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                          |
+| **Last commit**    | `0ef8231` (feat(server): implement M4-06 findings batch ingestion, fingerprinting, and lifecycle state machine) |
+| **Working tree**   | clean; working directly on main per user instruction                                                            |
+| **Open PR**        | None (working directly on main)                                                                                 |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 149/149 pass, boundaries:server pass (31 API paths)   |
+| **Date**           | 2026-10-17                                                                                                      |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M4-07: Staleness Marking on File Change/Removal**:
-   - Inspect `docs/03 §5.1` rule 3 ("Any change to evidence files moves the finding to stale until verification re-runs").
-   - Wire staleness transition into `ManifestService.put_manifest`:
-     - When a file has a new version (`content_hash` changed) or is marked removed (`removed_at IS NOT NULL`), find all active findings where primary file or evidence matches this file path.
-     - Move them from `open` / `acknowledged` / `in_progress` / `fix_proposed` to `stale`.
-     - Record immutable status history audit log (`actor_kind="system"`, `reason="evidence file modified or removed"`).
-   - Write unit and integration tests in `server/tests/test_staleness.py`.
+1. Implement **Milestone M4-08: Browser Read Endpoints**:
+   - Inspect `docs/03 §11.1` and `docs/02 §4.1` for browser REST endpoints:
+     - Scans: `GET /api/v1/projects/{pid}/scans`, `GET /api/v1/projects/{pid}/scans/{sid}` (@declare_permission(PERM_PROJECT_READ)).
+     - Brain Summary: `GET /api/v1/projects/{pid}/brain/summary` returning total files, languages, versions, snapshots, symbols, relationships, findings summary.
+     - Verify existing browser read endpoints (`/findings`, `/brain/symbols`, `/brain/graph`, `/brain/snapshots`) align with docs/03.
+   - Write comprehensive tests in `server/tests/test_browser_api.py`.
+   - Export OpenAPI schema and regenerate TypeScript client (`pnpm gen:api`).
    - Run verification suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -39,6 +39,26 @@
 ---
 
 ## 4. Done log
+
+### M4-07 — Staleness Marking on File Change and Removal
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented staleness marking on file modification and removal, evidence currency invalidation, re-verification resolution, and manifest sync integration per `docs/03 §5.1 rule 3` and `rule 1`:
+  - **BrainRepository Staleness Extensions** (`server/app/persistence/repositories/brain_repo.py`):
+    - `mark_findings_stale_for_files`: Identifies all active findings (`open`, `acknowledged`, `in_progress`, `fix_proposed`) whose primary file or supporting evidence files match changed or removed paths. Transitions them to `stale`, records immutable `FindingStatusHistory` audit entries (`reason="evidence file modified or removed"`, `actor_kind="system"`), and sets `FindingEvidence.is_current = False` for all matching evidence records.
+    - `resolve_stale_findings_for_files`: When re-verification scans run on previously stale files and confirm the finding is no longer detected, transitions finding status `stale -> resolved`, stamps `resolved_at` and `last_seen_scan_run_id`, and logs `FindingStatusHistory` (`reason="re-verification: no longer detected in scan"`).
+  - **Manifest Domain Service Integration** (`server/app/domain/brain/manifest_service.py`):
+    - In `put_manifest`: tracks changed file content versions (`old_version_id != ver.id`) and removed paths (`payload.removed_paths`).
+    - Automatically invokes `mark_findings_stale_for_files` when paths change or are removed.
+    - Added `stale_findings_count: int = 0` to `PutManifestResponse`.
+  - **OpenAPI Schema & Client Generation**:
+    - Regenerated OpenAPI schema (`common/openapi.json`) and TypeScript client types (`common/src/api/schema.d.ts`).
+  - **Tests & Verification**:
+    - Added comprehensive unit and integration test suite `server/tests/test_staleness.py` (6 tests covering primary file changes, supporting evidence changes, file removals, evidence `is_current` invalidation, status history recording, re-verification resolution, and `put_manifest` wiring).
+    - Updated `server/tests/test_manifest_diff.py` to assert `stale_findings_count`.
+    - Full server pytest suite: 149 passed, 0 failed, 4 skipped.
+    - Full monorepo fast suite: 13 passed, 0 failed, 1 skipped.
 
 ### M4-06 — Findings Batch Ingestion with Fingerprinting and Lifecycle State Machine
 

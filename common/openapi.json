@@ -3874,6 +3874,11 @@
           "removed_count": {
             "type": "integer",
             "title": "Removed Count"
+          },
+          "stale_findings_count": {
+            "type": "integer",
+            "title": "Stale Findings Count",
+            "default": 0
           }
         },
         "type": "object",

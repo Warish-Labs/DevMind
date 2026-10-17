@@ -74,6 +74,7 @@ class PutManifestResponse(BaseModel):
     files_count: int
     versions_created: int
     removed_count: int
+    stale_findings_count: int = 0
 
 
 class ManifestService:
@@ -174,6 +175,7 @@ class ManifestService:
 
         # 2. Upsert each file and create immutable content version
         versions_created = 0
+        changed_paths: list[str] = []
         for f in payload.files:
             file_rec = await self.repo.upsert_file(
                 ctx,
@@ -182,7 +184,8 @@ class ManifestService:
                 language=f.language,
                 tier=f.tier,
             )
-            await self.repo.create_file_version(
+            old_version_id = file_rec.current_version_id
+            ver = await self.repo.create_file_version(
                 ctx,
                 project_id=project_id,
                 file_id=file_rec.id,
@@ -192,6 +195,8 @@ class ManifestService:
                 scan_run_id=payload.scan_run_id,
                 origin="extension",
             )
+            if old_version_id is not None and old_version_id != ver.id:
+                changed_paths.append(f.path)
             versions_created += 1
 
         # 3. Mark removed files if any specified
@@ -199,6 +204,14 @@ class ManifestService:
         if payload.removed_paths:
             removed_count = await self.repo.mark_files_removed(
                 ctx, project_id, payload.removed_paths
+            )
+            changed_paths.extend(payload.removed_paths)
+
+        # 4. Mark active findings stale for changed or removed files (docs/03 §5.1 rule 3)
+        stale_findings_count = 0
+        if changed_paths:
+            stale_findings_count = await self.repo.mark_findings_stale_for_files(
+                ctx, project_id, changed_paths
             )
 
         return PutManifestResponse(
@@ -208,4 +221,5 @@ class ManifestService:
             files_count=len(payload.files),
             versions_created=versions_created,
             removed_count=removed_count,
+            stale_findings_count=stale_findings_count,
         )
