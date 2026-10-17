@@ -2,6 +2,7 @@
 
 from app.llm.adapter import LLMAdapter
 from app.llm.adapters.fake import FakeFaultInjection, FakeLLMAdapter
+from app.llm.adapters.google_genai import GoogleGeminiAdapter
 from app.llm.config import (
     ConfigValidationError,
     GatewayConfig,
@@ -63,6 +64,7 @@ __all__ = [
     "LLMAdapter",
     "FakeLLMAdapter",
     "FakeFaultInjection",
+    "GoogleGeminiAdapter",
     "register_adapter",
     "get_adapter_class",
     "list_supported_adapters",

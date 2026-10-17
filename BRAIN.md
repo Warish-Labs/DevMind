@@ -8,26 +8,25 @@
 
 | Field              | Value                                                                                                 |
 | ------------------ | ----------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                |
-| **Last commit**    | `6d6d483` (fix(client): eliminate turnstile refresh loop and lock submit button when unverified)      |
-| **Working tree**   | Turnstile hardening pushed to origin/main; all 13 checks pass; M6-04 ready to begin                   |
-| **Open PR**        | None (working directly on main)                                                                       |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 281/285 pass (4 skipped), client 46/46 pass |
+| **Branch**         | `feature/m6-gemini-adapter`                                                                           |
+| **Last commit**    | `e6e34b7` (docs: update BRAIN.md with turnstile hardening resolution)                                 |
+| **Working tree**   | M6-04 complete; all 13 checks pass; server test suite grew to 293 passing tests                       |
+| **Open PR**        | None                                                                                                  |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 293/297 pass (4 skipped), client 46/46 pass |
 | **Date**           | 2026-10-17                                                                                            |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-04: First real generation adapter (Google Gemini via official SDK with free tier key support)** per `PLAN.md`:
-   - Inspect `docs/05 §11.1, §12` and `server/app/llm/`:
-     - Implement `GoogleGeminiAdapter(LLMAdapter)` in `server/app/llm/adapters/google_genai.py`.
-     - Support official `google-genai` SDK with `GEMINI_API_KEY` / `DEVMIND_LLM_PRIMARY_API_KEY` free tier support.
-     - Implement request mapping (system instructions, user/model messages, generation options, temperature).
-     - Support structured output via `response_mime_type="application/json"` and `response_schema`.
-     - Support function calling and streaming tokens.
-     - Register `google` adapter in the provider registry.
-     - Add recorded-shape unit tests in `server/tests/test_gemini_adapter.py`.
+1. Implement **Milestone M6-05: Second generation adapter (alternative provider, e.g. Groq/OpenAI, disabled until configured)** per `PLAN.md`:
+   - Inspect `docs/05 §11.1, §12` and `server/app/llm/adapters/`:
+     - Implement `OpenAICompatibleAdapter(LLMAdapter)` supporting OpenAI/Groq compatible chat completion REST schema.
+     - Support native JSON schema or json_object response format.
+     - Support tools and function calling.
+     - Register `openai_compatible`, `openai`, `groq` in adapter registry.
+     - Keep disabled by default until API keys are supplied.
+     - Add recorded-shape unit tests in `server/tests/test_openai_compatible_adapter.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -41,6 +40,24 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-04: Google Gemini Generation Adapter (Official REST/SDK Protocol)
+
+- **Date**: 2026-10-17
+- **Branch**: `feature/m6-gemini-adapter`
+- **What**:
+  - Implemented `GoogleGeminiAdapter(LLMAdapter)` in `server/app/llm/adapters/google_genai.py` connecting to Google's official Gemini Generative Language API (v1beta):
+    - Default model `gemini-1.5-flash` with support for `gemini-1.5-pro` and `gemini-2.0-flash`.
+    - Key resolution supporting `GEMINI_API_KEY` and `DEVMIND_LLM_PRIMARY_API_KEY` with Google AI Studio free tier limits.
+    - Unified request mapping: system instructions (`systemInstruction`), messages (`contents` with `user` and `model` roles), generation options (`temperature`, `maxOutputTokens`, `topP`, `stopSequences`).
+    - Native structured JSON output configuration with `responseMimeType: "application/json"` and `responseSchema`.
+    - Function calling / tool translation (`functionDeclarations`) and tool execution constraints (`AUTO`, `ANY`, `NONE`).
+    - SSE streaming via `streamGenerateContent?alt=sse` yielding incremental `LLMStreamChunk` deltas.
+    - Complete RFC 9457 error translation: HTTP 429 / `RESOURCE_EXHAUSTED` with `retry-after` hint $\rightarrow$ `LLMRateLimitError`, HTTP 401/403 $\rightarrow$ `LLMError(llm.authentication_error)`, HTTP 400 $\rightarrow$ `LLMInvalidOutputError`, HTTP 5xx $\rightarrow$ `LLMProviderError`, timeouts $\rightarrow$ `LLMTimeoutError`, safety blocks $\rightarrow$ `LLMRefusalError`.
+    - Data policy enforcement: `source_code_allowed=False` by default (ADR-046/ADR-047 privacy preservation on free tier).
+    - Registered as `"google"` and `"gemini"` in adapter factory registry.
+  - Added 12 unit tests in `server/tests/test_gemini_adapter.py` verifying generation, structured output, tool calls, SSE streaming, safety blocks, and error mappings.
+  - Server test suite expanded to 293 passing tests. All 13 checks pass in `node scripts/test-all.mjs --fast`.
 
 ### Fix — Turnstile Refresh Loop Elimination & Strict Button Lock When Unverified
 
