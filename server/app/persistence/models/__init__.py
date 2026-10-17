@@ -9,6 +9,7 @@ from app.persistence.models.base import (
 )
 from app.persistence.models.brain import (
     AnalysisJob,
+    ChunkEmbedding,
     CodeChunk,
     CodeRelationship,
     CodeSymbol,
@@ -36,6 +37,7 @@ __all__ = [
     "AnalysisJob",
     "AuditEvent",
     "Base",
+    "ChunkEmbedding",
     "CodeChunk",
     "CodeRelationship",
     "CodeSymbol",

@@ -105,6 +105,17 @@ class EmbeddingService:
         texts = [chunk.search_text for chunk in chunks]
         embed_result = await adapter.embed(texts, input_type="document")
 
+        # 5. Persist chunk embeddings into database
+        embeddings_data = [
+            (chunk.id, vec) for chunk, vec in zip(chunks, embed_result.vectors, strict=True)
+        ]
+        await self.repo.save_chunk_embeddings(
+            ctx=ctx,
+            project_id=project_id,
+            space_id=space.id,
+            embeddings_data=embeddings_data,
+        )
+
         logger.info(
             "Embedded %d chunks for project %s (space=%s, tokens=%d)",
             len(chunks),

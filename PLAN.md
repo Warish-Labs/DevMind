@@ -236,7 +236,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M5-04 Code-aware chunker per language (TypeScript/JavaScript, Python) (feature/m5-chunker)
 - [x] M5-05 Chunk storage, tsvector full-text, and trigram indices (feature/m5-chunk-storage)
 - [x] M5-06 Embedding gateway slice: adapter interface, embedding spaces, embed_chunks job (feature/m5-embedding-gateway)
-- [ ] M5-07 Chunk embeddings with pgvector and per-space HNSW vector index (feature/m5-vector-index)
+- [x] M5-07 Chunk embeddings with pgvector and per-space HNSW vector index (feature/m5-vector-index)
 - [ ] M5-08 Hybrid retrieval with fusion and context-pack builder (POST /api/v1/projects/{pid}/brain/search) (feature/m5-hybrid-retrieval)
 - [ ] M5-09 Retrieval evaluation harness and test dataset (feature/m5-eval-harness)
 - [ ] M5-10 Record retrieval baselines in docs/09 §9 (feature/m5-retrieval-baselines)

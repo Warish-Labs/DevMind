@@ -10,6 +10,7 @@ from app.core.ids import generate_uuid7
 from app.persistence.database import get_engine, session_scope
 from app.persistence.models.brain import (
     AnalysisJob,
+    ChunkEmbedding,
     CodeChunk,
     CodeRelationship,
     CodeSymbol,
@@ -178,6 +179,18 @@ def test_brain_models_instantiation_and_attributes() -> None:
     assert space.dimension == 64
     assert space.status == "active"
     assert space.config_hash == "sha256:space123"
+
+    # 7d. ChunkEmbedding
+    chunk_emb = ChunkEmbedding(
+        chunk_id=chunk.id,
+        space_id=space.id,
+        project_id=project_id,
+        embedding=[0.1] * 64,
+    )
+    assert chunk_emb.chunk_id == chunk.id
+    assert chunk_emb.space_id == space.id
+    assert chunk_emb.project_id == project_id
+    assert len(chunk_emb.embedding) == 64
 
     # 8. AnalysisJob & JobEvent
     job = AnalysisJob(

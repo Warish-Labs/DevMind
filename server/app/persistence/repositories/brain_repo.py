@@ -14,6 +14,7 @@ from app.core.auth_context import AuthContext, SystemContext
 from app.core.ids import generate_uuid7
 from app.persistence.models.brain import (
     AnalysisJob,
+    ChunkEmbedding,
     CodeChunk,
     CodeRelationship,
     CodeSymbol,
@@ -867,15 +868,80 @@ class BrainRepository(BaseRepository):
         await self._verify_project_access(ctx, project_id)
         stmt = (
             select(CodeChunk)
+            .outerjoin(
+                ChunkEmbedding,
+                (ChunkEmbedding.chunk_id == CodeChunk.id) & (ChunkEmbedding.space_id == space_id),
+            )
             .where(
                 CodeChunk.project_id == project_id,
                 CodeChunk.is_current.is_(True),
+                ChunkEmbedding.chunk_id.is_(None),
             )
             .order_by(CodeChunk.file_version_id.asc(), CodeChunk.start_line.asc())
             .limit(limit)
         )
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+
+    async def save_chunk_embeddings(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        space_id: UUID,
+        embeddings_data: list[tuple[UUID, list[float]]],
+    ) -> int:
+        """Persist chunk embedding vectors for a project in a specific space."""
+        if not embeddings_data:
+            return 0
+        await self._verify_project_access(ctx, project_id)
+
+        count = 0
+        for chunk_id, vector in embeddings_data:
+            emb = ChunkEmbedding(
+                chunk_id=chunk_id,
+                space_id=space_id,
+                project_id=project_id,
+                embedding=vector,
+            )
+            self.session.add(emb)
+            count += 1
+
+        await self.session.flush()
+        return count
+
+    async def search_chunks_vector(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        space_id: UUID,
+        query_vector: list[float],
+        limit: int = 20,
+        is_current: bool = True,
+    ) -> list[tuple[CodeChunk, float]]:
+        """Perform similarity search on chunk embeddings using cosine distance (<=>).
+
+        Returns list of (CodeChunk, cosine_similarity) tuples ordered by similarity descending.
+        """
+        await self._verify_project_access(ctx, project_id)
+        if not query_vector:
+            return []
+
+        dist_expr = ChunkEmbedding.embedding.cosine_distance(query_vector).label("distance")
+        stmt = (
+            select(CodeChunk, dist_expr)
+            .join(ChunkEmbedding, ChunkEmbedding.chunk_id == CodeChunk.id)
+            .where(
+                ChunkEmbedding.project_id == project_id,
+                ChunkEmbedding.space_id == space_id,
+                CodeChunk.is_current == is_current,
+            )
+            .order_by(dist_expr.asc())
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        rows = result.all()
+        # Convert cosine distance to similarity: similarity = 1.0 - distance
+        return [(row[0], round(1.0 - float(row[1]), 4)) for row in rows]
 
     async def resolve_relationships(
         self,

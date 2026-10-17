@@ -201,6 +201,7 @@ async def test_embedding_service_process_embed_chunks() -> None:
         token_estimate=5,
     )
     service.repo.get_unembedded_chunks = AsyncMock(return_value=[chunk1, chunk2])  # type: ignore[method-assign]
+    service.repo.save_chunk_embeddings = AsyncMock(return_value=2)  # type: ignore[method-assign]
 
     result = await service.process_embed_chunks(
         ctx=ctx,
@@ -212,6 +213,7 @@ async def test_embedding_service_process_embed_chunks() -> None:
     assert result["chunks_embedded"] == 2
     assert result["dimension"] == 64
     assert result["token_estimate"] > 0
+    service.repo.save_chunk_embeddings.assert_awaited_once()
 
 
 @pytest.mark.asyncio

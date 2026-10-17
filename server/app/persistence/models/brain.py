@@ -14,6 +14,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    PrimaryKeyConstraint,
     String,
     Text,
     UniqueConstraint,
@@ -28,6 +29,7 @@ from app.persistence.models.base import (
     TimestampMixin,
     UUID7PrimaryKeyMixin,
 )
+from app.persistence.models.vector import PGVector
 
 if TYPE_CHECKING:
     from app.persistence.models.extension import ExtensionRegistration
@@ -477,6 +479,9 @@ class CodeChunk(Base, UUID7PrimaryKeyMixin, TimestampMixin):
     symbol: Mapped[CodeSymbol | None] = relationship(
         "CodeSymbol", foreign_keys=[symbol_id], back_populates="chunks"
     )
+    embeddings: Mapped[list[ChunkEmbedding]] = relationship(
+        "ChunkEmbedding", back_populates="chunk", cascade="all, delete-orphan"
+    )
 
 
 class EmbeddingSpace(Base, UUID7PrimaryKeyMixin, TimestampMixin):
@@ -506,6 +511,49 @@ class EmbeddingSpace(Base, UUID7PrimaryKeyMixin, TimestampMixin):
         String(32), nullable=False, default="building", server_default="building"
     )
     config_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+
+
+class ChunkEmbedding(Base):
+    """Vector embedding for a code chunk in a specific embedding space (docs/03 §3.2, docs/04 §9)."""
+
+    __tablename__ = "chunk_embeddings"
+    __table_args__ = (
+        PrimaryKeyConstraint("chunk_id", "space_id", name="pk_chunk_embeddings"),
+        Index("ix_chunk_embeddings_project_id", "project_id"),
+        Index("ix_chunk_embeddings_space_id", "space_id"),
+        Index(
+            "ix_chunk_embeddings_hnsw",
+            text("embedding vector_cosine_ops"),
+            postgresql_using="hnsw",
+        ),
+    )
+
+    chunk_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("code_chunks.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    space_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("embedding_spaces.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    embedding: Mapped[list[float]] = mapped_column(PGVector(64), nullable=False)
+    embedded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    # Relationships
+    chunk: Mapped[CodeChunk] = relationship(
+        "CodeChunk", foreign_keys=[chunk_id], back_populates="embeddings"
+    )
+    space: Mapped[EmbeddingSpace] = relationship("EmbeddingSpace", foreign_keys=[space_id])
+    project: Mapped[Project] = relationship("Project", foreign_keys=[project_id])
 
 
 class AnalysisJob(Base, UUID7PrimaryKeyMixin, TimestampMixin):

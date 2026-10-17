@@ -9,24 +9,28 @@
 | Field              | Value                                                                                                       |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                      |
-| **Last commit**    | `4e9ab2e` (feat(server): implement M5-05 chunk storage, tsvector full-text, and trigram indices)            |
+| **Last commit**    | pending (feat(server): implement M5-07 chunk embeddings with pgvector and per-space HNSW vector index)      |
 | **Working tree**   | clean; working directly on main per user instruction                                                        |
 | **Open PR**        | None (working directly on main)                                                                             |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 193/193 pass, extension 70/70 pass (40 API paths) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 199/199 pass, extension 70/70 pass (40 API paths) |
 | **Date**           | 2026-10-17                                                                                                  |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M5-07: Chunk embeddings with pgvector and per-space HNSW vector index**:
-   - Inspect `docs/03 §3.2` and `docs/04 §9`:
-     - Migration for `chunk_embeddings`: `chunk_id` (FK code_chunks.id), `space_id` (FK embedding_spaces.id), `project_id` (FK projects.id), `embedding` (`vector(64)` for default space), `embedded_at` (timestamptz).
-     - Composite PK `(chunk_id, space_id)`.
-     - HNSW cosine index `ix_chunk_embeddings_hnsw` on `embedding vector_cosine_ops`.
-     - SQLAlchemy model `ChunkEmbedding` in `server/app/persistence/models/brain.py`.
-     - Vector persistence and similarity search methods in `BrainRepository`.
-     - Unit tests in `server/tests/test_vector_index.py`.
+1. Implement **Milestone M5-08: Hybrid retrieval with fusion and context-pack builder**:
+   - Inspect `docs/04 §7-§8` and `docs/03 §4`:
+     - Multi-channel retrieval:
+       (a) symbol name trigram/exact matching via `code_symbols`,
+       (b) tsvector full-text keyword search via `code_chunks`,
+       (c) pgvector semantic similarity search via `chunk_embeddings`.
+     - Reciprocal Rank Fusion (RRF) combining rank scores across channels: `RRF(d) = sum(1 / (k + rank_i(d)))`.
+     - Relationship 1-hop / 2-hop expansion (callers, callees, definitions).
+     - Context-pack builder enforcing token budget ceiling, provenance citations (`file_version_id`, `path`, `start_line`, `end_line`, `symbol_key`).
+     - REST API endpoint `POST /api/v1/projects/{pid}/brain/search` with `PERM_PROJECT_READ`.
+     - OpenAPI schema generation and client SDK export.
+     - Integration tests verifying multi-channel retrieval, RRF ranking, budget limits, and cross-tenant isolation.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -40,6 +44,35 @@
 ---
 
 ## 4. Done log
+
+### M5-07 — Chunk Embeddings with pgvector and Per-Space HNSW Vector Index
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented pgvector vector persistence, per-space HNSW vector index migration, SQLAlchemy vector custom type, brain repository vector operations, and embedding persistence service per `docs/03 §3.2` and `docs/04 §9`:
+  - **Custom SQLAlchemy Type** (`server/app/persistence/models/vector.py`):
+    - Created `PGVector(UserDefinedType)` with comparator factory supporting cosine distance (`<=>`), Euclidean L2 distance (`<->`), and inner product (`<#>`).
+    - Handled string parsing/formatting `[x,y,z]` and raw tuple/list conversion cleanly.
+  - **Alembic Migration** (`server/alembic/versions/0007_chunk_embeddings.py`):
+    - Table `chunk_embeddings` with composite primary key `(chunk_id, space_id)`.
+    - Tenant isolation columns: `workspace_id` (FK to `workspaces.id` CASCADE), `project_id` (FK to `projects.id` CASCADE).
+    - FK `chunk_id` to `code_chunks.id` (CASCADE), FK `space_id` to `embedding_spaces.id` (CASCADE).
+    - `embedding` column typed `vector(64)` matching the default embedding space dimension.
+    - HNSW vector index: `CREATE INDEX ix_chunk_embeddings_hnsw ON chunk_embeddings USING hnsw (embedding vector_cosine_ops)`.
+    - Tenant and project indexes: `ix_chunk_embeddings_project_space` on `(project_id, space_id)`.
+  - **SQLAlchemy Persistence Model** (`server/app/persistence/models/brain.py`):
+    - Defined `ChunkEmbedding` class with composite PK, relationships to `CodeChunk` and `EmbeddingSpace`.
+    - Exported in `server/app/persistence/models/__init__.py`.
+  - **Repository & Domain Updates** (`BrainRepository`, `EmbeddingService`):
+    - `save_chunk_embeddings`: Stores bulk chunk vectors for active embedding spaces.
+    - `search_chunks_vector`: Cosine distance similarity query with tenant safety filters.
+    - `get_unembedded_chunks`: Outer joins with `ChunkEmbedding` on `chunk_id` and `space_id` to return only un-embedded chunks.
+    - `EmbeddingService.process_embed_chunks`: Automatically saves generated vectors to `chunk_embeddings`.
+  - **Unit & Integration Tests**:
+    - `server/tests/test_vector_index.py` (6 tests passing): Type serialization, model mapping, vector persistence, cosine similarity search, un-embedded outer join, and cross-tenant access rejection.
+    - Updated `server/tests/test_migrations.py` (verified head `0007_chunk_embeddings`).
+    - Updated `server/tests/test_brain_models.py` with `ChunkEmbedding` assertions.
+    - All 199 server tests passing.
 
 ### M5-06 — Embedding Gateway Slice: Adapter Interface, Embedding Spaces, and embed_chunks Job
 
