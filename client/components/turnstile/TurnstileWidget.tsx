@@ -68,8 +68,17 @@ export function TurnstileWidget({
     onExpireRef.current = onExpire;
   }, [onVerify, onError, onExpire]);
 
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.endsWith(".local"));
+
   const activeSiteKey =
-    siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || CLOUDFLARE_TEST_SITE_KEY;
+    siteKey ||
+    (isLocalhost
+      ? CLOUDFLARE_TEST_SITE_KEY
+      : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || CLOUDFLARE_TEST_SITE_KEY);
 
   // Load the Turnstile explicit script once
   useEffect(() => {
@@ -91,7 +100,16 @@ export function TurnstileWidget({
     } else {
       const handleLoad = () => setScriptLoaded(true);
       script.addEventListener("load", handleLoad);
-      return () => script?.removeEventListener("load", handleLoad);
+      const poll = setInterval(() => {
+        if (window.turnstile) {
+          setScriptLoaded(true);
+          clearInterval(poll);
+        }
+      }, 100);
+      return () => {
+        script?.removeEventListener("load", handleLoad);
+        clearInterval(poll);
+      };
     }
   }, []);
 
@@ -101,6 +119,9 @@ export function TurnstileWidget({
 
     // If already rendered for this container, do not re-render
     if (widgetIdRef.current) return;
+
+    // Clear previous elements in container to prevent duplicate iframes
+    containerRef.current.innerHTML = "";
 
     try {
       const id = window.turnstile.render(containerRef.current, {

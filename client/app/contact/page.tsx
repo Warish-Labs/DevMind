@@ -260,8 +260,16 @@ export default function ContactPage() {
               )}
 
               <button
-                type="submit"
+                type={turnstileToken ? "submit" : "button"}
                 disabled={submitting || !turnstileToken}
+                onClick={(e) => {
+                  if (!turnstileToken) {
+                    e.preventDefault();
+                    setError(
+                      "Please complete the Cloudflare security verification challenge above."
+                    );
+                  }
+                }}
                 title={!turnstileToken ? "Please verify the security challenge above" : undefined}
                 className="w-full py-3 rounded-control bg-[var(--signal)] text-[var(--bg-0)] font-medium font-mono text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >

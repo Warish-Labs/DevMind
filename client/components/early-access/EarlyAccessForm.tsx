@@ -93,8 +93,14 @@ export function EarlyAccessForm() {
           className="flex-1 px-4 py-2.5 rounded-control bg-[var(--bg-2)] border border-[var(--line-2)] text-sm text-[var(--fg-0)] placeholder:text-[var(--fg-2)] focus:border-[var(--ref)] focus:outline-none focus:ring-1 focus:ring-[var(--ref)] disabled:opacity-50"
         />
         <button
-          type="submit"
+          type={turnstileToken ? "submit" : "button"}
           disabled={submitting || !turnstileToken}
+          onClick={(e) => {
+            if (!turnstileToken) {
+              e.preventDefault();
+              setError("Please complete the Cloudflare security verification challenge below.");
+            }
+          }}
           title={!turnstileToken ? "Please verify the security challenge below" : undefined}
           className="px-6 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
