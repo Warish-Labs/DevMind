@@ -2466,6 +2466,58 @@
           }
         }
       }
+    },
+    "/api/v1/ext/projects/{pid}/snippets": {
+      "post": {
+        "tags": ["Extension"],
+        "summary": "Upload consented and redacted code snippets",
+        "description": "Consented snippet upload with server-side redaction re-check (docs/03 \u00a712.4, docs/07 \u00a76).\n\nValidation:\n- Caller must possess 'project:sync' permission on project.\n- Active, non-revoked consent required for 'snippet_transmission' scope matching consent_id.\n- Excluded credential paths (.env, .pem, .key, id_rsa, etc.) are rejected with 422 even if sent.\n- Snippet total size <= 2MB route ceiling.\n- Server independently re-runs redaction across all snippet content, increasing redaction count if needed.",
+        "operationId": "post_snippets_api_v1_ext_projects__pid__snippets_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SnippetUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnippetUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5234,6 +5286,169 @@
         "required": ["id", "project_id", "kind", "ref", "created_at"],
         "title": "SnapshotItem",
         "description": "Serialized summary of a project snapshot."
+      },
+      "SnippetItem": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path",
+            "description": "Repo-relative file path."
+          },
+          "file_content_hash": {
+            "type": "string",
+            "title": "File Content Hash",
+            "description": "SHA-256 hash of the full file content."
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Start Line",
+            "description": "1-indexed starting line number."
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "End Line",
+            "description": "1-indexed ending line number."
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Redacted code snippet content."
+          },
+          "redaction_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Redaction Count",
+            "description": "Client-performed redaction count.",
+            "default": 0
+          },
+          "client_redaction_version": {
+            "type": "string",
+            "title": "Client Redaction Version",
+            "description": "Redaction engine version.",
+            "default": "1"
+          }
+        },
+        "type": "object",
+        "required": ["path", "file_content_hash", "start_line", "end_line", "content"],
+        "title": "SnippetItem",
+        "description": "Individual code snippet payload."
+      },
+      "SnippetPurpose": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "Purpose kind: analysis | chat | review.",
+            "default": "analysis"
+          },
+          "job_type": {
+            "type": "string",
+            "title": "Job Type",
+            "description": "Job type if kind is analysis.",
+            "default": "security_review"
+          }
+        },
+        "type": "object",
+        "title": "SnippetPurpose",
+        "description": "Purpose descriptor for the snippet transmission."
+      },
+      "SnippetReceiptItem": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "start_line": {
+            "type": "integer",
+            "title": "Start Line"
+          },
+          "end_line": {
+            "type": "integer",
+            "title": "End Line"
+          },
+          "redaction_count": {
+            "type": "integer",
+            "title": "Redaction Count"
+          }
+        },
+        "type": "object",
+        "required": ["path", "start_line", "end_line", "redaction_count"],
+        "title": "SnippetReceiptItem",
+        "description": "Receipt item confirming accepted snippet metadata (no raw code stored in receipt)."
+      },
+      "SnippetUploadRequest": {
+        "properties": {
+          "consent_id": {
+            "type": "string",
+            "title": "Consent Id",
+            "description": "Active consent record UUID."
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/SnippetPurpose"
+          },
+          "snippets": {
+            "items": {
+              "$ref": "#/components/schemas/SnippetItem"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Snippets"
+          }
+        },
+        "type": "object",
+        "required": ["consent_id"],
+        "title": "SnippetUploadRequest",
+        "description": "Consented snippet upload request payload (docs/03 \u00a712.4)."
+      },
+      "SnippetUploadResponse": {
+        "properties": {
+          "accepted_snippets_count": {
+            "type": "integer",
+            "title": "Accepted Snippets Count"
+          },
+          "total_redaction_count": {
+            "type": "integer",
+            "title": "Total Redaction Count"
+          },
+          "receipt_hash": {
+            "type": "string",
+            "title": "Receipt Hash"
+          },
+          "server_redactions_added": {
+            "type": "integer",
+            "title": "Server Redactions Added"
+          },
+          "snippets": {
+            "items": {
+              "$ref": "#/components/schemas/SnippetReceiptItem"
+            },
+            "type": "array",
+            "title": "Snippets"
+          },
+          "job": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted_snippets_count",
+          "total_redaction_count",
+          "receipt_hash",
+          "server_redactions_added"
+        ],
+        "title": "SnippetUploadResponse",
+        "description": "Receipt response confirming accepted snippets and server-side redactions."
       },
       "SuggestedFixPayload": {
         "properties": {

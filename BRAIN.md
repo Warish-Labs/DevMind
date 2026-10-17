@@ -9,22 +9,23 @@
 | Field              | Value                                                                                                       |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                      |
-| **Last commit**    | `0c939d8` (chore: add DEPLOYMENT_GUIDE.md to .gitignore)                                                    |
+| **Last commit**    | `823a47d` (feat(extension): implement M5-02 consent preview webview and sent-bytes equality check)          |
 | **Working tree**   | clean; working directly on main per user instruction                                                        |
 | **Open PR**        | None (working directly on main)                                                                             |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 158/158 pass, extension 64/64 pass (39 API paths) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 170/170 pass, extension 70/70 pass (40 API paths) |
 | **Date**           | 2026-10-17                                                                                                  |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M5-03: Redaction Pipeline (Extension Client + Server-Side Redaction Re-check)**:
-   - Inspect `docs/07 §6` and `docs/03 §12.4` for redaction specification:
-     - Deterministic replacement format: `[REDACTED:<type>:<hash8>]`, where 8-char SHA-256 slice correlates repeats without revealing secrets.
-     - Extension redaction pipeline: scans and redacts high-entropy secrets, bearer tokens, API keys, private keys, connection strings.
-     - Server-side redaction re-check: on snippet/chunk ingestion, the server independently validates and re-redacts all payload text; increments `redaction_count` if missed patterns are found; fails closed if redaction fails.
-   - Add unit tests in `extension/tests/redaction.test.ts` and `server/tests/test_redaction.py`.
+1. Implement **Milestone M5-04: Code-aware chunker per language (TypeScript/JavaScript, Python)**:
+   - Inspect `docs/04 §4` for chunking specification:
+     - Language-aware AST/block boundaries preserving semantic units (classes, functions, interface definitions, routes).
+     - Target chunk sizes: 200–500 tokens / 30–80 lines with header/context preservation.
+     - Fallback line/paragraph chunker for Tier 2/3 text files.
+     - Deterministic chunk content hashing: `sha256(normalized_content)`.
+   - Add unit tests in `server/tests/test_chunker.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -38,6 +39,37 @@
 ---
 
 ## 4. Done log
+
+### M5-03 — Redaction Pipeline: Extension Client + Server-Side Redaction Re-check
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented the dual-layer secret detection and deterministic redaction pipeline across VS Code extension and FastAPI backend per `docs/07 §6` and `docs/03 §12.4`:
+  - **Deterministic Token Hasher & Placeholder Format** (`[REDACTED:<type>:<hash8>]`):
+    - Parity: 8-character SHA-256 token digest matches identically between Node.js (`crypto`) and Python (`hashlib`) without revealing raw secret values.
+    - Enables cross-component repeat correlation without leaking sensitive content.
+  - **Extension Client-Side Redaction Engine** (`extension/src/scanner/redaction.ts`):
+    - Regex patterns for API keys (Stripe, Anthropic, OpenAI, GitHub PAT, AWS Access Key ID), private keys (blocks and single-line headers), webhook secrets (Svix/Clerk), JWT tokens, Bearer tokens, connection strings with embedded credentials, and high-entropy secret assignments.
+    - Idempotent and fail-closed: preserves already-redacted text without double-masking; raises error on failure.
+    - 6 unit tests in `extension/tests/redaction.test.ts` (all 14 test files / 70 tests pass).
+  - **Server-Side Redaction Engine & Client Re-Check Service** (`server/app/domain/brain/redaction_service.py`):
+    - Independent detection engine matching client regexes and token hashing.
+    - `RedactionService.recheck_client_redaction`: Defense-in-depth re-scan catching secrets missed by client, masking them, and incrementing `total_redaction_count`.
+    - `is_excluded_credential_path`: Guards `.env*`, `*.pem`, `*.key`, `id_rsa*`, `credentials*.json`, `*.kdbx`, `*.pfx`, `*.p12` as path-only.
+  - **Consented Snippet Upload REST Endpoint** (`server/app/api/extension.py`):
+    - `POST /api/v1/ext/projects/{pid}/snippets` (@declare_permission(PERM_PROJECT_SYNC)).
+    - Enforces mandatory `Idempotency-Key` header via `IdempotencyMiddleware`.
+    - Verifies active, non-revoked consent for `snippet_transmission` via `ConsentService.verify_consent` (raises `403 consent.required`).
+    - Rejects excluded credential paths with `422 validation.failed` (credential files are path-only).
+    - Validates line ranges (`start_line <= end_line`, `start_line >= 1`) and size limit (<= 2MB).
+    - Runs server-side redaction re-check, computes deterministic `receipt_hash`, and returns `201 Created` with receipt item metadata (zero unconsented code in database).
+  - **OpenAPI Schema & Client Generation**:
+    - Re-exported OpenAPI schema (40 paths) to `common/openapi.json`.
+    - Regenerated TypeScript types via `pnpm gen:api`.
+  - **Unit & Integration Test Suite** (`server/tests/test_redaction.py`):
+    - 12 comprehensive unit and endpoint tests covering API keys, private keys, bearer tokens, connection strings, repeats, idempotency, parity, re-check, credential guards, idempotency enforcement, and tenant isolation.
+    - Full server pytest suite: 170 passed, 0 failed, 4 skipped.
+    - Full monorepo fast suite: 13 passed, 0 failed, 1 skipped.
 
 ### M5-02 — Extension Consent Preview Webview and Sent-Bytes Equality Check
 

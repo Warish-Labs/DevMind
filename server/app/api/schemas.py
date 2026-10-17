@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -269,6 +270,58 @@ class ExtensionHeartbeatResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Consented Snippet Upload Schemas (docs/03 §12.4)
+# ---------------------------------------------------------------------------
+
+
+class SnippetItem(BaseModel):
+    """Individual code snippet payload."""
+
+    path: str = Field(description="Repo-relative file path.")
+    file_content_hash: str = Field(description="SHA-256 hash of the full file content.")
+    start_line: int = Field(ge=1, description="1-indexed starting line number.")
+    end_line: int = Field(ge=1, description="1-indexed ending line number.")
+    content: str = Field(description="Redacted code snippet content.")
+    redaction_count: int = Field(default=0, ge=0, description="Client-performed redaction count.")
+    client_redaction_version: str = Field(default="1", description="Redaction engine version.")
+
+
+class SnippetPurpose(BaseModel):
+    """Purpose descriptor for the snippet transmission."""
+
+    kind: str = Field(default="analysis", description="Purpose kind: analysis | chat | review.")
+    job_type: str = Field(default="security_review", description="Job type if kind is analysis.")
+
+
+class SnippetUploadRequest(BaseModel):
+    """Consented snippet upload request payload (docs/03 §12.4)."""
+
+    consent_id: str = Field(description="Active consent record UUID.")
+    purpose: SnippetPurpose = Field(default_factory=SnippetPurpose)
+    snippets: list[SnippetItem] = Field(default_factory=list, max_length=50)
+
+
+class SnippetReceiptItem(BaseModel):
+    """Receipt item confirming accepted snippet metadata (no raw code stored in receipt)."""
+
+    path: str
+    start_line: int
+    end_line: int
+    redaction_count: int
+
+
+class SnippetUploadResponse(BaseModel):
+    """Receipt response confirming accepted snippets and server-side redactions."""
+
+    accepted_snippets_count: int
+    total_redaction_count: int
+    receipt_hash: str
+    server_redactions_added: int
+    snippets: list[SnippetReceiptItem] = Field(default_factory=list)
+    job: dict[str, Any] | None = None
+
+
+# ---------------------------------------------------------------------------
 # Manifest and Brain Sync Schemas (docs/03 §12.3)
 # ---------------------------------------------------------------------------
 
@@ -320,6 +373,11 @@ __all__ = [
     "SnapshotDiffResponse",
     "SnapshotFileItem",
     "SnapshotItem",
+    "SnippetItem",
+    "SnippetPurpose",
+    "SnippetReceiptItem",
+    "SnippetUploadRequest",
+    "SnippetUploadResponse",
     "SuggestedFixPayload",
     "UpdateProjectMemberRequest",
     "UpdateProjectRequest",

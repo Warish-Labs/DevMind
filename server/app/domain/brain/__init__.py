@@ -32,6 +32,12 @@ from app.domain.brain.manifest_service import (
     PutManifestRequest,
     PutManifestResponse,
 )
+from app.domain.brain.redaction_service import (
+    RedactionResult,
+    RedactionService,
+    compute_redacted_token_hash,
+    is_excluded_credential_path,
+)
 from app.domain.brain.scan_service import (
     ScanRunItem,
     ScanService,
@@ -96,6 +102,8 @@ __all__ = [
     "MissingFileEntry",
     "PutManifestRequest",
     "PutManifestResponse",
+    "RedactionResult",
+    "RedactionService",
     "ScanRunItem",
     "ScanService",
     "SnapshotDetail",
@@ -107,5 +115,7 @@ __all__ = [
     "SuggestedFixPayload",
     "SymbolService",
     "compute_finding_fingerprint",
+    "compute_redacted_token_hash",
+    "is_excluded_credential_path",
     "resolve_project_context",
 ]

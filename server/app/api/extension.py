@@ -8,6 +8,7 @@ Adheres to:
 
 from __future__ import annotations
 
+import hashlib
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
@@ -30,9 +31,12 @@ from app.api.schemas import (
     ManifestDiffResponse,
     PutManifestRequest,
     PutManifestResponse,
+    SnippetReceiptItem,
+    SnippetUploadRequest,
+    SnippetUploadResponse,
 )
 from app.core.auth_context import AuthContext, SystemContext
-from app.core.errors import ForbiddenError
+from app.core.errors import ForbiddenError, ValidationError
 from app.domain.auth import (
     PERM_PROJECT_SYNC,
     PERMISSION_AUTHENTICATED,
@@ -42,8 +46,16 @@ from app.domain.auth import (
     get_db_session,
     get_extension_auth_context,
 )
-from app.domain.brain import FindingsService, ManifestService, SymbolService
+from app.domain.brain import (
+    FindingsService,
+    ManifestService,
+    RedactionService,
+    SymbolService,
+    is_excluded_credential_path,
+)
+from app.domain.consent.consent_service import ConsentService
 from app.domain.extension.service import ExtensionService
+from app.middleware.idempotency import require_idempotency_key
 
 router = APIRouter(
     prefix="/ext",
@@ -283,3 +295,108 @@ async def post_findings_batch(
     service = FindingsService(session)
     scoped_ctx = await service.resolve_project_context(ctx, pid)
     return await service.batch_ingest_findings(scoped_ctx, pid, payload, source="scanner")
+
+
+@router.post(
+    "/projects/{pid}/snippets",
+    response_model=SnippetUploadResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Upload consented and redacted code snippets",
+)
+@declare_permission(PERM_PROJECT_SYNC)
+@require_idempotency_key
+async def post_snippets(
+    pid: UUID,
+    payload: SnippetUploadRequest,
+    ctx: AuthContext = Depends(get_extension_auth_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> SnippetUploadResponse:
+    """Consented snippet upload with server-side redaction re-check (docs/03 §12.4, docs/07 §6).
+
+    Validation:
+    - Caller must possess 'project:sync' permission on project.
+    - Active, non-revoked consent required for 'snippet_transmission' scope matching consent_id.
+    - Excluded credential paths (.env, .pem, .key, id_rsa, etc.) are rejected with 422 even if sent.
+    - Snippet total size <= 2MB route ceiling.
+    - Server independently re-runs redaction across all snippet content, increasing redaction count if needed.
+    """
+    if not ctx.has_permission(PERM_PROJECT_SYNC):
+        raise ForbiddenError(detail="Forbidden: extension token lacks 'project:sync' scope")
+
+    manifest_service = ManifestService(session)
+    scoped_ctx = await manifest_service.resolve_project_context(ctx, pid)
+
+    # 1. Parse and verify active consent
+    try:
+        consent_uuid = UUID(payload.consent_id)
+    except (ValueError, TypeError) as err:
+        raise ValidationError(
+            detail=f"Invalid consent_id format: '{payload.consent_id}'",
+            code="validation.failed",
+        ) from err
+
+    await ConsentService.verify_consent(
+        ctx=scoped_ctx,
+        project_id=pid,
+        scope="snippet_transmission",
+        consent_id=consent_uuid,
+    )
+
+    # 2. Check total size <= 2MB limit
+    total_size = sum(len(s.content.encode()) for s in payload.snippets)
+    if total_size > 2 * 1024 * 1024:
+        raise ValidationError(
+            detail="Snippet payload exceeds maximum allowed size of 2MB",
+            code="validation.failed",
+        )
+
+    # 3. Validate paths and line ranges; execute defense-in-depth server-side redaction
+    server_redactions_added = 0
+    total_redactions = 0
+    receipt_items: list[SnippetReceiptItem] = []
+    receipt_hasher = hashlib.sha256()
+
+    for snippet in payload.snippets:
+        if is_excluded_credential_path(snippet.path):
+            raise ValidationError(
+                detail=f"Path '{snippet.path}' is an excluded credential file. Credential files are path-only and cannot be transmitted.",
+                code="validation.failed",
+            )
+
+        if snippet.start_line > snippet.end_line or snippet.start_line < 1:
+            raise ValidationError(
+                detail=f"Invalid line range {snippet.start_line}-{snippet.end_line} in snippet for '{snippet.path}'",
+                code="validation.failed",
+            )
+
+        # Server-side redaction re-check
+        redacted_content, total_count, _ = RedactionService.recheck_client_redaction(
+            snippet.content, client_redaction_count=snippet.redaction_count
+        )
+        new_redactions = total_count - snippet.redaction_count
+        server_redactions_added += new_redactions
+        total_redactions += total_count
+
+        receipt_hasher.update(
+            f"{snippet.path}:{snippet.start_line}:{snippet.end_line}:{total_count}:{redacted_content}".encode()
+        )
+
+        receipt_items.append(
+            SnippetReceiptItem(
+                path=snippet.path,
+                start_line=snippet.start_line,
+                end_line=snippet.end_line,
+                redaction_count=total_count,
+            )
+        )
+
+    receipt_hash = f"sha256:{receipt_hasher.hexdigest()}"
+
+    return SnippetUploadResponse(
+        accepted_snippets_count=len(payload.snippets),
+        total_redaction_count=total_redactions,
+        receipt_hash=receipt_hash,
+        server_redactions_added=server_redactions_added,
+        snippets=receipt_items,
+        job=None,
+    )

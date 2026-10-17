@@ -232,7 +232,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 - [x] M5-01 Consent model, consent records table, and consent.required enforcement (feature/m5-consent-enforcement)
 - [x] M5-02 Extension consent preview webview and sent-bytes equality check (feature/m5-consent-preview)
-- [ ] M5-03 Redaction pipeline: extension client + server-side redaction re-check (feature/m5-redaction-pipeline)
+- [x] M5-03 Redaction pipeline: extension client + server-side redaction re-check (feature/m5-redaction-pipeline)
 - [ ] M5-04 Code-aware chunker per language (TypeScript/JavaScript, Python) (feature/m5-chunker)
 - [ ] M5-05 Chunk storage, tsvector full-text, and trigram indices (feature/m5-chunk-storage)
 - [ ] M5-06 Embedding gateway slice: adapter interface, embedding spaces, embed_chunks job (feature/m5-embedding-gateway)

@@ -176,12 +176,26 @@ class ConsentService:
             return ConsentItem.from_model(record)
 
     @classmethod
+    async def get_consent(
+        cls,
+        ctx: AuthContext | SystemContext,
+        project_id: uuid.UUID,
+        consent_id: uuid.UUID,
+    ) -> ConsentItem | None:
+        """Retrieve a specific consent record by ID within workspace and project boundaries."""
+        async with session_scope() as session:
+            repo = ConsentRepository(session)
+            record = await repo.get_consent(ctx=ctx, project_id=project_id, consent_id=consent_id)
+            return ConsentItem.from_model(record) if record else None
+
+    @classmethod
     async def verify_consent(
         cls,
         ctx: AuthContext | SystemContext,
         project_id: uuid.UUID,
         scope: str,
         provider_id: str | None = None,
+        consent_id: uuid.UUID | None = None,
     ) -> None:
         """Verify that active consent exists for the operation.
 
@@ -190,6 +204,16 @@ class ConsentService:
         """
         async with session_scope() as session:
             repo = ConsentRepository(session)
+            if consent_id is not None:
+                record = await repo.get_consent(
+                    ctx=ctx, project_id=project_id, consent_id=consent_id
+                )
+                if not record or not record.is_active() or record.scope != scope:
+                    raise ConsentRequiredError(
+                        detail=f"Consent '{consent_id}' is invalid, expired, revoked, or does not cover scope '{scope}'. Review and approve what will be sent.",
+                    )
+                return
+
             has_consent = await repo.has_active_consent(
                 ctx=ctx,
                 project_id=project_id,

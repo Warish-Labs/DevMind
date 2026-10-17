@@ -837,6 +837,33 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/ext/projects/{pid}/snippets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Upload consented and redacted code snippets
+     * @description Consented snippet upload with server-side redaction re-check (docs/03 §12.4, docs/07 §6).
+     *
+     *     Validation:
+     *     - Caller must possess 'project:sync' permission on project.
+     *     - Active, non-revoked consent required for 'snippet_transmission' scope matching consent_id.
+     *     - Excluded credential paths (.env, .pem, .key, id_rsa, etc.) are rejected with 422 even if sent.
+     *     - Snippet total size <= 2MB route ceiling.
+     *     - Server independently re-runs redaction across all snippet content, increasing redaction count if needed.
+     */
+    post: operations["post_snippets_api_v1_ext_projects__pid__snippets_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2210,6 +2237,115 @@ export interface components {
        * @default 0
        */
       file_count: number;
+    };
+    /**
+     * SnippetItem
+     * @description Individual code snippet payload.
+     */
+    SnippetItem: {
+      /**
+       * Path
+       * @description Repo-relative file path.
+       */
+      path: string;
+      /**
+       * File Content Hash
+       * @description SHA-256 hash of the full file content.
+       */
+      file_content_hash: string;
+      /**
+       * Start Line
+       * @description 1-indexed starting line number.
+       */
+      start_line: number;
+      /**
+       * End Line
+       * @description 1-indexed ending line number.
+       */
+      end_line: number;
+      /**
+       * Content
+       * @description Redacted code snippet content.
+       */
+      content: string;
+      /**
+       * Redaction Count
+       * @description Client-performed redaction count.
+       * @default 0
+       */
+      redaction_count: number;
+      /**
+       * Client Redaction Version
+       * @description Redaction engine version.
+       * @default 1
+       */
+      client_redaction_version: string;
+    };
+    /**
+     * SnippetPurpose
+     * @description Purpose descriptor for the snippet transmission.
+     */
+    SnippetPurpose: {
+      /**
+       * Kind
+       * @description Purpose kind: analysis | chat | review.
+       * @default analysis
+       */
+      kind: string;
+      /**
+       * Job Type
+       * @description Job type if kind is analysis.
+       * @default security_review
+       */
+      job_type: string;
+    };
+    /**
+     * SnippetReceiptItem
+     * @description Receipt item confirming accepted snippet metadata (no raw code stored in receipt).
+     */
+    SnippetReceiptItem: {
+      /** Path */
+      path: string;
+      /** Start Line */
+      start_line: number;
+      /** End Line */
+      end_line: number;
+      /** Redaction Count */
+      redaction_count: number;
+    };
+    /**
+     * SnippetUploadRequest
+     * @description Consented snippet upload request payload (docs/03 §12.4).
+     */
+    SnippetUploadRequest: {
+      /**
+       * Consent Id
+       * @description Active consent record UUID.
+       */
+      consent_id: string;
+      purpose?: components["schemas"]["SnippetPurpose"];
+      /** Snippets */
+      snippets?: components["schemas"]["SnippetItem"][];
+    };
+    /**
+     * SnippetUploadResponse
+     * @description Receipt response confirming accepted snippets and server-side redactions.
+     */
+    SnippetUploadResponse: {
+      /** Accepted Snippets Count */
+      accepted_snippets_count: number;
+      /** Total Redaction Count */
+      total_redaction_count: number;
+      /** Receipt Hash */
+      receipt_hash: string;
+      /** Server Redactions Added */
+      server_redactions_added: number;
+      /** Snippets */
+      snippets?: components["schemas"]["SnippetReceiptItem"][];
+      /** Job */
+      job?: {
+        [key: string]: unknown;
+      } | null;
     };
     /** SuggestedFixPayload */
     SuggestedFixPayload: {
@@ -3922,6 +4058,41 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["BatchFindingsResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  post_snippets_api_v1_ext_projects__pid__snippets_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SnippetUploadRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SnippetUploadResponse"];
         };
       };
       /** @description Validation Error */
