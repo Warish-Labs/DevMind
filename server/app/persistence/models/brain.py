@@ -18,6 +18,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
     from app.persistence.models.extension import ExtensionRegistration
     from app.persistence.models.project import Project
     from app.persistence.models.user import User
+    from app.persistence.models.workspace import Workspace
 
 
 class ScanRun(Base, UUID7PrimaryKeyMixin, TimestampMixin):
@@ -215,6 +217,9 @@ class FileVersion(Base, UUID7PrimaryKeyMixin):
     symbols: Mapped[list[CodeSymbol]] = relationship(
         "CodeSymbol", back_populates="file_version", cascade="all, delete-orphan"
     )
+    chunks: Mapped[list[CodeChunk]] = relationship(
+        "CodeChunk", back_populates="file_version", cascade="all, delete-orphan"
+    )
 
 
 class ProjectSnapshot(Base, UUID7PrimaryKeyMixin):
@@ -336,6 +341,7 @@ class CodeSymbol(Base, UUID7PrimaryKeyMixin):
     file_version: Mapped[FileVersion] = relationship(
         "FileVersion", foreign_keys=[file_version_id], back_populates="symbols"
     )
+    chunks: Mapped[list[CodeChunk]] = relationship("CodeChunk", back_populates="symbol")
 
 
 class CodeRelationship(Base, UUID7PrimaryKeyMixin):
@@ -388,6 +394,89 @@ class CodeRelationship(Base, UUID7PrimaryKeyMixin):
     from_symbol: Mapped[CodeSymbol] = relationship("CodeSymbol", foreign_keys=[from_symbol_id])
     to_symbol: Mapped[CodeSymbol | None] = relationship("CodeSymbol", foreign_keys=[to_symbol_id])
     file_version: Mapped[FileVersion] = relationship("FileVersion", foreign_keys=[file_version_id])
+
+
+class CodeChunk(Base, UUID7PrimaryKeyMixin, TimestampMixin):
+    """Searchable code piece with consented, redacted text and full-text/trigram indices (docs/03 §3.2, docs/04 §4)."""
+
+    __tablename__ = "code_chunks"
+    __table_args__ = (
+        UniqueConstraint(
+            "file_version_id",
+            "start_line",
+            "end_line",
+            "content_hash",
+            name="uq_code_chunks_version_lines_hash",
+        ),
+        Index("ix_code_chunks_workspace_id", "workspace_id"),
+        Index("ix_code_chunks_project_id", "project_id"),
+        Index("ix_code_chunks_file_version_id", "file_version_id"),
+        Index("ix_code_chunks_symbol_id", "symbol_id"),
+        Index("ix_code_chunks_project_current", "project_id", "is_current"),
+        Index(
+            "ix_code_chunks_search_tsvector",
+            func.to_tsvector(text("'english'"), text("search_text")),
+            postgresql_using="gin",
+        ),
+        Index(
+            "ix_code_chunks_search_trgm",
+            text("search_text"),
+            postgresql_using="gin",
+            postgresql_ops={"search_text": "gin_trgm_ops"},
+        ),
+        CheckConstraint(
+            "start_line >= 1 AND end_line >= start_line",
+            name="ck_code_chunks_lines",
+        ),
+        CheckConstraint(
+            "kind IN ('module_prelude', 'function', 'class', 'statement', 'heading', 'window')",
+            name="ck_code_chunks_kind",
+        ),
+    )
+
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("workspaces.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    file_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("file_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    symbol_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("code_symbols.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    start_line: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_line: Mapped[int] = mapped_column(Integer, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    search_text: Mapped[str] = mapped_column(Text, nullable=False)
+    token_estimate: Mapped[int] = mapped_column(Integer, nullable=False)
+    redaction_count: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    is_current: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=func.true()
+    )
+
+    # Relationships
+    workspace: Mapped[Workspace] = relationship("Workspace", foreign_keys=[workspace_id])
+    project: Mapped[Project] = relationship("Project", foreign_keys=[project_id])
+    file_version: Mapped[FileVersion] = relationship(
+        "FileVersion", foreign_keys=[file_version_id], back_populates="chunks"
+    )
+    symbol: Mapped[CodeSymbol | None] = relationship(
+        "CodeSymbol", foreign_keys=[symbol_id], back_populates="chunks"
+    )
 
 
 class AnalysisJob(Base, UUID7PrimaryKeyMixin, TimestampMixin):

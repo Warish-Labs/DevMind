@@ -9,25 +9,23 @@
 | Field              | Value                                                                                                       |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                      |
-| **Last commit**    | `4a12486` (chore(repo): ignore env.production and env.productions variants in gitignore)                    |
+| **Last commit**    | `a05d20e` (feat(server): implement M5-04 code-aware chunker per language)                                   |
 | **Working tree**   | clean; working directly on main per user instruction                                                        |
 | **Open PR**        | None (working directly on main)                                                                             |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 179/179 pass, extension 70/70 pass (40 API paths) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 186/186 pass, extension 70/70 pass (40 API paths) |
 | **Date**           | 2026-10-17                                                                                                  |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M5-05: Chunk storage, tsvector full-text, and trigram indices**:
-   - Inspect `docs/03 §3.2` and `docs/04 §4` for `code_chunks` specification:
-     - Table `code_chunks`: `id` (UUIDv7), `file_version_id` (FK), `symbol_id` (FK nullable), `kind` (module_prelude, function, class, statement, heading, window), `start_line`, `end_line`, `content` (redacted, consented), `content_hash`, `search_text`, `token_estimate`, `redaction_count`, `is_current` (boolean).
-     - Constraints: unique (`file_version_id`, `start_line`, `end_line`, `content_hash`).
-     - Indices: GIN on `to_tsvector('english', search_text)`, trigram (GIN pg_trgm) on identifiers / search_text, partial index where `is_current = true`.
-     - Alembic migration `0010_code_chunks.py` (or next revision) with rollback support.
-     - SQLAlchemy model `CodeChunk` in `server/app/persistence/models/brain.py`.
-     - BrainRepository chunk persistence and transactional `is_current` batch invalidation.
-     - Unit tests in `server/tests/test_chunk_storage.py`.
+1. Implement **Milestone M5-06: Embedding gateway slice: adapter interface, embedding spaces, embed_chunks job**:
+   - Inspect `docs/04 §7-§9` and `docs/03 §3.2`:
+     - Table `embedding_spaces`: `id`, `provider_id`, `model_id`, `dimension`, `status` (`building`, `active`, `deprecated`), `config_hash`.
+     - Migration and model for `embedding_spaces`.
+     - Embedding adapter interface (`EmbeddingAdapter`) with fake provider (`FakeEmbeddingAdapter`) returning deterministic mock embeddings.
+     - Celery / background worker job `embed_chunks` batching un-embedded chunks for active embedding space.
+     - Unit and integration tests in `server/tests/test_embedding_gateway.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -41,6 +39,33 @@
 ---
 
 ## 4. Done log
+
+### M5-05 — Chunk Storage, tsvector Full-Text, and Trigram Indices
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented `code_chunks` persistence, Alembic schema migration, full-text tsvector/trigram indices, and repository operations per `docs/03 §3.2` and `docs/04 §4`:
+  - **Alembic Migration** (`server/alembic/versions/0005_code_chunks.py`):
+    - Created table `code_chunks` with UUIDv7 PK, tenant FKs (`workspace_id`, `project_id` ON DELETE CASCADE), `file_version_id` (ON DELETE CASCADE), and nullable `symbol_id` (ON DELETE SET NULL).
+    - Unique constraint `uq_code_chunks_version_lines_hash` on `(file_version_id, start_line, end_line, content_hash)`.
+    - Check constraints for line ranges (`start_line >= 1 AND end_line >= start_line`) and symbol kinds (`module_prelude`, `function`, `class`, `statement`, `heading`, `window`).
+    - Full-text search index: `CREATE INDEX ix_code_chunks_search_tsvector ON code_chunks USING gin (to_tsvector('english', search_text))`.
+    - Trigram index: `CREATE EXTENSION IF NOT EXISTS pg_trgm;` and `CREATE INDEX ix_code_chunks_search_trgm ON code_chunks USING gin (search_text gin_trgm_ops)`.
+    - Partial index for current chunks: `ix_code_chunks_project_current` on `(project_id, is_current)`.
+    - Rollback downgrade with index drops.
+  - **SQLAlchemy Persistence Model** (`server/app/persistence/models/brain.py`):
+    - Defined `CodeChunk` mapped class with composite indexes, foreign keys, and relationships to `Workspace`, `Project`, `FileVersion`, and `CodeSymbol`.
+    - Exported in `server/app/persistence/models/__init__.py`.
+  - **BrainRepository Operations** (`server/app/persistence/repositories/brain_repo.py`):
+    - `create_chunks`: Validates workspace tenant access and batch-inserts chunks.
+    - `list_chunks`: Filters by project, file_version_id, and current status with pagination.
+    - `search_chunks_text`: Case-insensitive and substring/tsvector matching on search_text scoped to current chunks.
+    - `mark_symbols_non_current_for_versions`: Transactionally invalidates previous chunks (`is_current=False`) when file versions are superseded.
+    - `get_brain_summary_stats`: Aggregates active chunk count (`total_chunks`).
+  - **Unit and Integration Tests**:
+    - `server/tests/test_chunk_storage.py` (7 tests passing): Model validation, batch insertion, querying, text search, version invalidation, and cross-tenant access rejection (`PermissionError`).
+    - `server/tests/test_migrations.py` updated and passing (verified head `0005_code_chunks`).
+    - `server/tests/test_brain_models.py` updated with `CodeChunk` assertions.
 
 ### M5-04 — Code-Aware Chunker per Language (TypeScript/JavaScript, Python, Markdown)
 

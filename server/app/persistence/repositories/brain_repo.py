@@ -14,6 +14,7 @@ from app.core.auth_context import AuthContext, SystemContext
 from app.core.ids import generate_uuid7
 from app.persistence.models.brain import (
     AnalysisJob,
+    CodeChunk,
     CodeRelationship,
     CodeSymbol,
     FileVersion,
@@ -624,6 +625,17 @@ class BrainRepository(BaseRepository):
         )
         await self.session.execute(stmt_rel)
 
+        stmt_chunk = (
+            update(CodeChunk)
+            .where(
+                CodeChunk.project_id == project_id,
+                CodeChunk.file_version_id.in_(file_version_ids),
+                CodeChunk.is_current.is_(True),
+            )
+            .values(is_current=False)
+        )
+        await self.session.execute(stmt_chunk)
+
         await self.session.flush()
         return res_sym.rowcount
 
@@ -691,6 +703,91 @@ class BrainRepository(BaseRepository):
                 CodeRelationship.project_id == project_id,
                 CodeRelationship.is_current == is_current,
             )
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def create_chunks(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        chunks_data: list[dict[str, Any]],
+    ) -> list[CodeChunk]:
+        """Persist a batch of code chunks (docs/03 §3.2, docs/04 §4).
+
+        Each chunk must be consented and redacted before insertion.
+        """
+        if not chunks_data:
+            return []
+        project = await self._verify_project_access(ctx, project_id)
+
+        created: list[CodeChunk] = []
+        for data in chunks_data:
+            chunk = CodeChunk(
+                workspace_id=project.workspace_id,
+                project_id=project_id,
+                file_version_id=data["file_version_id"],
+                symbol_id=data.get("symbol_id"),
+                kind=data["kind"],
+                start_line=data["start_line"],
+                end_line=data["end_line"],
+                content=data["content"],
+                content_hash=data["content_hash"],
+                search_text=data["search_text"],
+                token_estimate=data["token_estimate"],
+                redaction_count=data.get("redaction_count", 0),
+                is_current=data.get("is_current", True),
+            )
+            self.session.add(chunk)
+            created.append(chunk)
+
+        await self.session.flush()
+        return created
+
+    async def list_chunks(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        file_version_id: UUID | None = None,
+        is_current: bool = True,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[CodeChunk]:
+        """List code chunks within a project."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = select(CodeChunk).where(
+            CodeChunk.project_id == project_id,
+            CodeChunk.is_current == is_current,
+        )
+        if file_version_id is not None:
+            stmt = stmt.where(CodeChunk.file_version_id == file_version_id)
+
+        stmt = stmt.order_by(CodeChunk.file_version_id.asc(), CodeChunk.start_line.asc())
+        stmt = stmt.limit(limit).offset(offset)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def search_chunks_text(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        query: str,
+        limit: int = 20,
+    ) -> list[CodeChunk]:
+        """Search code chunks within a project matching query text in search_text."""
+        await self._verify_project_access(ctx, project_id)
+        if not query or not query.strip():
+            return []
+        clean_query = query.strip()
+        stmt = (
+            select(CodeChunk)
+            .where(
+                CodeChunk.project_id == project_id,
+                CodeChunk.is_current.is_(True),
+                CodeChunk.search_text.ilike(f"%{clean_query}%"),
+            )
+            .order_by(CodeChunk.start_line.asc())
             .limit(limit)
         )
         result = await self.session.execute(stmt)
@@ -1249,7 +1346,14 @@ class BrainRepository(BaseRepository):
         )
         total_relationships = int((await self.session.execute(rel_stmt)).scalar() or 0)
 
-        # 6. Findings summary by status
+        # 6. Current Chunks count
+        chunk_stmt = select(func.count(CodeChunk.id)).where(
+            CodeChunk.project_id == project_id,
+            CodeChunk.is_current.is_(True),
+        )
+        total_chunks = int((await self.session.execute(chunk_stmt)).scalar() or 0)
+
+        # 7. Findings summary by status
         find_stmt = (
             select(Finding.status, func.count(Finding.id))
             .where(Finding.project_id == project_id)
@@ -1258,7 +1362,7 @@ class BrainRepository(BaseRepository):
         find_rows = (await self.session.execute(find_stmt)).all()
         findings_summary: dict[str, int] = {str(row[0]): int(row[1]) for row in find_rows}
 
-        # 7. Latest snapshot and latest scan run
+        # 8. Latest snapshot and latest scan run
         latest_snapshot = await self.get_latest_snapshot(ctx, project_id)
         latest_scan = await self.get_latest_scan_run(ctx, project_id)
 
@@ -1270,6 +1374,7 @@ class BrainRepository(BaseRepository):
             "total_snapshots": total_snapshots,
             "total_symbols": total_symbols,
             "total_relationships": total_relationships,
+            "total_chunks": total_chunks,
             "findings_summary": findings_summary,
             "latest_snapshot": latest_snapshot,
             "latest_scan": latest_scan,

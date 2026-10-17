@@ -18,7 +18,7 @@ def test_alembic_config_and_revisions() -> None:
 
     heads = script_dir.get_heads()
     assert len(heads) == 1, f"Expected exactly 1 migration head, got: {heads}"
-    assert heads[0] == "0004_consent_records"
+    assert heads[0] == "0005_code_chunks"
 
 
 def test_migration_models_match_metadata() -> None:
@@ -41,6 +41,7 @@ def test_migration_models_match_metadata() -> None:
         "snapshot_files",
         "code_symbols",
         "code_relationships",
+        "code_chunks",
         "analysis_jobs",
         "job_events",
         "findings",

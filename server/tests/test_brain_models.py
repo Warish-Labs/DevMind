@@ -10,6 +10,7 @@ from app.core.ids import generate_uuid7
 from app.persistence.database import get_engine, session_scope
 from app.persistence.models.brain import (
     AnalysisJob,
+    CodeChunk,
     CodeRelationship,
     CodeSymbol,
     FileVersion,
@@ -139,6 +140,30 @@ def test_brain_models_instantiation_and_attributes() -> None:
     )
     assert rel.resolution == "resolved"
     assert rel.is_current is True
+
+    # 7b. CodeChunk
+    ws_id = generate_uuid7()
+    chunk = CodeChunk(
+        workspace_id=ws_id,
+        project_id=project_id,
+        file_version_id=version_id,
+        symbol_id=sym.id,
+        kind="function",
+        start_line=1,
+        end_line=20,
+        content="function main() { return 1; }",
+        content_hash="sha256:abc12345",
+        search_text="// File: src/index.ts\nfunction main() { return 1; }",
+        token_estimate=10,
+        redaction_count=0,
+        is_current=True,
+    )
+    assert chunk.kind == "function"
+    assert chunk.start_line == 1
+    assert chunk.end_line == 20
+    assert chunk.token_estimate == 10
+    assert chunk.content_hash == "sha256:abc12345"
+    assert chunk.is_current is True
 
     # 8. AnalysisJob & JobEvent
     job = AnalysisJob(
