@@ -60,3 +60,32 @@ export interface FindingsSource {
   getStructure(workspaceRoot?: string): Promise<ProjectModule[]>;
   getDatabaseModels(workspaceRoot?: string): Promise<DatabaseModel[]>;
 }
+
+export interface ConsentFileEntry {
+  path: string;
+  lineRanges?: Array<[number, number]>;
+  sizeBytes: number;
+  chunkCount: number;
+  language?: string;
+}
+
+export interface ConsentPreviewPayload {
+  projectId: string;
+  scope: "snippet_transmission" | "cloud_index" | "llm_processing";
+  purpose: {
+    kind: string;
+    jobType?: string;
+  };
+  destinationProviders: string[];
+  dataCategories: string[];
+  files: ConsentFileEntry[];
+  redactionCounts: Record<string, number>;
+  excludedPaths: Array<{ path: string; reason: string }>;
+}
+
+export interface ConsentDecision {
+  granted: boolean;
+  grantedFor?: "single_request" | "project";
+  previewHash?: string;
+  userCancelled?: boolean;
+}
