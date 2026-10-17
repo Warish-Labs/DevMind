@@ -8,10 +8,10 @@
 
 | Field              | Value                                                                                                 |
 | ------------------ | ----------------------------------------------------------------------------------------------------- |
-| **Branch**         | `feature/m6-gateway-router`                                                                           |
-| **Last commit**    | `ef3751a` (feat: implement M6-05 OpenAI-compatible adapter and bump extension to 0.1.2 production)    |
-| **Working tree**   | M6-06 complete; all 13 checks pass; 322 server tests pass                                             |
-| **Open PR**        | None (working on feature/m6-gateway-router)                                                           |
+| **Branch**         | `main`                                                                                                |
+| **Last commit**    | `f972bc8` (feat(server): implement M6-06 LLM gateway router and fallback policy)                      |
+| **Working tree**   | Clean; M6-06 complete; all 13 checks pass; 322 server tests pass                                      |
+| **Open PR**        | None (working directly on main)                                                                       |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 322/326 pass (4 skipped), client 46/46 pass |
 | **Date**           | 2026-10-17                                                                                            |
 
