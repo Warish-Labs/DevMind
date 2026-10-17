@@ -36,7 +36,7 @@ export function Footer() {
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--signal)] animate-pulse" />
                 <span className="text-[var(--fg-0)]">Operational</span>
                 <span className="text-[var(--line-3)]">·</span>
-                <span>Render + Neon Free Profile</span>
+                <span>System Active</span>
               </div>
             </div>
           </div>
@@ -180,7 +180,7 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-[var(--signal)]">Next.js · FastAPI · PostgreSQL · Redis</span>
+            <span className="text-[var(--signal)]">Continuous Project Brain</span>
           </div>
         </div>
       </div>
