@@ -13,6 +13,7 @@ from app.persistence.models.brain import (
     CodeChunk,
     CodeRelationship,
     CodeSymbol,
+    EmbeddingSpace,
     FileVersion,
     Finding,
     FindingEvidence,
@@ -164,6 +165,19 @@ def test_brain_models_instantiation_and_attributes() -> None:
     assert chunk.token_estimate == 10
     assert chunk.content_hash == "sha256:abc12345"
     assert chunk.is_current is True
+
+    # 7c. EmbeddingSpace
+    space = EmbeddingSpace(
+        provider_id="fake",
+        model_id="fake-embed-v1",
+        dimension=64,
+        status="active",
+        config_hash="sha256:space123",
+    )
+    assert space.provider_id == "fake"
+    assert space.dimension == 64
+    assert space.status == "active"
+    assert space.config_hash == "sha256:space123"
 
     # 8. AnalysisJob & JobEvent
     job = AnalysisJob(

@@ -9,23 +9,24 @@
 | Field              | Value                                                                                                       |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                      |
-| **Last commit**    | `a05d20e` (feat(server): implement M5-04 code-aware chunker per language)                                   |
+| **Last commit**    | `4e9ab2e` (feat(server): implement M5-05 chunk storage, tsvector full-text, and trigram indices)            |
 | **Working tree**   | clean; working directly on main per user instruction                                                        |
 | **Open PR**        | None (working directly on main)                                                                             |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 186/186 pass, extension 70/70 pass (40 API paths) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 193/193 pass, extension 70/70 pass (40 API paths) |
 | **Date**           | 2026-10-17                                                                                                  |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M5-06: Embedding gateway slice: adapter interface, embedding spaces, embed_chunks job**:
-   - Inspect `docs/04 §7-§9` and `docs/03 §3.2`:
-     - Table `embedding_spaces`: `id`, `provider_id`, `model_id`, `dimension`, `status` (`building`, `active`, `deprecated`), `config_hash`.
-     - Migration and model for `embedding_spaces`.
-     - Embedding adapter interface (`EmbeddingAdapter`) with fake provider (`FakeEmbeddingAdapter`) returning deterministic mock embeddings.
-     - Celery / background worker job `embed_chunks` batching un-embedded chunks for active embedding space.
-     - Unit and integration tests in `server/tests/test_embedding_gateway.py`.
+1. Implement **Milestone M5-07: Chunk embeddings with pgvector and per-space HNSW vector index**:
+   - Inspect `docs/03 §3.2` and `docs/04 §9`:
+     - Migration for `chunk_embeddings`: `chunk_id` (FK code_chunks.id), `space_id` (FK embedding_spaces.id), `project_id` (FK projects.id), `embedding` (`vector(64)` for default space), `embedded_at` (timestamptz).
+     - Composite PK `(chunk_id, space_id)`.
+     - HNSW cosine index `ix_chunk_embeddings_hnsw` on `embedding vector_cosine_ops`.
+     - SQLAlchemy model `ChunkEmbedding` in `server/app/persistence/models/brain.py`.
+     - Vector persistence and similarity search methods in `BrainRepository`.
+     - Unit tests in `server/tests/test_vector_index.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -39,6 +40,32 @@
 ---
 
 ## 4. Done log
+
+### M5-06 — Embedding Gateway Slice: Adapter Interface, Embedding Spaces, and embed_chunks Job
+
+- **Date**: 2026-10-17
+- **Branch**: `main` (direct main workflow per owner instruction)
+- **What**: Implemented the standalone embedding gateway, deterministic zero-cost adapter, embedding spaces schema, repository methods, and worker job processor per `docs/04 §10`, `docs/05 §5`, and `docs/03 §3.2`:
+  - **Alembic Migration** (`server/alembic/versions/0006_embedding_spaces.py`):
+    - Table `embedding_spaces` with UUIDv7 PK, `provider_id`, `model_id`, `dimension`, `status` (`building`, `active`, `deprecated`), `config_hash`.
+    - Unique constraint on `(provider_id, model_id, dimension)`.
+    - Check constraint on valid statuses and `dimension > 0`.
+    - Index on `status` and `(provider_id, model_id)`.
+  - **SQLAlchemy Persistence Model** (`server/app/persistence/models/brain.py`):
+    - Defined `EmbeddingSpace` class and exported in `server/app/persistence/models/__init__.py`.
+  - **Embedding Gateway & Adapter Layer** (`server/app/llm/embedding_adapter.py`):
+    - Abstract interface `EmbeddingAdapter` declaring `provider_id`, `model_id`, `dimension`, and `embed(texts, input_type)`.
+    - Deterministic `FakeEmbeddingAdapter` deriving unit-normalized L2 vectors from SHA-256 hash seeds without external networks, API keys, or financial cost (strictly adhering to ADR-046 Free Tiers).
+    - Factory `get_embedding_adapter(provider_id, model_id, dimension)`.
+  - **Repository & Domain Service** (`BrainRepository`, `EmbeddingService` in `server/app/domain/brain/embedding_service.py`):
+    - `get_active_embedding_space`, `create_embedding_space`, `set_active_embedding_space`, `get_unembedded_chunks`.
+    - `EmbeddingService.process_embed_chunks`: Batches un-embedded chunks, runs embedding generation, tracks token counts, and reports execution statistics.
+  - **Worker Job Dispatch** (`server/app/workers/celery_app.py`):
+    - Wired `embed_chunks` job execution path into Celery worker lifecycle.
+  - **Unit & Integration Tests**:
+    - `server/tests/test_embedding_gateway.py` (7 tests passing): Determinism, unit normalization, document/query separation, batching, space lifecycle, zero-chunk handling, and tenant isolation.
+    - Updated `server/tests/test_migrations.py` (verified head `0006_embedding_spaces`).
+    - Updated `server/tests/test_brain_models.py` with `EmbeddingSpace` assertions.
 
 ### M5-05 — Chunk Storage, tsvector Full-Text, and Trigram Indices
 

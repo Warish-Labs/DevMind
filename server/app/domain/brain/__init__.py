@@ -15,6 +15,7 @@ from app.domain.brain.chunker import (
     estimate_token_count,
 )
 from app.domain.brain.context import resolve_project_context
+from app.domain.brain.embedding_service import EmbeddingService
 from app.domain.brain.findings_service import (
     BatchFindingsRequest,
     BatchFindingsResponse,
@@ -95,6 +96,7 @@ __all__ = [
     "compute_chunk_content_hash",
     "detect_language",
     "estimate_token_count",
+    "EmbeddingService",
     "FileManifestEntry",
     "FindingDetailItem",
     "FindingEvidenceItem",

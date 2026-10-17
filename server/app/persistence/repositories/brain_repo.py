@@ -17,6 +17,7 @@ from app.persistence.models.brain import (
     CodeChunk,
     CodeRelationship,
     CodeSymbol,
+    EmbeddingSpace,
     FileVersion,
     Finding,
     FindingEvidence,
@@ -788,6 +789,89 @@ class BrainRepository(BaseRepository):
                 CodeChunk.search_text.ilike(f"%{clean_query}%"),
             )
             .order_by(CodeChunk.start_line.asc())
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_active_embedding_space(
+        self,
+        ctx: AuthContext | SystemContext,
+    ) -> EmbeddingSpace | None:
+        """Retrieve the currently active embedding space (docs/04 §10)."""
+        self._validate_context(ctx)
+        stmt = (
+            select(EmbeddingSpace)
+            .where(EmbeddingSpace.status == "active")
+            .order_by(EmbeddingSpace.created_at.desc())
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
+
+    async def create_embedding_space(
+        self,
+        ctx: AuthContext | SystemContext,
+        provider_id: str,
+        model_id: str,
+        dimension: int,
+        status: str = "building",
+        config_hash: str = "",
+    ) -> EmbeddingSpace:
+        """Create a new embedding space record."""
+        self._validate_context(ctx)
+        space = EmbeddingSpace(
+            provider_id=provider_id,
+            model_id=model_id,
+            dimension=dimension,
+            status=status,
+            config_hash=config_hash,
+        )
+        self.session.add(space)
+        await self.session.flush()
+        return space
+
+    async def set_active_embedding_space(
+        self,
+        ctx: AuthContext | SystemContext,
+        space_id: UUID,
+    ) -> EmbeddingSpace:
+        """Activate the specified embedding space, deprecating previously active spaces."""
+        self._validate_context(ctx)
+        stmt_dep = (
+            update(EmbeddingSpace)
+            .where(EmbeddingSpace.status == "active")
+            .values(status="deprecated")
+        )
+        await self.session.execute(stmt_dep)
+
+        stmt_act = (
+            update(EmbeddingSpace).where(EmbeddingSpace.id == space_id).values(status="active")
+        )
+        await self.session.execute(stmt_act)
+        await self.session.flush()
+
+        stmt_get = select(EmbeddingSpace).where(EmbeddingSpace.id == space_id)
+        space = (await self.session.execute(stmt_get)).scalars().first()
+        if not space:
+            raise ValueError(f"Embedding space {space_id} not found")
+        return space
+
+    async def get_unembedded_chunks(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        space_id: UUID,
+        limit: int = 100,
+    ) -> list[CodeChunk]:
+        """Retrieve current chunks that need embedding vectors in the target space."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = (
+            select(CodeChunk)
+            .where(
+                CodeChunk.project_id == project_id,
+                CodeChunk.is_current.is_(True),
+            )
+            .order_by(CodeChunk.file_version_id.asc(), CodeChunk.start_line.asc())
             .limit(limit)
         )
         result = await self.session.execute(stmt)

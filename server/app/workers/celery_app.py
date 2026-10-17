@@ -10,11 +10,14 @@ from uuid import UUID
 
 from celery import Celery
 from kombu import Queue
+from sqlalchemy import select
 
 from app.core.auth_context import SystemContext
 from app.core.settings import Settings, get_settings
+from app.domain.brain.embedding_service import EmbeddingService
 from app.domain.jobs.service import JobLifecycleService
 from app.persistence.database import session_scope
+from app.persistence.models.brain import AnalysisJob
 
 logger = logging.getLogger("devmind.workers")
 
@@ -166,6 +169,34 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
                 if asyncio.get_event_loop().is_running()
                 else 0
             }
+
+            if job_type == "embed_chunks":
+
+                async def _run_embed() -> dict[str, Any]:
+                    async with session_scope() as session:
+                        service = EmbeddingService(session)
+                        project_id_raw = params.get("project_id")
+                        if not project_id_raw:
+                            stmt = select(AnalysisJob).where(AnalysisJob.id == job_id)
+                            job_rec = (await session.execute(stmt)).scalars().first()
+                            project_id = job_rec.project_id if job_rec else None
+                        else:
+                            project_id = UUID(project_id_raw)
+                        if not project_id:
+                            raise ValueError(f"No project_id associated with job {job_id}")
+
+                        space_id_raw = params.get("space_id")
+                        space_id = UUID(space_id_raw) if space_id_raw else None
+                        batch_size = int(params.get("batch_size", 50))
+                        return await service.process_embed_chunks(
+                            ctx=sys_ctx,
+                            project_id=project_id,
+                            space_id=space_id,
+                            batch_size=batch_size,
+                        )
+
+                embed_stats = _run_async(_run_embed())
+                result_data.update(embed_stats)
 
             async def _complete() -> None:
                 async with session_scope() as session:

@@ -479,6 +479,35 @@ class CodeChunk(Base, UUID7PrimaryKeyMixin, TimestampMixin):
     )
 
 
+class EmbeddingSpace(Base, UUID7PrimaryKeyMixin, TimestampMixin):
+    """Embedding space record identifying provider, model, dimension, and status (docs/03 §3.2, docs/04 §10)."""
+
+    __tablename__ = "embedding_spaces"
+    __table_args__ = (
+        UniqueConstraint(
+            "provider_id",
+            "model_id",
+            "dimension",
+            name="uq_embedding_spaces_provider_model_dim",
+        ),
+        Index("ix_embedding_spaces_status", "status"),
+        Index("ix_embedding_spaces_provider_model", "provider_id", "model_id"),
+        CheckConstraint(
+            "status IN ('building', 'active', 'deprecated')",
+            name="ck_embedding_spaces_status",
+        ),
+        CheckConstraint("dimension > 0", name="ck_embedding_spaces_dimension"),
+    )
+
+    provider_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    model_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    dimension: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="building", server_default="building"
+    )
+    config_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+
+
 class AnalysisJob(Base, UUID7PrimaryKeyMixin, TimestampMixin):
     """Asynchronous background work unit (docs/03 §3.3)."""
 
