@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -38,6 +39,7 @@ from app.llm.models import (
 )
 from app.llm.quotas import LLMConcurrencyManager, LLMQuotaEnforcer, LLMRateLimiter
 from app.llm.registry import create_adapter
+from app.llm.usage import LLMUsageRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +55,7 @@ class LLMGatewayRouter:
         concurrency_manager: LLMConcurrencyManager | None = None,
         rate_limiter: LLMRateLimiter | None = None,
         quota_enforcer: LLMQuotaEnforcer | None = None,
+        usage_recorder: LLMUsageRecorder | None = None,
     ) -> None:
         self.config = config or load_gateway_config()
         self.environment = (
@@ -70,6 +73,7 @@ class LLMGatewayRouter:
         self.concurrency_manager = concurrency_manager or LLMConcurrencyManager(self.config)
         self.rate_limiter = rate_limiter or LLMRateLimiter(self.config)
         self.quota_enforcer = quota_enforcer or LLMQuotaEnforcer(self.config)
+        self.usage_recorder = usage_recorder or LLMUsageRecorder()
 
     def register_adapter_override(self, model_key: str, adapter: LLMAdapter) -> None:
         """Register a mock or pre-instantiated adapter for a specific logical model key."""
@@ -327,15 +331,54 @@ class LLMGatewayRouter:
                     len(candidates) - 1,
                 )
 
+            call_start = time.time()
             try:
                 # 3. Concurrency semaphore acquisition per provider and workspace (docs/05 §13)
                 async with self.concurrency_manager.acquire(provider_key, workspace_id):
                     response = await adapter.generate(request)
+                    latency_ms = max(1, int((time.time() - call_start) * 1000))
+                    in_tokens = (
+                        response.usage.input_tokens
+                        if response.usage
+                        else self.quota_enforcer.estimate_input_tokens(request)
+                    )
+                    out_tokens = (
+                        response.usage.output_tokens
+                        if response.usage
+                        else max(1, len(response.content or "") // 4)
+                    )
                     if workspace_id and response.usage:
                         self.quota_enforcer.record_usage(workspace_id, response.usage.total_tokens)
+                    await self.usage_recorder.record_call(
+                        task=request.task,
+                        provider_id=provider_key,
+                        model_id=model_entry.model_id,
+                        input_tokens=in_tokens,
+                        output_tokens=out_tokens,
+                        latency_ms=latency_ms,
+                        outcome="success",
+                        workspace_id=workspace_id,
+                        project_id=request.metadata.get("project_id"),
+                        job_id=request.metadata.get("job_id"),
+                        price_units=model_entry.price_units,
+                    )
                     return response
             except LLMRefusalError:
                 # ADR-027 / docs/05 §12 Table: Content refusal must NEVER be retried on fallbacks to bypass
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=self.quota_enforcer.estimate_input_tokens(request),
+                    output_tokens=0,
+                    latency_ms=latency_ms,
+                    outcome="failure",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
                 logger.info(
                     "LLM provider returned content refusal for task '%s'; not attempting fallbacks",
                     request.task,
@@ -343,6 +386,20 @@ class LLMGatewayRouter:
                 raise
             except LLMInvalidOutputError:
                 # ADR-027 / docs/05 §12 Table: Schema invalid output fails without falling back
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=self.quota_enforcer.estimate_input_tokens(request),
+                    output_tokens=0,
+                    latency_ms=latency_ms,
+                    outcome="failure",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
                 logger.info(
                     "LLM output failed schema validation for task '%s'; not attempting fallbacks",
                     request.task,
@@ -352,18 +409,68 @@ class LLMGatewayRouter:
                 # Policy/privacy violations must fail immediately
                 raise
             except LLMRateLimitError as exc:
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=self.quota_enforcer.estimate_input_tokens(request),
+                    output_tokens=0,
+                    latency_ms=latency_ms,
+                    outcome="failure",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
                 self.rate_limiter.record_backoff(provider_key, exc.retry_after_s)
                 logger.warning(
                     "Provider '%s' returned HTTP 429 rate limit; recorded backoff", provider_key
                 )
                 last_exception = exc
                 continue
+            except LLMTimeoutError as exc:
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=self.quota_enforcer.estimate_input_tokens(request),
+                    output_tokens=0,
+                    latency_ms=latency_ms,
+                    outcome="timeout",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
+                logger.warning(
+                    "Provider timeout on model '%s' for task '%s': %s",
+                    model_key,
+                    request.task,
+                    exc,
+                )
+                last_exception = exc
+                continue
             except (
-                LLMTimeoutError,
                 LLMProviderError,
                 LLMUnavailableError,
                 LLMContextLengthExceededError,
             ) as exc:
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=self.quota_enforcer.estimate_input_tokens(request),
+                    output_tokens=0,
+                    latency_ms=latency_ms,
+                    outcome="failure",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
                 logger.warning(
                     "Provider error on model '%s' for task '%s': %s",
                     model_key,
@@ -373,6 +480,20 @@ class LLMGatewayRouter:
                 last_exception = exc
                 continue
             except Exception as exc:
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=self.quota_enforcer.estimate_input_tokens(request),
+                    output_tokens=0,
+                    latency_ms=latency_ms,
+                    outcome="failure",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
                 logger.error(
                     "Unexpected error on model '%s' for task '%s': %s",
                     model_key,
@@ -446,19 +567,66 @@ class LLMGatewayRouter:
                     request.task,
                 )
 
+            call_start = time.time()
             stream_started = False
+            total_out_tokens = 0
             try:
                 async with self.concurrency_manager.acquire(provider_key, workspace_id):
                     async for chunk in adapter.stream_generate(request):
                         stream_started = True
+                        if chunk.delta_content:
+                            total_out_tokens += max(1, len(chunk.delta_content) // 4)
                         if workspace_id and chunk.usage:
                             self.quota_enforcer.record_usage(workspace_id, chunk.usage.total_tokens)
                         yield chunk
                 # Stream finished successfully
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                in_tokens = self.quota_enforcer.estimate_input_tokens(request)
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=in_tokens,
+                    output_tokens=total_out_tokens,
+                    latency_ms=latency_ms,
+                    outcome="success",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
                 return
             except LLMRefusalError:
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=self.quota_enforcer.estimate_input_tokens(request),
+                    output_tokens=total_out_tokens,
+                    latency_ms=latency_ms,
+                    outcome="failure",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
                 raise
             except LLMInvalidOutputError:
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=self.quota_enforcer.estimate_input_tokens(request),
+                    output_tokens=total_out_tokens,
+                    latency_ms=latency_ms,
+                    outcome="failure",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
                 raise
             except LLMPermissionError:
                 raise
@@ -469,6 +637,20 @@ class LLMGatewayRouter:
                 last_exception = exc
                 continue
             except Exception as exc:
+                latency_ms = max(1, int((time.time() - call_start) * 1000))
+                await self.usage_recorder.record_call(
+                    task=request.task,
+                    provider_id=provider_key,
+                    model_id=model_entry.model_id,
+                    input_tokens=self.quota_enforcer.estimate_input_tokens(request),
+                    output_tokens=total_out_tokens,
+                    latency_ms=latency_ms,
+                    outcome="failure",
+                    workspace_id=workspace_id,
+                    project_id=request.metadata.get("project_id"),
+                    job_id=request.metadata.get("job_id"),
+                    price_units=model_entry.price_units,
+                )
                 if stream_started:
                     # If stream already began emitting tokens to the client, we cannot silently switch providers mid-stream
                     logger.error(

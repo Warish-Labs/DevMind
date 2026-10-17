@@ -24,6 +24,7 @@ from app.persistence.repositories import (
     UsageRecordRepository,
     UserRepository,
     WorkspaceRepository,
+    create_database_usage_sink,
 )
 
 __all__ = [
@@ -36,6 +37,7 @@ __all__ = [
     "ProjectRepository",
     "UsageRecord",
     "UsageRecordRepository",
+    "create_database_usage_sink",
     "User",
     "UserRepository",
     "Workspace",

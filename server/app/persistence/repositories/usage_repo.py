@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -95,3 +97,42 @@ class UsageRecordRepository(BaseRepository):
         if row:
             return {"input_tokens": int(row[0]), "output_tokens": int(row[1])}
         return {"input_tokens": 0, "output_tokens": 0}
+
+
+def create_database_usage_sink(
+    session_factory: Callable[[], Any],
+) -> Callable[[Any], Any]:
+    """Create an asynchronous usage sink that persists inference records to usage_records table (docs/05 §13, M6-08)."""
+
+    async def _db_sink(entry: Any) -> None:
+        ws_id = getattr(entry, "workspace_id", None)
+        if ws_id is None:
+            return
+
+        proj_id = getattr(entry, "project_id", None)
+        job_id = getattr(entry, "job_id", None)
+
+        async with session_factory() as session:
+            repo = UsageRecordRepository(session)
+            sys_ctx = SystemContext(
+                reason="llm_inference_usage_recording",
+                workspace_id=ws_id,
+                project_id=proj_id,
+            )
+            await repo.record(
+                ctx=sys_ctx,
+                llm_task=getattr(entry, "llm_task", ""),
+                provider_id=getattr(entry, "provider_id", ""),
+                model_id=getattr(entry, "model_id", ""),
+                input_tokens=getattr(entry, "input_tokens", 0),
+                output_tokens=getattr(entry, "output_tokens", 0),
+                cost_units=getattr(entry, "cost_units", 0),
+                latency_ms=getattr(entry, "latency_ms", 0),
+                outcome=getattr(entry, "outcome", "success"),
+                project_id=proj_id,
+                job_id=job_id,
+                workspace_id=ws_id,
+            )
+            await session.commit()
+
+    return _db_sink

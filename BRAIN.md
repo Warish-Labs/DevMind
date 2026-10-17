@@ -8,22 +8,21 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `0aa807c` (feat(server): implement M6-07 LLM quotas, concurrency, and rate limiting) |
-| **Working tree** | Clean; M6-07 complete; all 13 checks pass; 332 server tests pass |
+| **Last commit** | `feat(server): implement M6-08 LLM usage recording, cost accounting, and persistence` |
+| **Working tree** | Clean; M6-08 complete; all 13 checks pass; 342 server tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 332/336 pass (4 skipped), client 46/46 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 342/346 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-17 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-08: Usage recording (input/output tokens, latency, cost tracking) persisted to usage_records** per `PLAN.md`:
-   - Inspect `docs/05 §13`, `docs/03 §4`, and `server/app/llm/`:
-     - Implement usage recorder service that records gateway calls into `usage_records` table (workspace_id, project_id, job_id, task, provider, model, tokens, latency, outcome).
-     - Calculate cost accounting units using official pricing units from `models.yaml`.
-     - Wire usage recorder into gateway router generation & streaming lifecycle.
-     - Add unit and integration tests in `server/tests/test_llm_usage_records.py`.
+1. Implement **Milestone M6-09: Structured-output schema repair and validation layer** per `PLAN.md`:
+   - Inspect `docs/05 §14` and `server/app/llm/`:
+     - Implement structured output validation and schema repair engine (Pydantic / JSON schema validator, malformed JSON auto-repair, retry prompt generator).
+     - Wire into gateway router or generation pipelines where structured outputs are requested.
+     - Author comprehensive unit tests in `server/tests/test_llm_output_repair.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -37,6 +36,22 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-08: LLM Usage Recording, Cost Accounting, and Persistence
+
+- **Date**: 2026-10-17
+- **Branch**: `feature/m6-usage-records`
+- **What**:
+  - Implemented `calculate_cost_units` in [`server/app/llm/usage.py`](server/app/llm/usage.py) (docs/05 §13):
+    - Computes integer cost accounting units from input/output tokens and `price_units` configuration from `models.yaml`.
+  - Implemented `LLMUsageRecorder` in [`server/app/llm/usage.py`](server/app/llm/usage.py) (docs/05 §13, docs/03 §3.5):
+    - In-memory audit trail with `RecordedUsage` model (UUIDv7, tenant scoping, outcome, latency, token counts).
+    - Decoupled asynchronous `UsageSink` protocol preserving architectural layer boundary (`app.llm` never imports `app.persistence` per docs/02 §4.1).
+  - Implemented `create_database_usage_sink` in [`server/app/persistence/repositories/usage_repo.py`](server/app/persistence/repositories/usage_repo.py):
+    - Async sink adapter persisting usage records via `UsageRecordRepository` under `SystemContext(reason="llm_inference_usage_recording")`.
+  - Integrated usage recording into [`server/app/llm/router.py`](server/app/llm/router.py):
+    - Calls recorded on generation success, content refusal (`LLMRefusalError`), timeout (`LLMTimeoutError`), provider errors, and streaming completion.
+  - Added 10 unit and integration tests in [`server/tests/test_llm_usage_records.py`](server/tests/test_llm_usage_records.py). All 61 LLM tests and 342 server tests pass.
 
 ### Feature — M6-07: LLM Quotas, Concurrency Semaphores, and Rate Limiting
 

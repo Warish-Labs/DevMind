@@ -53,6 +53,7 @@ from app.llm.registry import (
     register_adapter,
 )
 from app.llm.router import LLMGatewayRouter
+from app.llm.usage import LLMUsageRecorder, RecordedUsage, UsageSink, calculate_cost_units
 
 __all__ = [
     # Embedding gateway exports
@@ -76,6 +77,10 @@ __all__ = [
     "LLMConcurrencyManager",
     "LLMRateLimiter",
     "LLMQuotaEnforcer",
+    "LLMUsageRecorder",
+    "RecordedUsage",
+    "UsageSink",
+    "calculate_cost_units",
     "GatewayConfig",
     "load_gateway_config",
     "validate_gateway_config",
