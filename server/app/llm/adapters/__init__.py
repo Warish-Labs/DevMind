@@ -2,5 +2,11 @@
 
 from app.llm.adapters.fake import FakeFaultInjection, FakeLLMAdapter
 from app.llm.adapters.google_genai import GoogleGeminiAdapter
+from app.llm.adapters.openai_compatible import OpenAICompatibleAdapter
 
-__all__ = ["FakeLLMAdapter", "FakeFaultInjection", "GoogleGeminiAdapter"]
+__all__ = [
+    "FakeLLMAdapter",
+    "FakeFaultInjection",
+    "GoogleGeminiAdapter",
+    "OpenAICompatibleAdapter",
+]

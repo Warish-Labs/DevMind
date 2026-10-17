@@ -2,7 +2,7 @@
   "name": "devmind-vscode",
   "displayName": "DevMind Companion",
   "description": "Continuous Project Brain Companion for VS Code: local scanner, architectural map, and privacy-first sync.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "WarishLabs",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -146,13 +146,13 @@
       "properties": {
         "devmind.apiBaseUrl": {
           "type": "string",
-          "default": "http://localhost:8000/api/v1",
+          "default": "https://api.devmind.warishlabs.in/api/v1",
           "scope": "machine",
           "description": "Base URL of the DevMind server API."
         },
         "devmind.fixtureMode": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "scope": "window",
           "description": "Use local fixtures for findings and project structure without requiring server connection."
         },

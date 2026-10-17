@@ -13,8 +13,23 @@ export class SettingsService {
           ? false
           : true;
 
-    const apiBaseUrl = config.get<string>("apiBaseUrl", defaultApiUrl);
-    const fixtureMode = config.get<boolean>("fixtureMode", defaultFixture);
+    const isProdBuild = process.env.DEVMIND_BUILD_MODE === "production";
+    const rawApiUrl = config.get<string>("apiBaseUrl");
+    const rawFixture = config.get<boolean>("fixtureMode");
+
+    const apiBaseUrl =
+      isProdBuild &&
+      (!rawApiUrl || rawApiUrl.includes("localhost") || rawApiUrl.includes("127.0.0.1"))
+        ? defaultApiUrl
+        : rawApiUrl || defaultApiUrl;
+
+    const fixtureMode =
+      isProdBuild && rawFixture === true
+        ? false
+        : rawFixture !== undefined
+          ? rawFixture
+          : defaultFixture;
+
     const syncMode = config.get<SyncMode>("syncMode", "metadata_only");
     const projectId = config.get<string>("projectId", "") || undefined;
 

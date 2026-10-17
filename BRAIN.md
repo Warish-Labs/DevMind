@@ -8,25 +8,23 @@
 
 | Field              | Value                                                                                                 |
 | ------------------ | ----------------------------------------------------------------------------------------------------- |
-| **Branch**         | `feature/m6-gemini-adapter`                                                                           |
-| **Last commit**    | `e6e34b7` (docs: update BRAIN.md with turnstile hardening resolution)                                 |
-| **Working tree**   | M6-04 complete; all 13 checks pass; server test suite grew to 293 passing tests                       |
-| **Open PR**        | None                                                                                                  |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 293/297 pass (4 skipped), client 46/46 pass |
+| **Branch**         | `main`                                                                                                |
+| **Last commit**    | `e035432` (feat(server): implement M6-04 Google Gemini LLM adapter)                                   |
+| **Working tree**   | Extension packaged v0.1.2 production; M6-05 complete; all 13 checks pass; 303 server tests pass       |
+| **Open PR**        | None (working directly on main)                                                                       |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 303/307 pass (4 skipped), client 46/46 pass |
 | **Date**           | 2026-10-17                                                                                            |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-05: Second generation adapter (alternative provider, e.g. Groq/OpenAI, disabled until configured)** per `PLAN.md`:
-   - Inspect `docs/05 §11.1, §12` and `server/app/llm/adapters/`:
-     - Implement `OpenAICompatibleAdapter(LLMAdapter)` supporting OpenAI/Groq compatible chat completion REST schema.
-     - Support native JSON schema or json_object response format.
-     - Support tools and function calling.
-     - Register `openai_compatible`, `openai`, `groq` in adapter registry.
-     - Keep disabled by default until API keys are supplied.
-     - Add recorded-shape unit tests in `server/tests/test_openai_compatible_adapter.py`.
+1. Implement **Milestone M6-06: Gateway router with capability matching, fallback rules, and source-code-allowed privacy guard** per `PLAN.md`:
+   - Inspect `docs/05 §11.1, §12` and `server/app/llm/`:
+     - Implement `LLMGatewayRouter` in `server/app/llm/router.py`.
+     - Route by task key referencing `tasks.yaml`, model capabilities, and fallbacks.
+     - Enforce `source_code_allowed` guard on customer code transmissions.
+     - Add recorded-shape unit tests in `server/tests/test_llm_router.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -40,6 +38,25 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-05 & Extension Production Package v0.1.2 Rebuild
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**:
+  - **VS Code Extension Production Rebuild (v0.1.2)**:
+    - Bumped extension version to `0.1.2` in `extension/package.json` and updated `tests/quality.test.ts`.
+    - Enforced production configuration defaults in `extension/package.json`:
+      - `devmind.apiBaseUrl`: `"https://api.devmind.warishlabs.in/api/v1"`
+      - `devmind.fixtureMode`: `false`
+    - Hardened `SettingsService` ([`extension/src/services/settings.ts`](extension/src/services/settings.ts)) so production builds strictly prioritize `https://api.devmind.warishlabs.in/api/v1` and disable fixture mode even if legacy `localhost` defaults existed in workspace settings.
+    - Rebuilt and packaged `dist/devmind-vscode.vsix` (version `0.1.2`, 51.99 KB, 9 clean files, no secrets or environment files included).
+  - **Milestone M6-05: OpenAI-Compatible LLM Adapter**:
+    - Implemented `OpenAICompatibleAdapter(LLMAdapter)` in `server/app/llm/adapters/openai_compatible.py` targeting standard `/chat/completions` REST endpoints.
+    - Compatible with Groq (free tier: 30 RPM), OpenAI, Together, Mistral, and local Ollama.
+    - Supports native `json_schema` response_format, tool/function calling, SSE token streaming, and full RFC 9457 exception mapping (`LLMRateLimitError`, `LLMProviderError`, `LLMTimeoutError`, `LLMRefusalError`).
+    - Registered as `"openai_compatible"`, `"openai"`, and `"groq"` in the adapter registry.
+    - Added 10 unit tests in `server/tests/test_openai_compatible_adapter.py`. Server test suite expanded to 303 passing tests. All 13 test-all fast suite checks pass.
 
 ### Feature — M6-04: Google Gemini Generation Adapter (Official REST/SDK Protocol)
 
