@@ -35,15 +35,23 @@ blob-report/
 .import_linter_cache/
 
 # Environment files and secrets (Never commit secrets!)
+.env*
+*.env*
+env.production*
+env.productions*
+**/env.production*
+**/env.productions*
 .env
 .env.local
 .env.*.local
 .env.development
 .env.test
 .env.production
+.env.production*
 .env.staging
 # Do NOT ignore .env.example files
 !.env.example
+!**/.env.example
 !client/.env.example
 !server/.env.example
 !extension/.env.example
