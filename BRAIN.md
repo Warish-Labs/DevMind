@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `feat(server): implement M6-08 LLM usage recording, cost accounting, and persistence` |
+| **Last commit** | `c7fd585` (feat(server): implement M6-08 LLM usage recording, cost accounting, and persistence) |
 | **Working tree** | Clean; M6-08 complete; all 13 checks pass; 342 server tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 342/346 pass (4 skipped), client 46/46 pass |
