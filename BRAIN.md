@@ -9,7 +9,7 @@
 | Field              | Value                                                                                                       |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `main`                                                                                                      |
-| **Last commit**    | `823a47d` (feat(extension): implement M5-02 consent preview webview and sent-bytes equality check)          |
+| **Last commit**    | `ecf3526` (feat(server): implement M5-03 redaction pipeline and consented snippet upload)                   |
 | **Working tree**   | clean; working directly on main per user instruction                                                        |
 | **Open PR**        | None (working directly on main)                                                                             |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 170/170 pass, extension 70/70 pass (40 API paths) |
