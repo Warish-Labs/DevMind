@@ -88,6 +88,14 @@ class BrainSearchResponse(BaseModel):
     total_results: int
     items: list[BrainSearchItem] = Field(default_factory=list)
     context_pack: ContextPack
+    degraded: bool = Field(
+        default=False,
+        description="True if retrieval degraded to partial channels due to embedding provider outage (docs/04 §16)",
+    )
+    degraded_reason: str | None = Field(
+        default=None,
+        description="Detailed reason for degradation if degraded is true",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -203,6 +211,8 @@ class RetrievalService:
 
         # Channel 3: Semantic Vector Search via pgvector
         vector_results: list[tuple[CodeChunk, float]] = []
+        is_degraded = False
+        degraded_reason: str | None = None
         if "vector" in modes:
             try:
                 vector_results = await self._retrieve_vectors(
@@ -212,8 +222,10 @@ class RetrievalService:
                     limit=limit * 2,
                 )
             except Exception as exc:
+                is_degraded = True
+                degraded_reason = f"Embedding provider outage: {exc}"
                 logger.warning(
-                    "Vector retrieval channel failed or degraded: %s (continuing with remaining channels)",
+                    "Vector retrieval channel failed or degraded: %s (degraded to keyword + symbol channels per docs/04 §16)",
                     exc,
                 )
 
@@ -375,6 +387,8 @@ class RetrievalService:
             total_results=len(all_items),
             items=all_items,
             context_pack=context_pack,
+            degraded=is_degraded,
+            degraded_reason=degraded_reason,
         )
 
     async def _retrieve_vectors(
@@ -387,8 +401,7 @@ class RetrievalService:
         """Generate query embedding and perform pgvector similarity search."""
         active_space = await self.repo.get_active_embedding_space(ctx)
         if not active_space:
-            logger.info("No active embedding space available for vector search; skipping vector channel")
-            return []
+            raise RuntimeError("No active embedding space available for vector search")
 
         # Resolve embedding adapter
         adapter = self.embedding_adapter or get_embedding_adapter(
@@ -399,7 +412,7 @@ class RetrievalService:
 
         emb_res = await adapter.embed([query], input_type="query")
         if not emb_res.vectors:
-            return []
+            raise RuntimeError("Embedding provider returned empty vectors list")
 
         query_vector = emb_res.vectors[0]
         return await self.repo.search_chunks_vector(

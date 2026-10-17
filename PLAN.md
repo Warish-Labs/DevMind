@@ -240,11 +240,21 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M5-08 Hybrid retrieval with fusion and context-pack builder (POST /api/v1/projects/{pid}/brain/search) (feature/m5-hybrid-retrieval)
 - [x] M5-09 Retrieval evaluation harness and test dataset (feature/m5-eval-harness)
 - [x] M5-10 Record retrieval baselines in docs/09 §9 (feature/m5-retrieval-baselines)
-- [ ] M5-11 Failure-state behavior: embedding provider outage degradation to keyword/symbol (feature/m5-outage-degradation)
+- [x] M5-11 Failure-state behavior: embedding provider outage degradation to keyword/symbol (feature/m5-outage-degradation)
 
-### M6 · LLM gateway and config
+### M6 · LLM gateway, adapters, model configuration
 
-- [ ] Provider adapter interface, fake provider, YAML config, routing, quotas (feature/m6-*)
+- [ ] M6-01 LLM provider adapter interfaces, capabilities, and common request/response types (feature/m6-llm-interfaces)
+- [ ] M6-02 Fake LLM provider adapter with scripted responses and fault injection (feature/m6-fake-provider)
+- [ ] M6-03 Gateway YAML config loaders (providers.yaml, models.yaml, tasks.yaml) with Pydantic validation (feature/m6-gateway-config)
+- [ ] M6-04 First real generation adapter (Google Gemini via official SDK with free tier key support) (feature/m6-gemini-adapter)
+- [ ] M6-05 Second generation adapter (alternative provider, e.g. Groq/OpenAI, disabled until configured) (feature/m6-alternative-adapter)
+- [ ] M6-06 Gateway router with capability matching, fallback rules, and source-code-allowed privacy guard (feature/m6-gateway-router)
+- [ ] M6-07 Quotas, concurrency semaphores, and sliding-window rate limiting for LLM calls (feature/m6-llm-quotas)
+- [ ] M6-08 Usage recording (input/output tokens, latency, cost tracking) persisted to usage_records (feature/m6-usage-records)
+- [ ] M6-09 Structured-output schema repair and validation layer (feature/m6-output-repair)
+- [ ] M6-10 Versioned prompt template loader with untrusted context escaping (feature/m6-prompt-loader)
+- [ ] M6-11 LLM evaluation benchmark harness skeleton and prompt injection test corpus (feature/m6-llm-eval)
 
 ### M7 · LangGraph, CodeMate, AuthCheck
 

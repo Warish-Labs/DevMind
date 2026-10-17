@@ -370,3 +370,117 @@ async def test_brain_search_api_endpoint() -> None:
         mock_session.execute = AsyncMock(side_effect=_execute_missing_project)
         resp_nf = await client.post(f"/api/v1/projects/{other_pid}/brain/search", json=payload)
         assert resp_nf.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_retrieval_outage_degradation_to_keyword_and_symbol() -> None:
+    """Verify that when embedding provider suffers an outage, retrieval degrades gracefully to keyword + symbol (docs/04 §16, M5-11)."""
+    session = AsyncMock(spec=AsyncSession)
+    service = RetrievalService(session)
+
+    project_id = generate_uuid7()
+    ctx = _make_auth_ctx()
+
+    file_ver_id = generate_uuid7()
+    proj_file = ProjectFile(path="app/auth.py", language="python")
+    file_ver = FileVersion(id=file_ver_id, file=proj_file, content_hash="hash_outage_test")
+
+    symbol = CodeSymbol(
+        id=generate_uuid7(),
+        project_id=project_id,
+        file_version_id=file_ver_id,
+        name="verify_credentials",
+        kind="function",
+        symbol_key="func:verify_credentials",
+        signature="def verify_credentials(token: str):",
+        start_line=10,
+        end_line=20,
+        file_version=file_ver,
+    )
+
+    chunk = CodeChunk(
+        id=generate_uuid7(),
+        workspace_id=ctx.workspace_id,
+        project_id=project_id,
+        file_version_id=file_ver_id,
+        kind="function",
+        start_line=10,
+        end_line=20,
+        content="def verify_credentials(token: str):\n    return token.startswith('bearer')",
+        content_hash="chunk_hash_outage",
+        search_text="verify_credentials token",
+        token_estimate=18,
+        file_version=file_ver,
+    )
+
+    # Mock symbol search and keyword search succeeding
+    service.repo.search_symbols = AsyncMock(return_value=[symbol])
+    service.repo.search_chunks_text = AsyncMock(return_value=[chunk])
+
+    # Mock embedding adapter failing with simulated 503 outage
+    mock_adapter = MagicMock()
+    mock_adapter.embed = AsyncMock(side_effect=RuntimeError("Google AI 503 Service Unavailable: connection timed out"))
+    service.embedding_adapter = mock_adapter
+
+    active_space = EmbeddingSpace(
+        id=generate_uuid7(),
+        provider_id="google",
+        model_id="text-embedding-004",
+        dimension=768,
+        status="active",
+        config_hash="test_config_hash",
+    )
+    service.repo.get_active_embedding_space = AsyncMock(return_value=active_space)
+
+    # Execute search requesting all modes including vector
+    req = BrainSearchRequest(
+        query="verify_credentials token",
+        modes=["symbol", "keyword", "vector"],
+        limit=5,
+        expand_relationships=False,
+        token_budget=1000,
+    )
+
+    res = await service.search(ctx=ctx, project_id=project_id, request=req)
+
+    # Verify graceful degradation behavior
+    assert res.degraded is True
+    assert res.degraded_reason is not None
+    assert "Embedding provider outage" in res.degraded_reason
+    assert "Google AI 503" in res.degraded_reason
+
+    # Verify results still returned via keyword + symbol fusion
+    assert res.total_results > 0
+    assert len(res.items) > 0
+    assert res.items[0].symbol_key == "func:verify_credentials"
+    assert "symbol" in res.items[0].matched_by or "keyword" in res.items[0].matched_by
+    assert res.context_pack.item_count > 0
+    assert "verify_credentials" in res.context_pack.formatted_context
+
+
+@pytest.mark.asyncio
+async def test_retrieval_no_active_space_degradation() -> None:
+    """Verify that when no active embedding space exists, retrieval degrades with degraded=True."""
+    session = AsyncMock(spec=AsyncSession)
+    service = RetrievalService(session)
+
+    project_id = generate_uuid7()
+    ctx = _make_auth_ctx()
+
+    service.repo.search_symbols = AsyncMock(return_value=[])
+    service.repo.search_chunks_text = AsyncMock(return_value=[])
+    service.repo.get_active_embedding_space = AsyncMock(return_value=None)
+
+    req = BrainSearchRequest(
+        query="test query",
+        modes=["symbol", "keyword", "vector"],
+        limit=5,
+        expand_relationships=False,
+    )
+
+    res = await service.search(ctx=ctx, project_id=project_id, request=req)
+
+    assert res.degraded is True
+    assert res.degraded_reason is not None
+    assert "No active embedding space" in res.degraded_reason
+

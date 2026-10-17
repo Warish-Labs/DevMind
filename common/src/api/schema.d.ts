@@ -1354,6 +1354,17 @@ export interface components {
       /** Items */
       items?: components["schemas"]["BrainSearchItem"][];
       context_pack: components["schemas"]["ContextPack"];
+      /**
+       * Degraded
+       * @description True if retrieval degraded to partial channels due to embedding provider outage (docs/04 §16)
+       * @default false
+       */
+      degraded: boolean;
+      /**
+       * Degraded Reason
+       * @description Detailed reason for degradation if degraded is true
+       */
+      degraded_reason?: string | null;
     };
     /**
      * BrainSummaryResponse

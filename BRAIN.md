@@ -6,24 +6,25 @@
 
 ## 1. Current state
 
-| Field              | Value                                                                                                          |
-| ------------------ | -------------------------------------------------------------------------------------------------------------- |
-| **Branch**         | `main`                                                                                                         |
-| **Last commit**    | `860b2ad` (feat: implement M5-08..M5-10 hybrid retrieval and release extension v0.1.1)                         |
-| **Working tree**   | Clean; M5-10 complete; extension v0.1.1 packaged with env vars; Neon migrations applied (head 0008, 28 tables) |
-| **Open PR**        | None (working directly on main)                                                                                |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 245/249 pass (4 skipped), extension 70/70 pass       |
-| **Date**           | 2026-10-17                                                                                                     |
+| Field              | Value                                                                                                    |
+| ------------------ | -------------------------------------------------------------------------------------------------------- |
+| **Branch**         | `main`                                                                                                   |
+| **Last commit**    | `1fb5943` (docs(docs): update working memory for M5-10 baselines)                                        |
+| **Working tree**   | M5-11 complete; Milestone M5 100% finished; Phase M6 initiated; extension v0.1.1 packaged with env vars  |
+| **Open PR**        | None (working directly on main)                                                                          |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 247/251 pass (4 skipped), extension 70/70 pass |
+| **Date**           | 2026-10-17                                                                                               |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M5-11: Failure-state behavior: embedding provider outage degradation to keyword/symbol** per `PLAN.md`:
-   - Inspect `docs/04 §16` and `docs/03 §10.1`:
-     - When the embedding provider or active space is unreachable/degraded, hybrid retrieval must gracefully degrade to keyword + symbol search.
-     - Set response metadata flag `degraded: true` with degradation reason.
-     - Add integration and error-handling unit tests for graceful fallback under simulated provider exceptions.
+1. Implement **Milestone M6-01: LLM provider adapter interfaces, capabilities, and common request/response types** per `PLAN.md`:
+   - Inspect `docs/05 §11-§12` and `server/app/llm/`:
+     - Base `LLMAdapter` interface defining `generate(request: LLMGenerationRequest) -> LLMGenerationResponse` and `stream_generate(...)`.
+     - Request / response models: messages (`system`, `user`, `assistant`), tools/schema definitions, temperature, max_tokens, token usage stats (`input_tokens`, `output_tokens`).
+     - Capability flags: `supports_structured_output`, `supports_tool_calling`, `supports_streaming`, `source_code_allowed`.
+     - Adapter registry and factory functions.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -37,6 +38,18 @@
 ---
 
 ## 4. Done log
+
+### Feature — M5-11: Failure-State Behavior: Embedding Provider Outage Degradation
+
+- **Date**: 2026-10-17
+- **Branch**: `main`
+- **What**: Implemented graceful degradation for hybrid retrieval when the embedding provider or vector store experiences an outage (docs/04 §16):
+  - Updated `BrainSearchResponse` schema with `degraded: bool` (default `False`) and `degraded_reason: str | None`.
+  - In `RetrievalService.search()`, safely caught provider exceptions or missing active spaces; set `is_degraded = True` with descriptive diagnosis without raising HTTP 500.
+  - Degraded gracefully to RRF fusion across available `keyword` and `symbol` channels, preserving search continuity.
+  - Regulated `_retrieve_vectors()` to raise explicit runtime errors on provider network failures or empty responses so the orchestrator can catch and flag degradation cleanly.
+  - Synchronized OpenAPI spec (`common/openapi.json`) and TypeScript client types (`schema.d.ts`).
+  - Added unit tests in `server/tests/test_hybrid_retrieval.py` verifying degradation behavior and ensuring all 247 server tests pass.
 
 ### Feature — M5-10: Record Retrieval Baselines in docs/09 §9
 

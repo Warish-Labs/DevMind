@@ -3558,6 +3558,24 @@
           },
           "context_pack": {
             "$ref": "#/components/schemas/ContextPack"
+          },
+          "degraded": {
+            "type": "boolean",
+            "title": "Degraded",
+            "description": "True if retrieval degraded to partial channels due to embedding provider outage (docs/04 \u00a716)",
+            "default": false
+          },
+          "degraded_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Degraded Reason",
+            "description": "Detailed reason for degradation if degraded is true"
           }
         },
         "type": "object",
