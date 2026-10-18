@@ -1181,6 +1181,57 @@ class BrainRepository(BaseRepository):
         result = await self.session.execute(stmt)
         return result.scalars().first()
 
+    async def get_job_by_id(
+        self, ctx: AuthContext | SystemContext, job_id: UUID
+    ) -> AnalysisJob | None:
+        """Get an analysis job by ID, verifying access to its parent project."""
+        self._validate_context(ctx)
+        stmt = select(AnalysisJob).where(AnalysisJob.id == job_id)
+        result = await self.session.execute(stmt)
+        job = result.scalars().first()
+        if not job:
+            return None
+        await self._verify_project_access(ctx, job.project_id)
+        return job
+
+    async def list_jobs(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        status: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[AnalysisJob]:
+        """List background jobs for a project."""
+        await self._verify_project_access(ctx, project_id)
+        stmt = select(AnalysisJob).where(AnalysisJob.project_id == project_id)
+        if status:
+            stmt = stmt.where(AnalysisJob.status == status)
+        stmt = stmt.order_by(AnalysisJob.created_at.desc()).limit(limit).offset(offset)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_job_events(
+        self,
+        ctx: AuthContext | SystemContext,
+        job_id: UUID,
+        since_seq: int = 0,
+    ) -> list[JobEvent]:
+        """Get milestone events for an analysis job since sequence number."""
+        job = await self.get_job_by_id(ctx, job_id)
+        if not job:
+            return []
+        stmt = (
+            select(JobEvent)
+            .where(
+                JobEvent.job_id == job_id,
+                JobEvent.seq > since_seq,
+            )
+            .order_by(JobEvent.seq.asc())
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
     async def record_job_event(
         self,
         ctx: AuthContext | SystemContext,

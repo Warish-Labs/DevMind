@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.brain import (
     BatchFindingsRequest,
@@ -327,10 +327,79 @@ class SnippetUploadResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Background Analysis Jobs and Event Streaming Schemas (docs/03 §5.2, §12.2)
+# ---------------------------------------------------------------------------
+
+
+class CreateAnalysisRequest(BaseModel):
+    """Request to initiate a background analysis or agent workflow (docs/03 §12.2)."""
+
+    type: str = Field(
+        ...,
+        description="Type of analysis to execute: ask_project, security_review, comprehensive_review, embed_chunks",
+    )
+    params: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Execution parameters, query strings, and scope configuration",
+    )
+    consent_id: UUID | None = Field(
+        default=None,
+        description="Optional active consent UUID for accessing code snippets",
+    )
+
+
+class AnalysisJobResponse(BaseModel):
+    """Analysis job model representing asynchronous work (docs/03 §3.3)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    project_id: UUID
+    type: str
+    status: str
+    attempt: int | None = 0
+    max_attempts: int | None = 3
+    queue: str | None = "default"
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    error_code: str | None = None
+    error_detail: str | None = None
+    result_ref: dict[str, Any] | None = None
+    created_at: datetime
+
+
+class AnalysisJobCreatedResponse(BaseModel):
+    """202 Accepted response containing created job and streaming links (docs/03 §12.2)."""
+
+    job: AnalysisJobResponse
+    links: dict[str, str] = Field(
+        description="Navigation and event streaming links for the created job"
+    )
+
+
+class JobEventResponse(BaseModel):
+    """Milestone event log emitted by a running job (docs/03 §3.3)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    job_id: UUID
+    seq: int
+    kind: str
+    message: str
+    data: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime
+
+
+# ---------------------------------------------------------------------------
 # Manifest and Brain Sync Schemas (docs/03 §12.3)
 # ---------------------------------------------------------------------------
 
 __all__ = [
+    "AnalysisJobCreatedResponse",
+    "AnalysisJobResponse",
+    "CreateAnalysisRequest",
+    "JobEventResponse",
     "AddProjectMemberRequest",
     "BatchFindingsRequest",
     "BatchFindingsResponse",

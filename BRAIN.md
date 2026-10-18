@@ -8,22 +8,22 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `512f2d2` (feat(server): implement M7-07 evidence verifier for grounding and citations) |
-| **Working tree** | Clean; M7-07 complete; all 13 checks pass; 454 server tests pass (450 passed, 4 skipped) |
+| **Last commit** | `fccbf9c` (docs: update BRAIN.md commit status for M7-07) |
+| **Working tree** | Clean; M7-08 complete; all 13 checks pass; 462 server tests pass (458 passed, 4 skipped) |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 450/454 pass (4 skipped), client 46/46 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 458/462 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-08: Job integration (ask_project, security_review) and SSE job event streaming** per `PLAN.md`:
-   - Inspect `docs/03 §5.2`, `docs/05 §4`, and `docs/02 §8.2`:
-     - Integrate AgentManager LangGraph execution into Celery / Redis background worker tasks for `ask_project` and `security_review` analysis job kinds.
-     - Stream execution events (`job_events` table and Redis pub/sub) with token counters, step transitions, citations, and draft/verified finding progress.
-     - Provide FastAPI SSE endpoint (`GET /api/v1/projects/{pid}/jobs/{jid}/events`) streaming RFC 8895 Server-Sent Events with heartbeat ping.
-     - Author comprehensive unit and integration tests in `server/tests/test_agent_jobs.py`.
+1. Implement **Milestone M7-09: Evaluation sets with baselines (answer-quality, faithfulness)** per `PLAN.md`:
+   - Inspect `docs/09 §10`, `docs/05 §14`, and `server/tests/test_llm_eval.py`:
+     - Define answer-quality and faithfulness evaluation test corpus with synthetic golden standards across CodeMate and AuthCheck workflows.
+     - Implement automated evaluator evaluating citation grounding score, claim factualness, and verified finding accuracy.
+     - Record benchmark baseline results in `docs/09 §10`.
+     - Author comprehensive unit tests in `server/tests/test_agent_eval.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -38,7 +38,30 @@
 
 ## 4. Done log
 
-### Feature — M7-07: Evidence Verifier for Grounding and Citations
+### Feature — M7-08: Job Integration (ask_project, security_review) and SSE Event Streaming
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-agent-jobs`
+- **What**:
+  - Implemented analysis job lifecycle, Celery background worker orchestration, and Server-Sent Events (SSE) streaming per `docs/03 §5.2`, `docs/03 §12.2`, `docs/05 §4`, and `docs/02 §8.2`:
+    - **Persistence & Repository** ([`server/app/persistence/repositories/brain_repo.py`](server/app/persistence/repositories/brain_repo.py)):
+      - Added `get_job_by_id`, `list_jobs` (with status filtering and pagination), and `get_job_events` query methods enforcing `AuthContext` tenancy.
+    - **Domain Service** ([`server/app/domain/jobs/service.py`](server/app/domain/jobs/service.py)):
+      - Added `create_analysis_job` with idempotency validation and async enqueuer hook.
+      - Added `get_job_by_id`, `list_project_jobs`, and cooperative `request_job_cancellation`.
+      - Added `publish_job_event` persisting structured milestone events to `job_events` table and broadcasting real-time JSON payloads to Redis Pub/Sub channels (`{prefix}job_events:{job_id}`).
+      - Implemented `stream_job_events` async SSE generator with past event replay (`since_seq`), Redis pub/sub live consumption, periodic heartbeat pings (`: ping`), and terminal event handling.
+      - Decoupled worker enqueueing via `register_job_enqueuer` / `get_job_enqueuer` ensuring `domain` never imports `workers`.
+    - **API Endpoints & Schemas** ([`server/app/api/jobs.py`](server/app/api/jobs.py), [`server/app/api/schemas.py`](server/app/api/schemas.py)):
+      - Added `POST /api/v1/projects/{pid}/analyses` (202 Accepted with links to status and events), `GET /api/v1/projects/{pid}/jobs`.
+      - Added `GET /api/v1/jobs/{id}`, `POST /api/v1/jobs/{id}/cancel`, and `GET /api/v1/jobs/{id}/events` (`text/event-stream`).
+      - Mounted routers under `/api/v1` in [`server/app/main.py`](server/app/main.py) and declared route permissions (`PERM_ANALYSIS_CREATE`, `PERM_PROJECT_READ`).
+    - **Worker Integration** ([`server/app/workers/celery_app.py`](server/app/workers/celery_app.py)):
+      - Wired `AgentManager` execution into `devmind.process_job` for `ask_project` and `security_review`.
+      - Emitted intake, progress, and finding persistence milestones with token usage and cost accounting.
+      - Batch-upserted verified findings from AuthCheck workflows directly into the `findings` table.
+      - Registered Celery task dispatcher with domain service.
+  - Authored comprehensive test suite in [`server/tests/test_agent_jobs.py`](server/tests/test_agent_jobs.py) covering API creation, 403 authorization guards, listing, details, cancellation, SSE stream formatting, and Celery worker agent workflow execution. All 8 tests pass; full test-all passes (13 passed, 458 server tests pass).
 
 - **Date**: 2026-10-18
 - **Branch**: `feature/m7-evidence-verifier`

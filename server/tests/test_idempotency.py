@@ -42,7 +42,7 @@ def test_idempotent_replay_returns_cached_response() -> None:
     app = create_app(settings=settings)
     call_count = 0
 
-    @app.post("/api/v1/projects/{pid}/analyses")
+    @app.post("/api/v1/custom-analyses/{pid}")
     @declare_permission(PERMISSION_PUBLIC)
     async def create_analysis(pid: str) -> dict[str, Any]:
         nonlocal call_count
@@ -55,14 +55,14 @@ def test_idempotent_replay_returns_cached_response() -> None:
         payload = {"type": "architecture", "scope": "full"}
 
         # First execution
-        res1 = client.post("/api/v1/projects/proj-1/analyses", json=payload, headers=headers)
+        res1 = client.post("/api/v1/custom-analyses/proj-1", json=payload, headers=headers)
         assert res1.status_code == 200
         assert res1.headers.get("Idempotent-Replay") == "false"
         assert res1.json()["job_id"] == "job-1"
         assert call_count == 1
 
         # Second execution with same key and payload
-        res2 = client.post("/api/v1/projects/proj-1/analyses", json=payload, headers=headers)
+        res2 = client.post("/api/v1/custom-analyses/proj-1", json=payload, headers=headers)
         assert res2.status_code == 200
         assert res2.headers.get("Idempotent-Replay") == "true"
         # Handler must NOT have been called again
@@ -77,7 +77,7 @@ def test_idempotency_mismatch_returns_422() -> None:
     )
     app = create_app(settings=settings)
 
-    @app.post("/api/v1/projects/{pid}/analyses")
+    @app.post("/api/v1/custom-analyses/{pid}")
     @declare_permission(PERMISSION_PUBLIC)
     async def create_analysis(pid: str, req: Request) -> dict[str, Any]:
         data = await req.json()
@@ -89,7 +89,7 @@ def test_idempotency_mismatch_returns_422() -> None:
 
         # First request
         res1 = client.post(
-            "/api/v1/projects/proj-1/analyses",
+            "/api/v1/custom-analyses/proj-1",
             json={"type": "first_type"},
             headers=headers,
         )
@@ -97,7 +97,7 @@ def test_idempotency_mismatch_returns_422() -> None:
 
         # Second request with SAME key but DIFFERENT body
         res2 = client.post(
-            "/api/v1/projects/proj-1/analyses",
+            "/api/v1/custom-analyses/proj-1",
             json={"type": "different_type"},
             headers=headers,
         )

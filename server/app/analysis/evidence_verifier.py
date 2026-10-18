@@ -596,7 +596,9 @@ class EvidenceVerifier:
                 if computed_hash != cited_hash:
                     # Try stripped lines normalization
                     stripped_hash = hashlib.sha256(
-                        "\n".join(line_item.strip() for line_item in snippet_text.splitlines()).encode("utf-8")
+                        "\n".join(
+                            line_item.strip() for line_item in snippet_text.splitlines()
+                        ).encode("utf-8")
                     ).hexdigest()
                     if stripped_hash != cited_hash:
                         rejections.append(
