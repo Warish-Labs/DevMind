@@ -7,8 +7,8 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m8-findings-ui` |
-| **Last commit** | `7540a2e` (docs: update BRAIN.md commit status for M8-04) |
+| **Branch** | `main` |
+| **Last commit** | `28a6eed` (feat(client): implement M8-05 findings list and detail views with evidence transitions (S-07, S-08)) |
 | **Working tree** | Clean; M8-05 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 90 client tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 90/90 pass |
