@@ -7,22 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
+| **Branch** | `feature/m6-llm-eval` (merging to `main`) |
 | **Last commit** | `5b2b134` (feat(server): implement M6-10 versioned prompt template loader with untrusted context escaping) |
-| **Working tree** | Clean; M6-10 complete; all 13 checks pass; 370 server tests pass |
+| **Working tree** | M6-11 complete; all 13 checks pass; 377 server tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 370/374 pass (4 skipped), client 46/46 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 377/381 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-11: LLM evaluation benchmark harness skeleton and prompt injection test corpus** per `PLAN.md`:
-   - Inspect `docs/05 §13`, `docs/07 §8`, `docs/09 §8`:
-     - Implement benchmark evaluation runner for LLM prompt rendering and structured output conformance.
-     - Build prompt injection attack corpus test suite covering indirect prompt injection, jailbreaks, role hijack, and secret exfiltration.
-     - Add pytest fixtures and CI harness verification.
+1. Implement **Milestone M7-01: State schema and checkpointer** per `PLAN.md`:
+   - Inspect `docs/05 §4.2`, `§4.5`, `docs/12` (ADR-006, ADR-037), and `docs/10 §9`:
+     - Implement LangGraph agent state schema for Agent Manager, CodeMate, and AuthCheck workflows.
+     - Implement PostgreSQL checkpointer adapter using database connection pool with thread-isolated checkpoints.
+     - Author comprehensive unit and integration tests in `server/tests/test_agent_state.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +36,22 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-11: LLM Evaluation Benchmark Harness and Prompt Injection Test Corpus
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m6-llm-eval`
+- **What**:
+  - Authored comprehensive prompt injection attack corpus in [`evals/injection/corpus.json`](evals/injection/corpus.json) covering all required vectors (docs/07 §8, docs/09 §12):
+    - Vectors: `code_comment`, `readme_docs`, `file_path`, `commit_pr`, `logs`, `retrieved_context`, `encoded_obfuscated`, `tag_breakout`, `role_hijack`, `jailbreak_persona`, and benign controls.
+    - Exported dataset path loader in [`evals/injection/__init__.py`](evals/injection/__init__.py).
+  - Built LLM evaluation benchmark harness and metrics in [`evals/llm/`](evals/llm/) (docs/05 §16, docs/09 §12):
+    - [`evals/llm/metrics.py`](evals/llm/metrics.py): `InjectionEvaluationMetrics` (delimiter integrity rate, precision, recall, F1 score), `SchemaEvaluationMetrics` (validity rate, one-shot repair rate), and `LLMBenchmarkSummary`.
+    - [`evals/llm/harness.py`](evals/llm/harness.py): Benchmark runner validating delimiter encapsulation, tag neutralization, signal detection accuracy, and structured output schema conformance; writes structured results to `evals/results/llm/latest.json`.
+    - Added `"eval:llm"` npm script in [`package.json`](package.json).
+  - Enhanced prompt injection detection regex patterns in [`server/app/llm/prompt_loader.py`](server/app/llm/prompt_loader.py) and added convenience properties to `PromptTemplate`, `ValidationResult`, and `SchemaRegistry`.
+  - Authored 7 comprehensive unit and integration tests in [`server/tests/test_llm_eval.py`](server/tests/test_llm_eval.py).
+  - Verified 100% delimiter integrity, 100% detector precision, 100% detector recall (1.0000 F1), and 87.5% schema validity rate. All 13 suite checks pass.
 
 ### Feature — M6-10: Versioned Prompt Template Loader with Untrusted Context Escaping
 

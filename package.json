@@ -33,6 +33,7 @@
     "brand:check": "node scripts/sync-brand.mjs --check",
     "docs:links": "node scripts/docs-links.mjs",
     "eval:retrieval": "python3 evals/retrieval/harness.py",
+    "eval:llm": "server/.venv/bin/python evals/llm/harness.py",
     "gen:api": "server/.venv/bin/python scripts/export-openapi.py && pnpm --filter @devmind/common exec openapi-typescript openapi.json -o src/api/schema.d.ts && pnpm --filter @devmind/common build",
     "prepare": "husky"
   },

@@ -28,19 +28,31 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
-# Injection signal patterns per docs/07 §8
+# Injection signal patterns per docs/07 §8 and docs/09 §12
 _INJECTION_PATTERNS = [
     (
         re.compile(
-            r"(?i)\b(?:ignore|disregard|forget|override)\s+(?:all\s+)?(?:previous|prior|above)\s+(?:instructions|prompts|rules|commands)\b"
+            r"(?i)(?:ignore|disregard|forget|override|bypass)[-_\s]+(?:(?:all|previous|prior|above|developer|system|authorization|auth|retrieved)[-_\s]+)*(?:instructions|prompts|rules|commands|constraints|checks|guards|context|auth|tokens)"
         ),
-        "Instruction override attempt: ignore previous instructions",
+        "Instruction override attempt: ignore previous instructions or bypass rules",
     ),
     (
         re.compile(
-            r"(?i)\b(?:you are now|act as|system instructions|new instructions|jailbreak|developer mode)\b"
+            r"(?i)\b(?:system|security)\s+override\b|\bprompt\s+injection\b|\bdisregard\s+developer\s+instructions\b"
+        ),
+        "Privileged system override instruction attempt",
+    ),
+    (
+        re.compile(
+            r"(?i)\b(?:you are now|act as|jailbreak|developer mode|do anything now|\bdan\b|\bdan\s*\()"
         ),
         "Persona or system role hijack attempt",
+    ),
+    (
+        re.compile(
+            r"(?i)(?:^|\n)\s*(?:system|assistant|human|user)\s*:\s*(?:you are|i confirm|great|understood|ignore)"
+        ),
+        "Role-prefix impersonation attempt",
     ),
     (
         re.compile(r"(?i)</?untrusted_data(?:\s+[^>]*)?>"),
@@ -48,9 +60,19 @@ _INJECTION_PATTERNS = [
     ),
     (
         re.compile(
-            r"(?i)\b(?:reveal|print|exfiltrate|leak|show)\s+(?:all\s+)?(?:secrets?|tokens?|api[-_]?keys?|passwords?|credentials?)\b"
+            r"(?i)(?:reveal|print|exfiltrate|leak|show|output)[-_\s]+(?:the[-_\s]+|all[-_\s]+)?(?:system[-_\s]+prompt|developer[-_\s]+secrets|process\.env|secrets?|tokens?|api[-_]?keys?|passwords?|credentials?|database[-_\s]+credentials)\b"
         ),
         "Secret exfiltration instruction attempt",
+    ),
+    (
+        re.compile(
+            r"(?i)\b(?:call|execute|invoke)\s+(?:the\s+)?(?:deploy|admin|delete)\s+(?:tool|function|api)\b|\bmark\s+(?:this\s+route\s+)?safe\b|\breport\s+0\s+findings\b"
+        ),
+        "Adversarial tool invocation or finding suppression attempt",
+    ),
+    (
+        re.compile(r"(?i)\b(?:reveal\s+project_id|reveal\s+other\s+projects?|cross[-_]tenant)\b"),
+        "Cross-tenant data extraction attempt",
     ),
 ]
 
@@ -165,6 +187,11 @@ class PromptTemplate:
     def prompt_id(self) -> str:
         """Format prompt identifier string, e.g. 'agent_manager_routing:v1'."""
         return f"{self.meta.task}:v{self.meta.version}"
+
+    @property
+    def front_matter(self) -> PromptFrontMatter:
+        """Alias for meta."""
+        return self.meta
 
     def render(self, variables: dict[str, Any]) -> RenderedPrompt:
         """Render prompt template with variable substitution and untrusted context escaping."""
@@ -309,6 +336,10 @@ class PromptLoader:
         # Find latest version
         latest_version = self.get_latest_version(task)
         return self.load(task, latest_version)
+
+    def get_template(self, task: str, version: int | None = None) -> PromptTemplate:
+        """Alias for load()."""
+        return self.load(task, version=version)
 
     def get_latest_version(self, task: str) -> int:
         """Find the highest version number available for a task."""

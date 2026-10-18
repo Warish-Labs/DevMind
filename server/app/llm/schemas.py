@@ -161,6 +161,15 @@ class SchemaRegistry:
             strict=strict,
         )
 
+    def get_spec(
+        self,
+        schema_name_or_cls: str | type[BaseModel],
+        mode: StructuredOutputMode = "native",
+        strict: bool = True,
+    ) -> StructuredOutputSpec:
+        """Alias for build_spec."""
+        return self.build_spec(schema_name_or_cls, mode=mode, strict=strict)
+
 
 # Global default registry instance
 default_schema_registry = SchemaRegistry()

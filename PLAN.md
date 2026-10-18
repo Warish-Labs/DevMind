@@ -254,11 +254,20 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M6-08 Usage recording (input/output tokens, latency, cost tracking) persisted to usage_records (feature/m6-usage-records)
 - [x] M6-09 Structured-output schema repair and validation layer (feature/m6-output-repair)
 - [x] M6-10 Versioned prompt template loader with untrusted context escaping (feature/m6-prompt-loader)
-- [ ] M6-11 LLM evaluation benchmark harness skeleton and prompt injection test corpus (feature/m6-llm-eval)
+- [x] M6-11 LLM evaluation benchmark harness skeleton and prompt injection test corpus (feature/m6-llm-eval)
 
 ### M7 · LangGraph, CodeMate, AuthCheck
 
-- [ ] State schema, tools, Manager routing, CodeMate, AuthCheck, verifier (feature/m7-*)
+- [ ] M7-01 State schema and checkpointer (PostgreSQL checkpointer, ADR-037, OQ-12) (feature/m7-state-checkpointer)
+- [ ] M7-02 Tools with scoped access: search_brain, get_symbol, get_file_range, get_relationships (feature/m7-agent-tools)
+- [ ] M7-03 Agent Manager graph and plan execution routing (feature/m7-manager-routing)
+- [ ] M7-04 CodeMate workflow nodes and citation validation (feature/m7-codemate)
+- [ ] M7-05 Guard resolution and structural route check (E2 deterministic confirmation) (feature/m7-guard-resolution)
+- [ ] M7-06 AuthCheck workflow nodes and evidence-constrained explanation (feature/m7-authcheck)
+- [ ] M7-07 Evidence verifier for grounding and citations (feature/m7-evidence-verifier)
+- [ ] M7-08 Job integration (ask_project, security_review) and SSE job event streaming (feature/m7-agent-jobs)
+- [ ] M7-09 Evaluation sets with baselines (answer-quality, faithfulness) (feature/m7-eval-baselines)
+- [ ] M7-10 Injection corpus run against graph workflows (docs/09 §12) (feature/m7-injection-run)
 
 ### M8 · Website app (conversation, findings, Brain explorer, jobs)
 

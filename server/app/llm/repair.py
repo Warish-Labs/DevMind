@@ -83,6 +83,11 @@ class ValidationResult(BaseModel):
     errors: list[str] = Field(default_factory=list)
     cleaned_json: str | None = None
 
+    @property
+    def error_message(self) -> str | None:
+        """Formatted summary of all validation errors."""
+        return "; ".join(self.errors) if self.errors else None
+
 
 class StructuredOutputRepairer:
     """Validates structured outputs and executes exactly one repair attempt on failure (docs/05 §10)."""

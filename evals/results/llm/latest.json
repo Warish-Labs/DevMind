@@ -1,0 +1,54 @@
+{
+  "benchmark": "devmind-llm-benchmark-v1",
+  "timestamp": "2026-10-18T05:26:55.724458+00:00",
+  "commit": "d09608f",
+  "injection_defense": {
+    "total_cases": 25,
+    "injection_cases": 20,
+    "benign_cases": 5,
+    "escaped_cases": 25,
+    "delimiter_integrity_rate": 1.0,
+    "true_positives": 18,
+    "false_positives": 0,
+    "true_negatives": 7,
+    "false_negatives": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0
+  },
+  "structured_outputs": {
+    "total_outputs": 8,
+    "valid_outputs": 7,
+    "repaired_outputs": 0,
+    "unrepairable_outputs": 1,
+    "schema_validity_rate": 0.875,
+    "one_shot_repair_rate": 0.0
+  },
+  "task_scores": {
+    "agent_manager_routing": {
+      "template_version": "v1",
+      "schema": "AgentPlan",
+      "status": "verified"
+    },
+    "code_answer": {
+      "template_version": "v1",
+      "schema": null,
+      "status": "verified"
+    },
+    "security_explanation": {
+      "template_version": "v1",
+      "schema": "FindingExplanation",
+      "status": "verified"
+    },
+    "final_synthesis": {
+      "template_version": "v1",
+      "schema": "SynthesizedAnswer",
+      "status": "verified"
+    },
+    "query_rewrite": {
+      "template_version": "v1",
+      "schema": "RewrittenQuery",
+      "status": "verified"
+    }
+  }
+}
