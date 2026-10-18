@@ -28,6 +28,8 @@ export type ProjectMemberResponse = components["schemas"]["ProjectMemberResponse
 export type AddProjectMemberRequest = components["schemas"]["AddProjectMemberRequest"];
 export type UserProfileResponse = components["schemas"]["UserProfileResponse"];
 export type UserPermissionsResponse = components["schemas"]["UserPermissionsResponse"];
+export type FindingItem = components["schemas"]["FindingItem"];
+export type FindingDetailItem = components["schemas"]["FindingDetailItem"];
 
 export class ApiError extends Error {
   public readonly status: number;

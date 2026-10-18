@@ -7,26 +7,21 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `a053e90` (feat(client): implement M8-03 app shell, navigation, and workspace selection (S-03)) |
-| **Working tree** | Clean; M8-03 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 73 client tests pass |
-| **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 73/73 pass |
+| **Branch** | `feature/m8-project-overview` |
+| **Last commit** | `f39c566` (docs: update BRAIN.md commit status for M8-03) |
+| **Working tree** | Clean; M8-04 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 82 client tests pass |
+| **Open PR** | None (working on feature/m8-project-overview) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 82/82 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-04: Project overview with health score, coverage, and recent jobs (S-04)** per `PLAN.md` and `docs/08 §11 S-04`:
-   - Inspect `docs/08 §11 S-04` (Screen specifications: Project overview answering the five questions):
-     - Question 1: What is happening? (Recent scans and jobs with status, last sync, sync mode)
-     - Question 2: What is broken? (Open findings by severity, bug counts)
-     - Question 3: What is risky? (Top findings with evidence level and file reference)
-     - Question 4: What should I do next? ("Highest-priority finding to fix", rule-based ordering)
-     - Question 5: Is the project healthy? (Security score and analysis coverage)
-     - Create route `/projects/[projectId]/page.tsx` and overview dashboard components.
-     - Author comprehensive unit tests in `client/tests/project-overview.test.tsx`.
+1. Implement **Milestone M8-05: Findings list and detail views with evidence transitions (S-06, S-07)** per `PLAN.md` and `docs/08 §11 S-07, S-08`:
+   - Inspect `docs/08 §11 S-07` (Findings list: dense table, filters: status, severity, category, evidence level, file; row actions: acknowledge, in progress; dismiss/accept-risk with reason) and `docs/08 §11 S-08` (Finding detail: title, status, severity/confidence/evidence strip, code excerpt with highlighted lines, why it matters, evidence items with sources, suggested remediation, status history).
+   - Create routes `/projects/[projectId]/findings/page.tsx` and `/projects/[projectId]/findings/[findingId]/page.tsx`.
+   - Author comprehensive unit tests in `client/tests/findings-ui.test.tsx`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -40,6 +35,39 @@
 ---
 
 ## 4. Done log
+
+### Feature — M8-04: Project Overview with Health Score, Coverage, and Recent Jobs (Screen S-04)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-project-overview`
+- **What**:
+  - Implemented Project Overview dashboard answering the five core vision questions conforming to `docs/08 §11 S-04`:
+    - **Overview Types & Deterministic Ordering** ([`client/components/overview/types.ts`](client/components/overview/types.ts)):
+      - Defined data shapes for scan runs, background jobs, project health statistics, and findings.
+      - Implemented `getHighestPriorityFinding(findings)` providing deterministic ordering by severity (`critical` > `high` > `medium` > `low`), then evidence level (`E2` > `E1` > `E0`).
+    - **Question 5 · Is the Project Healthy?** ([`client/components/overview/CoverageHealthStrip.tsx`](client/components/overview/CoverageHealthStrip.tsx)):
+      - Top strip displaying Security score (`88 / 100`, Grade B+) and Analysis coverage (`94%`, 42 of 45 files analyzed) in mono typography.
+      - Explicitly marks unassessed categories (Reliability, Performance, Documentation) as `Not assessed` with release roadmap targets per `docs/08 §11 S-04`.
+    - **Question 4 · What Should I Do Next?** ([`client/components/overview/NextActionBand.tsx`](client/components/overview/NextActionBand.tsx)):
+      - Full-width band highlighting the highest-priority finding to fix with severity, evidence level (`E0`-`E2`), file location with line numbers, summary, and "Review Finding" CTA.
+      - Labeled `rule-based until Project Mentor ships (1.3)` per spec.
+      - Handled clean zero-findings state with "Ask Project Brain" CTA.
+    - **Questions 2 & 3 · What Is Broken? & What Is Risky?** ([`client/components/overview/FindingsPanel.tsx`](client/components/overview/FindingsPanel.tsx)):
+      - Severity count metrics cards (Critical, High, Medium, Low) and Bug Memory release label (`ships in 1.2`).
+      - Risky findings list with evidence level badges, confidence, file references, and direct link to findings view.
+      - Handled independent loading skeleton and error retry states.
+    - **Question 1 · What Is Happening?** ([`client/components/overview/ActivityPanel.tsx`](client/components/overview/ActivityPanel.tsx)):
+      - Recent scans list (Full & Incremental scans) with duration and file counts.
+      - Background job center summary with status badges.
+      - Last sync timestamp and sync mode badge (`indexed` vs `metadata_only`).
+      - Handled independent loading skeleton and error retry states.
+    - **Master Dashboard & Page Route** ([`client/components/overview/ProjectOverview.tsx`](client/components/overview/ProjectOverview.tsx) & [`client/app/projects/[projectId]/page.tsx`](client/app/projects/[projectId]/page.tsx)):
+      - Assembled responsive layout with next-action band first on mobile, top strip, and 2-column grid (7 cols findings, 5 cols activity) on desktop.
+    - **Unit Tests** ([`client/tests/project-overview.test.tsx`](client/tests/project-overview.test.tsx)):
+      - 9 Vitest tests covering master dashboard, CoverageHealthStrip (Q5), NextActionBand deterministic ordering (Q4), FindingsPanel (Q2 & Q3), ActivityPanel (Q1), loading skeletons, and error retry states.
+  - Verified with `pnpm --filter client test`: all 12 test files passed (82/82 tests).
+  - Verified with `node scripts/test-all.mjs --fast`: 13/13 checks passed.
+  - Verified with `node scripts/docs-links.mjs`: 50 files, 466 links valid.
 
 ### Feature — M8-03: App Shell, Navigation, and Workspace/Project Selection (Screen S-03)
 
