@@ -7,23 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `5b6b1fd` (feat(server): implement M6-09 structured output validation and schema repair) |
-| **Working tree** | Clean; M6-09 complete; all 13 checks pass; 355 server tests pass |
+| **Branch** | `feature/m6-prompt-loader` (merging to `main`) |
+| **Last commit** | `e491c37` (docs: update BRAIN.md commit status for M6-09) |
+| **Working tree** | M6-10 complete; all 13 checks pass; 370 server tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 355/359 pass (4 skipped), client 46/46 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 370/374 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-10: Versioned prompt template loader with untrusted context escaping** per `PLAN.md`:
-   - Inspect `docs/05 §8`, `docs/07 §8`, `docs/12` (ADR-028), and `server/app/llm/prompts/`:
-     - Implement versioned prompt template loader with YAML front matter (task, version, input_variables, output_schema, required_capabilities).
-     - Implement prompt renderer that escapes and encapsulates untrusted context in clearly delimited data blocks to prevent prompt injection.
-     - Add canonical versioned prompt templates under `server/app/llm/prompts/`.
-     - Author comprehensive unit tests in `server/tests/test_llm_prompts.py`.
+1. Implement **Milestone M6-11: LLM evaluation benchmark harness skeleton and prompt injection test corpus** per `PLAN.md`:
+   - Inspect `docs/05 §13`, `docs/07 §8`, `docs/09 §8`:
+     - Implement benchmark evaluation runner for LLM prompt rendering and structured output conformance.
+     - Build prompt injection attack corpus test suite covering indirect prompt injection, jailbreaks, role hijack, and secret exfiltration.
+     - Add pytest fixtures and CI harness verification.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -37,6 +36,26 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-10: Versioned Prompt Template Loader with Untrusted Context Escaping
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m6-prompt-loader`
+- **What**:
+  - Implemented versioned prompt template parser and loader in [`server/app/llm/prompt_loader.py`](server/app/llm/prompt_loader.py) (docs/05 §8, docs/07 §8, ADR-028):
+    - `PromptFrontMatter`: Validates front matter metadata via Pydantic (`task`, `version`, `input_variables`, `untrusted_variables`, `output_schema`, `required_capabilities`, `description`).
+    - `PromptTemplate`: Manages system prompt template, user prompt template, variable validation, and deterministic substitution (`{var}` and `{{var}}`).
+    - `escape_untrusted_content`: Encapsulates untrusted inputs inside `<untrusted_data name="...">...</untrusted_data>` blocks and neutralizes closing tag sequences `</untrusted_data>` to prevent prompt breakout.
+    - `detect_injection_signals`: Regex-based heuristic detector auditing instruction override, role hijack, and secret exfiltration attempts, populating `injection_signals` in `RenderedPrompt`.
+    - `PromptLoader`: Directory-based cached template loader resolving `prompts/<task>/v<version>.md`.
+  - Added canonical versioned prompt templates in `server/app/llm/prompts/`:
+    - `agent_manager_routing/v1.md` (AgentPlan)
+    - `code_answer/v1.md` (untrusted repo code, diffs, query)
+    - `security_explanation/v1.md` (FindingExplanation)
+    - `final_synthesis/v1.md` (SynthesizedAnswer)
+    - `query_rewrite/v1.md` (RewrittenQuery)
+  - Exported loader and helpers in [`server/app/llm/__init__.py`](server/app/llm/__init__.py).
+  - Authored 15 unit tests in [`server/tests/test_llm_prompts.py`](server/tests/test_llm_prompts.py). All 13 suite checks pass.
 
 ### Feature — M6-09: Structured-Output Schema Repair and Validation Layer
 

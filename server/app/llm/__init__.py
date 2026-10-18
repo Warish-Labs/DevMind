@@ -45,6 +45,15 @@ from app.llm.models import (
     ToolCall,
     ToolDefinition,
 )
+from app.llm.prompt_loader import (
+    PromptFrontMatter,
+    PromptLoader,
+    PromptTemplate,
+    RenderedPrompt,
+    default_prompt_loader,
+    detect_injection_signals,
+    escape_untrusted_content,
+)
 from app.llm.quotas import LLMConcurrencyManager, LLMQuotaEnforcer, LLMRateLimiter
 from app.llm.registry import (
     create_adapter,
@@ -105,6 +114,14 @@ __all__ = [
     "FindingExplanation",
     "SynthesizedAnswer",
     "RewrittenQuery",
+    # Prompt Template Loader & Injection Defenses
+    "PromptLoader",
+    "default_prompt_loader",
+    "PromptTemplate",
+    "PromptFrontMatter",
+    "RenderedPrompt",
+    "escape_untrusted_content",
+    "detect_injection_signals",
     "GatewayConfig",
     "load_gateway_config",
     "validate_gateway_config",
