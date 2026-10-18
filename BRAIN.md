@@ -8,21 +8,22 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `c7fd585` (feat(server): implement M6-08 LLM usage recording, cost accounting, and persistence) |
-| **Working tree** | Clean; M6-08 complete; all 13 checks pass; 342 server tests pass |
+| **Last commit** | `feat(server): implement M6-09 structured output validation and schema repair` |
+| **Working tree** | Clean; M6-09 complete; all 13 checks pass; 355 server tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 342/346 pass (4 skipped), client 46/46 pass |
-| **Date** | 2026-10-17 |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 355/359 pass (4 skipped), client 46/46 pass |
+| **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M6-09: Structured-output schema repair and validation layer** per `PLAN.md`:
-   - Inspect `docs/05 §14` and `server/app/llm/`:
-     - Implement structured output validation and schema repair engine (Pydantic / JSON schema validator, malformed JSON auto-repair, retry prompt generator).
-     - Wire into gateway router or generation pipelines where structured outputs are requested.
-     - Author comprehensive unit tests in `server/tests/test_llm_output_repair.py`.
+1. Implement **Milestone M6-10: Versioned prompt template loader with untrusted context escaping** per `PLAN.md`:
+   - Inspect `docs/05 §8`, `docs/07 §8`, `docs/12` (ADR-028), and `server/app/llm/prompts/`:
+     - Implement versioned prompt template loader with YAML front matter (task, version, input_variables, output_schema, required_capabilities).
+     - Implement prompt renderer that escapes and encapsulates untrusted context in clearly delimited data blocks to prevent prompt injection.
+     - Add canonical versioned prompt templates under `server/app/llm/prompts/`.
+     - Author comprehensive unit tests in `server/tests/test_llm_prompts.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +37,26 @@
 ---
 
 ## 4. Done log
+
+### Feature — M6-09: Structured-Output Schema Repair and Validation Layer
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m6-output-repair`
+- **What**:
+  - Implemented canonical task Pydantic schemas in [`server/app/llm/schemas.py`](server/app/llm/schemas.py) (docs/05 §10, §11):
+    - `AgentPlan` (task: `agent_manager_routing`), `FindingExplanation` (task: `security_explanation`), `SynthesizedAnswer` (task: `final_synthesis`), `RewrittenQuery` (task: `query_rewrite`).
+    - Implemented `SchemaRegistry` and default global instance for resolving schemas by name and generating `StructuredOutputSpec` with JSON Schema dictionary definitions.
+  - Implemented extraction, validation, and repair engine in [`server/app/llm/repair.py`](server/app/llm/repair.py) (docs/05 §10, ADR-027):
+    - `extract_json_candidate`: Strips markdown code blocks (` ```json ... ``` ` or ` ``` ... ``` `) and isolates JSON objects/arrays from surrounding text.
+    - `clean_json_string`: Cleans common syntax anomalies such as trailing commas before closing braces/brackets.
+    - `StructuredOutputRepairer`: Validates JSON against registered Pydantic models with detailed field-level error messages.
+    - Implemented `attempt_repair`: Generates a targeted correction conversation with validation errors and executes exactly ONE repair attempt at temperature 0.0 with the same model/adapter.
+  - Integrated into [`server/app/llm/router.py`](server/app/llm/router.py):
+    - Automatic `output_schema` resolution from `tasks.yaml` when not explicitly provided on request.
+    - Model capability mode adaptation (`native`, `json_mode`, or `prompt_only`).
+    - Automatic validation and one-shot repair upon syntax or schema invalid output.
+    - Non-bypassable failure: if repair attempt fails, raises `LLMInvalidOutputError` (`llm.invalid_output`) without attempting fallback models (ADR-027).
+  - Added 13 unit and integration tests in [`server/tests/test_llm_output_repair.py`](server/tests/test_llm_output_repair.py). All 74 LLM tests, 2 boundary tests, and 355 server tests pass.
 
 ### Feature — M6-08: LLM Usage Recording, Cost Accounting, and Persistence
 

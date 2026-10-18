@@ -17,7 +17,7 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 from app.llm.adapter import LLMAdapter
-from app.llm.config import GatewayConfig, load_gateway_config
+from app.llm.config import GatewayConfig, ModelEntry, load_gateway_config
 from app.llm.exceptions import (
     LLMContextLengthExceededError,
     LLMError,
@@ -36,9 +36,13 @@ from app.llm.models import (
     LLMStreamChunk,
     ModelCapabilities,
     ProviderDataPolicy,
+    StructuredOutputMode,
+    StructuredOutputSpec,
 )
 from app.llm.quotas import LLMConcurrencyManager, LLMQuotaEnforcer, LLMRateLimiter
 from app.llm.registry import create_adapter
+from app.llm.repair import StructuredOutputRepairer
+from app.llm.schemas import SchemaRegistry, default_schema_registry
 from app.llm.usage import LLMUsageRecorder
 
 logger = logging.getLogger(__name__)
@@ -56,6 +60,8 @@ class LLMGatewayRouter:
         rate_limiter: LLMRateLimiter | None = None,
         quota_enforcer: LLMQuotaEnforcer | None = None,
         usage_recorder: LLMUsageRecorder | None = None,
+        repairer: StructuredOutputRepairer | None = None,
+        schema_registry: SchemaRegistry | None = None,
     ) -> None:
         self.config = config or load_gateway_config()
         self.environment = (
@@ -74,6 +80,8 @@ class LLMGatewayRouter:
         self.rate_limiter = rate_limiter or LLMRateLimiter(self.config)
         self.quota_enforcer = quota_enforcer or LLMQuotaEnforcer(self.config)
         self.usage_recorder = usage_recorder or LLMUsageRecorder()
+        self.repairer = repairer or StructuredOutputRepairer(schema_registry)
+        self.schema_registry = schema_registry or default_schema_registry
 
     def register_adapter_override(self, model_key: str, adapter: LLMAdapter) -> None:
         """Register a mock or pre-instantiated adapter for a specific logical model key."""
@@ -269,6 +277,44 @@ class LLMGatewayRouter:
 
         return eligible_models
 
+    async def _record_call_outcome(
+        self,
+        *,
+        task: str,
+        provider_key: str,
+        model_entry: ModelEntry,
+        workspace_id: Any,
+        request: LLMGenerationRequest,
+        response: LLMGenerationResponse | None = None,
+        latency_ms: int = 1,
+        outcome: str = "success",
+    ) -> None:
+        """Record usage and update quota limits upon call completion."""
+        if response and response.usage:
+            in_tokens = response.usage.input_tokens
+            out_tokens = response.usage.output_tokens
+            if workspace_id:
+                self.quota_enforcer.record_usage(workspace_id, response.usage.total_tokens)
+        else:
+            in_tokens = self.quota_enforcer.estimate_input_tokens(request)
+            out_tokens = (
+                max(1, len(response.content or "") // 4) if (response and response.content) else 0
+            )
+
+        await self.usage_recorder.record_call(
+            task=task,
+            provider_id=provider_key,
+            model_id=model_entry.model_id,
+            input_tokens=in_tokens,
+            output_tokens=out_tokens,
+            latency_ms=latency_ms,
+            outcome=outcome,  # type: ignore[arg-type]
+            workspace_id=workspace_id,
+            project_id=request.metadata.get("project_id"),
+            job_id=request.metadata.get("job_id"),
+            price_units=model_entry.price_units,
+        )
+
     async def generate(self, request: LLMGenerationRequest) -> LLMGenerationResponse:
         """Route non-streaming request to the primary eligible model with fallback execution (docs/05 §12)."""
         may_contain_source = bool(request.metadata.get("may_contain_source", False))
@@ -282,6 +328,13 @@ class LLMGatewayRouter:
         task_entry = self.config.tasks.tasks[request.task]
         workspace_id = request.metadata.get("workspace_id")
         last_exception: Exception | None = None
+
+        # Resolve structured output specification from request options or task declaration (docs/05 §10)
+        task_spec: StructuredOutputSpec | None = None
+        if request.options.structured_output:
+            task_spec = request.options.structured_output.model_copy()
+        elif task_entry.output_schema and self.schema_registry.contains(task_entry.output_schema):
+            task_spec = self.schema_registry.build_spec(task_entry.output_schema)
 
         for idx, model_key in enumerate(candidates):
             model_entry = self.config.models.models[model_key]
@@ -331,36 +384,106 @@ class LLMGatewayRouter:
                     len(candidates) - 1,
                 )
 
+            # Adapt structured output mode according to model capabilities
+            call_request = request
+            call_spec: StructuredOutputSpec | None = None
+            if task_spec is not None:
+                model_caps = model_entry.capabilities
+                adapted_mode: StructuredOutputMode = "native"
+                if model_caps and model_caps.structured_output in (
+                    "native",
+                    "json_mode",
+                    "prompt_only",
+                ):
+                    adapted_mode = model_caps.structured_output
+
+                call_spec = task_spec.model_copy()
+                call_spec.mode = adapted_mode
+                call_options = request.options.model_copy(deep=True)
+                call_options.structured_output = call_spec
+                call_request = request.model_copy(update={"options": call_options})
+
             call_start = time.time()
             try:
                 # 3. Concurrency semaphore acquisition per provider and workspace (docs/05 §13)
                 async with self.concurrency_manager.acquire(provider_key, workspace_id):
-                    response = await adapter.generate(request)
+                    try:
+                        response = await adapter.generate(call_request)
+                    except LLMInvalidOutputError as initial_err:
+                        # Adapter rejected syntax or failed JSON decoding -> attempt 1 repair (docs/05 §10)
+                        if call_spec is None:
+                            raise
+                        repair_response, repair_val = await self.repairer.attempt_repair(
+                            adapter=adapter,
+                            request=call_request,
+                            raw_output=initial_err.raw_output or "",
+                            errors=initial_err.validation_errors or [str(initial_err)],
+                            spec=call_spec,
+                        )
+                        repair_latency_ms = repair_response.latency_ms or 1
+                        await self._record_call_outcome(
+                            task=request.task,
+                            provider_key=provider_key,
+                            model_entry=model_entry,
+                            workspace_id=workspace_id,
+                            request=call_request,
+                            response=repair_response,
+                            latency_ms=repair_latency_ms,
+                            outcome="success" if repair_val.is_valid else "failure",
+                        )
+                        if repair_val.is_valid:
+                            repair_response.content = repair_val.cleaned_json
+                            return repair_response
+                        raise LLMInvalidOutputError(
+                            message=f"Output failed schema validation after repair attempt for schema '{call_spec.schema_name}'",
+                            raw_output=repair_response.content,
+                            validation_errors=repair_val.errors,
+                        ) from initial_err
+
+                    # Validate structured output against specification
+                    if call_spec is not None:
+                        val_res = self.repairer.validate(response.content, call_spec)
+                        if val_res.is_valid:
+                            response.content = val_res.cleaned_json
+                        else:
+                            # Attempt one repair attempt (docs/05 §10)
+                            repair_response, repair_val = await self.repairer.attempt_repair(
+                                adapter=adapter,
+                                request=call_request,
+                                raw_output=response.content or "",
+                                errors=val_res.errors,
+                                spec=call_spec,
+                            )
+                            repair_latency_ms = repair_response.latency_ms or 1
+                            await self._record_call_outcome(
+                                task=request.task,
+                                provider_key=provider_key,
+                                model_entry=model_entry,
+                                workspace_id=workspace_id,
+                                request=call_request,
+                                response=repair_response,
+                                latency_ms=repair_latency_ms,
+                                outcome="success" if repair_val.is_valid else "failure",
+                            )
+                            if repair_val.is_valid:
+                                repair_response.content = repair_val.cleaned_json
+                                return repair_response
+                            raise LLMInvalidOutputError(
+                                message=f"Output failed schema validation after repair attempt for schema '{call_spec.schema_name}'",
+                                raw_output=repair_response.content,
+                                validation_errors=repair_val.errors,
+                            )
+
                     latency_ms = max(1, int((time.time() - call_start) * 1000))
-                    in_tokens = (
-                        response.usage.input_tokens
-                        if response.usage
-                        else self.quota_enforcer.estimate_input_tokens(request)
-                    )
-                    out_tokens = (
-                        response.usage.output_tokens
-                        if response.usage
-                        else max(1, len(response.content or "") // 4)
-                    )
-                    if workspace_id and response.usage:
-                        self.quota_enforcer.record_usage(workspace_id, response.usage.total_tokens)
-                    await self.usage_recorder.record_call(
+                    await self._record_call_outcome(
                         task=request.task,
-                        provider_id=provider_key,
-                        model_id=model_entry.model_id,
-                        input_tokens=in_tokens,
-                        output_tokens=out_tokens,
+                        provider_key=provider_key,
+                        model_entry=model_entry,
+                        workspace_id=workspace_id,
+                        request=call_request,
+                        response=response,
                         latency_ms=latency_ms,
                         outcome="success",
-                        workspace_id=workspace_id,
-                        project_id=request.metadata.get("project_id"),
-                        job_id=request.metadata.get("job_id"),
-                        price_units=model_entry.price_units,
                     )
                     return response
             except LLMRefusalError:

@@ -52,7 +52,21 @@ from app.llm.registry import (
     list_supported_adapters,
     register_adapter,
 )
+from app.llm.repair import (
+    StructuredOutputRepairer,
+    ValidationResult,
+    clean_json_string,
+    extract_json_candidate,
+)
 from app.llm.router import LLMGatewayRouter
+from app.llm.schemas import (
+    AgentPlan,
+    FindingExplanation,
+    RewrittenQuery,
+    SchemaRegistry,
+    SynthesizedAnswer,
+    default_schema_registry,
+)
 from app.llm.usage import LLMUsageRecorder, RecordedUsage, UsageSink, calculate_cost_units
 
 __all__ = [
@@ -81,6 +95,16 @@ __all__ = [
     "RecordedUsage",
     "UsageSink",
     "calculate_cost_units",
+    "StructuredOutputRepairer",
+    "ValidationResult",
+    "extract_json_candidate",
+    "clean_json_string",
+    "SchemaRegistry",
+    "default_schema_registry",
+    "AgentPlan",
+    "FindingExplanation",
+    "SynthesizedAnswer",
+    "RewrittenQuery",
     "GatewayConfig",
     "load_gateway_config",
     "validate_gateway_config",
