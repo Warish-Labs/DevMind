@@ -100,6 +100,18 @@ export interface RevokeDeviceResponse {
   message: string;
 }
 
+export interface SyncModeTransitionResponse {
+  project_id: string;
+  workspace_id: string;
+  previous_sync_mode: "metadata_only" | "indexed";
+  new_sync_mode: "metadata_only" | "indexed";
+  purged_counts: {
+    code_chunks: number;
+    embeddings: number;
+  };
+  transitioned_at: string;
+}
+
 export class ApiError extends Error {
   public readonly status: number;
   public readonly code: string;
@@ -496,5 +508,22 @@ export class DevMindApiClient {
     return this.fetchInternal<RevokeDeviceResponse>(`/api/v1/ext/devices/${deviceId}/revoke`, {
       method: "POST",
     });
+  }
+
+  // -------------------------------------------------------------------------
+  // Project Synchronization Modes (docs/03 §11.1, ADR-022, docs/08 §11 S-10)
+  // -------------------------------------------------------------------------
+
+  public async updateProjectSyncMode(
+    projectId: string,
+    syncMode: "metadata_only" | "indexed"
+  ): Promise<SyncModeTransitionResponse> {
+    return this.fetchInternal<SyncModeTransitionResponse>(
+      `/api/v1/projects/${projectId}/sync-mode`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ sync_mode: syncMode }),
+      }
+    );
   }
 }
