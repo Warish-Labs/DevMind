@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `to-be-updated` (feat(server): implement M7-06 AuthCheck workflow nodes and evidence-constrained explanation) |
+| **Last commit** | `bb7434a` (feat(server): implement M7-06 AuthCheck workflow nodes and evidence-constrained explanation) |
 | **Working tree** | Clean; M7-06 complete; all 13 checks pass; 440 server tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 436/440 pass (4 skipped), client 46/46 pass |
