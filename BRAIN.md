@@ -7,9 +7,9 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m6-prompt-loader` (merging to `main`) |
-| **Last commit** | `e491c37` (docs: update BRAIN.md commit status for M6-09) |
-| **Working tree** | M6-10 complete; all 13 checks pass; 370 server tests pass |
+| **Branch** | `main` |
+| **Last commit** | `5b2b134` (feat(server): implement M6-10 versioned prompt template loader with untrusted context escaping) |
+| **Working tree** | Clean; M6-10 complete; all 13 checks pass; 370 server tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 370/374 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
