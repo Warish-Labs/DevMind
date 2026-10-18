@@ -7,22 +7,24 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `dc67f5f` (feat(server): implement M7-09 answer-quality and faithfulness evaluation baselines) |
-| **Working tree** | Clean; M7-09 complete; all 13 checks pass; 467 server tests pass (463 passed, 4 skipped) |
-| **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 463/467 pass (4 skipped), client 46/46 pass |
+| **Branch** | `feature/m7-injection-run` |
+| **Last commit** | `96c72bd` (docs: update BRAIN.md commit status for M7-09) |
+| **Working tree** | Clean; M7-10 complete (Milestone M7 finished); all 13 checks pass; 474 server tests pass (470 passed, 4 skipped) |
+| **Open PR** | None (working directly on feature/m7-injection-run) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-10: Injection corpus run against graph workflows (docs/09 §12)** per `PLAN.md`:
-   - Inspect `docs/09 §12`, `docs/05 §14.3`, and `evals/prompts/injection_corpus.json`:
-     - Test CodeMate and AuthCheck LangGraph graphs against prompt injection attacks (system override attempts, tool boundary escape, jailbreaks, data exfiltration, secret leakage).
-     - Verify untrusted repository context isolation (prompt templates never execute or elevate untrusted code or prompt injection payloads).
-     - Author evaluation runner and unit tests in `server/tests/test_agent_injection.py`.
+1. Implement **Milestone M8: Website app (conversation, findings, Brain explorer, jobs)** per `PLAN.md` and `docs/11 § M8`:
+   - Inspect `docs/08` (UI/UX design specification), `docs/11 § M8`, and client structure:
+     - Design tokens, base components, and app shell navigation for MVP screens (S-02 to S-09, S-12).
+     - Project overview with deterministic security score and analysis coverage.
+     - Findings list and detail views with evidence transitions and language discipline.
+     - SSE client integration with job event streaming and reconnection/polling fallback.
+     - Brain explorer (three-pane viewer) and conversation interface with grounded citations.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +38,29 @@
 ---
 
 ## 4. Done log
+
+### Feature — M7-10: Injection Corpus Run Against Graph Workflows
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-injection-run`
+- **What**:
+  - Implemented graph prompt-injection benchmark harness, test suite, and baselines per `docs/09 §12`, `docs/05 §14`, and `docs/09 §9`:
+    - **Prompt Loader Enhancement** ([`server/app/llm/prompt_loader.py`](server/app/llm/prompt_loader.py)):
+      - Added `render(task, variables, version)` method to `PromptLoader` delegating to `PromptTemplate.render`, maintaining strict `<untrusted_data>` escaping and delimiter sanitization.
+    - **Evaluation Metrics & Runner** ([`evals/injection/metrics.py`](evals/injection/metrics.py), [`evals/injection/harness.py`](evals/injection/harness.py)):
+      - Built `GraphInjectionHarness` executing all 25 vectors in `evals/injection/corpus.json` across:
+        1. Prompt delimiter escaping & system boundary persistence on all 4 agent tasks (`agent_manager_routing`, `code_answer`, `security_explanation`, `final_synthesis`).
+        2. Tool least-privilege & malicious hijack containment (`AgentToolSet` allowlist enforcement, forbidden tool rejection, path traversal containment).
+        3. Structured-output schema conformance under adversarial payloads (`AgentPlan`, `FindingExplanation`, `SynthesizedAnswer`).
+        4. Deterministic finding non-suppression under code comment injection (`SEC-001` preserved on unauthenticated routes).
+        5. Cross-tenant isolation under prompt injection (`AuthContext` tenant boundary enforcement).
+      - Achieved 100.00% pass rate across all 25 corpus items (Delimiter Integrity: 1.0, Tool Containment: 1.0, Finding Protection: 1.0, Cross-Tenant Isolation: 1.0, Schema Conformance: 1.0).
+      - Saved baseline to `evals/results/injection/latest.json`.
+    - **Documentation Baseline** ([`docs/09-testing-and-quality-strategy.md`](docs/09-testing-and-quality-strategy.md)):
+      - Updated §9 tracked baselines table with `Graph Prompt-Injection Defense (M7-10)` metrics.
+    - **Unit Tests** ([`server/tests/test_agent_injection.py`](server/tests/test_agent_injection.py)):
+      - Added 7 unit tests verifying all 6 non-negotiable assertions from `docs/09 §12`. All pass in 0.60s.
+  - Verified with `node scripts/test-all.mjs --fast`: all 13 checks pass, 470 server tests pass, 46 client tests pass. Milestone M7 is 100% complete.
 
 ### Feature — M7-09: Evaluation Sets with Baselines (Answer-Quality, Faithfulness)
 
