@@ -1,0 +1,31 @@
+{
+  "benchmark": "devmind-agent-eval-v1",
+  "version": "1.0.0",
+  "timestamp": "2026-10-18T09:40:32.300097+00:00",
+  "commit": "2e6021e",
+  "answer_quality": {
+    "total_cases": 7,
+    "grounded_cases": 5,
+    "insufficient_evidence_cases": 2,
+    "citation_precision": 1.0,
+    "citation_recall": 1.0,
+    "symbol_coverage": 0.7333,
+    "insufficient_evidence_accuracy": 1.0,
+    "overall_quality_score": 0.96
+  },
+  "faithfulness": {
+    "total_cases": 8,
+    "verified_findings": 2,
+    "compliant_rejections": 1,
+    "tampered_rejections": 2,
+    "scope_downgrades": 1,
+    "grounding_ratio": 1.0,
+    "citation_resolution_rate": 1.0,
+    "hallucination_rate": 0.0,
+    "language_discipline_rate": 1.0,
+    "secret_redaction_rate": 1.0,
+    "overall_faithfulness_score": 1.0
+  },
+  "overall_composite_score": 0.984,
+  "status": "passed"
+}

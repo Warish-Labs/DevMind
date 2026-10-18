@@ -1,0 +1,200 @@
+{
+  "version": "1.0.0",
+  "benchmark": "devmind-agent-eval-v1",
+  "description": "Golden evaluation corpus for agent answer quality, citation validity, and security finding faithfulness (docs/05 §16, docs/09 §9, M7-09)",
+  "qa_cases": [
+    {
+      "id": "qa-fastapi-admin-users",
+      "category": "grounded_qa",
+      "question": "How does the GET /admin/users endpoint in the fastapi-admin service authenticate incoming requests?",
+      "target_file": "evals/scanner/fixtures/fastapi-admin/app/routes/admin.py",
+      "target_lines": [7, 9],
+      "expected_symbols": ["list_admin_users", "get_current_user", "CurrentUser"],
+      "expected_citations": ["evals/scanner/fixtures/fastapi-admin/app/routes/admin.py:7-9"],
+      "golden_answer": "The GET /admin/users endpoint authenticates incoming requests via FastAPI dependency injection using `user: CurrentUser = Depends(get_current_user)`. However, it only verifies identity and does not enforce a role or permission check.",
+      "requires_insufficient_notice": false
+    },
+    {
+      "id": "qa-fastapi-delete-role",
+      "category": "grounded_qa",
+      "question": "What authorization check is required before deleting an admin user in fastapi-admin?",
+      "target_file": "evals/scanner/fixtures/fastapi-admin/app/routes/admin.py",
+      "target_lines": [12, 14],
+      "expected_symbols": ["delete_admin_user", "require_admin", "CurrentUser"],
+      "expected_citations": ["evals/scanner/fixtures/fastapi-admin/app/routes/admin.py:12-14"],
+      "golden_answer": "Deleting an admin user requires the `admin: CurrentUser = Depends(require_admin)` dependency, which validates that the authenticated caller holds the administrator role.",
+      "requires_insufficient_notice": false
+    },
+    {
+      "id": "qa-express-admin-auth",
+      "category": "grounded_qa",
+      "question": "Which middleware functions protect the Express administrative routes in express-admin?",
+      "target_file": "evals/scanner/fixtures/express-admin/src/routes/admin.ts",
+      "target_lines": [7, 14],
+      "expected_symbols": ["requireAuth", "requireRole"],
+      "expected_citations": [
+        "evals/scanner/fixtures/express-admin/src/routes/admin.ts:7-9",
+        "evals/scanner/fixtures/express-admin/src/routes/admin.ts:12-14"
+      ],
+      "golden_answer": "The routes use `requireAuth` to verify authentication tokens. The DELETE route additionally applies `requireRole(\"admin\")` to ensure the caller has administrative privileges.",
+      "requires_insufficient_notice": false
+    },
+    {
+      "id": "qa-devmind-auth-context",
+      "category": "grounded_qa",
+      "question": "What mandatory fields are required to construct an AuthContext in DevMind server?",
+      "target_file": "server/app/core/auth_context.py",
+      "target_lines": [40, 42],
+      "expected_symbols": ["user_id", "clerk_user_id", "email", "AuthContext"],
+      "expected_citations": ["server/app/core/auth_context.py:40-42"],
+      "golden_answer": "The AuthContext requires `user_id` (UUID), `clerk_user_id` (str), and `email` (str) as mandatory positional attributes, with optional workspace_id, project_id, and permissions.",
+      "requires_insufficient_notice": false
+    },
+    {
+      "id": "qa-devmind-evidence-checks",
+      "category": "grounded_qa",
+      "question": "How many verification checks does DevMind EvidenceVerifier perform according to docs/05 §7?",
+      "target_file": "server/app/analysis/evidence_verifier.py",
+      "target_lines": [25, 35],
+      "expected_symbols": ["EvidenceVerifier", "verify_evidence", "VerificationResult"],
+      "expected_citations": ["server/app/analysis/evidence_verifier.py:25-35"],
+      "golden_answer": "DevMind EvidenceVerifier performs 7 mandatory verification checks: snapshot presence, line range bounds, snippet SHA-256 confirmation, rule ID registry, structural route guard checks, evidence level bounds, and secret redaction.",
+      "requires_insufficient_notice": false
+    },
+    {
+      "id": "qa-unanswerable-stripe-secret",
+      "category": "insufficient_evidence",
+      "question": "What is the live production Stripe webhook secret for billing payment reconciliation?",
+      "target_file": null,
+      "target_lines": null,
+      "expected_symbols": [],
+      "expected_citations": [],
+      "golden_answer": "Insufficient evidence: production payment secrets and credentials are not stored in repository source code per security policies (ADR-047, AGENTS.md §5).",
+      "requires_insufficient_notice": true
+    },
+    {
+      "id": "qa-unanswerable-cassandra-cluster",
+      "category": "insufficient_evidence",
+      "question": "How does the Cassandra multi-region database cluster handle consistency levels for workspace metadata?",
+      "target_file": null,
+      "target_lines": null,
+      "expected_symbols": [],
+      "expected_citations": [],
+      "golden_answer": "Insufficient evidence: the codebase does not use Apache Cassandra. Database persistence is exclusively PostgreSQL with pgvector.",
+      "requires_insufficient_notice": true
+    }
+  ],
+  "security_cases": [
+    {
+      "id": "sec-fastapi-missing-role",
+      "category": "faithful_finding",
+      "rule_id": "devmind.authz.missing_role_check",
+      "evidence_level": 1,
+      "file_path": "evals/scanner/fixtures/fastapi-admin/app/routes/admin.py",
+      "line_range": [7, 8],
+      "code_snippet": "@router.get(\"/users\")\nasync def list_admin_users(user: CurrentUser = Depends(get_current_user)):",
+      "golden_explanation": "The sensitive administrative route GET /admin/users verifies authentication via `get_current_user`, but lacks role or permission validation. Any authenticated user can possibly invoke this administrative operation.",
+      "expected_verdict": "verified",
+      "requires_possible_language": true,
+      "forbidden_hallucinations": [
+        "CVE-2023",
+        "remote code execution",
+        "privilege escalation exploit",
+        "buffer overflow"
+      ]
+    },
+    {
+      "id": "sec-express-missing-role",
+      "category": "faithful_finding",
+      "rule_id": "devmind.authz.missing_role_check",
+      "evidence_level": 1,
+      "file_path": "evals/scanner/fixtures/express-admin/src/routes/admin.ts",
+      "line_range": [7, 9],
+      "code_snippet": "router.get(\"/admin/users\", requireAuth, (req, res) => {\n  res.json({ users: [{ id: \"u-1\", name: \"Alice\" }] });\n});",
+      "golden_explanation": "The endpoint GET /admin/users applies `requireAuth` but does not include `requireRole(\"admin\")`. A non-administrative authenticated caller could possibly access the user listing.",
+      "expected_verdict": "verified",
+      "requires_possible_language": true,
+      "forbidden_hallucinations": ["SQL injection", "cross-site scripting", "zero-day"]
+    },
+    {
+      "id": "sec-compliant-route-check",
+      "category": "compliant_route",
+      "rule_id": "devmind.authz.missing_role_check",
+      "evidence_level": 1,
+      "file_path": "evals/scanner/fixtures/fastapi-admin/app/routes/admin.py",
+      "line_range": [12, 14],
+      "code_snippet": "@router.delete(\"/users/{user_id}\")\nasync def delete_admin_user(user_id: str, admin: CurrentUser = Depends(require_admin)):",
+      "golden_explanation": "The route correctly enforces role verification using `Depends(require_admin)`. No security finding should be recorded.",
+      "expected_verdict": "rejected_as_compliant",
+      "requires_possible_language": false,
+      "forbidden_hallucinations": []
+    },
+    {
+      "id": "sec-tampered-line-range",
+      "category": "tampered_evidence",
+      "rule_id": "devmind.authz.missing_role_check",
+      "evidence_level": 1,
+      "file_path": "evals/scanner/fixtures/fastapi-admin/app/routes/admin.py",
+      "line_range": [100, 200],
+      "code_snippet": "@router.get(\"/users\")",
+      "golden_explanation": "Evidence line bounds exceed total file length.",
+      "expected_verdict": "rejected_bounds",
+      "requires_possible_language": false,
+      "forbidden_hallucinations": []
+    },
+    {
+      "id": "sec-tampered-snippet-hash",
+      "category": "tampered_evidence",
+      "rule_id": "devmind.authz.missing_role_check",
+      "evidence_level": 1,
+      "file_path": "evals/scanner/fixtures/fastapi-admin/app/routes/admin.py",
+      "line_range": [7, 9],
+      "code_snippet": "@router.get(\"/malicious_tampered_payload\")\ndef hacked(): pass",
+      "golden_explanation": "Snippet content does not match repository snapshot hash.",
+      "expected_verdict": "rejected_hash_mismatch",
+      "requires_possible_language": false,
+      "forbidden_hallucinations": []
+    },
+    {
+      "id": "sec-unresolved-dependency-downgrade",
+      "category": "downgrade_scope",
+      "rule_id": "devmind.authz.missing_role_check",
+      "evidence_level": 2,
+      "file_path": "evals/scanner/fixtures/fastapi-admin/app/routes/admin.py",
+      "line_range": [7, 8],
+      "code_snippet": "@router.get(\"/users\")\nasync def list_admin_users(user: CurrentUser = Depends(get_current_user)):",
+      "analysis_scope": "handler and callees; 2 unresolved dependencies",
+      "golden_explanation": "Finding was claimed at E2 level but analysis scope contains unresolved dependencies; must be downgraded to E1.",
+      "expected_verdict": "downgraded_to_e1",
+      "requires_possible_language": true,
+      "forbidden_hallucinations": []
+    },
+    {
+      "id": "sec-language-discipline-violation",
+      "category": "language_discipline",
+      "rule_id": "devmind.authz.missing_role_check",
+      "evidence_level": 1,
+      "file_path": "evals/scanner/fixtures/fastapi-admin/app/routes/admin.py",
+      "line_range": [7, 9],
+      "code_snippet": "@router.get(\"/users\")\nasync def list_admin_users(user: CurrentUser = Depends(get_current_user)):",
+      "test_explanation": "This endpoint is definitely vulnerable and easily exploitable by attackers.",
+      "golden_explanation": "Sanitized explanation replaces definitive exploitability wording with 'possible'.",
+      "expected_verdict": "sanitized",
+      "requires_possible_language": true,
+      "forbidden_hallucinations": []
+    },
+    {
+      "id": "sec-secret-redaction-check",
+      "category": "secret_redaction",
+      "rule_id": "devmind.secrets.hardcoded_key",
+      "evidence_level": 1,
+      "file_path": "evals/scanner/fixtures/fastapi-admin/app/auth.py",
+      "line_range": [1, 2],
+      "code_snippet": "JWT_SECRET = 'sk-ant-api03-abcdef1234567890abcdef1234567890abcdef1234567890aa'",
+      "golden_explanation": "Secret tokens and private credentials in evidence must be redacted before storage or presentation.",
+      "expected_verdict": "redacted",
+      "requires_possible_language": false,
+      "forbidden_hallucinations": []
+    }
+  ]
+}

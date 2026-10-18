@@ -7,23 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `72588ae` (feat(server): implement M7-08 job integration and SSE job event streaming) |
-| **Working tree** | Clean; M7-08 complete; all 13 checks pass; 462 server tests pass (458 passed, 4 skipped) |
-| **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 458/462 pass (4 skipped), client 46/46 pass |
+| **Branch** | `feature/m7-eval-baselines` |
+| **Last commit** | `2e6021e` (docs: update BRAIN.md commit status for M7-08) |
+| **Working tree** | Clean; M7-09 complete; all 13 checks pass; 467 server tests pass (463 passed, 4 skipped) |
+| **Open PR** | None (working directly on feature/m7-eval-baselines) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 463/467 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-09: Evaluation sets with baselines (answer-quality, faithfulness)** per `PLAN.md`:
-   - Inspect `docs/09 §10`, `docs/05 §14`, and `server/tests/test_llm_eval.py`:
-     - Define answer-quality and faithfulness evaluation test corpus with synthetic golden standards across CodeMate and AuthCheck workflows.
-     - Implement automated evaluator evaluating citation grounding score, claim factualness, and verified finding accuracy.
-     - Record benchmark baseline results in `docs/09 §10`.
-     - Author comprehensive unit tests in `server/tests/test_agent_eval.py`.
+1. Implement **Milestone M7-10: Injection corpus run against graph workflows (docs/09 §12)** per `PLAN.md`:
+   - Inspect `docs/09 §12`, `docs/05 §14.3`, and `evals/prompts/injection_corpus.json`:
+     - Test CodeMate and AuthCheck LangGraph graphs against prompt injection attacks (system override attempts, tool boundary escape, jailbreaks, data exfiltration, secret leakage).
+     - Verify untrusted repository context isolation (prompt templates never execute or elevate untrusted code or prompt injection payloads).
+     - Author evaluation runner and unit tests in `server/tests/test_agent_injection.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -37,6 +36,27 @@
 ---
 
 ## 4. Done log
+
+### Feature — M7-09: Evaluation Sets with Baselines (Answer-Quality, Faithfulness)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-eval-baselines`
+- **What**:
+  - Implemented evaluation corpus, automated evaluator metrics, benchmark harness, and documentation baseline per `docs/09 §9`, `docs/05 §7`, `docs/05 §14`, and `docs/09 §10`:
+    - **Dataset** ([`evals/agents/dataset.json`](evals/agents/dataset.json)):
+      - Golden test corpus containing 7 CodeMate Q&A questions (5 grounded across fixture and server files + 2 out-of-scope/insufficient evidence negative controls) and 8 AuthCheck security review cases (covering compliant routes, tampered hash rejection, line range boundary violations, unresolved callee E2 to E1 downgrade, language discipline enforcement, and secret redaction).
+    - **Metrics Module** ([`evals/agents/metrics.py`](evals/agents/metrics.py)):
+      - Defined Pydantic models for `AnswerQualityMetrics`, `FaithfulnessMetrics`, and `AgentBenchmarkSummary`.
+      - Computes citation precision, citation recall, symbol coverage, insufficient evidence accuracy, route confirmation accuracy, evidence grounding accuracy, finding downgrade fidelity, and language discipline adherence.
+    - **Benchmark Harness** ([`evals/agents/harness.py`](evals/agents/harness.py)):
+      - Built `AgentEvaluationHarness` executing real evaluation across citation verification (`CitationVerifier.verify_batch`), AST structural route analysis, and finding verification (`EvidenceVerifier.verify_draft_finding`).
+      - Records benchmark results to `evals/results/agents/latest.json` and timestamped JSON files.
+      - Achieved baseline scores: Answer Quality 0.9600, Faithfulness 1.0000, Composite Score 0.9840 (exceeds min tolerance 0.8500).
+    - **Documentation Baseline** ([`docs/09-testing-and-quality-strategy.md`](docs/09-testing-and-quality-strategy.md)):
+      - Updated §9 tracked baselines table with `Agent Workflows: Answer Quality & Faithfulness (M7)` metrics.
+    - **Unit Tests** ([`server/tests/test_agent_eval.py`](server/tests/test_agent_eval.py)):
+      - Added 5 unit tests validating dataset schema, CodeMate verification, AuthCheck verification vectors, metric calculation, and full harness execution. All pass in 0.18s.
+  - Verified with `node scripts/test-all.mjs --fast`: all 13 checks pass, 463 server tests pass, 46 client tests pass.
 
 ### Feature — M7-08: Job Integration (ask_project, security_review) and SSE Event Streaming
 

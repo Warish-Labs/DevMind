@@ -158,6 +158,7 @@ Recorded baselines (to be filled by the owning milestone):
 | Eval | Date | Commit | Result file | Summary |
 |---|---|---|---|---|
 | Retrieval + Fusion Ablation (M5) | 2026-10-17 | `3b381fb` | `evals/results/retrieval/latest.json` | Fused RRF: Recall@5: 0.5544, MRR: 0.9375, nDCG@5: 0.7377; Fused+1Hop: Recall@5: 0.5775, MRR: 0.9375, nDCG@5: 0.7658 (outperforming keyword 0.6803, vector 0.6779, symbol 0.4209). Regression gate tolerance: max 0.02 nDCG@5 regression. |
+| Agent Workflows: Answer Quality & Faithfulness (M7) | 2026-10-18 | `2e6021e` | `evals/results/agents/latest.json` | Composite Score: 0.9840. Answer Quality (0.9600): Citation Precision: 1.0, Citation Recall: 1.0, Insufficient Evidence Accuracy: 1.0, Symbol Coverage: 0.7333. Faithfulness & Grounding (1.0000): Grounding Ratio: 1.0, Citation Resolution: 1.0, Hallucination Rate: 0.0, Language Discipline: 1.0, Secret Redaction: 1.0. Regression gate tolerance: min composite score 0.8500. |
 
 ## 10. LangGraph workflow tests
 
