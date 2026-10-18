@@ -10,6 +10,7 @@ import {
   ChatIcon,
   FindingsIcon,
   JobsIcon,
+  UsageIcon,
   SettingsIcon,
   FolderIcon,
 } from "./icons";
@@ -61,6 +62,12 @@ export function AppGutterRail() {
       href: `/projects/${pid}/jobs`,
       icon: <JobsIcon size={18} />,
       isActive: pathname.includes("/jobs"),
+    },
+    {
+      label: "Usage & Quotas (S-12)",
+      href: `/projects/${pid}/usage`,
+      icon: <UsageIcon size={18} />,
+      isActive: pathname.includes("/usage"),
     },
     {
       label: "Project Settings (S-10)",

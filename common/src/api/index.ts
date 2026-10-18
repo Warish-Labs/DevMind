@@ -44,6 +44,61 @@ export type BrainFileItem = components["schemas"]["BrainFileItem"];
 export type BrainFileDetail = components["schemas"]["BrainFileDetail"];
 export type GraphResponse = components["schemas"]["GraphResponse"];
 export type BrainSummaryResponse = components["schemas"]["BrainSummaryResponse"];
+export interface QuotaItem {
+  resource: string;
+  used: number;
+  limit: number;
+  unit: string;
+  percent: number;
+  threshold: "normal" | "warning" | "danger";
+}
+
+export interface TaskUsageBreakdown {
+  task: string;
+  jobCount: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
+export interface ProjectUsageBreakdown {
+  projectId: string;
+  projectName: string;
+  totalTokens: number;
+  jobCount: number;
+  lastActive: string;
+}
+
+export interface WorkspaceUsageSummary {
+  workspaceId: string;
+  period: string;
+  totalPromptTokens: number;
+  totalCompletionTokens: number;
+  totalTokens: number;
+  totalCostUnits: number;
+  quotas: QuotaItem[];
+  byTask: TaskUsageBreakdown[];
+  byProject: ProjectUsageBreakdown[];
+}
+
+export interface ExtensionDeviceItem {
+  id: string;
+  name: string;
+  platform: string;
+  extensionVersion: string;
+  vscodeVersion?: string;
+  lastSeenAt: string;
+  createdAt: string;
+  isRevoked: boolean;
+  revokedAt?: string | null;
+  status: "active" | "idle" | "revoked";
+}
+
+export interface RevokeDeviceResponse {
+  id: string;
+  success: boolean;
+  message: string;
+}
 
 export class ApiError extends Error {
   public readonly status: number;
@@ -423,5 +478,23 @@ export class DevMindApiClient {
 
   public async getBrainSummary(projectId: string): Promise<BrainSummaryResponse> {
     return this.fetchInternal<BrainSummaryResponse>(`/api/v1/projects/${projectId}/brain/summary`);
+  }
+
+  // -------------------------------------------------------------------------
+  // Usage & Quotas (docs/03 §3.5, docs/08 §11 S-12)
+  // -------------------------------------------------------------------------
+
+  public async getWorkspaceUsage(workspaceId: string): Promise<WorkspaceUsageSummary> {
+    return this.fetchInternal<WorkspaceUsageSummary>(`/api/v1/workspaces/${workspaceId}/usage`);
+  }
+
+  public async listExtensionDevices(): Promise<ExtensionDeviceItem[]> {
+    return this.fetchInternal<ExtensionDeviceItem[]>("/api/v1/ext/devices");
+  }
+
+  public async revokeExtensionDevice(deviceId: string): Promise<RevokeDeviceResponse> {
+    return this.fetchInternal<RevokeDeviceResponse>(`/api/v1/ext/devices/${deviceId}/revoke`, {
+      method: "POST",
+    });
   }
 }

@@ -301,3 +301,23 @@ export function MenuIcon({ size = 18, className = "", ...props }: IconProps) {
     </svg>
   );
 }
+
+export function UsageIcon({ size = 18, className = "", ...props }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+      {...props}
+    >
+      <path d="M12 20v-6M6 20V10M18 20V4" />
+    </svg>
+  );
+}
