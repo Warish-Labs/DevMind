@@ -7,25 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `9d4786c` (feat(client): implement M8-01 tokens and base UI components) |
-| **Working tree** | Clean; M8-01 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 60 client tests pass |
-| **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 60/60 pass |
+| **Branch** | `feature/m8-auth-onboarding` |
+| **Last commit** | `4c8d559` (docs: update BRAIN.md commit status for M8-01) |
+| **Working tree** | Clean; M8-02 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 65 client tests pass |
+| **Open PR** | None (working directly on feature/m8-auth-onboarding) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 65/65 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-02: Authentication and onboarding (S-02: Clerk SignIn/SignUp, onboarding wizard)** per `PLAN.md` and `docs/08 §11 S-02`:
-   - Inspect `docs/08 §11 S-02` (Screen specifications: Authentication and onboarding):
-     - Create `/sign-in/[[...sign-in]]/page.tsx` and `/sign-up/[[...sign-up]]/page.tsx` integrating Clerk's `<SignIn />` and `<SignUp />` styled with DevMind design tokens (dark surfaces, `--signal` primary, `--fg-0` text).
-     - Implement the 3-step onboarding flow rail in `client/app/onboarding/page.tsx`:
-       1. Step 1: Workspace creation/selection (`GET /api/v1/workspaces`, `POST /api/v1/workspaces`).
-       2. Step 2: Project source connection (extension link flow or repository creation).
-       3. Step 3: Sync mode selection (`metadata_only` vs `indexed`) with plain-language explanation and recorded consent.
-     - Author comprehensive unit tests in `client/tests/auth-onboarding.test.tsx`.
+1. Implement **Milestone M8-03: App shell, navigation, and workspace/project selection (S-03)** per `PLAN.md` and `docs/08 §11 S-03`:
+   - Inspect `docs/08 §10` (App shell: gutter rail, top bar, status bar) and `docs/08 §11 S-03` (Workspace and project selection):
+     - Implement persistent app shell for authenticated routes with left gutter rail (56px desktop, collapsible on mobile), top breadcrumb bar with command palette trigger, and bottom status bar (active scan, job, sync mode).
+     - Build Screen S-03: Workspace and project switcher popover + project index table (name, source, sync mode, last scan, open findings by severity).
+     - Author comprehensive unit tests in `client/tests/app-shell.test.tsx`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -39,6 +36,28 @@
 ---
 
 ## 4. Done log
+
+### Feature — M8-02: Authentication and Onboarding (Screen S-02)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-auth-onboarding`
+- **What**:
+  - Implemented authentication routes and onboarding wizard conforming to `docs/08 §11 S-02`:
+    - **Clerk Themed Appearance** ([`client/components/auth/clerk-theme.ts`](client/components/auth/clerk-theme.ts)):
+      - Mapped Clerk appearance variables strictly to DevMind CSS custom properties (`var(--signal)`, `var(--bg-1)`, `var(--fg-0)`, `var(--bg-2)`, `var(--radius-control)`).
+    - **Sign In Route** ([`client/app/sign-in/[[...sign-in]]/page.tsx`](client/app/sign-in/[[...sign-in]]/page.tsx)):
+      - Dedicated route embedding Clerk's `<SignIn />` component with fallback developer sign-in card when Clerk keys are unconfigured in local development.
+    - **Sign Up Route** ([`client/app/sign-up/[[...sign-up]]/page.tsx`](client/app/sign-up/[[...sign-up]]/page.tsx)):
+      - Dedicated route embedding Clerk's `<SignUp />` component with developer registration card fallback.
+    - **Screen S-02 Onboarding Wizard** ([`client/app/onboarding/page.tsx`](client/app/onboarding/page.tsx)):
+      - 3-step progress rail:
+        1. Workspace creation / selection with tenant partition guarantee.
+        2. Project source connection (VS Code extension deep link `vscode://devmind.devmind-vscode/connect` vs manual registration).
+        3. Synchronization mode selection (`metadata_only` vs `indexed`) with plain-language privacy disclosure and required consent acknowledgement.
+    - **Unit Tests** ([`client/tests/auth-onboarding.test.tsx`](client/tests/auth-onboarding.test.tsx)):
+      - 5 Vitest tests covering token mappings, SignIn/SignUp branding, and S-02 step rail.
+  - Verified with `pnpm --filter client test`: 65 client tests pass.
+  - Verified with `node scripts/test-all.mjs --fast`: all 13 checks pass.
 
 ### Feature — M8-01: Tokens and Base UI Components
 
