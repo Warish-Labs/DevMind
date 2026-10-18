@@ -8,21 +8,24 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `c443ddb` (feat(client): implement M8-06 job center, SSE streaming events, and approval prompts (S-09)) |
-| **Working tree** | Clean; M8-06 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 99 client tests pass |
+| **Last commit** | `TBD` (feat(client): implement M8-07 conversation interface with citations and insufficient evidence banner (S-06)) |
+| **Working tree** | Clean; M8-07 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 107 client tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 99/99 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 107/107 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-07: Conversation interface with citations and insufficient evidence banner (Screen S-09/S-10 per docs/08 §11)**:
-   - Inspect `docs/08 §11 S-09` conversation interface with message streaming, citation pills linked to Brain Explorer, insufficient evidence alert banner, model/temperature controls, and export conversation.
-   - Build conversation UI components in `client/components/chat/`.
-   - Add route `/projects/[projectId]/chat/page.tsx` or `/projects/[projectId]/conversation/page.tsx`.
-   - Author unit tests in `client/tests/conversation-ui.test.tsx`.
+1. Implement **Milestone M8-08: Brain explorer with three-pane structure and metadata (Screen S-05 per docs/08 §11)**:
+   - Inspect `docs/08 §11 S-05` Brain explorer: three-pane structure (left: file tree, center: file/symbol detail with code, right: relationships and findings for selection).
+   - Snapshot selector in header with "current" clearly marked and stale items badged.
+   - Actions: search (`POST /api/v1/projects/{pid}/brain/search`), open symbol, expand relationships (`GET /api/v1/projects/{pid}/brain/graph`), open finding.
+   - States: `metadata_only` projects show structure and symbols with clear banner and "Enable indexed mode" requiring consent; unindexed files show tier and reason. Responsive: panes become tabs.
+   - Build UI components in `client/components/brain/`.
+   - Add route `/projects/[projectId]/brain/page.tsx`.
+   - Author unit tests in `client/tests/brain-explorer.test.tsx`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +39,29 @@
 ---
 
 ## 4. Done log
+
+### Feature — M8-07: Conversation Interface with Citations and Insufficient Evidence Banner (Screen S-06)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-conversation-ui`
+- **What**:
+  - Implemented AI project conversation interface, AST citation references, agent execution trace, and insufficient evidence banner per `docs/08 §11 S-06`:
+    - **Components & Types** ([`client/components/chat/types.ts`](client/components/chat/types.ts)):
+      - Defined `CitationItem`, `ChatMessage`, starter queries, and sample conversation data.
+    - **Citations Panel (Screen S-06 right drawer/aside)** ([`client/components/chat/CitationsPanel.tsx`](client/components/chat/CitationsPanel.tsx)):
+      - AST-verified badge, file path with line numbers (`L28-L45`), symbol name tag, code snippet preview box, copy reference button, and deep link to Brain Explorer (`/projects/{pid}/brain?file=...`).
+    - **Message Items & Inline Citations** ([`client/components/chat/ChatMessageItem.tsx`](client/components/chat/ChatMessageItem.tsx)):
+      - User messages styled with right-aligned bubble and timestamp.
+      - Assistant messages featuring DevMind avatar, collapsible Agent Execution Trace showing AST search and verification steps, markdown rendering with clickable inline citation badges `[1]`, `[2]`, copy markdown action, and timestamp.
+      - **Insufficient Evidence Banner**: distinct amber/warning card with explicit reason explaining missing evidence, and structured list of actionable suggested next steps per `docs/08 §11 S-06`.
+    - **Chat Composer** ([`client/components/chat/ChatComposer.tsx`](client/components/chat/ChatComposer.tsx)):
+      - Auto-resizing textarea with Enter to submit, Shift+Enter for newlines, suggested starter queries chips, AST Grounded indicator, and Ask Project / Stop Generation controls.
+    - **Full Conversation Container** ([`client/components/chat/ConversationView.tsx`](client/components/chat/ConversationView.tsx)):
+      - Coordinates message scroll, citations panel drawer toggle, starter queries chips, export conversation as Markdown file, clear conversation, error banners for quota exceeded (`/projects/{pid}/usage` deep link) and metadata-only mode.
+      - Integrates with `apiClient.createAnalysisJob(projectId, { type: "ask_project", params: { query } })` and SSE streaming with fallback simulation.
+    - **Route & Tests**:
+      - Added route at [`client/app/projects/[projectId]/chat/page.tsx`](client/app/projects/[projectId]/chat/page.tsx).
+      - Added 8 unit tests in [`client/tests/conversation-ui.test.tsx`](client/tests/conversation-ui.test.tsx). All 15 client test files passed (107/107 tests).
 
 ### Feature — M8-06: Job Center and SSE Streaming Event Client with Fallback (Screen S-09)
 
