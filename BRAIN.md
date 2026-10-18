@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `feature/m8-usage-ui` |
-| **Last commit** | `feat(client): implement M8-09 usage dashboard, quotas, and extension devices (S-12)` |
+| **Last commit** | `0453f10` (feat(client): implement M8-09 usage dashboard, quotas, and extension devices (S-12)) |
 | **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (24 routes: 14 static, 10 dynamic); 124 client tests pass |
 | **Open PR** | `feature/m8-usage-ui` -> `main` |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 124/124 pass |
