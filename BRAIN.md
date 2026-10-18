@@ -7,24 +7,23 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `7fb6158` (feat(server): implement M7-04 CodeMate workflow nodes and citation validation) |
-| **Working tree** | Clean; M7-04 complete; all 13 checks pass; 416 server tests pass |
+| **Branch** | `feature/m7-guard-resolution` |
+| **Last commit** | `1d46367` (docs: update BRAIN.md commit status for M7-04) |
+| **Working tree** | Clean; M7-05 complete; all 13 checks pass; 427 server tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 416/420 pass (4 skipped), client 46/46 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 427/431 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-05: Guard resolution and structural route check (E2 deterministic confirmation)** per `PLAN.md`:
-   - Inspect `docs/03 §3.2`, `docs/05 §6.3`, `docs/07 §7`:
-     - Route enumeration from `defines_route` edges.
-     - Guard chain resolution (middleware, dependencies, decorators, inline checks) from `guarded_by` edges.
-     - Sensitivity classification (deterministic rules + project config).
-     - Deterministic E2 confirmation.
-     - Author comprehensive unit tests in `server/tests/test_guard_resolution.py`.
+1. Implement **Milestone M7-06: AuthCheck workflow nodes and evidence-constrained explanation** per `PLAN.md`:
+   - Inspect `docs/05 §6.3`:
+     - Build AuthCheck specialist workflow subgraph using `RouteGuardAnalyzer` for route enumeration and guard resolution.
+     - Wire LLM node (`security_explanation` prompt) to generate risk explanations and remediation diffs for emitted E2/E1 draft findings.
+     - Integrate with `AgentManager`'s `authcheck_node`.
+     - Author comprehensive unit tests in `server/tests/test_authcheck.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -38,6 +37,21 @@
 ---
 
 ## 4. Done log
+
+### Feature — M7-05: Guard Resolution and Structural Route Check (E2 Deterministic Confirmation)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-guard-resolution`
+- **What**:
+  - Implemented deterministic route enumeration, guard resolution, and E2 verification in [`server/app/analysis/guard_resolution.py`](server/app/analysis/guard_resolution.py) per `docs/05 §6.3`, `docs/03 §3.2`, and `docs/03 §12.1`:
+    - Framework detection supporting FastAPI, Express, and Next.js (route handlers and server actions), recording any unsupported frameworks as `not_analyzed` (never reported as "safe").
+    - Route enumeration discovering endpoints from `defines_route` edges, `route_handler`, and `server_action` symbols.
+    - Guard chain resolution traversing `guarded_by` and `calls` relationships (middleware, dependencies, decorators, inline checks) with cycle prevention and depth tracking.
+    - Deterministic route sensitivity classification (public, authenticated, sensitive/admin) with customizable `ProjectSecurityConfig`.
+    - Deterministic E2 confirmation when guard chain is fully resolved within `analysis_scope` (`"handler and N resolved callees; 0 unresolved dependencies"`) emitting `devmind.authz.missing_role_check` or `devmind.authn.unprotected_route`.
+    - E1 fallback when call-path resolution is incomplete due to dynamic dependencies or unanalyzed external calls.
+  - Exported analysis models and `RouteGuardAnalyzer` in [`server/app/analysis/__init__.py`](server/app/analysis/__init__.py).
+  - Authored 11 unit tests in [`server/tests/test_guard_resolution.py`](server/tests/test_guard_resolution.py) covering framework detection, sensitivity classification, route enumeration, E2 missing authn/authz confirmation, E1 fallback on incomplete paths, protected and public exemptions, unsupported framework handling, and repository database integration. All 13 test-all checks pass (427 server tests pass).
 
 ### Feature — M7-04: CodeMate Workflow Nodes and Citation Validation
 

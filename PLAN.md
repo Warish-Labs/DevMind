@@ -262,7 +262,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M7-02 Tools with scoped access: search_brain, get_symbol, get_file_range, get_relationships (feature/m7-agent-tools)
 - [x] M7-03 Agent Manager graph and plan execution routing (feature/m7-manager-routing)
 - [x] M7-04 CodeMate workflow nodes and citation validation (feature/m7-codemate)
-- [ ] M7-05 Guard resolution and structural route check (E2 deterministic confirmation) (feature/m7-guard-resolution)
+- [x] M7-05 Guard resolution and structural route check (E2 deterministic confirmation) (feature/m7-guard-resolution)
 - [ ] M7-06 AuthCheck workflow nodes and evidence-constrained explanation (feature/m7-authcheck)
 - [ ] M7-07 Evidence verifier for grounding and citations (feature/m7-evidence-verifier)
 - [ ] M7-08 Job integration (ask_project, security_review) and SSE job event streaming (feature/m7-agent-jobs)
