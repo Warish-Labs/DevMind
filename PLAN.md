@@ -271,7 +271,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 ### M8 · Website app (conversation, findings, Brain explorer, jobs)
 
-- [ ] M8-01 Tokens and base UI components (Button, Badge, Card, Dialog, Skeleton, Input, Tabs) (feature/m8-components)
+- [x] M8-01 Tokens and base UI components (Button, Badge, Card, Dialog, Skeleton, Input, Tabs) (feature/m8-components)
 - [ ] M8-02 Authentication and onboarding (S-02: Clerk SignIn/SignUp pages, onboarding wizard) (feature/m8-auth-onboarding)
 - [ ] M8-03 App shell, navigation, and workspace/project selection (S-03) (feature/m8-app-shell)
 - [ ] M8-04 Project overview with health score, coverage, and recent jobs (S-04) (feature/m8-project-overview)

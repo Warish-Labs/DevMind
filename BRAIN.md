@@ -7,26 +7,26 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `56a6450` (feat(server): implement M7-10 prompt injection defense and graph evaluation run) |
-| **Working tree** | Clean; M7 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped) |
-| **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 46/46 pass |
+| **Branch** | `feature/m8-components` |
+| **Last commit** | `6ee01a1` (docs: expand M8 task breakdown in PLAN.md and BRAIN.md) |
+| **Working tree** | Clean; M8-01 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 60 client tests pass |
+| **Open PR** | None (working directly on feature/m8-components) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 60/60 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-01: Tokens and base UI components (Button, Badge, Card, Dialog, Skeleton, Input, Tabs)** per `PLAN.md` and `docs/08 §3-§7`:
-   - Inspect `docs/08` (§3 colour/type/spacing tokens, §4 surfaces/elevation, §5 component specifications):
-     - Author accessible, themeable base components in `client/components/ui/` (`Button`, `Badge` with severity/evidence tints, `Card`, `Skeleton`, `Dialog`/Modal, `Input`, `Tabs`, `Tooltip`).
-     - Follow Radix / React aria keyboard primitives, strict TypeScript, zero `any`.
-     - Author comprehensive component tests in `client/tests/components/`.
+1. Implement **Milestone M8-02: Authentication and onboarding (S-02: Clerk SignIn/SignUp, onboarding wizard)** per `PLAN.md` and `docs/08 §11 S-02`:
+   - Inspect `docs/08 §11 S-02` (Screen specifications: Authentication and onboarding):
+     - Create `/sign-in/[[...sign-in]]/page.tsx` and `/sign-up/[[...sign-up]]/page.tsx` integrating Clerk's `<SignIn />` and `<SignUp />` styled with DevMind design tokens (dark surfaces, `--signal` primary, `--fg-0` text).
+     - Implement the 3-step onboarding flow rail in `client/app/onboarding/page.tsx`:
+       1. Step 1: Workspace creation/selection (`GET /api/v1/workspaces`, `POST /api/v1/workspaces`).
+       2. Step 2: Project source connection (extension link flow or repository creation).
+       3. Step 3: Sync mode selection (`metadata_only` vs `indexed`) with plain-language explanation and recorded consent.
+     - Author comprehensive unit tests in `client/tests/auth-onboarding.test.tsx`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
-2. Follow immediately with **Milestone M8-02: Authentication and onboarding (S-02: Clerk SignIn/SignUp, onboarding wizard)**:
-   - Provide dedicated routes `/sign-in` and `/sign-up` embedding themed Clerk authentication components.
-   - Implement S-02 onboarding flow (workspace creation, project source connection, sync-mode consent).
 
 ---
 
@@ -39,6 +39,40 @@
 ---
 
 ## 4. Done log
+
+### Feature — M8-01: Tokens and Base UI Components
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-components`
+- **What**:
+  - Implemented design system base components conforming to `docs/08 §3-§7`:
+    - **Button** ([`client/components/ui/Button.tsx`](client/components/ui/Button.tsx)):
+      - Variants: `primary` (`--signal`), `secondary` (`--line-3`), `tertiary`, `destructive` (`--danger`).
+      - Sizes: `sm` (32px), `default` (36px), `lg` (44px min touch target).
+      - Loading spinner, disabled state, left/right icons, ref forwarding.
+    - **Badge** ([`client/components/ui/Badge.tsx`](client/components/ui/Badge.tsx)):
+      - Semantic encoding (glyphs: `●`, `✓`, `▲`, `✕`, `◆`) ensuring color is never used alone (`docs/08 §3.4`).
+      - Native support for evidence levels (`E0`, `E1`, `E2`), mono formatting for IDs and counts.
+    - **Card** ([`client/components/ui/Card.tsx`](client/components/ui/Card.tsx)):
+      - Subcomponents: `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`.
+      - Layered surfaces (`--bg-1`, `--bg-2`), 1px hairline border (`--line-1`), 6px panel radius (`--radius-panel`).
+    - **Input** ([`client/components/ui/Input.tsx`](client/components/ui/Input.tsx)):
+      - `--bg-2` fill, `--line-3` border, `--radius-control` (4px).
+      - Accessible label with `htmlFor`, helper text, inline error with glyph (`✕`) and `role="alert"`.
+    - **Skeleton** ([`client/components/ui/Skeleton.tsx`](client/components/ui/Skeleton.tsx)):
+      - Layout-matched placeholder, `--bg-2`, static under `prefers-reduced-motion: reduce`.
+    - **Dialog** ([`client/components/ui/Dialog.tsx`](client/components/ui/Dialog.tsx)):
+      - Modal overlay, soft shadow, `--radius-panel` (6px), Esc key dismissal, focus trap, accessible title and description.
+    - **Tabs** ([`client/components/ui/Tabs.tsx`](client/components/ui/Tabs.tsx)):
+      - Accessible `Tabs`, `TabList`, `TabTrigger`, `TabContent`. Active tab indicated by 2px `--signal` underline.
+    - **Tooltip** ([`client/components/ui/Tooltip.tsx`](client/components/ui/Tooltip.tsx)):
+      - 160ms delay, Esc dismissal, visible on both hover and focus.
+    - **Barrel Export** ([`client/components/ui/index.ts`](client/components/ui/index.ts)):
+      - Central export of all UI primitives.
+    - **Unit Tests** ([`client/tests/ui-components.test.tsx`](client/tests/ui-components.test.tsx)):
+      - 14 Vitest tests covering all components, variants, accessibility attributes, and error states.
+  - Verified with `pnpm --filter client test`: 60 client tests pass.
+  - Verified with `node scripts/test-all.mjs --fast`: all 13 checks pass.
 
 ### Feature — M7-10: Injection Corpus Run Against Graph Workflows
 
