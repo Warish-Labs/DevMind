@@ -7,9 +7,9 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m7-state-checkpointer` (merging to `main`) |
-| **Last commit** | `db66fb7` (feat(server): implement M6-11 LLM evaluation benchmark harness and prompt injection corpus) |
-| **Working tree** | M7-01 complete; all 13 checks pass; 386 server tests pass |
+| **Branch** | `main` |
+| **Last commit** | `54200a7` (feat(server): implement M7-01 LangGraph state schema, checkpointer, and AgentRun model) |
+| **Working tree** | Clean; M7-01 complete; all 13 checks pass; 386 server tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 386/390 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
