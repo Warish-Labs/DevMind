@@ -89,13 +89,27 @@ export function ExtensionDevicesPane({
             >
               <thead>
                 <tr className="border-b border-[var(--line-1)] text-[var(--fg-2)] uppercase text-[10px] tracking-wider">
-                  <th className="py-2.5 px-3">Device Name</th>
-                  <th className="py-2.5 px-3">Platform</th>
-                  <th className="py-2.5 px-3">Extension Version</th>
-                  <th className="py-2.5 px-3">VS Code</th>
-                  <th className="py-2.5 px-3">Last Heartbeat</th>
-                  <th className="py-2.5 px-3">Status</th>
-                  <th className="py-2.5 px-3 text-right">Actions</th>
+                  <th scope="col" className="py-2.5 px-3">
+                    Device Name
+                  </th>
+                  <th scope="col" className="py-2.5 px-3">
+                    Platform
+                  </th>
+                  <th scope="col" className="py-2.5 px-3">
+                    Extension Version
+                  </th>
+                  <th scope="col" className="py-2.5 px-3">
+                    VS Code
+                  </th>
+                  <th scope="col" className="py-2.5 px-3">
+                    Last Heartbeat
+                  </th>
+                  <th scope="col" className="py-2.5 px-3">
+                    Status
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line-1)]">

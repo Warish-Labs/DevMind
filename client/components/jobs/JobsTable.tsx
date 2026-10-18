@@ -231,12 +231,24 @@ export function JobsTable({ projectId, jobs, onCancelJob, className = "" }: Jobs
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-[var(--bg-1)] border-b border-[var(--line-1)] text-[var(--fg-2)] select-none">
-                  <th className="py-2.5 px-3 font-medium">Job Type &amp; ID</th>
-                  <th className="py-2.5 px-3 font-medium w-32">Status</th>
-                  <th className="py-2.5 px-3 font-medium w-40">Progress</th>
-                  <th className="py-2.5 px-3 font-medium w-20">Attempt</th>
-                  <th className="py-2.5 px-3 font-medium w-28">Duration</th>
-                  <th className="py-2.5 px-3 font-medium w-36 text-right">Actions</th>
+                  <th scope="col" className="py-2.5 px-3 font-medium">
+                    Job Type &amp; ID
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 font-medium w-32">
+                    Status
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 font-medium w-40">
+                    Progress
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 font-medium w-20">
+                    Attempt
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 font-medium w-28">
+                    Duration
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 font-medium w-36 text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line-1)]">

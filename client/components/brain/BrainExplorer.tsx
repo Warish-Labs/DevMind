@@ -93,11 +93,17 @@ export function BrainExplorer({
       />
 
       {/* Mobile Panes Tabs Bar (< 1024px) */}
-      <div className="flex lg:hidden border-b border-[var(--line-1)] bg-[var(--bg-1)] font-mono text-xs select-none shrink-0">
+      <div
+        role="tablist"
+        aria-label="Brain explorer panes"
+        className="flex lg:hidden border-b border-[var(--line-1)] bg-[var(--bg-1)] font-mono text-xs select-none shrink-0"
+      >
         <button
           type="button"
+          role="tab"
+          aria-selected={mobileTab === "files"}
           onClick={() => setMobileTab("files")}
-          className={`flex-1 py-2 text-center border-b-2 font-semibold transition-colors ${
+          className={`flex-1 py-2 text-center border-b-2 font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)] ${
             mobileTab === "files"
               ? "border-[var(--ref)] text-[var(--fg-0)] bg-[var(--bg-0)]"
               : "border-transparent text-[var(--fg-3)]"
@@ -108,8 +114,10 @@ export function BrainExplorer({
 
         <button
           type="button"
+          role="tab"
+          aria-selected={mobileTab === "code"}
           onClick={() => setMobileTab("code")}
-          className={`flex-1 py-2 text-center border-b-2 font-semibold transition-colors ${
+          className={`flex-1 py-2 text-center border-b-2 font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)] ${
             mobileTab === "code"
               ? "border-[var(--ref)] text-[var(--fg-0)] bg-[var(--bg-0)]"
               : "border-transparent text-[var(--fg-3)]"
@@ -120,8 +128,10 @@ export function BrainExplorer({
 
         <button
           type="button"
+          role="tab"
+          aria-selected={mobileTab === "relationships"}
           onClick={() => setMobileTab("relationships")}
-          className={`flex-1 py-2 text-center border-b-2 font-semibold transition-colors ${
+          className={`flex-1 py-2 text-center border-b-2 font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)] ${
             mobileTab === "relationships"
               ? "border-[var(--ref)] text-[var(--fg-0)] bg-[var(--bg-0)]"
               : "border-transparent text-[var(--fg-3)]"

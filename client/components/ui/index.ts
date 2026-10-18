@@ -6,3 +6,5 @@ export * from "./Skeleton";
 export * from "./Dialog";
 export * from "./Tabs";
 export * from "./Tooltip";
+export * from "./EmptyState";
+export * from "./ErrorState";

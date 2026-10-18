@@ -22,9 +22,14 @@ export function AppShell({ children }: AppShellProps) {
         <div className="flex-1 flex flex-col lg:pl-14 pb-7">
           <AppTopBar />
 
-          <main id="app-main" className="flex-1 w-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+          <div
+            id="app-main"
+            role="region"
+            aria-label="Application content"
+            className="flex-1 w-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto"
+          >
             {children}
-          </main>
+          </div>
 
           <AppStatusBar />
         </div>

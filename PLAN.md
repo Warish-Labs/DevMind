@@ -279,7 +279,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M8-06 Job center and SSE streaming event client with fallback (S-09) (feature/m8-jobs-sse)
 - [x] M8-07 Conversation interface with citations and insufficient evidence banner (S-06) (feature/m8-conversation-ui)
 - [x] M8-09 Usage dashboard, quotas, and extension devices (S-12) (feature/m8-usage-ui)
-- [ ] M8-10 Empty, error, loading states, accessibility audit, and keyboard navigation pass (feature/m8-a11y-polish)
+- [x] M8-10 Empty, error, loading states, accessibility audit, and keyboard navigation pass (feature/m8-a11y-polish)
 
 ### M9 · Sync modes, privacy controls, history, deletion
 

@@ -96,68 +96,79 @@ export default function OnboardingPage() {
         </div>
 
         {/* 3-Step Progress Rail (docs/08 §11 S-02) */}
-        <div className="flex items-center justify-between w-full border-b border-[var(--line-1)] pb-4 px-2">
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold ${
-                currentStep >= 1
-                  ? "bg-[var(--signal)] text-[var(--bg-0)]"
-                  : "bg-[var(--bg-2)] text-[var(--fg-2)]"
-              }`}
+        <nav aria-label="Onboarding progress" className="w-full">
+          <ol className="flex items-center justify-between w-full border-b border-[var(--line-1)] pb-4 px-2 list-none">
+            <li
+              className="flex items-center gap-2"
+              aria-current={currentStep === 1 ? "step" : undefined}
             >
-              1
-            </span>
-            <span
-              className={`text-sm font-medium ${
-                currentStep === 1 ? "text-[var(--fg-0)]" : "text-[var(--fg-2)]"
-              }`}
-            >
-              Workspace
-            </span>
-          </div>
+              <span
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold ${
+                  currentStep >= 1
+                    ? "bg-[var(--signal)] text-[var(--bg-0)]"
+                    : "bg-[var(--bg-2)] text-[var(--fg-2)]"
+                }`}
+              >
+                1
+              </span>
+              <span
+                className={`text-sm font-medium ${
+                  currentStep === 1 ? "text-[var(--fg-0)]" : "text-[var(--fg-2)]"
+                }`}
+              >
+                Workspace
+              </span>
+            </li>
 
-          <div className="w-12 h-px bg-[var(--line-2)]" aria-hidden="true" />
+            <li className="w-12 h-px bg-[var(--line-2)]" aria-hidden="true" />
 
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold ${
-                currentStep >= 2
-                  ? "bg-[var(--signal)] text-[var(--bg-0)]"
-                  : "bg-[var(--bg-2)] text-[var(--fg-2)]"
-              }`}
+            <li
+              className="flex items-center gap-2"
+              aria-current={currentStep === 2 ? "step" : undefined}
             >
-              2
-            </span>
-            <span
-              className={`text-sm font-medium ${
-                currentStep === 2 ? "text-[var(--fg-0)]" : "text-[var(--fg-2)]"
-              }`}
-            >
-              Project Source
-            </span>
-          </div>
+              <span
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold ${
+                  currentStep >= 2
+                    ? "bg-[var(--signal)] text-[var(--bg-0)]"
+                    : "bg-[var(--bg-2)] text-[var(--fg-2)]"
+                }`}
+              >
+                2
+              </span>
+              <span
+                className={`text-sm font-medium ${
+                  currentStep === 2 ? "text-[var(--fg-0)]" : "text-[var(--fg-2)]"
+                }`}
+              >
+                Project Source
+              </span>
+            </li>
 
-          <div className="w-12 h-px bg-[var(--line-2)]" aria-hidden="true" />
+            <li className="w-12 h-px bg-[var(--line-2)]" aria-hidden="true" />
 
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold ${
-                currentStep === 3
-                  ? "bg-[var(--signal)] text-[var(--bg-0)]"
-                  : "bg-[var(--bg-2)] text-[var(--fg-2)]"
-              }`}
+            <li
+              className="flex items-center gap-2"
+              aria-current={currentStep === 3 ? "step" : undefined}
             >
-              3
-            </span>
-            <span
-              className={`text-sm font-medium ${
-                currentStep === 3 ? "text-[var(--fg-0)]" : "text-[var(--fg-2)]"
-              }`}
-            >
-              Sync &amp; Consent
-            </span>
-          </div>
-        </div>
+              <span
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold ${
+                  currentStep === 3
+                    ? "bg-[var(--signal)] text-[var(--bg-0)]"
+                    : "bg-[var(--bg-2)] text-[var(--fg-2)]"
+                }`}
+              >
+                3
+              </span>
+              <span
+                className={`text-sm font-medium ${
+                  currentStep === 3 ? "text-[var(--fg-0)]" : "text-[var(--fg-2)]"
+                }`}
+              >
+                Sync &amp; Consent
+              </span>
+            </li>
+          </ol>
+        </nav>
 
         {/* Step 1: Workspace Creation / Selection */}
         {currentStep === 1 && (

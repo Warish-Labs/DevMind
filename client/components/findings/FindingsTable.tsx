@@ -329,12 +329,24 @@ export function FindingsTable({
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-[var(--bg-1)] border-b border-[var(--line-1)] text-[var(--fg-2)] select-none">
-                  <th className="py-2.5 px-3 font-medium w-24">Severity</th>
-                  <th className="py-2.5 px-2 font-medium w-14">Evid.</th>
-                  <th className="py-2.5 px-3 font-medium">Rule & Finding</th>
-                  <th className="py-2.5 px-3 font-medium">Location</th>
-                  <th className="py-2.5 px-3 font-medium w-28">Status</th>
-                  <th className="py-2.5 px-3 font-medium w-44 text-right">Actions</th>
+                  <th scope="col" className="py-2.5 px-3 font-medium w-24">
+                    Severity
+                  </th>
+                  <th scope="col" className="py-2.5 px-2 font-medium w-14">
+                    Evid.
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 font-medium">
+                    Rule & Finding
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 font-medium">
+                    Location
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 font-medium w-28">
+                    Status
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 font-medium w-44 text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line-1)]">

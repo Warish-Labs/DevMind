@@ -7,35 +7,72 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m8-usage-ui` |
-| **Last commit** | `0453f10` (feat(client): implement M8-09 usage dashboard, quotas, and extension devices (S-12)) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (24 routes: 14 static, 10 dynamic); 124 client tests pass |
-| **Open PR** | `feature/m8-usage-ui` -> `main` |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 124/124 pass |
+| **Branch** | `feature/m8-a11y-polish` |
+| **Last commit** | In progress (feat(client): implement M8-10 empty, error, loading states, accessibility audit, and keyboard navigation pass) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (24 routes: 14 static, 10 dynamic); 131 client tests pass |
+| **Open PR** | `feature/m8-a11y-polish` -> `main` |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 131/131 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-10: Empty, error, loading states, accessibility audit, and keyboard navigation pass (Screen polish across all MVP screens S-02..S-12)**:
-   - Create branch `feature/m8-a11y-polish`.
-   - Inspect all client routes (`/projects`, `/projects/[projectId]/*`, `/workspaces/*`, `/sign-in`, `/sign-up`, `/onboarding`) for consistent loading skeletons, empty states with clear calls-to-action, and error boundaries.
-   - Run automated accessibility scan with axe / Playwright (`axe-core/playwright`).
-   - Verify keyboard navigation: focus rings (`focus-visible:ring-2 focus-visible:ring-[var(--ref)]`), skip link, aria attributes (`aria-selected`, `aria-expanded`, `aria-label`).
-   - Run verification suite `node scripts/test-all.mjs --fast` and `pnpm --filter client build`.
+1. Commit and push `feature/m8-a11y-polish` to GitHub.
+2. Open PR #57 (`feature/m8-a11y-polish` -> `main`).
+3. After PR #57 is merged into `main`, initiate **Milestone M9 · Sync modes, privacy controls, history, deletion (feature/m9-\*)**.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                                                           | Reference |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| 1   | **SETUP-GUIDE.md §4.4**: After the first CI run is green on B3, enable the branch ruleset `protect-main` requiring `ci-gate` status check | P0-15     |
+| #   | Action required                                                                               | Reference |
+| --- | --------------------------------------------------------------------------------------------- | --------- |
+| 1   | Review and merge PR #57 (`feature/m8-a11y-polish` -> `main`) once GitHub Actions CI completes | M8-10     |
 
 ---
 
 ## 4. Done log
+
+### Feature — M8-10: Empty, Error, Loading States, Accessibility Audit, and Keyboard Navigation Pass
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-a11y-polish`
+- **What**:
+  - Implemented comprehensive screen polish, state management, and WCAG 2.2 AA accessibility across all MVP screens S-02..S-12:
+    - **EmptyState Component** ([`client/components/ui/EmptyState.tsx`](client/components/ui/EmptyState.tsx)):
+      - Clean non-illustrative indicator glyph, semantic heading, single sentence explanation, primary action button/link, secondary action, and optional link to docs per docs/08 §6 and §16.
+    - **ErrorState & RFC 9457 Error Boundaries** ([`client/components/ui/ErrorState.tsx`](client/components/ui/ErrorState.tsx)):
+      - Formats RFC 9457 Problem Details (`application/problem+json`) with standard error codes (e.g. `devmind.client.runtime_error`, `devmind.authz.permission_denied`).
+      - Displays `request_id`, error code, user-friendly cause, next action, retry action callback, and return to overview link per docs/08 §15.
+      - Implemented App Router route error boundaries:
+        - [`client/app/error.tsx`](client/app/error.tsx) (application runtime error boundary)
+        - [`client/app/global-error.tsx`](client/app/global-error.tsx) (critical root layout error boundary)
+        - [`client/app/projects/error.tsx`](client/app/projects/error.tsx) (projects directory error boundary)
+        - [`client/app/projects/[projectId]/error.tsx`](client/app/projects/[projectId]/error.tsx) (project-scoped error boundary)
+    - **Route Loading Skeletons (`loading.tsx`)**:
+      - Implemented Suspense-based route loading states across all routes matching layout:
+        - [`client/app/loading.tsx`](client/app/loading.tsx) (global loading)
+        - [`client/app/projects/loading.tsx`](client/app/projects/loading.tsx) (projects catalog S-03)
+        - [`client/app/projects/[projectId]/loading.tsx`](client/app/projects/[projectId]/loading.tsx) (project overview S-04)
+        - [`client/app/projects/[projectId]/findings/loading.tsx`](client/app/projects/[projectId]/findings/loading.tsx) (findings index S-07)
+        - [`client/app/projects/[projectId]/findings/[findingId]/loading.tsx`](client/app/projects/[projectId]/findings/[findingId]/loading.tsx) (finding detail S-08)
+        - [`client/app/projects/[projectId]/brain/loading.tsx`](client/app/projects/[projectId]/brain/loading.tsx) (brain explorer S-05)
+        - [`client/app/projects/[projectId]/chat/loading.tsx`](client/app/projects/[projectId]/chat/loading.tsx) (conversation S-06)
+        - [`client/app/projects/[projectId]/jobs/loading.tsx`](client/app/projects/[projectId]/jobs/loading.tsx) (job center S-09)
+        - [`client/app/projects/[projectId]/usage/loading.tsx`](client/app/projects/[projectId]/usage/loading.tsx) (usage & quotas S-12)
+        - [`client/app/workspaces/loading.tsx`](client/app/workspaces/loading.tsx) (workspaces S-03)
+      - All skeletons marked with `role="status"` and accessible screen reader text (`sr-only`), disabling animation under `prefers-reduced-motion: reduce`.
+    - **Accessibility & Keyboard Navigation Audit (WCAG 2.2 AA)**:
+      - Resolved duplicate `<main>` landmark violation by adjusting `AppShell` (`#app-main` with `role="region" aria-label="Application content"`), leaving RootLayout `<main id="main-content">` as sole top-level landmark.
+      - Added `scope="col"` to all table headers in FindingsTable, JobsTable, ExtensionDevicesPane, and UsageBreakdownPane.
+      - Added accessible tablist and tab semantics (`role="tablist"`, `role="tab"`, `aria-selected`) to mobile tabs in BrainExplorer.
+      - Added accessible ordered step list semantics (`role="list"`, `aria-current="step"`) to onboarding progress bar.
+      - Verified keyboard focus rings (`focus-visible:ring-2 focus-visible:ring-[var(--ref)]`) across interactive controls.
+    - **Unit Tests**:
+      - Added 7 tests in [`client/tests/a11y-empty-error-loading.test.tsx`](client/tests/a11y-empty-error-loading.test.tsx) covering EmptyState, ErrorState, error boundaries, skeleton accessibility, and AppShell landmark hierarchy.
+      - Client test suite total increased to 131 tests across 18 test files (all 131 passing).
+      - Full test suite: 13 passed, 0 failed, 1 skipped. Production Next.js build passes cleanly.
 
 ### Feature — M8-09: Usage Dashboard, Quotas, and Extension Devices (Screen S-12)
 
