@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `5b8f597` (docs: update BRAIN.md commit status for M7-03) |
+| **Last commit** | `7fb6158` (feat(server): implement M7-04 CodeMate workflow nodes and citation validation) |
 | **Working tree** | Clean; M7-04 complete; all 13 checks pass; 416 server tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 416/420 pass (4 skipped), client 46/46 pass |
