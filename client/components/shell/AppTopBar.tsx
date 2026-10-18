@@ -86,7 +86,7 @@ export function AppTopBar() {
           type="button"
           onClick={() => setCommandPaletteOpen(true)}
           aria-label="Open command palette (Press Cmd+K)"
-          className="flex items-center gap-2 px-3 py-1.5 rounded-control border border-[var(--line-1)] bg-[var(--bg-1)] hover:bg-[var(--bg-2)] hover:border-[var(--line-2)] text-[var(--fg-2)] hover:text-[var(--fg-0)] transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-control border border-[var(--line-1)] bg-[var(--bg-1)] hover:bg-[var(--bg-2)] hover:border-[var(--line-2)] text-[var(--fg-2)] hover:text-[var(--fg-0)] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)]"
         >
           <SearchIcon size={14} />
           <span className="hidden md:inline text-[11px]">Search or jump...</span>

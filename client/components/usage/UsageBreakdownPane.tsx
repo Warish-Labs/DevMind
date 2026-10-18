@@ -83,12 +83,24 @@ export function UsageBreakdownPane({ tasks, projects, totalTokens }: UsageBreakd
             <table className="w-full text-left font-mono text-xs" data-testid="task-usage-table">
               <thead>
                 <tr className="border-b border-[var(--line-1)] text-[var(--fg-2)] uppercase text-[10px] tracking-wider">
-                  <th className="py-2.5 px-3">Agent Task</th>
-                  <th className="py-2.5 px-3 text-right">Invocations</th>
-                  <th className="py-2.5 px-3 text-right">Prompt Tokens</th>
-                  <th className="py-2.5 px-3 text-right">Completion Tokens</th>
-                  <th className="py-2.5 px-3 text-right">Total Tokens</th>
-                  <th className="py-2.5 px-3 text-right">% of Usage</th>
+                  <th scope="col" className="py-2.5 px-3">
+                    Agent Task
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    Invocations
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    Prompt Tokens
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    Completion Tokens
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    Total Tokens
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    % of Usage
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line-1)]">
@@ -145,12 +157,24 @@ export function UsageBreakdownPane({ tasks, projects, totalTokens }: UsageBreakd
             <table className="w-full text-left font-mono text-xs" data-testid="project-usage-table">
               <thead>
                 <tr className="border-b border-[var(--line-1)] text-[var(--fg-2)] uppercase text-[10px] tracking-wider">
-                  <th className="py-2.5 px-3">Project</th>
-                  <th className="py-2.5 px-3">Project ID</th>
-                  <th className="py-2.5 px-3 text-right">Jobs Executed</th>
-                  <th className="py-2.5 px-3 text-right">Total Tokens</th>
-                  <th className="py-2.5 px-3 text-right">Last Active</th>
-                  <th className="py-2.5 px-3 text-right">% of Usage</th>
+                  <th scope="col" className="py-2.5 px-3">
+                    Project
+                  </th>
+                  <th scope="col" className="py-2.5 px-3">
+                    Project ID
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    Jobs Executed
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    Total Tokens
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    Last Active
+                  </th>
+                  <th scope="col" className="py-2.5 px-3 text-right">
+                    % of Usage
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line-1)]">

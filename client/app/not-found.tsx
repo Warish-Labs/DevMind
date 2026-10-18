@@ -20,13 +20,13 @@ export default function NotFound() {
       <div className="flex flex-wrap items-center justify-center gap-4">
         <Link
           href="/"
-          className="inline-flex items-center justify-center px-5 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity"
+          className="inline-flex items-center justify-center px-5 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)]"
         >
           Return to Overview
         </Link>
         <Link
           href="/early-access"
-          className="inline-flex items-center justify-center px-5 py-2.5 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors"
+          className="inline-flex items-center justify-center px-5 py-2.5 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)]"
         >
           Early Access Status
         </Link>
