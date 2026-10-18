@@ -71,6 +71,17 @@ def merge_usage_totals(
     return u1.add(u2)
 
 
+def merge_specialist_tasks(
+    left: list[SpecialistTask] | None,
+    right: list[SpecialistTask] | None,
+) -> list[SpecialistTask]:
+    """Reducer merging specialist tasks across parallel specialist branches."""
+    tasks_map = {t.specialist: t for t in (left or [])}
+    for t in right or []:
+        tasks_map[t.specialist] = t
+    return list(tasks_map.values())
+
+
 @dataclass
 class RequestState:
     """The incoming user or system request initiating the workflow."""
@@ -215,7 +226,7 @@ class RunState(TypedDict, total=False):
     # Request & Planning
     request: RequestState
     intent: IntentState | None
-    plan: list[SpecialistTask]
+    plan: Annotated[list[SpecialistTask], merge_specialist_tasks]
 
     # Grounding References (holding IDs/citations, NEVER full source text)
     context_refs: Annotated[list[CitationRef], append_items]

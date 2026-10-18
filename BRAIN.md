@@ -7,22 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `ac87677` (feat(server): implement M7-02 agent tools with scoped access) |
-| **Working tree** | Clean; M7-02 complete; all 13 checks pass; 399 server tests pass |
-| **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 399/403 pass (4 skipped), client 46/46 pass |
+| **Branch** | `feature/m7-manager-routing` |
+| **Last commit** | pending merge (feat(server): implement M7-03 Agent Manager graph and plan execution routing) |
+| **Working tree** | M7-03 complete; all 13 checks pass; 409 server tests pass |
+| **Open PR** | None (feature/m7-manager-routing) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 409/413 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-03: Agent Manager graph and plan execution routing** per `PLAN.md`:
-   - Inspect `docs/05 §2.1`, `docs/05 §4`, `docs/05 §6`:
-     - Implement Agent Manager graph with intent classification, plan generation, and specialist task routing.
-     - Add conditional dispatch to CodeMate and AuthCheck specialists.
-     - Author comprehensive unit tests in `server/tests/test_agent_manager.py`.
+1. Implement **Milestone M7-04: CodeMate workflow nodes and citation validation** per `PLAN.md`:
+   - Inspect `docs/05 §4`, `docs/05 §6.1`, `docs/04 §8`:
+     - Implement CodeMate workflow subgraph and reasoning loop with scoped tools (`search_brain`, `get_symbol`, `get_file_range`, `get_relationships`).
+     - Implement deterministic citation validation ensuring all claims reference resolvable file/symbol provenance.
+     - Author comprehensive unit tests in `server/tests/test_codemate.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +36,21 @@
 ---
 
 ## 4. Done log
+
+### Feature — M7-03: Agent Manager Graph and Plan Execution Routing
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-manager-routing`
+- **What**:
+  - Implemented the canonical Agent Manager LangGraph workflow in [`server/app/orchestration/manager.py`](server/app/orchestration/manager.py) per `docs/05 §2` and `docs/05 §4.1`:
+    - Deterministic intent classification (`classify_intent_deterministically`) mapping explicit job types (`ask_project`, `security_review`, `comprehensive_review`) and keyword signals directly to specialist plans, bypassing the LLM route for speed and zero cost.
+    - LLM routing fallback (`classify_intent_with_llm`) rendering versioned prompt `agent_manager_routing` (v1) and validating output against `AgentPlan` schema, filtering to allowlisted MVP specialists (`codemate`, `authcheck`).
+    - Specialist fan-out executing CodeMate and AuthCheck in parallel branches with concurrent state reducer `merge_specialist_tasks`.
+    - Join barrier, deterministic evidence verifier, and multi-specialist synthesis.
+    - Human approval gate interrupting execution before external side-effects with checkpointer resume support.
+  - Added `merge_specialist_tasks` reducer to `RunState.plan` in [`server/app/orchestration/state.py`](server/app/orchestration/state.py).
+  - Exported `AgentManager`, `build_agent_manager_graph`, `classify_intent_deterministically`, and `RELEASED_SPECIALISTS` in [`server/app/orchestration/__init__.py`](server/app/orchestration/__init__.py).
+  - Authored 10 unit tests in [`server/tests/test_agent_manager.py`](server/tests/test_agent_manager.py) covering deterministic routing, LLM schema parsing and fallback, parallel fan-out, approval gate interrupt/resume, and streaming. All 13 test-all checks pass (409 server tests pass).
 
 ### Feature — M7-02: Tools with Scoped Access (search_brain, get_symbol, get_file_range, get_relationships)
 

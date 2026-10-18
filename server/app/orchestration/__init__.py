@@ -5,6 +5,12 @@ from app.orchestration.checkpointer import (
     format_thread_id,
     parse_thread_id,
 )
+from app.orchestration.manager import (
+    RELEASED_SPECIALISTS,
+    AgentManager,
+    build_agent_manager_graph,
+    classify_intent_deterministically,
+)
 from app.orchestration.state import (
     ApprovalState,
     BudgetState,
@@ -37,6 +43,7 @@ from app.orchestration.tools import (
 )
 
 __all__ = [
+    "AgentManager",
     "AgentToolSet",
     "ApprovalState",
     "BudgetState",
@@ -50,6 +57,7 @@ __all__ = [
     "IntentState",
     "NodeError",
     "Proposal",
+    "RELEASED_SPECIALISTS",
     "RequestState",
     "RunState",
     "SearchBrainInput",
@@ -57,6 +65,8 @@ __all__ = [
     "UsageTotals",
     "VerifiedFinding",
     "append_items",
+    "build_agent_manager_graph",
+    "classify_intent_deterministically",
     "create_agent_tools",
     "create_initial_run_state",
     "format_thread_id",
