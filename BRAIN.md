@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `feature/m9-consent-revoke` |
-| **Last commit** | In progress (feat(server): implement M9-02 consent revoke flow and dependent data purge) |
+| **Last commit** | `201f1ab` (feat(server): implement M9-02 consent revoke flow and dependent data purge) |
 | **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes: 14 static, 11 dynamic); 139 client tests pass; server tests pass |
 | **Open PR** | `feature/m9-consent-revoke` -> `main` |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 472/476 pass (4 skipped), client 139/139 pass |
