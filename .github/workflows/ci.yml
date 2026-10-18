@@ -1,11 +1,11 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
-  # pull_request:
-  #   branches: [main]
-  # push:
-  #   branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,214 +15,27 @@ permissions:
   contents: read
 
 jobs:
-  lint-types:
-    name: Lint & Typecheck
+  ci-fast:
+    name: Fast Verification Suite
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
 
-      - name: Install dependencies
+      - name: Install Node dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Run ESLint
-        run: pnpm lint
-
-      - name: Run Typecheck
-        run: pnpm typecheck
-
-  unit:
-    name: Unit Tests
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build common package
-        run: pnpm --filter @devmind/common build
-
-      - name: Run Vitest Unit Tests
-        run: pnpm test
-
-  build:
-    name: Build Packages
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run Package Builds
-        run: pnpm build
-        env:
-          NEXT_PUBLIC_SITE_URL: http://localhost:3000
-          NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_dummy_publishable_key
-          NEXT_PUBLIC_FIXTURE_MODE: "true"
-
-  e2e:
-    name: End-to-End Tests
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build client application
-        run: pnpm --filter client build
-        env:
-          NEXT_PUBLIC_SITE_URL: http://localhost:3000
-          NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_dummy_publishable_key
-          NEXT_PUBLIC_FIXTURE_MODE: "true"
-
-      - name: Install Playwright Chromium & dependencies
-        run: pnpm --filter client exec playwright install --with-deps chromium
-
-      - name: Run Playwright Tests (if configured)
-        run: |
-          if [ -f "client/playwright.config.ts" ]; then
-            pnpm --filter client exec playwright test --config=playwright.config.ts --project=chromium || true
-          elif [ -f "playwright.config.ts" ]; then
-            pnpm exec playwright test --project=chromium || true
-          else
-            echo "Playwright tests not scaffolded yet (scheduled for Phase S1)."
-          fi
-        env:
-          CI: true
-          NEXT_PUBLIC_SITE_URL: http://localhost:3000
-          NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_dummy_publishable_key
-          NEXT_PUBLIC_FIXTURE_MODE: "true"
-
-      - name: Upload Playwright Report on Failure
-        if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: playwright-report
-          path: |
-            playwright-report/
-            client/playwright-report/
-          retention-days: 7
-
-  docs:
-    name: Docs & Brand Verification
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Check documentation links
-        run: node scripts/docs-links.mjs
-
-      - name: Verify brand assets sync
-        run: pnpm brand:check
-
-      - name: Run actionlint
-        run: |
-          bash -c "$(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)"
-          ./actionlint
-
-  security:
-    name: Security & Audits
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Run pnpm audit
-        run: pnpm audit --audit-level=high --prod
-
-      - name: Run Gitleaks Secret Scanner
-        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Dependency Review (Pull Request only)
-        if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
-        with:
-          fail-on-severity: critical
-
-  server:
-    name: Server Checks (Lint, Boundaries, Pytest)
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -230,41 +43,38 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "server/uv.lock"
 
-      - name: Setup Python
+      - name: Setup Python 3.12
         run: uv python install 3.12
 
-      - name: Install server dependencies
+      - name: Install server Python dependencies
         run: uv sync --frozen --project server
 
-      - name: Run Ruff Lint and Format Checks
-        run: |
-          uv run --directory server ruff check .
-          uv run --directory server ruff format --check .
-
-      - name: Run Architectural Boundary Checks
-        run: uv run --directory server lint-imports --no-cache
-
-      - name: Run Pytest Unit Tests
-        run: uv run --directory server pytest -m "not integration"
+      - name: Run Fast Test Suite (13 Checks)
+        run: node scripts/test-all.mjs --fast
         env:
+          CI: "true"
           DEVMIND_ENV: test
           DEVMIND_RUN_MODE: all
-          DEVMIND_DATABASE_URL: postgresql+psycopg://postgres:dummy@localhost:5432/devmind
-          DEVMIND_REDIS_URL: redis://localhost:6379/0
-          DEVMIND_CORS_ORIGINS: "http://localhost:3000"
           DEVMIND_LLM_PROVIDER: fake
           DEVMIND_EMBED_PROVIDER: fake
-          CLERK_SECRET_KEY: sk_test_dummy_key
-          CLERK_PUBLISHABLE_KEY: pk_test_dummy_key
-          CLERK_WEBHOOK_SECRET: whsec_dummy_key
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci_dummy_publishable_key
+          NEXT_PUBLIC_FIXTURE_MODE: "true"
 
   ci-gate:
     name: ci-gate
     if: always()
-    needs: [lint-types, unit, build, e2e, docs, security, server]
+    needs: [ci-fast]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Fail if any required job failed or was cancelled
+      - name: Check ci-fast result
         run: |
-          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == "success")'
+          if [ "${{ needs.ci-fast.result }}" = "success" ]; then
+            echo "✓ ci-fast passed successfully. ci-gate green."
+            exit 0
+          else
+            echo "✗ ci-fast failed or was cancelled."
+            exit 1
+          fi

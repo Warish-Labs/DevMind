@@ -341,6 +341,16 @@ class PromptLoader:
         """Alias for load()."""
         return self.load(task, version=version)
 
+    def render(
+        self,
+        task: str,
+        variables: dict[str, Any],
+        version: int | None = None,
+    ) -> RenderedPrompt:
+        """Load and render prompt template for a specific task and version."""
+        template = self.load(task, version=version)
+        return template.render(variables)
+
     def get_latest_version(self, task: str) -> int:
         """Find the highest version number available for a task."""
         task_dir = self.prompts_dir / task

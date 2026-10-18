@@ -263,15 +263,24 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M7-03 Agent Manager graph and plan execution routing (feature/m7-manager-routing)
 - [x] M7-04 CodeMate workflow nodes and citation validation (feature/m7-codemate)
 - [x] M7-05 Guard resolution and structural route check (E2 deterministic confirmation) (feature/m7-guard-resolution)
-- [ ] M7-06 AuthCheck workflow nodes and evidence-constrained explanation (feature/m7-authcheck)
-- [ ] M7-07 Evidence verifier for grounding and citations (feature/m7-evidence-verifier)
-- [ ] M7-08 Job integration (ask_project, security_review) and SSE job event streaming (feature/m7-agent-jobs)
-- [ ] M7-09 Evaluation sets with baselines (answer-quality, faithfulness) (feature/m7-eval-baselines)
-- [ ] M7-10 Injection corpus run against graph workflows (docs/09 §12) (feature/m7-injection-run)
+- [x] M7-06 AuthCheck workflow nodes and evidence-constrained explanation (feature/m7-authcheck)
+- [x] M7-07 Evidence verifier for grounding and citations (feature/m7-evidence-verifier)
+- [x] M7-08 Job integration (ask_project, security_review) and SSE job event streaming (feature/m7-agent-jobs)
+- [x] M7-09 Evaluation sets with baselines (answer-quality, faithfulness) (feature/m7-eval-baselines)
+- [x] M7-10 Injection corpus run against graph workflows (docs/09 §12) (feature/m7-injection-run)
 
 ### M8 · Website app (conversation, findings, Brain explorer, jobs)
 
-- [ ] Design system, app shell, all MVP screens, SSE client (feature/m8-*)
+- [x] M8-01 Tokens and base UI components (Button, Badge, Card, Dialog, Skeleton, Input, Tabs) (feature/m8-components)
+- [x] M8-02 Authentication and onboarding (S-02: Clerk SignIn/SignUp pages, onboarding wizard) (feature/m8-auth-onboarding)
+- [x] M8-03 App shell, navigation, and workspace/project selection (S-03) (feature/m8-app-shell)
+- [x] M8-04 Project overview with health score, coverage, and recent jobs (S-04) (feature/m8-project-overview)
+- [x] M8-05 Findings list and detail views with evidence transitions (S-07, S-08) (feature/m8-findings-ui)
+- [x] M8-06 Job center and SSE streaming event client with fallback (S-09) (feature/m8-jobs-sse)
+- [x] M8-07 Conversation interface with citations and insufficient evidence banner (S-06) (feature/m8-conversation-ui)
+- [x] M8-08 Brain explorer with three-pane structure and metadata (S-05) (feature/m8-brain-explorer)
+- [ ] M8-09 Usage dashboard, quotas, and extension devices (S-12) (feature/m8-usage-ui)
+- [ ] M8-10 Empty, error, loading states, accessibility audit, and keyboard navigation pass (feature/m8-a11y-polish)
 
 ### M9 · Sync modes, privacy controls, history, deletion
 

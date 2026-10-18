@@ -45,7 +45,7 @@ flowchart TD
 | **Database** | Neon | Free | 0.5 GB storage cap, compute suspends after 5m idle |
 | **Auth** | Clerk | Free | 10,000 monthly active users |
 
-> Note: For the complete step-by-step master guide, see [DEPLOYMENT_GUIDE.md](../../DEPLOYMENT_GUIDE.md).
+> Note: For the complete step-by-step master guide, see [docs/10 §22](../10-deployment-and-operations.md#22-free-deployment-profile-active-adr-046).
 
 ---
 

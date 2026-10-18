@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
+import logging
+from collections.abc import AsyncGenerator, Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
@@ -9,9 +13,26 @@ from uuid import UUID
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth_context import SystemContext
+from app.core.auth_context import AuthContext, SystemContext
+from app.core.errors import NotFoundError
+from app.core.redis import get_async_redis_client
+from app.core.settings import get_settings
 from app.persistence.models.brain import AnalysisJob, JobEvent
 from app.persistence.repositories.brain_repo import BrainRepository
+
+logger = logging.getLogger("devmind.jobs")
+
+_default_job_enqueuer: Callable[[UUID], Any] | None = None
+
+
+def register_job_enqueuer(fn: Callable[[UUID], Any]) -> None:
+    """Register the global Celery task enqueuer without breaking domain layer boundaries."""
+    global _default_job_enqueuer
+    _default_job_enqueuer = fn
+
+
+def get_job_enqueuer() -> Callable[[UUID], Any] | None:
+    return _default_job_enqueuer
 
 
 class JobLifecycleService:
@@ -24,11 +45,17 @@ class JobLifecycleService:
     - Dead worker reaping for expired heartbeats with retry budgeting.
     - Enqueuer sweep finding stranded queued jobs.
     - Milestone event persistence to `job_events`.
+    - Real-time Redis pub/sub broadcasting and SSE streaming.
     """
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        enqueuer: Callable[[UUID], Any] | None = None,
+    ) -> None:
         self.session = session
         self.repo = BrainRepository(session)
+        self.enqueuer = enqueuer or _default_job_enqueuer
 
     async def _append_event(
         self,
@@ -160,7 +187,7 @@ class JobLifecycleService:
         job = result.scalars().first()
 
         if job:
-            await self._append_event(
+            await self.publish_job_event(
                 ctx,
                 job_id,
                 kind="succeeded",
@@ -188,23 +215,25 @@ class JobLifecycleService:
             return None
 
         now = datetime.now(UTC)
-        if retryable and job.attempt < job.max_attempts:
+        attempt = job.attempt or 0
+        max_attempts = job.max_attempts or 3
+        if retryable and attempt < max_attempts:
             job.status = "queued"
             job.error_code = error_code
             job.error_detail = error_detail
-            await self._append_event(
+            await self.publish_job_event(
                 ctx,
                 job_id,
                 kind="retry_queued",
-                message=f"Transient failure ({error_code}); requeued for attempt {job.attempt + 1}/{job.max_attempts}",
-                data={"error_code": error_code, "attempt": job.attempt},
+                message=f"Transient failure ({error_code}); requeued for attempt {attempt + 1}/{max_attempts}",
+                data={"error_code": error_code, "attempt": attempt},
             )
         else:
             job.status = "failed"
             job.finished_at = now
             job.error_code = error_code
             job.error_detail = error_detail
-            await self._append_event(
+            await self.publish_job_event(
                 ctx,
                 job_id,
                 kind="failed",
@@ -232,7 +261,9 @@ class JobLifecycleService:
 
         reaped_count = 0
         for job in stale_jobs:
-            if job.attempt < job.max_attempts:
+            attempt = job.attempt or 0
+            max_attempts = job.max_attempts or 3
+            if attempt < max_attempts:
                 job.status = "queued"
                 job.error_code = "DEAD_WORKER_HEARTBEAT_TIMEOUT"
                 job.error_detail = f"Worker heartbeat lease expired (>{heartbeat_timeout_seconds}s); requeued for recovery"
@@ -240,14 +271,14 @@ class JobLifecycleService:
                     ctx,
                     job.id,
                     kind="reaped_requeued",
-                    message=f"Dead worker detected. Requeued for attempt {job.attempt + 1}/{job.max_attempts}",
+                    message=f"Dead worker detected. Requeued for attempt {attempt + 1}/{max_attempts}",
                     data={"reaped_at": now.isoformat()},
                 )
             else:
                 job.status = "failed"
                 job.finished_at = now
                 job.error_code = "DEAD_WORKER_HEARTBEAT_TIMEOUT"
-                job.error_detail = f"Worker heartbeat lease expired (>{heartbeat_timeout_seconds}s); maximum attempts ({job.max_attempts}) reached"
+                job.error_detail = f"Worker heartbeat lease expired (>{heartbeat_timeout_seconds}s); maximum attempts ({max_attempts}) reached"
                 await self._append_event(
                     ctx,
                     job.id,
@@ -275,3 +306,250 @@ class JobLifecycleService:
         )
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+
+    # --- Agent Workflows and Analysis Job Operations (docs/03 §5.2, §12.2) ---
+
+    async def create_analysis_job(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        job_type: str,
+        params: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
+        consent_id: UUID | None = None,
+    ) -> AnalysisJob:
+        """Create and enqueue an asynchronous analysis job (docs/03 §3.3, §12.2)."""
+        requested_by = getattr(ctx, "user_id", None) if isinstance(ctx, AuthContext) else None
+        job = await self.repo.create_job(
+            ctx=ctx,
+            project_id=project_id,
+            job_type=job_type,
+            params=params or {},
+            idempotency_key=idempotency_key,
+            consent_id=consent_id,
+            requested_by=requested_by,
+        )
+
+        # Append initial created event and broadcast
+        await self.publish_job_event(
+            ctx=ctx,
+            job_id=job.id,
+            kind="created",
+            message=f"Analysis job created (type={job_type})",
+            data={"job_type": job_type, "params": params or {}},
+        )
+
+        # Dispatch execution via registered enqueuer
+        if self.enqueuer:
+            try:
+                self.enqueuer(job.id)
+            except Exception as exc:
+                logger.warning("Failed to enqueue job %s: %s", job.id, exc)
+
+        return job
+
+    async def get_job_by_id(
+        self,
+        ctx: AuthContext | SystemContext,
+        job_id: UUID,
+    ) -> AnalysisJob | None:
+        """Retrieve an analysis job by ID with authorization verification."""
+        return await self.repo.get_job_by_id(ctx, job_id)
+
+    async def list_project_jobs(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        status: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[AnalysisJob]:
+        """List background jobs for a project."""
+        return await self.repo.list_jobs(ctx, project_id, status=status, limit=limit, offset=offset)
+
+    async def request_job_cancellation(
+        self,
+        ctx: AuthContext | SystemContext,
+        job_id: UUID,
+    ) -> AnalysisJob:
+        """Request cooperative cancellation of a background job."""
+        job = await self.get_job_by_id(ctx, job_id)
+        if not job:
+            raise NotFoundError(f"Job {job_id} not found", code="job.not_found")
+
+        now = datetime.now(UTC)
+        if job.status in ("succeeded", "failed", "cancelled"):
+            return job
+
+        if job.status == "queued":
+            job.status = "cancelled"
+            job.finished_at = now
+            await self.publish_job_event(
+                ctx=ctx,
+                job_id=job_id,
+                kind="cancelled",
+                message="Job cancelled while queued",
+            )
+        else:
+            job.status = "cancel_requested"
+            job.cancel_requested_at = now
+            await self.publish_job_event(
+                ctx=ctx,
+                job_id=job_id,
+                kind="cancel_requested",
+                message="Cancellation requested by user",
+            )
+
+        await self.session.flush()
+        return job
+
+    async def publish_job_event(
+        self,
+        ctx: AuthContext | SystemContext,
+        job_id: UUID,
+        kind: str,
+        message: str,
+        data: dict[str, Any] | None = None,
+    ) -> JobEvent:
+        """Persist milestone event to database and broadcast on Redis pub/sub channel."""
+        event = await self.repo.record_job_event(
+            ctx=ctx,
+            job_id=job_id,
+            kind=kind,
+            message=message,
+            data=data or {},
+        )
+
+        try:
+            settings = get_settings()
+            redis_client = get_async_redis_client(settings)
+            channel = f"{settings.redis_key_prefix}job_events:{job_id}"
+            payload = json.dumps(
+                {
+                    "id": str(event.id),
+                    "job_id": str(job_id),
+                    "seq": event.seq,
+                    "kind": event.kind,
+                    "message": event.message,
+                    "data": event.data,
+                    "created_at": event.created_at.isoformat()
+                    if event.created_at
+                    else datetime.now(UTC).isoformat(),
+                }
+            )
+            await redis_client.publish(channel, payload)
+        except Exception as exc:
+            logger.debug("Failed to publish job event to Redis channel: %s", exc)
+
+        return event
+
+    async def stream_job_events(
+        self,
+        ctx: AuthContext | SystemContext,
+        job_id: UUID,
+        since_seq: int = 0,
+        heartbeat_interval: float = 15.0,
+    ) -> AsyncGenerator[dict[str, Any], None]:
+        """Stream past events from DB and real-time events from Redis pub/sub via SSE."""
+        job = await self.get_job_by_id(ctx, job_id)
+        if not job:
+            raise NotFoundError(f"Job {job_id} not found", code="job.not_found")
+
+        # 1. Yield all historic events with seq > since_seq
+        past_events = await self.repo.get_job_events(ctx, job_id, since_seq=since_seq)
+        last_seq = since_seq
+        for ev in past_events:
+            last_seq = max(last_seq, ev.seq)
+            yield {
+                "event": "milestone",
+                "data": {
+                    "id": str(ev.id),
+                    "job_id": str(ev.job_id),
+                    "seq": ev.seq,
+                    "kind": ev.kind,
+                    "message": ev.message,
+                    "data": ev.data,
+                    "created_at": ev.created_at.isoformat() if ev.created_at else "",
+                },
+            }
+
+        # If job is already in terminal state, emit complete and finish
+        if job.status in ("succeeded", "failed", "cancelled"):
+            yield {
+                "event": "complete",
+                "data": {
+                    "status": job.status,
+                    "result_ref": job.result_ref,
+                    "error_code": job.error_code,
+                    "error_detail": job.error_detail,
+                },
+            }
+            return
+
+        # 2. Subscribe to Redis pub/sub for real-time streaming
+        settings = get_settings()
+        pubsub = None
+        channel = f"{settings.redis_key_prefix}job_events:{job_id}"
+        try:
+            redis_client = get_async_redis_client(settings)
+            pubsub = redis_client.pubsub()
+            await pubsub.subscribe(channel)
+        except Exception as exc:
+            logger.warning("Redis pubsub subscription failed (%s); polling DB fallback", exc)
+            pubsub = None
+
+        try:
+            while True:
+                msg = None
+                if pubsub:
+                    try:
+                        msg = await asyncio.wait_for(
+                            pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0),
+                            timeout=heartbeat_interval,
+                        )
+                    except TimeoutError:
+                        msg = None
+                else:
+                    await asyncio.sleep(min(heartbeat_interval, 2.0))
+
+                if msg and msg.get("type") == "message":
+                    raw_data = msg.get("data")
+                    if raw_data:
+                        try:
+                            payload = (
+                                json.loads(raw_data) if isinstance(raw_data, str) else raw_data
+                            )
+                            seq = payload.get("seq", 0)
+                            if seq > last_seq:
+                                last_seq = seq
+                                yield {"event": "milestone", "data": payload}
+                                if payload.get("kind") in ("succeeded", "failed", "cancelled"):
+                                    yield {"event": "complete", "data": payload.get("data", {})}
+                                    break
+                        except Exception:
+                            pass
+                elif msg is None:
+                    # Heartbeat ping
+                    yield {"event": "ping", "data": {}}
+
+                # Check fresh DB state for terminal status
+                fresh_job = await self.get_job_by_id(ctx, job_id)
+                if fresh_job and fresh_job.status in ("succeeded", "failed", "cancelled"):
+                    yield {
+                        "event": "complete",
+                        "data": {
+                            "status": fresh_job.status,
+                            "result_ref": fresh_job.result_ref,
+                            "error_code": fresh_job.error_code,
+                            "error_detail": fresh_job.error_detail,
+                        },
+                    }
+                    break
+
+        finally:
+            if pubsub:
+                try:
+                    await pubsub.unsubscribe(channel)
+                    await pubsub.aclose()
+                except Exception:
+                    pass

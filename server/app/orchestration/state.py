@@ -82,6 +82,17 @@ def merge_specialist_tasks(
     return list(tasks_map.values())
 
 
+def select_or_combine_response(left: str | None, right: str | None) -> str | None:
+    """Reducer handling concurrent writes to final_response from parallel specialists."""
+    if not left:
+        return right
+    if not right:
+        return left
+    if left == right:
+        return left
+    return f"{left}\n\n---\n\n{right}"
+
+
 @dataclass
 class RequestState:
     """The incoming user or system request initiating the workflow."""
@@ -148,9 +159,18 @@ class VerifiedFinding:
     """A finding that has passed the deterministic evidence verifier (docs/05 §7)."""
 
     draft_id: str
-    is_verified: bool
-    evidence_score: float
+    is_verified: bool = True
+    evidence_score: float = 1.0
     resolution_notes: str | None = None
+    finding_id: str | None = None
+    evidence_level: int = 2
+    confidence: float = 0.9
+    title: str | None = None
+    file_path: str | None = None
+    line_range: tuple[int, int] | None = None
+    rule_id: str | None = None
+    evidence_snippet: str | None = None
+    citation_ref: str | None = None
 
 
 @dataclass
@@ -233,15 +253,15 @@ class RunState(TypedDict, total=False):
 
     # Findings & Evidence
     drafts: Annotated[list[DraftFinding], append_items]
-    verified: list[VerifiedFinding]
-    hypotheses: list[Hypothesis]
+    verified: Annotated[list[VerifiedFinding], append_items]
+    hypotheses: Annotated[list[Hypothesis], append_items]
 
     # Proposals & Approval Gates
-    proposals: list[Proposal]
-    approvals: list[ApprovalState]
+    proposals: Annotated[list[Proposal], append_items]
+    approvals: Annotated[list[ApprovalState], append_items]
 
     # Output Syntheses
-    final_response: str | None
+    final_response: Annotated[str | None, select_or_combine_response]
 
     # Accounting & Guardrails
     errors: Annotated[list[NodeError], append_items]

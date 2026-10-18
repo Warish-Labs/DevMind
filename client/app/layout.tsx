@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { instrumentSerif, ibmPlexSans, jetbrainsMono } from "./fonts";
 import { Header } from "../components/layout/Header";
@@ -66,14 +67,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
 
         <AuthProvider>
-          <Header />
-          <GutterRail />
+          <Suspense fallback={null}>
+            <Header />
+            <GutterRail />
+          </Suspense>
 
           <main id="main-content" className="flex-1 w-full">
-            {children}
+            <Suspense fallback={null}>{children}</Suspense>
           </main>
 
-          <Footer />
+          <Suspense fallback={null}>
+            <Footer />
+          </Suspense>
         </AuthProvider>
       </body>
     </html>

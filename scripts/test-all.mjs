@@ -303,6 +303,19 @@ function finish(results) {
   console.log(`Full summary written to: reports/${TIMESTAMP}/summary.json\n`);
 
   if (failCount > 0) {
+    console.error(`\n==========================================================`);
+    console.error(`Failed Step Details (printed for CI diagnostics):`);
+    console.error(`==========================================================`);
+    for (const r of results) {
+      if (r.status === "FAIL") {
+        console.error(`\n--- [FAILED: ${r.name}] ---`);
+        if (r.logFile && fs.existsSync(r.logFile)) {
+          console.error(fs.readFileSync(r.logFile, "utf8"));
+        } else if (r.error) {
+          console.error(r.error);
+        }
+      }
+    }
     process.exit(1);
   }
   process.exit(0);

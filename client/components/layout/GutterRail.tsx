@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const SECTIONS = [
   { id: "section-01", num: "01", label: "Hero Trace" },
@@ -14,9 +15,11 @@ const SECTIONS = [
 ];
 
 export function GutterRail() {
+  const pathname = usePathname();
   const [activeSection, setActiveSection] = useState("section-01");
 
   useEffect(() => {
+    if (pathname !== "/") return;
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 200;
       for (const section of SECTIONS) {
@@ -34,7 +37,9 @@ export function GutterRail() {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
+
+  if (pathname !== "/") return null;
 
   return (
     <nav

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from collections.abc import Coroutine
 from typing import Any
 from uuid import UUID
@@ -15,6 +16,7 @@ from sqlalchemy import select
 from app.core.auth_context import SystemContext
 from app.core.settings import Settings, get_settings
 from app.domain.brain.embedding_service import EmbeddingService
+from app.domain.jobs import register_job_enqueuer
 from app.domain.jobs.service import JobLifecycleService
 from app.persistence.database import session_scope
 from app.persistence.models.brain import AnalysisJob
@@ -164,11 +166,7 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
                 return {"status": "cancelled", "job_id": job_id_str}
 
             # Dispatch based on job type (ingest_project, embed_chunks, security_review, etc.)
-            result_data = {
-                "processed_at": asyncio.get_event_loop().time()
-                if asyncio.get_event_loop().is_running()
-                else 0
-            }
+            result_data = {"processed_at": time.time()}
 
             if job_type == "embed_chunks":
 
@@ -197,6 +195,152 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
 
                 embed_stats = _run_async(_run_embed())
                 result_data.update(embed_stats)
+
+            elif job_type in ("ask_project", "security_review", "comprehensive_review"):
+
+                async def _run_agent_workflow() -> dict[str, Any]:
+                    async with session_scope() as session:
+                        service = JobLifecycleService(session)
+                        stmt = select(AnalysisJob).where(AnalysisJob.id == job_id)
+                        job_rec = (await session.execute(stmt)).scalars().first()
+                        if not job_rec:
+                            raise ValueError(f"Job {job_id} not found")
+                        project_id = job_rec.project_id
+
+                        # Emit intake milestone
+                        await service.publish_job_event(
+                            sys_ctx,
+                            job_id,
+                            kind="intake",
+                            message=f"Starting {job_type} agent workflow",
+                            data={"job_type": job_type, "params": params},
+                        )
+
+                        # Build AgentManager and execute
+                        from app.orchestration.manager import AgentManager
+                        from app.orchestration.state import create_initial_run_state
+                        from app.persistence.repositories.brain_repo import BrainRepository
+
+                        manager = AgentManager(session=session)
+
+                        # Determine user query
+                        user_message = params.get("query") or params.get("message")
+                        if not user_message and job_type == "security_review":
+                            user_message = "Review route security and authentication guards."
+
+                        run_id = f"run_{job_id}"
+                        workspace_id = params.get("workspace_id") or str(project_id)
+                        actor_id = (
+                            str(job_rec.requested_by)
+                            if getattr(job_rec, "requested_by", None)
+                            else "system"
+                        )
+                        init_state = create_initial_run_state(
+                            run_id=run_id,
+                            job_id=str(job_id),
+                            project_id=str(project_id),
+                            workspace_id=str(workspace_id),
+                            actor_id=actor_id,
+                            job_type=job_type,
+                            params=params,
+                            user_message=user_message,
+                            consent_id=params.get("consent_id"),
+                        )
+
+                        # Execute workflow
+                        final_state = await manager.run(init_state)
+
+                        # Check for verified findings to persist
+                        verified = final_state.get("verified", [])
+                        persisted_findings_count = 0
+                        if verified:
+                            brain_repo = BrainRepository(session)
+                            findings_payloads = []
+                            for vf in verified:
+                                s_line, e_line = vf.line_range if vf.line_range else (1, 1)
+                                fp = f"{vf.rule_id}:{vf.file_path}:{s_line}-{e_line}"
+                                findings_payloads.append(
+                                    {
+                                        "fingerprint": fp,
+                                        "rule_id": vf.rule_id or "devmind.security.finding",
+                                        "source": "llm_verified",
+                                        "category": "security",
+                                        "title": vf.title or "Security finding",
+                                        "summary": vf.resolution_notes
+                                        or "Detected security finding",
+                                        "explanation": vf.resolution_notes,
+                                        "severity": "high",
+                                        "confidence": str(vf.confidence),
+                                        "evidence_level": f"E{vf.evidence_level}",
+                                        "status": "open",
+                                        "primary_start_line": s_line,
+                                        "primary_end_line": e_line,
+                                    }
+                                )
+                            saved = await brain_repo.batch_upsert_findings(
+                                sys_ctx, project_id, findings_payloads
+                            )
+                            persisted_findings_count = len(saved)
+
+                            await service.publish_job_event(
+                                sys_ctx,
+                                job_id,
+                                kind="findings_persisted",
+                                message=f"Persisted {persisted_findings_count} findings to database",
+                                data={"findings_count": persisted_findings_count},
+                            )
+
+                        # Emit progress & usage milestone
+                        usage = final_state.get("usage")
+                        if hasattr(usage, "total_input_tokens"):
+                            in_tokens = usage.total_input_tokens
+                            out_tokens = usage.total_output_tokens
+                            tot_tokens = in_tokens + out_tokens
+                        elif isinstance(usage, dict):
+                            in_tokens = usage.get(
+                                "total_input_tokens", usage.get("input_tokens", 0)
+                            )
+                            out_tokens = usage.get(
+                                "total_output_tokens", usage.get("output_tokens", 0)
+                            )
+                            tot_tokens = usage.get("total_tokens", in_tokens + out_tokens)
+                        else:
+                            in_tokens, out_tokens, tot_tokens = 0, 0, 0
+
+                        usage_dict = {
+                            "input_tokens": in_tokens,
+                            "output_tokens": out_tokens,
+                            "total_tokens": tot_tokens,
+                        }
+                        await service.publish_job_event(
+                            sys_ctx,
+                            job_id,
+                            kind="progress",
+                            message=f"{job_type} analysis completed with {usage_dict.get('total_tokens', 0)} tokens",
+                            data={"usage": usage_dict, "verified_count": len(verified)},
+                        )
+
+                        # Format result_data
+                        summary_res = {
+                            "final_response": final_state.get("final_response"),
+                            "verified_findings_count": len(verified),
+                            "persisted_findings_count": persisted_findings_count,
+                            "usage": usage_dict,
+                            "plan": [
+                                {
+                                    "specialist": t.specialist,
+                                    "status": t.status,
+                                    "task_id": t.task_id,
+                                }
+                                for t in final_state.get("plan", [])
+                            ],
+                            "hypotheses": [h.statement for h in final_state.get("hypotheses", [])],
+                            "proposals": [p.title for p in final_state.get("proposals", [])],
+                        }
+                        return summary_res
+
+                agent_stats = _run_async(_run_agent_workflow())
+                result_data.update(agent_stats)
 
             async def _complete() -> None:
                 async with session_scope() as session:
@@ -229,3 +373,6 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
 
 
 celery_app = create_celery_app()
+
+# Register default enqueuer with domain service
+register_job_enqueuer(lambda jid: celery_app.send_task("devmind.process_job", args=[str(jid)]))

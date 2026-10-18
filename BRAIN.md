@@ -7,23 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `94bd087` (feat(server): implement M7-05 guard resolution and structural route check) |
-| **Working tree** | Clean; M7-05 complete; all 13 checks pass; 427 server tests pass |
-| **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 427/431 pass (4 skipped), client 46/46 pass |
+| **Branch** | `feature/m8-brain-explorer` |
+| **Last commit** | `8d68a47` (docs: update BRAIN.md commit status for M8-08) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (22 routes); Vercel configuration in place |
+| **Open PR** | `feature/m8-brain-explorer` -> `main` |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; client build passed (14 static, 8 dynamic); 117 client tests pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-06: AuthCheck workflow nodes and evidence-constrained explanation** per `PLAN.md`:
-   - Inspect `docs/05 §6.3`:
-     - Build AuthCheck specialist workflow subgraph using `RouteGuardAnalyzer` for route enumeration and guard resolution.
-     - Wire LLM node (`security_explanation` prompt) to generate risk explanations and remediation diffs for emitted E2/E1 draft findings.
-     - Integrate with `AgentManager`'s `authcheck_node`.
-     - Author comprehensive unit tests in `server/tests/test_authcheck.py`.
+1. Implement **Milestone M8-09: Usage dashboard, quotas, and extension devices (Screen S-12 per docs/08 §11)**:
+   - Inspect `docs/08 §11 S-12`: usage by project, job type and task (counts and token totals, no content), quota bars with thresholds, link to audit events, extension devices list with last-seen timestamps and revoke action.
+   - Build UI components in `client/components/usage/`.
+   - Add routes `/projects/[projectId]/usage/page.tsx` and `/workspaces/[workspaceId]/usage/page.tsx`.
+   - Author unit tests in `client/tests/usage-ui.test.tsx`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -37,6 +36,344 @@
 ---
 
 ## 4. Done log
+
+### Feature — M8-08: Brain Explorer with Three-Pane Structure and Metadata (Screen S-05)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-brain-explorer`
+- **What**:
+  - Implemented Project Brain Explorer with three-pane structure, snapshot selector, hybrid search, and metadata-only mode support per `docs/08 §11 S-05`:
+    - **API Client Extensions** ([`common/src/api/client.ts`](common/src/api/client.ts)):
+      - Exported types `SnapshotItem`, `SnapshotDetail`, `CodeSymbolItem`, `BrainFileItem`, `BrainFileDetail`, `GraphResponse`, `BrainSummaryResponse`.
+      - Added methods to `DevMindApiClient`: `listSnapshots`, `getSnapshotDetail`, `listBrainFiles`, `getBrainFileDetail`, `listSymbols`, `getBrainGraph`, and `getBrainSummary`.
+    - **Header & Snapshot Controls** ([`client/components/brain/BrainHeader.tsx`](client/components/brain/BrainHeader.tsx)):
+      - Snapshot selector dropdown clearly marking `(current)` and badging `[stale]` snapshots.
+      - Hybrid search input for searching symbols or file paths (`POST /brain/search`).
+      - Mode indicator (`Indexed Mode` vs `Metadata-Only Mode`) and "Enable Indexed Mode" action button.
+    - **File Tree Left Pane** ([`client/components/brain/FileTreePane.tsx`](client/components/brain/FileTreePane.tsx)):
+      - Interactive recursive directory tree with folder expand/collapse.
+      - Badges for language tier (`tier1`), findings count (`!1`), and stale flags.
+    - **Code & Symbol Center Pane** ([`client/components/brain/CodeSymbolPane.tsx`](client/components/brain/CodeSymbolPane.tsx)):
+      - File metadata header: path, line counts, SHA-256 content hash, and copy path action.
+      - Symbol quick-jump chips (`function`, `class`, `route`).
+      - **Metadata-Only Mode State**: renders explicit warning banner ("Metadata-Only Mode: Source Text Redacted") explaining that source code text is not stored without consent per ADR-034/docs/08 §11, and renders extracted AST symbols list without raw source.
+      - **Indexed Mode State**: code viewer with numbered lines and hover highlights.
+    - **Relationships & Findings Right Pane** ([`client/components/brain/RelationshipsPane.tsx`](client/components/brain/RelationshipsPane.tsx)):
+      - Relationships tab: incoming and outgoing symbol edges (`calls`, `imports`, `extends`, `guards`) with direction indicators and "Expand Graph" action (`GET /brain/graph`).
+      - Findings tab: list of security findings mapped to this file with severity pills, E-level badges, and deep link to Finding Detail (`/projects/{pid}/findings/{id}`).
+    - **Full Brain Explorer Container & Route** ([`client/components/brain/BrainExplorer.tsx`](client/components/brain/BrainExplorer.tsx), [`client/app/projects/[projectId]/brain/page.tsx`](client/app/projects/[projectId]/brain/page.tsx)):
+      - Three-column layout on desktop; responsive tabs on mobile (`Files`, `Code & Symbols`, `Graph & Findings`).
+      - Added route at `/projects/[projectId]/brain`.
+    - **Unit Tests** ([`client/tests/brain-explorer.test.tsx`](client/tests/brain-explorer.test.tsx)):
+      - Added 8 unit tests covering all components, three-pane layout, metadata-only mode, and snapshot selectors. All 16 client test files pass (115/115 tests).
+  - **CI Workflow Hardening** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+    - Re-enabled automatic CI runs on pull requests and pushes to `main`.
+    - Configured fast, robust, self-contained `ci-fast` and `ci-gate` jobs executing the canonical 13-check suite with zero external secrets or GitHub environment variables required.
+
+### Feature — M8-07: Conversation Interface with Citations and Insufficient Evidence Banner (Screen S-06)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-conversation-ui`
+- **What**:
+  - Implemented AI project conversation interface, AST citation references, agent execution trace, and insufficient evidence banner per `docs/08 §11 S-06`:
+    - **Components & Types** ([`client/components/chat/types.ts`](client/components/chat/types.ts)):
+      - Defined `CitationItem`, `ChatMessage`, starter queries, and sample conversation data.
+    - **Citations Panel (Screen S-06 right drawer/aside)** ([`client/components/chat/CitationsPanel.tsx`](client/components/chat/CitationsPanel.tsx)):
+      - AST-verified badge, file path with line numbers (`L28-L45`), symbol name tag, code snippet preview box, copy reference button, and deep link to Brain Explorer (`/projects/{pid}/brain?file=...`).
+    - **Message Items & Inline Citations** ([`client/components/chat/ChatMessageItem.tsx`](client/components/chat/ChatMessageItem.tsx)):
+      - User messages styled with right-aligned bubble and timestamp.
+      - Assistant messages featuring DevMind avatar, collapsible Agent Execution Trace showing AST search and verification steps, markdown rendering with clickable inline citation badges `[1]`, `[2]`, copy markdown action, and timestamp.
+      - **Insufficient Evidence Banner**: distinct amber/warning card with explicit reason explaining missing evidence, and structured list of actionable suggested next steps per `docs/08 §11 S-06`.
+    - **Chat Composer** ([`client/components/chat/ChatComposer.tsx`](client/components/chat/ChatComposer.tsx)):
+      - Auto-resizing textarea with Enter to submit, Shift+Enter for newlines, suggested starter queries chips, AST Grounded indicator, and Ask Project / Stop Generation controls.
+    - **Full Conversation Container** ([`client/components/chat/ConversationView.tsx`](client/components/chat/ConversationView.tsx)):
+      - Coordinates message scroll, citations panel drawer toggle, starter queries chips, export conversation as Markdown file, clear conversation, error banners for quota exceeded (`/projects/{pid}/usage` deep link) and metadata-only mode.
+      - Integrates with `apiClient.createAnalysisJob(projectId, { type: "ask_project", params: { query } })` and SSE streaming with fallback simulation.
+    - **Route & Tests**:
+      - Added route at [`client/app/projects/[projectId]/chat/page.tsx`](client/app/projects/[projectId]/chat/page.tsx).
+      - Added 8 unit tests in [`client/tests/conversation-ui.test.tsx`](client/tests/conversation-ui.test.tsx). All 15 client test files passed (107/107 tests).
+
+### Feature — M8-06: Job Center and SSE Streaming Event Client with Fallback (Screen S-09)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-jobs-sse`
+- **What**:
+  - Implemented background job center, live Server-Sent Events (SSE) streaming client, polling fallback, human-in-the-loop approval gate card, and floating job tray per `docs/08 §11 S-09`:
+    - **OpenAPI Schema & Client Generation** ([`common/src/api/client.ts`](common/src/api/client.ts)):
+      - Regenerated OpenAPI schema with `pnpm gen:api` exporting `AnalysisJobResponse`, `AnalysisJobCreatedResponse`, and `CreateAnalysisRequest`.
+      - Added `listProjectJobs`, `getJob`, `cancelJob`, and `createAnalysisJob` methods to `DevMindApiClient`.
+    - **SSE Event Streaming Hook with Fallback** ([`client/components/jobs/useJobEvents.ts`](client/components/jobs/useJobEvents.ts)):
+      - Subscribes to `/api/v1/jobs/{id}/events` via `EventSource` (RFC 8895) for real-time progress and milestone updates.
+      - Automatically falls back to polling via `apiClient.getJob(id)` on connection drops or unsupported clients.
+      - Automatically detects terminal states (`succeeded`, `failed`, `cancelled`, `timed_out`) and closes event stream cleanly.
+    - **Job Center Table (Screen S-09 list)** ([`client/components/jobs/JobsTable.tsx`](client/components/jobs/JobsTable.tsx)):
+      - Table layout with status filter pills (`All`, `Running / Queued`, `Awaiting Approval`, `Succeeded`, `Failed`), job type dropdown, search query, progress bars, attempt counts, duration formatting, and quick cancel actions.
+      - Empty state handling and mobile collapsed cards.
+    - **Job Detail View (Screen S-09 detail)** ([`client/components/jobs/JobDetailView.tsx`](client/components/jobs/JobDetailView.tsx)):
+      - Live progress bar, connection status chip (`Live SSE Stream` / `Polling Fallback`).
+      - Human Approval Gate prompt card when status is `awaiting_approval` stating exactly what action will be taken, declared impact scope, and "Approve and Proceed" / "Reject & Cancel" actions per `docs/08 §11 S-09` and ADR-006.
+      - Milestone events log with sequence numbers, timestamps, and expandable structured metadata.
+      - Execution failure diagnostics card for failed jobs.
+    - **Floating Job Tray** ([`client/components/jobs/FloatingJobTray.tsx`](client/components/jobs/FloatingJobTray.tsx)):
+      - Global floating drawer in bottom-right corner summarizing active jobs across any page per `docs/08 §11 S-09`.
+      - Highlights amber when human approval is required; expands to reveal active jobs with direct links.
+    - **Next.js App Router Routes**:
+      - Added `client/app/projects/[projectId]/jobs/page.tsx` (Screen S-09 list).
+      - Added `client/app/projects/[projectId]/jobs/[jobId]/page.tsx` (Screen S-09 detail).
+    - **Comprehensive Unit Tests** ([`client/tests/jobs-ui.test.tsx`](client/tests/jobs-ui.test.tsx)):
+      - Added 9 unit tests verifying table rendering, empty states, detail view with live stream, approval card with declared impact scope, failure diagnostics, floating tray, and duration/type formatters.
+
+### Feature — M8-05: Findings List and Detail Views with Evidence Transitions (Screens S-07, S-08)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-findings-ui`
+- **What**:
+  - Implemented dense findings table and evidence-first detail views conforming to `docs/08 §11 S-07, S-08` and `docs/03 §5.1`:
+    - **API Client Extensions** ([`common/src/api/client.ts`](common/src/api/client.ts)):
+      - Re-exported `FindingEvidenceItem`, `FindingStatusHistoryItem`, and `FindingStatusTransitionRequest`.
+      - Added `listFindings`, `getFindingDetail`, and `transitionFindingStatus` methods to `DevMindApiClient`.
+    - **Dense Findings Table (Screen S-07)** ([`client/components/findings/FindingsTable.tsx`](client/components/findings/FindingsTable.tsx)):
+      - Multi-column dense layout with Severity, Evidence level (`E0`, `E1`, `E2`), Rule ID + Title, Location (`primary_path#L{line}`), Status badge, and Quick row actions (`Ack`, `Progress`, `Triage`, `Resolve`, `Re-verify`, `Reopen`).
+      - Filter bar with Status pills showing counts (`All`, `Open / Acknowledged`, `In Progress`, `Resolved`, `Dismissed / Triaged`, `Stale`), Severity dropdown, Category dropdown, Evidence Level dropdown, and text search query.
+      - Distinguishes empty states: "No findings detected" vs "Project not analyzed yet" with coverage prompt.
+      - Responsive 2-line cards on mobile viewports per `docs/08 §11 S-07`.
+    - **Finding Triage Modal** ([`client/components/findings/FindingTriageModal.tsx`](client/components/findings/FindingTriageModal.tsx)):
+      - Accessible modal dialog for triaging findings to `dismissed` or `accepted_risk`.
+      - Reason code dropdown for dismissal (`false_positive`, `not_applicable`, `duplicate`, `other`) and rationale textarea.
+      - Enforces maintainer permission rule (`docs/08 §11 S-07`): disables confirm button with warning if caller lacks maintainer role.
+      - Displays explicit notice regarding immutable recording to `finding_status_history` and tenant audit events.
+    - **Finding Detail View (Screen S-08)** ([`client/components/findings/FindingDetail.tsx`](client/components/findings/FindingDetail.tsx)):
+      - Evidence-first hierarchy: title & status, severity/confidence/evidence strip, "What and where" code excerpt with highlighted target lines, "Why it matters" explanation, machine-checkable evidence list with source tags (`structural_check`, `retrieved_context`, `rule_hit`), suggested remediation ("Review and apply yourself", no auto-apply), and status history audit timeline.
+      - Prominent stale finding banner with "Re-verify finding" action when `status === 'stale'` per `docs/08 §11 S-08`.
+      - Code Excerpt component ([`client/components/findings/CodeExcerpt.tsx`](client/components/findings/CodeExcerpt.tsx)) with dark editor container, line numbers, and copy reference button.
+    - **Next.js App Router Pages**:
+      - Added `client/app/projects/[projectId]/findings/page.tsx` (Screen S-07).
+      - Added `client/app/projects/[projectId]/findings/[findingId]/page.tsx` (Screen S-08).
+    - **Comprehensive Tests** ([`client/tests/findings-ui.test.tsx`](client/tests/findings-ui.test.tsx)):
+      - Added 8 unit tests verifying S-07 table filtering, empty states, mobile collapse, triage modal permissions, code excerpt line highlighting, evidence-first hierarchy, suggested remediation label, and stale finding banner.
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-project-overview`
+- **What**:
+  - Implemented Project Overview dashboard answering the five core vision questions conforming to `docs/08 §11 S-04`:
+    - **Overview Types & Deterministic Ordering** ([`client/components/overview/types.ts`](client/components/overview/types.ts)):
+      - Defined data shapes for scan runs, background jobs, project health statistics, and findings.
+      - Implemented `getHighestPriorityFinding(findings)` providing deterministic ordering by severity (`critical` > `high` > `medium` > `low`), then evidence level (`E2` > `E1` > `E0`).
+    - **Question 5 · Is the Project Healthy?** ([`client/components/overview/CoverageHealthStrip.tsx`](client/components/overview/CoverageHealthStrip.tsx)):
+      - Top strip displaying Security score (`88 / 100`, Grade B+) and Analysis coverage (`94%`, 42 of 45 files analyzed) in mono typography.
+      - Explicitly marks unassessed categories (Reliability, Performance, Documentation) as `Not assessed` with release roadmap targets per `docs/08 §11 S-04`.
+    - **Question 4 · What Should I Do Next?** ([`client/components/overview/NextActionBand.tsx`](client/components/overview/NextActionBand.tsx)):
+      - Full-width band highlighting the highest-priority finding to fix with severity, evidence level (`E0`-`E2`), file location with line numbers, summary, and "Review Finding" CTA.
+      - Labeled `rule-based until Project Mentor ships (1.3)` per spec.
+      - Handled clean zero-findings state with "Ask Project Brain" CTA.
+    - **Questions 2 & 3 · What Is Broken? & What Is Risky?** ([`client/components/overview/FindingsPanel.tsx`](client/components/overview/FindingsPanel.tsx)):
+      - Severity count metrics cards (Critical, High, Medium, Low) and Bug Memory release label (`ships in 1.2`).
+      - Risky findings list with evidence level badges, confidence, file references, and direct link to findings view.
+      - Handled independent loading skeleton and error retry states.
+    - **Question 1 · What Is Happening?** ([`client/components/overview/ActivityPanel.tsx`](client/components/overview/ActivityPanel.tsx)):
+      - Recent scans list (Full & Incremental scans) with duration and file counts.
+      - Background job center summary with status badges.
+      - Last sync timestamp and sync mode badge (`indexed` vs `metadata_only`).
+      - Handled independent loading skeleton and error retry states.
+    - **Master Dashboard & Page Route** ([`client/components/overview/ProjectOverview.tsx`](client/components/overview/ProjectOverview.tsx) & [`client/app/projects/[projectId]/page.tsx`](client/app/projects/[projectId]/page.tsx)):
+      - Assembled responsive layout with next-action band first on mobile, top strip, and 2-column grid (7 cols findings, 5 cols activity) on desktop.
+    - **Unit Tests** ([`client/tests/project-overview.test.tsx`](client/tests/project-overview.test.tsx)):
+      - 9 Vitest tests covering master dashboard, CoverageHealthStrip (Q5), NextActionBand deterministic ordering (Q4), FindingsPanel (Q2 & Q3), ActivityPanel (Q1), loading skeletons, and error retry states.
+  - Verified with `pnpm --filter client test`: all 12 test files passed (82/82 tests).
+  - Verified with `node scripts/test-all.mjs --fast`: 13/13 checks passed.
+  - Verified with `node scripts/docs-links.mjs`: 50 files, 466 links valid.
+
+### Feature — M8-03: App Shell, Navigation, and Workspace/Project Selection (Screen S-03)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-app-shell`
+- **What**:
+  - Implemented application shell, global navigation, and Screen S-03 conforming to `docs/08 §10` and `docs/08 §11 S-03`:
+    - **Application Context** ([`client/context/AppContext.tsx`](client/context/AppContext.tsx)):
+      - Manages active workspace, active project, list of workspaces and projects, sync mode (`metadata_only` vs `indexed`), scan status, active jobs count, command palette toggle, and mobile navigation state.
+      - Implements project creation via `apiClient.createProject` with fallback for offline/preview environments.
+    - **SVG Icon Library** ([`client/components/shell/icons.tsx`](client/components/shell/icons.tsx)):
+      - Accessible SVG icons for Overview, Brain, Chat, Findings, Jobs, Settings, Search, Plus, Folder, ChevronDown, Check, ExternalLink, and Close.
+    - **Gutter Rail** ([`client/components/shell/AppGutterRail.tsx`](client/components/shell/AppGutterRail.tsx)):
+      - Desktop 56px left navigation rail (`w-14`, `lg:flex`) with active workspace monogram trigger, project section links with accessible tooltips, and bottom account & documentation links.
+    - **Top Bar** ([`client/components/shell/AppTopBar.tsx`](client/components/shell/AppTopBar.tsx)):
+      - Breadcrumb trail (Workspace / Project / Active section), Command Palette trigger button (`⌘K` shortcut badge), Job tray status indicator, user avatar, and mobile navigation drawer.
+    - **Bottom Status Bar** ([`client/components/shell/AppStatusBar.tsx`](client/components/shell/AppStatusBar.tsx)):
+      - Fixed 28px bottom status bar displaying local scan status, sync mode badge with plain-language tooltip, job queue count, and VS Code extension companion status.
+    - **Command Palette** ([`client/components/shell/CommandPalette.tsx`](client/components/shell/CommandPalette.tsx)):
+      - Accessible modal dialog triggered by `Cmd+K` / `Ctrl+K` with real-time fuzzy search across Navigation targets, Projects, and quick Actions (Trigger Scan, Toggle Sync Mode, Connect VS Code).
+    - **Workspace & Project Switcher** ([`client/components/shell/WorkspaceProjectSwitcher.tsx`](client/components/shell/WorkspaceProjectSwitcher.tsx)):
+      - Accessible dropdown popover allowing seamless context switching across isolated workspaces and projects.
+    - **Screen S-03 Project Index** ([`client/components/projects/ProjectIndex.tsx`](client/components/projects/ProjectIndex.tsx) & [`client/app/projects/page.tsx`](client/app/projects/page.tsx)):
+      - Workspace header with VS Code extension connect deep-link (`vscode://devmind.devmind-vscode/connect`) and New Project action.
+      - Project index table (desktop $\ge$ 1024px) with Project (name, slug, language), Source, Sync Mode, Last Scan, Open Findings by severity breakdown (Critical, High, Medium, Low), and Open actions.
+      - Responsive stacked cards layout for mobile ($<$ 1024px).
+      - Interactive search filter and sync mode filter tabs (`All`, `Indexed`, `Metadata only`).
+      - Empty state card ("Create your first project") with VS Code extension connection instructions.
+      - Accessible New Project modal dialog ([`client/components/projects/CreateProjectDialog.tsx`](client/components/projects/CreateProjectDialog.tsx)).
+    - **Marketing Layout Isolation** ([`client/components/layout/Header.tsx`](client/components/layout/Header.tsx), [`Footer.tsx`](client/components/layout/Footer.tsx), [`GutterRail.tsx`](client/components/layout/GutterRail.tsx)):
+      - Suppressed marketing headers and footers on app routes (`/projects*`, `/workspaces*`) to ensure the App Shell has full viewport control.
+    - **Unit Tests** ([`client/tests/app-shell.test.tsx`](client/tests/app-shell.test.tsx)):
+      - 8 Vitest tests covering AppShell composition, GutterRail, TopBar, StatusBar, WorkspaceProjectSwitcher, CommandPalette, Screen S-03 ProjectIndex table, and CreateProjectDialog.
+  - Verified with `pnpm --filter client test`: all 11 test files passed (73/73 tests).
+  - Verified with `node scripts/test-all.mjs --fast`: 13/13 checks passed.
+  - Verified with `node scripts/docs-links.mjs`: 50 files, 452 links valid.
+
+### Feature — M8-02: Authentication and Onboarding (Screen S-02)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-auth-onboarding`
+- **What**:
+  - Implemented authentication routes and onboarding wizard conforming to `docs/08 §11 S-02`:
+    - **Clerk Themed Appearance** ([`client/components/auth/clerk-theme.ts`](client/components/auth/clerk-theme.ts)):
+      - Mapped Clerk appearance variables strictly to DevMind CSS custom properties (`var(--signal)`, `var(--bg-1)`, `var(--fg-0)`, `var(--bg-2)`, `var(--radius-control)`).
+    - **Sign In Route** ([`client/app/sign-in/[[...sign-in]]/page.tsx`](client/app/sign-in/[[...sign-in]]/page.tsx)):
+      - Dedicated route embedding Clerk's `<SignIn />` component with fallback developer sign-in card when Clerk keys are unconfigured in local development.
+    - **Sign Up Route** ([`client/app/sign-up/[[...sign-up]]/page.tsx`](client/app/sign-up/[[...sign-up]]/page.tsx)):
+      - Dedicated route embedding Clerk's `<SignUp />` component with developer registration card fallback.
+    - **Screen S-02 Onboarding Wizard** ([`client/app/onboarding/page.tsx`](client/app/onboarding/page.tsx)):
+      - 3-step progress rail:
+        1. Workspace creation / selection with tenant partition guarantee.
+        2. Project source connection (VS Code extension deep link `vscode://devmind.devmind-vscode/connect` vs manual registration).
+        3. Synchronization mode selection (`metadata_only` vs `indexed`) with plain-language privacy disclosure and required consent acknowledgement.
+    - **Unit Tests** ([`client/tests/auth-onboarding.test.tsx`](client/tests/auth-onboarding.test.tsx)):
+      - 5 Vitest tests covering token mappings, SignIn/SignUp branding, and S-02 step rail.
+  - Verified with `pnpm --filter client test`: 65 client tests pass.
+  - Verified with `node scripts/test-all.mjs --fast`: all 13 checks pass.
+
+### Feature — M8-01: Tokens and Base UI Components
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-components`
+- **What**:
+  - Implemented design system base components conforming to `docs/08 §3-§7`:
+    - **Button** ([`client/components/ui/Button.tsx`](client/components/ui/Button.tsx)):
+      - Variants: `primary` (`--signal`), `secondary` (`--line-3`), `tertiary`, `destructive` (`--danger`).
+      - Sizes: `sm` (32px), `default` (36px), `lg` (44px min touch target).
+      - Loading spinner, disabled state, left/right icons, ref forwarding.
+    - **Badge** ([`client/components/ui/Badge.tsx`](client/components/ui/Badge.tsx)):
+      - Semantic encoding (glyphs: `●`, `✓`, `▲`, `✕`, `◆`) ensuring color is never used alone (`docs/08 §3.4`).
+      - Native support for evidence levels (`E0`, `E1`, `E2`), mono formatting for IDs and counts.
+    - **Card** ([`client/components/ui/Card.tsx`](client/components/ui/Card.tsx)):
+      - Subcomponents: `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`.
+      - Layered surfaces (`--bg-1`, `--bg-2`), 1px hairline border (`--line-1`), 6px panel radius (`--radius-panel`).
+    - **Input** ([`client/components/ui/Input.tsx`](client/components/ui/Input.tsx)):
+      - `--bg-2` fill, `--line-3` border, `--radius-control` (4px).
+      - Accessible label with `htmlFor`, helper text, inline error with glyph (`✕`) and `role="alert"`.
+    - **Skeleton** ([`client/components/ui/Skeleton.tsx`](client/components/ui/Skeleton.tsx)):
+      - Layout-matched placeholder, `--bg-2`, static under `prefers-reduced-motion: reduce`.
+    - **Dialog** ([`client/components/ui/Dialog.tsx`](client/components/ui/Dialog.tsx)):
+      - Modal overlay, soft shadow, `--radius-panel` (6px), Esc key dismissal, focus trap, accessible title and description.
+    - **Tabs** ([`client/components/ui/Tabs.tsx`](client/components/ui/Tabs.tsx)):
+      - Accessible `Tabs`, `TabList`, `TabTrigger`, `TabContent`. Active tab indicated by 2px `--signal` underline.
+    - **Tooltip** ([`client/components/ui/Tooltip.tsx`](client/components/ui/Tooltip.tsx)):
+      - 160ms delay, Esc dismissal, visible on both hover and focus.
+    - **Barrel Export** ([`client/components/ui/index.ts`](client/components/ui/index.ts)):
+      - Central export of all UI primitives.
+    - **Unit Tests** ([`client/tests/ui-components.test.tsx`](client/tests/ui-components.test.tsx)):
+      - 14 Vitest tests covering all components, variants, accessibility attributes, and error states.
+  - Verified with `pnpm --filter client test`: 60 client tests pass.
+  - Verified with `node scripts/test-all.mjs --fast`: all 13 checks pass.
+
+### Feature — M7-10: Injection Corpus Run Against Graph Workflows
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-injection-run`
+- **What**:
+  - Implemented graph prompt-injection benchmark harness, test suite, and baselines per `docs/09 §12`, `docs/05 §14`, and `docs/09 §9`:
+    - **Prompt Loader Enhancement** ([`server/app/llm/prompt_loader.py`](server/app/llm/prompt_loader.py)):
+      - Added `render(task, variables, version)` method to `PromptLoader` delegating to `PromptTemplate.render`, maintaining strict `<untrusted_data>` escaping and delimiter sanitization.
+    - **Evaluation Metrics & Runner** ([`evals/injection/metrics.py`](evals/injection/metrics.py), [`evals/injection/harness.py`](evals/injection/harness.py)):
+      - Built `GraphInjectionHarness` executing all 25 vectors in `evals/injection/corpus.json` across:
+        1. Prompt delimiter escaping & system boundary persistence on all 4 agent tasks (`agent_manager_routing`, `code_answer`, `security_explanation`, `final_synthesis`).
+        2. Tool least-privilege & malicious hijack containment (`AgentToolSet` allowlist enforcement, forbidden tool rejection, path traversal containment).
+        3. Structured-output schema conformance under adversarial payloads (`AgentPlan`, `FindingExplanation`, `SynthesizedAnswer`).
+        4. Deterministic finding non-suppression under code comment injection (`SEC-001` preserved on unauthenticated routes).
+        5. Cross-tenant isolation under prompt injection (`AuthContext` tenant boundary enforcement).
+      - Achieved 100.00% pass rate across all 25 corpus items (Delimiter Integrity: 1.0, Tool Containment: 1.0, Finding Protection: 1.0, Cross-Tenant Isolation: 1.0, Schema Conformance: 1.0).
+      - Saved baseline to `evals/results/injection/latest.json`.
+    - **Documentation Baseline** ([`docs/09-testing-and-quality-strategy.md`](docs/09-testing-and-quality-strategy.md)):
+      - Updated §9 tracked baselines table with `Graph Prompt-Injection Defense (M7-10)` metrics.
+    - **Unit Tests** ([`server/tests/test_agent_injection.py`](server/tests/test_agent_injection.py)):
+      - Added 7 unit tests verifying all 6 non-negotiable assertions from `docs/09 §12`. All pass in 0.60s.
+  - Verified with `node scripts/test-all.mjs --fast`: all 13 checks pass, 470 server tests pass, 46 client tests pass. Milestone M7 is 100% complete.
+
+### Feature — M7-09: Evaluation Sets with Baselines (Answer-Quality, Faithfulness)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-eval-baselines`
+- **What**:
+  - Implemented evaluation corpus, automated evaluator metrics, benchmark harness, and documentation baseline per `docs/09 §9`, `docs/05 §7`, `docs/05 §14`, and `docs/09 §10`:
+    - **Dataset** ([`evals/agents/dataset.json`](evals/agents/dataset.json)):
+      - Golden test corpus containing 7 CodeMate Q&A questions (5 grounded across fixture and server files + 2 out-of-scope/insufficient evidence negative controls) and 8 AuthCheck security review cases (covering compliant routes, tampered hash rejection, line range boundary violations, unresolved callee E2 to E1 downgrade, language discipline enforcement, and secret redaction).
+    - **Metrics Module** ([`evals/agents/metrics.py`](evals/agents/metrics.py)):
+      - Defined Pydantic models for `AnswerQualityMetrics`, `FaithfulnessMetrics`, and `AgentBenchmarkSummary`.
+      - Computes citation precision, citation recall, symbol coverage, insufficient evidence accuracy, route confirmation accuracy, evidence grounding accuracy, finding downgrade fidelity, and language discipline adherence.
+    - **Benchmark Harness** ([`evals/agents/harness.py`](evals/agents/harness.py)):
+      - Built `AgentEvaluationHarness` executing real evaluation across citation verification (`CitationVerifier.verify_batch`), AST structural route analysis, and finding verification (`EvidenceVerifier.verify_draft_finding`).
+      - Records benchmark results to `evals/results/agents/latest.json` and timestamped JSON files.
+      - Achieved baseline scores: Answer Quality 0.9600, Faithfulness 1.0000, Composite Score 0.9840 (exceeds min tolerance 0.8500).
+    - **Documentation Baseline** ([`docs/09-testing-and-quality-strategy.md`](docs/09-testing-and-quality-strategy.md)):
+      - Updated §9 tracked baselines table with `Agent Workflows: Answer Quality & Faithfulness (M7)` metrics.
+    - **Unit Tests** ([`server/tests/test_agent_eval.py`](server/tests/test_agent_eval.py)):
+      - Added 5 unit tests validating dataset schema, CodeMate verification, AuthCheck verification vectors, metric calculation, and full harness execution. All pass in 0.18s.
+  - Verified with `node scripts/test-all.mjs --fast`: all 13 checks pass, 463 server tests pass, 46 client tests pass.
+
+### Feature — M7-08: Job Integration (ask_project, security_review) and SSE Event Streaming
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-agent-jobs`
+- **What**:
+  - Implemented analysis job lifecycle, Celery background worker orchestration, and Server-Sent Events (SSE) streaming per `docs/03 §5.2`, `docs/03 §12.2`, `docs/05 §4`, and `docs/02 §8.2`:
+    - **Persistence & Repository** ([`server/app/persistence/repositories/brain_repo.py`](server/app/persistence/repositories/brain_repo.py)):
+      - Added `get_job_by_id`, `list_jobs` (with status filtering and pagination), and `get_job_events` query methods enforcing `AuthContext` tenancy.
+    - **Domain Service** ([`server/app/domain/jobs/service.py`](server/app/domain/jobs/service.py)):
+      - Added `create_analysis_job` with idempotency validation and async enqueuer hook.
+      - Added `get_job_by_id`, `list_project_jobs`, and cooperative `request_job_cancellation`.
+      - Added `publish_job_event` persisting structured milestone events to `job_events` table and broadcasting real-time JSON payloads to Redis Pub/Sub channels (`{prefix}job_events:{job_id}`).
+      - Implemented `stream_job_events` async SSE generator with past event replay (`since_seq`), Redis pub/sub live consumption, periodic heartbeat pings (`: ping`), and terminal event handling.
+      - Decoupled worker enqueueing via `register_job_enqueuer` / `get_job_enqueuer` ensuring `domain` never imports `workers`.
+    - **API Endpoints & Schemas** ([`server/app/api/jobs.py`](server/app/api/jobs.py), [`server/app/api/schemas.py`](server/app/api/schemas.py)):
+      - Added `POST /api/v1/projects/{pid}/analyses` (202 Accepted with links to status and events), `GET /api/v1/projects/{pid}/jobs`.
+      - Added `GET /api/v1/jobs/{id}`, `POST /api/v1/jobs/{id}/cancel`, and `GET /api/v1/jobs/{id}/events` (`text/event-stream`).
+      - Mounted routers under `/api/v1` in [`server/app/main.py`](server/app/main.py) and declared route permissions (`PERM_ANALYSIS_CREATE`, `PERM_PROJECT_READ`).
+    - **Worker Integration** ([`server/app/workers/celery_app.py`](server/app/workers/celery_app.py)):
+      - Wired `AgentManager` execution into `devmind.process_job` for `ask_project` and `security_review`.
+      - Emitted intake, progress, and finding persistence milestones with token usage and cost accounting.
+      - Batch-upserted verified findings from AuthCheck workflows directly into the `findings` table.
+      - Registered Celery task dispatcher with domain service.
+  - Authored comprehensive test suite in [`server/tests/test_agent_jobs.py`](server/tests/test_agent_jobs.py) covering API creation, 403 authorization guards, listing, details, cancellation, SSE stream formatting, and Celery worker agent workflow execution. All 8 tests pass; full test-all passes (13 passed, 458 server tests pass).
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-evidence-verifier`
+- **What**:
+  - Implemented the deterministic evidence and citation verification engine in [`server/app/analysis/evidence_verifier.py`](server/app/analysis/evidence_verifier.py) per `docs/05 §7`, `docs/03 §3.4`, and `docs/03 §12.1`:
+    - Full implementation of all 7 mandatory verification checks:
+      1. Snapshot presence and version check ensuring cited file path exists in snapshot and matches expected version ID.
+      2. Line range integrity validating positive start line, non-inverted range, and file length boundary checks.
+      3. Snippet hash confirmation computing normalized SHA-256 digest of cited line slices and rejecting tampered evidence.
+      4. Rule ID registry checking built-in DevMind rules and approved scanner prefixes (`bandit.*`, `semgrep.*`, `trivy.*`, `gitleaks.*`, `eslint.*`, `ruff.*`, `devmind.*`) with dynamic registration support.
+      5. Structural claim verification cross-referencing route authorization findings against `RouteGuardAnalyzer` evaluations and rejecting false claims on protected/exempt routes.
+      6. Evidence level verification downgrading E2 findings with unresolved callees or dynamic dependencies in `analysis_scope` to E1; downgrading disallowed E3 exploitability claims in v1 (ADR-041); sanitizing exploitability language (`vulnerable`, `exploitable`) for E0/E1 findings per `AGENTS.md §5.7`.
+      7. Secret detection and redaction identifying private keys, API tokens (Anthropic, OpenAI, Stripe, GitHub, GitLab, Slack, AWS), and database connection credentials, redacting them to `[REDACTED:<type>:<hash8>]`.
+    - Implemented `CitationVerifier` for structured and inline markdown citations (`[source: path:line-line]`, `[file]`, `[symbol]`, `[chunk_id]`), computing grounding ratios and identifying hallucinated references.
+    - Exported models and utilities in [`server/app/analysis/__init__.py`](server/app/analysis/__init__.py).
+    - Integrated `EvidenceVerifier` into AuthCheck's `verify_evidence_node` in [`server/app/orchestration/authcheck.py`](server/app/orchestration/authcheck.py) to filter, sanitize, and record dropped/downgraded findings.
+  - Authored 14 unit tests in [`server/tests/test_evidence_verifier.py`](server/tests/test_evidence_verifier.py) covering rule registry, file/version checks, line bounds, snippet hashing, structural claims, E2/E3 downgrades, secret redaction, and citation verification. All 13 test-all checks pass (450 server tests pass).
+
+### Feature — M7-06: AuthCheck Workflow Nodes and Evidence-Constrained Explanation
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-authcheck`
+- **What**:
+  - Implemented the AuthCheck specialist workflow subgraph in [`server/app/orchestration/authcheck.py`](server/app/orchestration/authcheck.py) per `docs/05 §6.3`:
+    - Route analysis node (`analyze_routes_node_factory`) executing `RouteGuardAnalyzer` for deterministic route enumeration, guard chain resolution, and E2/E1 draft finding emission.
+    - Security explanation node (`explain_findings_node_factory`) rendering versioned `security_explanation` v1 prompt and parsing `FindingExplanation` structured output for risks and remediation diffs with evidence constraint enforcement.
+    - Evidence verification and synthesis node (`verify_evidence_node` / `finalize_authcheck_node`) formatting structured security summaries with endpoints discovered, protected, missing auth/authz, public exempt, and unsupported frameworks notice.
+    - Exported `AuthCheckAgent`, `build_authcheck_graph`, and `run_authcheck_specialist` in [`server/app/orchestration/__init__.py`](server/app/orchestration/__init__.py).
+  - Integrated AuthCheck specialist execution into `AgentManager` in [`server/app/orchestration/manager.py`](server/app/orchestration/manager.py) with parallel execution support.
+  - Added clean LangGraph reducer returns across specialist nodes in [`server/app/orchestration/codemate.py`](server/app/orchestration/codemate.py) and [`server/app/orchestration/state.py`](server/app/orchestration/state.py) to prevent duplicate accumulation during parallel fan-out.
+  - Authored 9 unit tests in [`server/tests/test_authcheck.py`](server/tests/test_authcheck.py) covering route analysis, prompt rendering, structured explanation parsing, E2 verification fallback, unsupported framework notices, and specialist integration. All 13 test-all checks pass (440 server tests pass).
 
 ### Feature — M7-05: Guard Resolution and Structural Route Check (E2 Deterministic Confirmation)
 

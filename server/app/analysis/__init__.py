@@ -1,5 +1,22 @@
 """DevMind deterministic analysis: scanner adapters, rules, evidence verification."""
 
+from app.analysis.evidence_verifier import (
+    ALLOWED_RULE_PREFIXES,
+    KNOWN_RULES,
+    CitationBatchVerificationResult,
+    CitationItem,
+    CitationVerifier,
+    EvidenceItem,
+    EvidenceVerifier,
+    FindingVerificationResult,
+    compute_snippet_hash,
+    is_known_rule,
+    redact_evidence_secrets,
+    register_known_rule,
+    sanitize_exploitability_language,
+    verify_citations,
+    verify_evidence,
+)
 from app.analysis.guard_resolution import (
     DraftFinding,
     GuardResolutionChain,
@@ -16,9 +33,17 @@ from app.analysis.guard_resolution import (
 )
 
 __all__ = [
+    "ALLOWED_RULE_PREFIXES",
+    "CitationBatchVerificationResult",
+    "CitationItem",
+    "CitationVerifier",
     "DraftFinding",
+    "EvidenceItem",
+    "EvidenceVerifier",
+    "FindingVerificationResult",
     "GuardResolutionChain",
     "GuardType",
+    "KNOWN_RULES",
     "ProjectSecurityConfig",
     "ResolvedGuard",
     "RouteAnalysisResult",
@@ -28,4 +53,11 @@ __all__ = [
     "RouteSecurityEvaluation",
     "RouteSensitivity",
     "compute_fingerprint",
+    "compute_snippet_hash",
+    "is_known_rule",
+    "redact_evidence_secrets",
+    "register_known_rule",
+    "sanitize_exploitability_language",
+    "verify_citations",
+    "verify_evidence",
 ]

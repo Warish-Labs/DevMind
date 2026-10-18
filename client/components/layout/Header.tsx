@@ -2,8 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export function Header() {
+  const pathname = usePathname();
+  const isAppRoute = pathname?.startsWith("/projects") || pathname?.startsWith("/workspaces");
+
+  if (isAppRoute) return null;
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--line-1)] bg-[var(--bg-0)]/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">

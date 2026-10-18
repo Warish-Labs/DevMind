@@ -416,7 +416,15 @@ class RouteGuardAnalyzer:
             route_path = "/"
             if to_ext:
                 parts = to_ext.strip().split(maxsplit=1)
-                if len(parts) == 2 and parts[0].upper() in {"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"}:
+                if len(parts) == 2 and parts[0].upper() in {
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE",
+                    "PATCH",
+                    "OPTIONS",
+                    "HEAD",
+                }:
                     method = parts[0].upper()
                     route_path = parts[1]
                 else:
@@ -452,9 +460,16 @@ class RouteGuardAnalyzer:
             kind = _attr(sym, "kind", "")
             meta = _attr(sym, "metadata", {}) or {}
             tags = _attr(sym, "framework_tags", [])
-            has_route_tag = any(str(t).lower() in {"route", "endpoint", "api", "route_handler"} for t in tags)
+            has_route_tag = any(
+                str(t).lower() in {"route", "endpoint", "api", "route_handler"} for t in tags
+            )
 
-            if kind in {"route_handler", "server_action"} or has_route_tag or "http_path" in meta or "http_method" in meta:
+            if (
+                kind in {"route_handler", "server_action"}
+                or has_route_tag
+                or "http_path" in meta
+                or "http_method" in meta
+            ):
                 processed_symbol_ids.add(s_id)
                 file_v_id = _attr(sym, "file_version_id")
                 file_path = meta.get("path") or path_map.get(file_v_id, "unknown")
@@ -464,7 +479,11 @@ class RouteGuardAnalyzer:
                     method = "POST"
                     route_path = f"/action/{name}"
                 else:
-                    method = meta.get("http_method") or (name.upper() if name.upper() in {"GET", "POST", "PUT", "DELETE", "PATCH"} else "GET")
+                    method = meta.get("http_method") or (
+                        name.upper()
+                        if name.upper() in {"GET", "POST", "PUT", "DELETE", "PATCH"}
+                        else "GET"
+                    )
                     route_path = meta.get("http_path") or meta.get("route") or f"/{name.lower()}"
 
                 framework = self.detect_framework(sym, file_path)
@@ -554,12 +573,22 @@ class RouteGuardAnalyzer:
 
                         chain.callees_examined.append(target_name or target_key)
 
-                        is_authn = self._matches_authn(target_name) or self._matches_authn(target_key)
-                        is_authz = self._matches_authz(target_name) or self._matches_authz(target_key)
+                        is_authn = self._matches_authn(target_name) or self._matches_authn(
+                            target_key
+                        )
+                        is_authz = self._matches_authz(target_name) or self._matches_authz(
+                            target_key
+                        )
 
                         if is_authn or is_authz or e_kind == "guarded_by":
-                            guard_type = GuardType.DEPENDENCY if route.framework == RouteFramework.FASTAPI else (
-                                GuardType.MIDDLEWARE if route.framework == RouteFramework.EXPRESS else GuardType.INLINE_CHECK
+                            guard_type = (
+                                GuardType.DEPENDENCY
+                                if route.framework == RouteFramework.FASTAPI
+                                else (
+                                    GuardType.MIDDLEWARE
+                                    if route.framework == RouteFramework.EXPRESS
+                                    else GuardType.INLINE_CHECK
+                                )
                             )
                             chain.guards.append(
                                 ResolvedGuard(
@@ -584,7 +613,9 @@ class RouteGuardAnalyzer:
                             chain.guards.append(
                                 ResolvedGuard(
                                     name=to_ext,
-                                    guard_type=GuardType.MIDDLEWARE if route.framework == RouteFramework.EXPRESS else GuardType.DEPENDENCY,
+                                    guard_type=GuardType.MIDDLEWARE
+                                    if route.framework == RouteFramework.EXPRESS
+                                    else GuardType.DEPENDENCY,
                                     is_authentication=is_authn,
                                     is_authorization=is_authz,
                                     raw_expression=to_ext,
@@ -672,8 +703,17 @@ class RouteGuardAnalyzer:
         if not has_authn:
             evidence_level = "E2" if is_resolved else "E1"
             confidence = "high" if is_resolved else "medium"
-            severity = "critical" if sensitivity == RouteSensitivity.SENSITIVE and route.http_method in {"POST", "PUT", "PATCH", "DELETE"} else "high"
-            title = "Sensitive endpoint has no authentication guard" if is_resolved else "Possible unauthenticated sensitive route"
+            severity = (
+                "critical"
+                if sensitivity == RouteSensitivity.SENSITIVE
+                and route.http_method in {"POST", "PUT", "PATCH", "DELETE"}
+                else "high"
+            )
+            title = (
+                "Sensitive endpoint has no authentication guard"
+                if is_resolved
+                else "Possible unauthenticated sensitive route"
+            )
             summary = (
                 "Route is classified as sensitive but no authentication check was found on the analyzed call path."
                 if is_resolved
@@ -723,14 +763,21 @@ class RouteGuardAnalyzer:
         # Required for admin routes and sensitive mutating operations
         is_admin_or_destructive = bool(
             re.search(r"^/(?:admin|internal|superadmin)(?:/.*)?$", route.http_route, re.IGNORECASE)
-            or (sensitivity == RouteSensitivity.SENSITIVE and route.http_method in {"POST", "PUT", "PATCH", "DELETE"})
+            or (
+                sensitivity == RouteSensitivity.SENSITIVE
+                and route.http_method in {"POST", "PUT", "PATCH", "DELETE"}
+            )
         )
 
         if is_admin_or_destructive and not has_authz:
             evidence_level = "E2" if is_resolved else "E1"
             confidence = "high" if is_resolved else "medium"
             severity = "high" if is_resolved else "medium"
-            title = "Administrative route has no role check" if is_resolved else "Possible missing role authorization check"
+            title = (
+                "Administrative route has no role check"
+                if is_resolved
+                else "Possible missing role authorization check"
+            )
             summary = (
                 "Authentication is required but no authorization check was found on the call path."
                 if is_resolved
@@ -745,10 +792,10 @@ class RouteGuardAnalyzer:
                 "snippet_hash": snippet_hash,
             }
 
-            fingerprint = compute_fingerprint(RULE_MISSING_ROLE_CHECK, route.file_path, canonical_id)
-            fix_desc = (
-                "Replace general authentication with an explicit role check (e.g. require_admin or requireRole)."
+            fingerprint = compute_fingerprint(
+                RULE_MISSING_ROLE_CHECK, route.file_path, canonical_id
             )
+            fix_desc = "Replace general authentication with an explicit role check (e.g. require_admin or requireRole)."
 
             finding = DraftFinding(
                 rule_id=RULE_MISSING_ROLE_CHECK,
