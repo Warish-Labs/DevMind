@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `to-be-updated` (feat(server): implement M7-07 evidence verifier for grounding and citations) |
+| **Last commit** | `512f2d2` (feat(server): implement M7-07 evidence verifier for grounding and citations) |
 | **Working tree** | Clean; M7-07 complete; all 13 checks pass; 454 server tests pass (450 passed, 4 skipped) |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 450/454 pass (4 skipped), client 46/46 pass |
