@@ -18,14 +18,15 @@
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8: Website app (conversation, findings, Brain explorer, jobs)** per `PLAN.md` and `docs/11 § M8`:
-   - Inspect `docs/08` (UI/UX design specification), `docs/11 § M8`, and client structure:
-     - Design tokens, base components, and app shell navigation for MVP screens (S-02 to S-09, S-12).
-     - Project overview with deterministic security score and analysis coverage.
-     - Findings list and detail views with evidence transitions and language discipline.
-     - SSE client integration with job event streaming and reconnection/polling fallback.
-     - Brain explorer (three-pane viewer) and conversation interface with grounded citations.
+1. Implement **Milestone M8-01: Tokens and base UI components (Button, Badge, Card, Dialog, Skeleton, Input, Tabs)** per `PLAN.md` and `docs/08 §3-§7`:
+   - Inspect `docs/08` (§3 colour/type/spacing tokens, §4 surfaces/elevation, §5 component specifications):
+     - Author accessible, themeable base components in `client/components/ui/` (`Button`, `Badge` with severity/evidence tints, `Card`, `Skeleton`, `Dialog`/Modal, `Input`, `Tabs`, `Tooltip`).
+     - Follow Radix / React aria keyboard primitives, strict TypeScript, zero `any`.
+     - Author comprehensive component tests in `client/tests/components/`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
+2. Follow immediately with **Milestone M8-02: Authentication and onboarding (S-02: Clerk SignIn/SignUp, onboarding wizard)**:
+   - Provide dedicated routes `/sign-in` and `/sign-up` embedding themed Clerk authentication components.
+   - Implement S-02 onboarding flow (workspace creation, project source connection, sync-mode consent).
 
 ---
 
