@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m7-injection-run` |
-| **Last commit** | `96c72bd` (docs: update BRAIN.md commit status for M7-09) |
-| **Working tree** | Clean; M7-10 complete (Milestone M7 finished); all 13 checks pass; 474 server tests pass (470 passed, 4 skipped) |
-| **Open PR** | None (working directly on feature/m7-injection-run) |
+| **Branch** | `main` |
+| **Last commit** | `56a6450` (feat(server): implement M7-10 prompt injection defense and graph evaluation run) |
+| **Working tree** | Clean; M7 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped) |
+| **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
