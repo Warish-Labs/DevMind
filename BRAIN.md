@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `feature/m8-a11y-polish` |
-| **Last commit** | In progress (feat(client): implement M8-10 empty, error, loading states, accessibility audit, and keyboard navigation pass) |
+| **Last commit** | `40384d9` (feat(client): implement M8-10 a11y, error, loading, and empty states) |
 | **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (24 routes: 14 static, 10 dynamic); 131 client tests pass |
 | **Open PR** | `feature/m8-a11y-polish` -> `main` |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 131/131 pass |
