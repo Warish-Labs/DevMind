@@ -7,23 +7,23 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m8-brain-explorer` |
-| **Last commit** | `8d68a47` (docs: update BRAIN.md commit status for M8-08) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (22 routes); Vercel configuration in place |
-| **Open PR** | `feature/m8-brain-explorer` -> `main` |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; client build passed (14 static, 8 dynamic); 117 client tests pass |
+| **Branch** | `feature/m8-usage-ui` |
+| **Last commit** | `0453f10` (feat(client): implement M8-09 usage dashboard, quotas, and extension devices (S-12)) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (24 routes: 14 static, 10 dynamic); 124 client tests pass |
+| **Open PR** | `feature/m8-usage-ui` -> `main` |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 124/124 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-09: Usage dashboard, quotas, and extension devices (Screen S-12 per docs/08 §11)**:
-   - Inspect `docs/08 §11 S-12`: usage by project, job type and task (counts and token totals, no content), quota bars with thresholds, link to audit events, extension devices list with last-seen timestamps and revoke action.
-   - Build UI components in `client/components/usage/`.
-   - Add routes `/projects/[projectId]/usage/page.tsx` and `/workspaces/[workspaceId]/usage/page.tsx`.
-   - Author unit tests in `client/tests/usage-ui.test.tsx`.
-   - Run verification test suite `node scripts/test-all.mjs --fast`.
+1. Implement **Milestone M8-10: Empty, error, loading states, accessibility audit, and keyboard navigation pass (Screen polish across all MVP screens S-02..S-12)**:
+   - Create branch `feature/m8-a11y-polish`.
+   - Inspect all client routes (`/projects`, `/projects/[projectId]/*`, `/workspaces/*`, `/sign-in`, `/sign-up`, `/onboarding`) for consistent loading skeletons, empty states with clear calls-to-action, and error boundaries.
+   - Run automated accessibility scan with axe / Playwright (`axe-core/playwright`).
+   - Verify keyboard navigation: focus rings (`focus-visible:ring-2 focus-visible:ring-[var(--ref)]`), skip link, aria attributes (`aria-selected`, `aria-expanded`, `aria-label`).
+   - Run verification suite `node scripts/test-all.mjs --fast` and `pnpm --filter client build`.
 
 ---
 
@@ -37,12 +37,41 @@
 
 ## 4. Done log
 
-### Feature — M8-08: Brain Explorer with Three-Pane Structure and Metadata (Screen S-05)
+### Feature — M8-09: Usage Dashboard, Quotas, and Extension Devices (Screen S-12)
 
 - **Date**: 2026-10-18
-- **Branch**: `feature/m8-brain-explorer`
+- **Branch**: `feature/m8-usage-ui`
 - **What**:
-  - Implemented Project Brain Explorer with three-pane structure, snapshot selector, hybrid search, and metadata-only mode support per `docs/08 §11 S-05`:
+  - Implemented Workspace Usage Dashboard & Extension Devices Manager per `docs/08 §11 S-12 & S-11`:
+    - **API & Domain Layer** ([`common/src/api/index.ts`](common/src/api/index.ts)):
+      - Exported types `QuotaItem`, `TaskUsageBreakdown`, `ProjectUsageBreakdown`, `WorkspaceUsageSummary`, `ExtensionDeviceItem`, `RevokeDeviceResponse`.
+      - Added methods to `DevMindApiClient`: `getWorkspaceUsage`, `listExtensionDevices`, and `revokeExtensionDevice`.
+    - **Quota Overview & Thresholds** ([`client/components/usage/QuotaOverview.tsx`](client/components/usage/QuotaOverview.tsx)):
+      - Summary cards: Inference Metering (tokens), Analysis Workflows (jobs), Extension Devices, and Free Profile Limits (ADR-046).
+      - Visual quota progress bars with color-coded threshold states: Normal (<80%, `var(--signal)`), Warning (80-95%, amber), and Danger/Exceeded (≥95%, red).
+      - Accessible ARIA progressbars (`aria-valuenow`, `aria-valuemax`).
+    - **Token Accounting Breakdown** ([`client/components/usage/UsageBreakdownPane.tsx`](client/components/usage/UsageBreakdownPane.tsx)):
+      - Tabs toggling between "By Agent Task" (`security_scan`, `ast_indexing`, `conversation_reasoning`, `evidence_verification`, `symbol_resolution`) and "By Project".
+      - Tabular mono formatting of prompt tokens, completion tokens, total tokens, job count, and percentage bars.
+      - Search/filter input for task and project names.
+      - Strict privacy disclosure: zero retention of raw prompts, completions, code snippets, or secrets per ADR-047 / docs/07 §15.
+    - **Authorized Extension Devices** ([`client/components/usage/ExtensionDevicesPane.tsx`](client/components/usage/ExtensionDevicesPane.tsx)):
+      - Registered VS Code extension devices table: device name, platform OS (`Linux`, `macOS`, `Windows`), extension version, VS Code version, last heartbeat, and status badge (`ACTIVE`, `IDLE`, `REVOKED`).
+      - "Revoke Access" action button with confirmation dialog invalidating tokens per ADR-012.
+      - "Connect Device" instructions modal explaining the local command `DevMind: Connect to Web Workspace` and consented sync protocol.
+    - **Master Dashboard Container** ([`client/components/usage/UsageDashboard.tsx`](client/components/usage/UsageDashboard.tsx)):
+      - Breadcrumbs, billing period indicator ("October 2026"), and link to audit events (`/jobs`).
+    - **Routes & Shell Navigation**:
+      - Added routes [`client/app/projects/[projectId]/usage/page.tsx`](client/app/projects/[projectId]/usage/page.tsx) and [`client/app/workspaces/[workspaceId]/usage/page.tsx`](client/app/workspaces/[workspaceId]/usage/page.tsx).
+      - Added `Usage & Quotas (S-12)` nav item with `UsageIcon` to [`client/components/shell/AppGutterRail.tsx`](client/components/shell/AppGutterRail.tsx).
+    - **Vercel Monorepo Build Fix**:
+      - Resolved Vercel error `[NEXT_OUTPUT_DIR_MISSING] The Next.js output directory client/.next was not found at /vercel/path0/client/client/.next`.
+      - Updated `vercel.json` and added `client/vercel.json` without hardcoded subpath `outputDirectory`, allowing Vercel's Next.js framework preset to automatically resolve `.next` from the project root.
+    - **Automated Verification**:
+      - Added 7 unit tests in [`client/tests/usage-ui.test.tsx`](client/tests/usage-ui.test.tsx) verifying quota rendering, threshold badges, task/project tab switching, search filtering, device revocation, and dashboard hierarchy.
+      - All 17 client test files pass (124/124 tests).
+      - All 13 monorepo checks pass in `node scripts/test-all.mjs --fast`.
+      - Next.js production build succeeds packaging all 24 routes (14 static, 10 dynamic).
     - **API Client Extensions** ([`common/src/api/client.ts`](common/src/api/client.ts)):
       - Exported types `SnapshotItem`, `SnapshotDetail`, `CodeSymbolItem`, `BrainFileItem`, `BrainFileDetail`, `GraphResponse`, `BrainSummaryResponse`.
       - Added methods to `DevMindApiClient`: `listSnapshots`, `getSnapshotDetail`, `listBrainFiles`, `getBrainFileDetail`, `listSymbols`, `getBrainGraph`, and `getBrainSummary`.
