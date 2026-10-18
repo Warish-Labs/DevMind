@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -851,6 +851,42 @@ class BrainRepository(BaseRepository):
         )
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+
+    async def purge_project_chunks(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+    ) -> dict[str, int]:
+        """Purge all stored code chunks and associated embeddings for a project (ADR-022 sync mode transition).
+
+        Returns dict with 'code_chunks' and 'embeddings' deleted counts.
+        """
+        await self._verify_project_access(ctx, project_id)
+
+        # Count embeddings to be deleted
+        emb_count_stmt = select(func.count(ChunkEmbedding.chunk_id)).where(
+            ChunkEmbedding.project_id == project_id
+        )
+        emb_count = (await self.session.execute(emb_count_stmt)).scalar() or 0
+
+        # Count chunks to be deleted
+        chunk_count_stmt = select(func.count(CodeChunk.id)).where(
+            CodeChunk.project_id == project_id
+        )
+        chunk_count = (await self.session.execute(chunk_count_stmt)).scalar() or 0
+
+        # Delete embeddings directly first
+        if emb_count > 0:
+            del_emb_stmt = delete(ChunkEmbedding).where(ChunkEmbedding.project_id == project_id)
+            await self.session.execute(del_emb_stmt)
+
+        # Delete chunks
+        if chunk_count > 0:
+            del_chunk_stmt = delete(CodeChunk).where(CodeChunk.project_id == project_id)
+            await self.session.execute(del_chunk_stmt)
+
+        await self.session.flush()
+        return {"code_chunks": chunk_count, "embeddings": emb_count}
 
     async def get_active_embedding_space(
         self,

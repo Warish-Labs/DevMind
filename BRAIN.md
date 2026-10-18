@@ -7,32 +7,59 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m8-a11y-polish` |
-| **Last commit** | `40384d9` (feat(client): implement M8-10 a11y, error, loading, and empty states) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (24 routes: 14 static, 10 dynamic); 131 client tests pass |
-| **Open PR** | `feature/m8-a11y-polish` -> `main` |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 131/131 pass |
+| **Branch** | `feature/m9-sync-mode` |
+| **Last commit** | `3eeacc5` (feat(server): implement M9-01 sync-mode transitions and purge consequences) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes: 14 static, 11 dynamic); 137 client tests pass; server tests pass |
+| **Open PR** | `feature/m9-sync-mode` -> `main` |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 471/475 pass (4 skipped), client 137/137 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m8-a11y-polish` to GitHub.
-2. Open PR #57 (`feature/m8-a11y-polish` -> `main`).
-3. After PR #57 is merged into `main`, initiate **Milestone M9 · Sync modes, privacy controls, history, deletion (feature/m9-\*)**.
+1. Commit and push `feature/m9-sync-mode` to GitHub.
+2. Open PR #58 (`feature/m9-sync-mode` -> `main`).
+3. After PR #58 is merged into `main`, proceed with **M9-02: Consent revoke flow (`feature/m9-consent-revoke`)**.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                               | Reference |
-| --- | --------------------------------------------------------------------------------------------- | --------- |
-| 1   | Review and merge PR #57 (`feature/m8-a11y-polish` -> `main`) once GitHub Actions CI completes | M8-10     |
+| #   | Action required                                                                             | Reference |
+| --- | ------------------------------------------------------------------------------------------- | --------- |
+| 1   | Review and merge PR #58 (`feature/m9-sync-mode` -> `main`) once GitHub Actions CI completes | M9-01     |
 
 ---
 
 ## 4. Done log
+
+### Feature — M9-01: Sync-Mode Transitions & Purge Consequences API & UI
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m9-sync-mode`
+- **What**:
+  - Implemented synchronization mode switching with explicit consequence execution and audit tracking per ADR-022, ADR-047, and Screen S-10:
+    - **Persistence Layer** ([`server/app/persistence/repositories/brain_repo.py`](server/app/persistence/repositories/brain_repo.py)):
+      - Added `purge_project_chunks(self, ctx, project_id) -> dict[str, int]`: securely purges `ChunkEmbedding` vectors and `CodeChunk` records with exact per-store counts.
+    - **Domain Service** ([`server/app/domain/projects/service.py`](server/app/domain/projects/service.py)):
+      - Added `update_sync_mode(self, ctx, project_id, new_sync_mode)`: validates transition, executes irreversible cloud purge when transitioning `indexed` -> `metadata_only`, updates project record, and emits immutable `AuditEvent` (`action="project.sync_mode_updated"`, metadata recording exact purge counts without raw source content per ADR-047).
+      - Updated `update_project` to enforce the same purge consequence and audit recording on general project patch.
+    - **REST API Route & Schemas** ([`server/app/api/projects.py`](server/app/api/projects.py), [`server/app/api/schemas.py`](server/app/api/schemas.py)):
+      - Added `PATCH /api/v1/projects/{pid}/sync-mode` with `@declare_permission(PERM_PROJECT_UPDATE)` and RFC 9457 error handling.
+      - Defined `UpdateSyncModeRequest` and `SyncModeTransitionResponse` schemas.
+    - **API Client** ([`common/src/api/index.ts`](common/src/api/index.ts), [`common/src/index.ts`](common/src/index.ts)):
+      - Added `updateProjectSyncMode(projectId, syncMode)` method to `DevMindApiClient`.
+      - Exported `* from "./api/index.js"` from root `@devmind/common`.
+    - **Frontend UI (Screen S-10)** ([`client/components/settings/`](client/components/settings/)):
+      - `SyncModeManager.tsx`: ADR-022 comparison diptych (`metadata_only` vs `indexed`), Active Mode badges, confirmation dialog with consequence warnings, and post-transition purge counts notification.
+      - `ProjectSettingsClient.tsx`: Project settings container with breadcrumbs, section tabs (Sync Modes, Retention Windows, Danger Zone), and Return to Overview navigation.
+      - Added routes [`client/app/projects/[projectId]/settings/page.tsx`](client/app/projects/[projectId]/settings/page.tsx) and [`client/app/projects/[projectId]/settings/loading.tsx`](client/app/projects/[projectId]/settings/loading.tsx).
+    - **Automated Verification**:
+      - Added `client/tests/sync-mode-settings.test.tsx` (6 unit tests, 137 total passing).
+      - Added `test_project_service_sync_mode_transition_and_purge` and auth checks in `server/tests/test_projects_api.py`.
+      - Production build passes (25 routes: 14 static, 11 dynamic).
+      - Full `test-all --fast` passed all 13 checks.
 
 ### Feature — M8-10: Empty, Error, Loading States, Accessibility Audit, and Keyboard Navigation Pass
 

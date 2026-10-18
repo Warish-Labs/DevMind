@@ -13,6 +13,7 @@ from app.core.ids import generate_uuid7
 from app.core.settings import Settings
 from app.domain.auth import (
     PERM_PROJECT_READ,
+    PERM_PROJECT_UPDATE,
     PERM_WORKSPACE_MANAGE,
     PERM_WORKSPACE_READ,
     PERMISSION_AUTHENTICATED,
@@ -145,6 +146,111 @@ def test_projects_forbidden_without_project_role(rsa_key_pair, test_settings) ->
         )
         assert res.status_code == 403
         assert res.json()["code"] == "auth.forbidden"
+
+
+def test_sync_mode_forbidden_without_update_role(rsa_key_pair, test_settings) -> None:
+    """Verify that a client lacking project:update receives 403 on PATCH /sync-mode."""
+    private_key, public_key = rsa_key_pair
+    app = create_app(settings=test_settings)
+
+    verifier = ClerkTokenVerifier(settings=test_settings, static_public_key=public_key)
+    app.dependency_overrides[get_token_verifier] = lambda: verifier
+
+    wid = generate_uuid7()
+    pid = generate_uuid7()
+    mock_ctx = AuthContext(
+        user_id=generate_uuid7(),
+        clerk_user_id="user_viewer",
+        email="viewer@example.com",
+        workspace_id=wid,
+        workspace_role="member",
+        project_id=pid,
+        project_role="viewer",
+        permissions=frozenset({PERMISSION_AUTHENTICATED, PERM_PROJECT_READ}),
+    )
+    app.dependency_overrides[get_auth_context] = lambda: mock_ctx
+
+    with TestClient(app=app) as client:
+        token = make_test_token(private_key, sub="user_viewer")
+        headers = {"Authorization": f"Bearer {token}"}
+
+        res = client.patch(
+            f"/api/v1/projects/{pid}/sync-mode",
+            json={"sync_mode": "indexed"},
+            headers=headers,
+        )
+        assert res.status_code == 403
+        assert res.json()["code"] == "auth.forbidden"
+
+
+@pytest.mark.asyncio
+async def test_project_service_sync_mode_transition_and_purge() -> None:
+    """Verify ProjectService purge consequences and audit event creation during sync-mode transition."""
+    from unittest.mock import AsyncMock, MagicMock
+
+    from app.core.errors import ValidationError
+    from app.domain.projects.service import ProjectService
+    from app.persistence.models.project import Project
+
+    session = AsyncMock()
+    service = ProjectService(session)
+
+    pid = generate_uuid7()
+    wid = generate_uuid7()
+    mock_project = MagicMock(spec=Project)
+    mock_project.id = pid
+    mock_project.workspace_id = wid
+    mock_project.sync_mode = "indexed"
+
+    service.repo.get_by_id = AsyncMock(return_value=mock_project)
+    service.repo.update = AsyncMock(return_value=mock_project)
+    service.brain_repo.purge_project_chunks = AsyncMock(
+        return_value={"code_chunks": 42, "embeddings": 42}
+    )
+    service.audit_repo.record = AsyncMock()
+
+    ctx = AuthContext(
+        user_id=generate_uuid7(),
+        clerk_user_id="user_admin",
+        email="admin@example.com",
+        workspace_id=wid,
+        workspace_role="admin",
+        project_id=pid,
+        project_role="maintainer",
+        permissions=frozenset({PERMISSION_AUTHENTICATED, PERM_PROJECT_READ, PERM_PROJECT_UPDATE}),
+    )
+
+    # 1. Transition indexed -> metadata_only triggers purge of chunks and embeddings
+    res = await service.update_sync_mode(ctx, pid, "metadata_only")
+    assert res["project_id"] == pid
+    assert res["previous_sync_mode"] == "indexed"
+    assert res["new_sync_mode"] == "metadata_only"
+    assert res["purged_counts"] == {"code_chunks": 42, "embeddings": 42}
+
+    service.brain_repo.purge_project_chunks.assert_awaited_once_with(ctx, pid)
+    service.repo.update.assert_awaited_once_with(ctx, pid, sync_mode="metadata_only")
+    service.audit_repo.record.assert_awaited_once()
+    audit_call_kwargs = service.audit_repo.record.await_args.kwargs
+    assert audit_call_kwargs["action"] == "project.sync_mode_updated"
+    assert audit_call_kwargs["metadata"]["purged_counts"] == {
+        "code_chunks": 42,
+        "embeddings": 42,
+    }
+
+    # 2. Transition metadata_only -> indexed does not purge
+    mock_project.sync_mode = "metadata_only"
+    service.brain_repo.purge_project_chunks.reset_mock()
+    service.audit_repo.record.reset_mock()
+
+    res2 = await service.update_sync_mode(ctx, pid, "indexed")
+    assert res2["previous_sync_mode"] == "metadata_only"
+    assert res2["new_sync_mode"] == "indexed"
+    assert res2["purged_counts"] == {"code_chunks": 0, "embeddings": 0}
+    service.brain_repo.purge_project_chunks.assert_not_awaited()
+
+    # 3. Invalid sync mode raises ValidationError
+    with pytest.raises(ValidationError):
+        await service.update_sync_mode(ctx, pid, "invalid_mode")
 
 
 def test_projects_crud_lifecycle_live_db(rsa_key_pair) -> None:

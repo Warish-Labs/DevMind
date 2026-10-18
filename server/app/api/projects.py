@@ -12,7 +12,9 @@ from app.api.schemas import (
     CreateProjectRequest,
     ProjectMemberResponse,
     ProjectResponse,
+    SyncModeTransitionResponse,
     UpdateProjectRequest,
+    UpdateSyncModeRequest,
 )
 from app.core.auth_context import AuthContext
 from app.domain.auth import (
@@ -132,6 +134,24 @@ async def update_project(
         default_branch=payload.default_branch,
     )
     return ProjectResponse.model_validate(project)
+
+
+@projects_router.patch(
+    "/sync-mode",
+    response_model=SyncModeTransitionResponse,
+    summary="Update project synchronization mode",
+    description="Transition project sync mode between metadata_only and indexed with purge consequences (ADR-022).",
+)
+@declare_permission(PERM_PROJECT_UPDATE)
+async def update_project_sync_mode(
+    pid: UUID,
+    payload: UpdateSyncModeRequest,
+    ctx: AuthContext = Depends(require_permission(PERM_PROJECT_UPDATE)),
+    session: AsyncSession = Depends(get_db_session),
+) -> SyncModeTransitionResponse:
+    service = ProjectService(session)
+    result = await service.update_sync_mode(ctx, pid, payload.sync_mode)
+    return SyncModeTransitionResponse.model_validate(result)
 
 
 @projects_router.delete(

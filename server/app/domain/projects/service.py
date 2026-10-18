@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -11,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth_context import AuthContext, SystemContext
 from app.core.errors import ConflictError, NotFoundError, ValidationError
 from app.persistence.models.project import Project, ProjectMembership
+from app.persistence.repositories.audit_repo import AuditEventRepository
+from app.persistence.repositories.brain_repo import BrainRepository
 from app.persistence.repositories.project_repo import ProjectRepository
 
 SLUG_REGEX = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -22,6 +25,8 @@ class ProjectService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.repo = ProjectRepository(session)
+        self.brain_repo = BrainRepository(session)
+        self.audit_repo = AuditEventRepository(session)
 
     @staticmethod
     def validate_slug(slug: str) -> str:
@@ -147,6 +152,33 @@ class ProjectService:
                 raise ValidationError(
                     detail="Project sync_mode must be 'metadata_only' or 'indexed'"
                 )
+            if project.sync_mode == "indexed" and sync_mode == "metadata_only":
+                purged = await self.brain_repo.purge_project_chunks(ctx, project_id)
+                await self.audit_repo.record(
+                    ctx,
+                    workspace_id=project.workspace_id,
+                    action="project.sync_mode_updated",
+                    target_kind="project",
+                    target_id=str(project_id),
+                    metadata={
+                        "previous_sync_mode": project.sync_mode,
+                        "new_sync_mode": sync_mode,
+                        "purged_counts": purged,
+                    },
+                )
+            elif project.sync_mode != sync_mode:
+                await self.audit_repo.record(
+                    ctx,
+                    workspace_id=project.workspace_id,
+                    action="project.sync_mode_updated",
+                    target_kind="project",
+                    target_id=str(project_id),
+                    metadata={
+                        "previous_sync_mode": project.sync_mode,
+                        "new_sync_mode": sync_mode,
+                        "purged_counts": {"code_chunks": 0, "embeddings": 0},
+                    },
+                )
             updates["sync_mode"] = sync_mode
 
         if primary_language is not None:
@@ -158,6 +190,50 @@ class ProjectService:
         updated = await self.repo.update(ctx, project_id, **updates)
         assert updated is not None
         return updated
+
+    async def update_sync_mode(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        new_sync_mode: str,
+    ) -> dict[str, Any]:
+        """Transition project synchronization mode and execute purge consequences (ADR-022)."""
+        if new_sync_mode not in ("metadata_only", "indexed"):
+            raise ValidationError(detail="Project sync_mode must be 'metadata_only' or 'indexed'")
+
+        project = await self.get_project(ctx, project_id)
+        previous_sync_mode = project.sync_mode
+        purged_counts = {"code_chunks": 0, "embeddings": 0}
+
+        # Consequence: switching from indexed to metadata_only purges all stored code chunks and embeddings
+        if previous_sync_mode == "indexed" and new_sync_mode == "metadata_only":
+            purged_counts = await self.brain_repo.purge_project_chunks(ctx, project_id)
+
+        if previous_sync_mode != new_sync_mode:
+            await self.repo.update(ctx, project_id, sync_mode=new_sync_mode)
+
+            # Record audit event (ADR-047 / docs/07: no source content logged, counts only)
+            await self.audit_repo.record(
+                ctx,
+                workspace_id=project.workspace_id,
+                action="project.sync_mode_updated",
+                target_kind="project",
+                target_id=str(project_id),
+                metadata={
+                    "previous_sync_mode": previous_sync_mode,
+                    "new_sync_mode": new_sync_mode,
+                    "purged_counts": purged_counts,
+                },
+            )
+
+        return {
+            "project_id": project.id,
+            "workspace_id": project.workspace_id,
+            "previous_sync_mode": previous_sync_mode,
+            "new_sync_mode": new_sync_mode,
+            "purged_counts": purged_counts,
+            "transitioned_at": datetime.now(UTC),
+        }
 
     async def delete_project(
         self,

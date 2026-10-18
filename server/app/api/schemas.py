@@ -142,6 +142,23 @@ class UpdateProjectRequest(BaseModel):
     default_branch: str | None = Field(default=None)
 
 
+class UpdateSyncModeRequest(BaseModel):
+    """Payload for transitioning project synchronization mode (ADR-022)."""
+
+    sync_mode: str = Field(description="Target sync mode: metadata_only | indexed")
+
+
+class SyncModeTransitionResponse(BaseModel):
+    """Result of transitioning project synchronization mode with purge metrics."""
+
+    project_id: UUID
+    workspace_id: UUID
+    previous_sync_mode: str
+    new_sync_mode: str
+    purged_counts: dict[str, int]
+    transitioned_at: datetime
+
+
 class ProjectResponse(BaseModel):
     """Serialized codebase project entity."""
 
