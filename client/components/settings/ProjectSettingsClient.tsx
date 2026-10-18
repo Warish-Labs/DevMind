@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { SyncModeManager } from "./SyncModeManager";
+import { ConsentManager } from "./ConsentManager";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -13,8 +14,8 @@ interface ProjectSettingsClientProps {
 }
 
 export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps) {
-  const { currentProject, currentWorkspace } = useApp();
-  const [activeTab, setActiveTab] = useState<"sync" | "retention" | "danger">("sync");
+  const { currentProject } = useApp();
+  const [activeTab, setActiveTab] = useState<"sync" | "consents" | "retention" | "danger">("sync");
 
   const projectName = currentProject?.name || "Codebase Project";
   const projectSlug = currentProject?.slug || projectId;
@@ -78,6 +79,20 @@ export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps)
         <button
           type="button"
           role="tab"
+          aria-selected={activeTab === "consents"}
+          onClick={() => setActiveTab("consents")}
+          className={`px-4 py-2 border-b-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)] ${
+            activeTab === "consents"
+              ? "border-[var(--signal)] text-[var(--fg-0)]"
+              : "border-transparent text-[var(--fg-2)] hover:text-[var(--fg-1)]"
+          }`}
+        >
+          Consent Records (docs/07 §7)
+        </button>
+
+        <button
+          type="button"
+          role="tab"
           aria-selected={activeTab === "retention"}
           onClick={() => setActiveTab("retention")}
           className={`px-4 py-2 border-b-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)] ${
@@ -118,6 +133,12 @@ export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps)
           </div>
 
           <SyncModeManager projectId={projectId} />
+        </section>
+      )}
+
+      {activeTab === "consents" && (
+        <section aria-labelledby="consents-heading" className="space-y-4">
+          <ConsentManager projectId={projectId} />
         </section>
       )}
 

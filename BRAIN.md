@@ -7,32 +7,58 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m9-sync-mode` |
-| **Last commit** | `3eeacc5` (feat(server): implement M9-01 sync-mode transitions and purge consequences) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes: 14 static, 11 dynamic); 137 client tests pass; server tests pass |
-| **Open PR** | `feature/m9-sync-mode` -> `main` |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 471/475 pass (4 skipped), client 137/137 pass |
+| **Branch** | `feature/m9-consent-revoke` |
+| **Last commit** | `201f1ab` (feat(server): implement M9-02 consent revoke flow and dependent data purge) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes: 14 static, 11 dynamic); 139 client tests pass; server tests pass |
+| **Open PR** | `feature/m9-consent-revoke` -> `main` |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 472/476 pass (4 skipped), client 139/139 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m9-sync-mode` to GitHub.
-2. Open PR #58 (`feature/m9-sync-mode` -> `main`).
-3. After PR #58 is merged into `main`, proceed with **M9-02: Consent revoke flow (`feature/m9-consent-revoke`)**.
+1. Commit and push `feature/m9-consent-revoke` to GitHub.
+2. Open PR #59 (`feature/m9-consent-revoke` -> `main`).
+3. After PR #59 is merged into `main`, proceed with **M9-03: Purge jobs and verification counts (`feature/m9-purge-verification`)**.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                             | Reference |
-| --- | ------------------------------------------------------------------------------------------- | --------- |
-| 1   | Review and merge PR #58 (`feature/m9-sync-mode` -> `main`) once GitHub Actions CI completes | M9-01     |
+| #   | Action required                                                                                  | Reference |
+| --- | ------------------------------------------------------------------------------------------------ | --------- |
+| 1   | Review and merge PR #59 (`feature/m9-consent-revoke` -> `main`) once GitHub Actions CI completes | M9-02     |
 
 ---
 
 ## 4. Done log
+
+### Feature — M9-02: Consent Revoke Flow & Dependent Data Purge
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m9-consent-revoke`
+- **What**:
+  - Implemented source-transmission consent revocation, dependent data purge execution, and audit logging per ADR-047, docs/07 §7, and docs/11:
+    - **Domain Layer (`ConsentService`)** ([`server/app/domain/consent/consent_service.py`](server/app/domain/consent/consent_service.py)):
+      - In `revoke_consent`: Sets `revoked_at` timestamp immediately; validates if revoked consent covers `cloud_index` scope. If no active `cloud_index` consent remains for the project, immediately triggers irreversible purge of all vector embeddings and code chunk texts via `BrainRepository.purge_project_chunks(ctx, project_id)` and downgrades project `sync_mode` to `metadata_only`.
+      - Emits immutable `AuditEvent` (`action="consent.revoked"`) in `AuditEventRepository` recording actor ID, target consent ID, scope, authorized providers, and exact `purged_counts` without raw source content per ADR-047.
+      - In `create_consent`: Emits immutable `AuditEvent` (`action="consent.granted"`).
+      - Updated `ConsentItem` model to return `purged_counts`, `sync_mode_updated`, and `new_sync_mode`.
+    - **REST API Route** ([`server/app/api/consents.py`](server/app/api/consents.py)):
+      - Added `POST /api/v1/projects/{pid}/consents/{cid}/revoke` route alias alongside `DELETE /api/v1/projects/{pid}/consents/{cid}` with `@declare_permission(PERM_CONSENT_MANAGE)`.
+    - **Common API Client** ([`common/src/api/index.ts`](common/src/api/index.ts)):
+      - Added TypeScript interfaces: `ConsentItem`, `ConsentListResponse`, `CreateConsentRequest`.
+      - Added `listProjectConsents`, `createProjectConsent`, and `revokeProjectConsent` to `DevMindApiClient`.
+    - **Frontend UI (Screen S-10 / S-11)** ([`client/components/settings/`](client/components/settings/)):
+      - Created [`ConsentManager.tsx`](client/components/settings/ConsentManager.tsx): displays active and historical consent grants, scope badges, policy versions, authorized providers, data categories, grant dates, and a modal for granting new transmission consent.
+      - Added Revoke confirmation dialog with plain-language before/after consequence explanation and warning that revoking `cloud_index` permanently purges stored embeddings/chunks and switches to `metadata_only`.
+      - Integrated `Consent Records (docs/07 §7)` tab into [`ProjectSettingsClient.tsx`](client/components/settings/ProjectSettingsClient.tsx).
+    - **Automated Verification**:
+      - Added `client/tests/consent-manager.test.tsx` (2 tests, 139 total client tests passing).
+      - Added `test_consent_service_revoke_cloud_index_triggers_purge_and_audit` in `server/tests/test_consent.py` (5 passed).
+      - Next.js production build passes (25 routes).
+      - Master `test-all --fast` passed all 13 checks.
 
 ### Feature — M9-01: Sync-Mode Transitions & Purge Consequences API & UI
 
