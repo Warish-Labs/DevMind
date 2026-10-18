@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `fccbf9c` (docs: update BRAIN.md commit status for M7-07) |
+| **Last commit** | `72588ae` (feat(server): implement M7-08 job integration and SSE job event streaming) |
 | **Working tree** | Clean; M7-08 complete; all 13 checks pass; 462 server tests pass (458 passed, 4 skipped) |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 458/462 pass (4 skipped), client 46/46 pass |
