@@ -7,8 +7,8 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m7-guard-resolution` |
-| **Last commit** | `1d46367` (docs: update BRAIN.md commit status for M7-04) |
+| **Branch** | `main` |
+| **Last commit** | `94bd087` (feat(server): implement M7-05 guard resolution and structural route check) |
 | **Working tree** | Clean; M7-05 complete; all 13 checks pass; 427 server tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 427/431 pass (4 skipped), client 46/46 pass |
