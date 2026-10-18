@@ -7,22 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `28a6eed` (feat(client): implement M8-05 findings list and detail views with evidence transitions (S-07, S-08)) |
-| **Working tree** | Clean; M8-05 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 90 client tests pass |
+| **Branch** | `feature/m8-jobs-sse` |
+| **Last commit** | `2f1feb8` (docs: update BRAIN.md commit status for M8-05) |
+| **Working tree** | Clean; M8-06 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 99 client tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 90/90 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 99/99 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-06: Job center and SSE streaming event client with fallback (Screen S-09 per docs/08 §11)**:
-   - Inspect `docs/08 §11 S-09` (Job center: list and detail of jobs with type, status, attempt, timestamps, error code; live progress via SSE with polling fallback; cancel action; approval prompts when status is `awaiting_approval`).
-   - Create job client streaming hooks and components in `client/components/jobs/`.
-   - Add routes `/projects/[projectId]/jobs/page.tsx` and `/projects/[projectId]/jobs/[jobId]/page.tsx`.
-   - Author unit tests in `client/tests/jobs-ui.test.tsx`.
+1. Implement **Milestone M8-07: Conversation interface with citations and insufficient evidence banner (Screen S-09/S-10 per docs/08 §11)**:
+   - Inspect `docs/08 §11 S-09` conversation interface with message streaming, citation pills linked to Brain Explorer, insufficient evidence alert banner, model/temperature controls, and export conversation.
+   - Build conversation UI components in `client/components/chat/`.
+   - Add route `/projects/[projectId]/chat/page.tsx` or `/projects/[projectId]/conversation/page.tsx`.
+   - Author unit tests in `client/tests/conversation-ui.test.tsx`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +36,36 @@
 ---
 
 ## 4. Done log
+
+### Feature — M8-06: Job Center and SSE Streaming Event Client with Fallback (Screen S-09)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-jobs-sse`
+- **What**:
+  - Implemented background job center, live Server-Sent Events (SSE) streaming client, polling fallback, human-in-the-loop approval gate card, and floating job tray per `docs/08 §11 S-09`:
+    - **OpenAPI Schema & Client Generation** ([`common/src/api/client.ts`](common/src/api/client.ts)):
+      - Regenerated OpenAPI schema with `pnpm gen:api` exporting `AnalysisJobResponse`, `AnalysisJobCreatedResponse`, and `CreateAnalysisRequest`.
+      - Added `listProjectJobs`, `getJob`, `cancelJob`, and `createAnalysisJob` methods to `DevMindApiClient`.
+    - **SSE Event Streaming Hook with Fallback** ([`client/components/jobs/useJobEvents.ts`](client/components/jobs/useJobEvents.ts)):
+      - Subscribes to `/api/v1/jobs/{id}/events` via `EventSource` (RFC 8895) for real-time progress and milestone updates.
+      - Automatically falls back to polling via `apiClient.getJob(id)` on connection drops or unsupported clients.
+      - Automatically detects terminal states (`succeeded`, `failed`, `cancelled`, `timed_out`) and closes event stream cleanly.
+    - **Job Center Table (Screen S-09 list)** ([`client/components/jobs/JobsTable.tsx`](client/components/jobs/JobsTable.tsx)):
+      - Table layout with status filter pills (`All`, `Running / Queued`, `Awaiting Approval`, `Succeeded`, `Failed`), job type dropdown, search query, progress bars, attempt counts, duration formatting, and quick cancel actions.
+      - Empty state handling and mobile collapsed cards.
+    - **Job Detail View (Screen S-09 detail)** ([`client/components/jobs/JobDetailView.tsx`](client/components/jobs/JobDetailView.tsx)):
+      - Live progress bar, connection status chip (`Live SSE Stream` / `Polling Fallback`).
+      - Human Approval Gate prompt card when status is `awaiting_approval` stating exactly what action will be taken, declared impact scope, and "Approve and Proceed" / "Reject & Cancel" actions per `docs/08 §11 S-09` and ADR-006.
+      - Milestone events log with sequence numbers, timestamps, and expandable structured metadata.
+      - Execution failure diagnostics card for failed jobs.
+    - **Floating Job Tray** ([`client/components/jobs/FloatingJobTray.tsx`](client/components/jobs/FloatingJobTray.tsx)):
+      - Global floating drawer in bottom-right corner summarizing active jobs across any page per `docs/08 §11 S-09`.
+      - Highlights amber when human approval is required; expands to reveal active jobs with direct links.
+    - **Next.js App Router Routes**:
+      - Added `client/app/projects/[projectId]/jobs/page.tsx` (Screen S-09 list).
+      - Added `client/app/projects/[projectId]/jobs/[jobId]/page.tsx` (Screen S-09 detail).
+    - **Comprehensive Unit Tests** ([`client/tests/jobs-ui.test.tsx`](client/tests/jobs-ui.test.tsx)):
+      - Added 9 unit tests verifying table rendering, empty states, detail view with live stream, approval card with declared impact scope, failure diagnostics, floating tray, and duration/type formatters.
 
 ### Feature — M8-05: Findings List and Detail Views with Evidence Transitions (Screens S-07, S-08)
 

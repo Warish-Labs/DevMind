@@ -34,6 +34,9 @@ export type FindingEvidenceItem = components["schemas"]["FindingEvidenceItem"];
 export type FindingStatusHistoryItem = components["schemas"]["FindingStatusHistoryItem"];
 export type FindingStatusTransitionRequest =
   components["schemas"]["FindingStatusTransitionRequest"];
+export type AnalysisJobResponse = components["schemas"]["AnalysisJobResponse"];
+export type AnalysisJobCreatedResponse = components["schemas"]["AnalysisJobCreatedResponse"];
+export type CreateAnalysisRequest = components["schemas"]["CreateAnalysisRequest"];
 
 export class ApiError extends Error {
   public readonly status: number;
@@ -314,6 +317,55 @@ export class DevMindApiClient {
       `/api/v1/projects/${projectId}/findings/${findingId}/transitions`,
       {
         method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Jobs & Analyses (docs/03 §5.2, §12.2)
+  // -------------------------------------------------------------------------
+
+  public async listProjectJobs(
+    projectId: string,
+    filters?: {
+      status?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<AnalysisJobResponse[]> {
+    const query = new URLSearchParams();
+    if (filters?.status) query.set("status", filters.status);
+    if (filters?.limit !== undefined) query.set("limit", String(filters.limit));
+    if (filters?.offset !== undefined) query.set("offset", String(filters.offset));
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return this.fetchInternal<AnalysisJobResponse[]>(`/api/v1/projects/${projectId}/jobs${qs}`);
+  }
+
+  public async getJob(jobId: string): Promise<AnalysisJobResponse> {
+    return this.fetchInternal<AnalysisJobResponse>(`/api/v1/jobs/${jobId}`);
+  }
+
+  public async cancelJob(jobId: string): Promise<AnalysisJobResponse> {
+    return this.fetchInternal<AnalysisJobResponse>(`/api/v1/jobs/${jobId}/cancel`, {
+      method: "POST",
+    });
+  }
+
+  public async createAnalysisJob(
+    projectId: string,
+    data: CreateAnalysisRequest,
+    idempotencyKey?: string
+  ): Promise<AnalysisJobCreatedResponse> {
+    const headers: Record<string, string> = {};
+    if (idempotencyKey) {
+      headers["Idempotency-Key"] = idempotencyKey;
+    }
+    return this.fetchInternal<AnalysisJobCreatedResponse>(
+      `/api/v1/projects/${projectId}/analyses`,
+      {
+        method: "POST",
+        headers,
         body: JSON.stringify(data),
       }
     );

@@ -388,6 +388,106 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{pid}/analyses": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Initiate background analysis or agent workflow
+     * @description Enqueue a background agent workflow (e.g. security_review, ask_project) returning streaming links.
+     */
+    post: operations["create_analysis_api_v1_projects__pid__analyses_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/jobs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List project analysis jobs
+     * @description List all background analysis jobs for the specified project.
+     */
+    get: operations["list_jobs_api_v1_projects__pid__jobs_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/jobs/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get background job details
+     * @description Retrieve status, metadata, and result summary for a background analysis job.
+     */
+    get: operations["get_job_api_v1_jobs__id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/jobs/{id}/cancel": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Cancel background job
+     * @description Request cooperative cancellation of a queued or running background analysis job.
+     */
+    post: operations["cancel_job_api_v1_jobs__id__cancel_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/jobs/{id}/events": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Stream job milestone events (SSE)
+     * @description Stream RFC 8895 Server-Sent Events with milestone progress, token counts, and terminal status.
+     */
+    get: operations["stream_job_events_api_v1_jobs__id__events_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{pid}/brain/snapshots": {
     parameters: {
       query?: never;
@@ -1077,6 +1177,72 @@ export interface components {
        */
       role: string;
     };
+    /**
+     * AnalysisJobCreatedResponse
+     * @description 202 Accepted response containing created job and streaming links (docs/03 §12.2).
+     */
+    AnalysisJobCreatedResponse: {
+      job: components["schemas"]["AnalysisJobResponse"];
+      /**
+       * Links
+       * @description Navigation and event streaming links for the created job
+       */
+      links: {
+        [key: string]: string;
+      };
+    };
+    /**
+     * AnalysisJobResponse
+     * @description Analysis job model representing asynchronous work (docs/03 §3.3).
+     */
+    AnalysisJobResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Type */
+      type: string;
+      /** Status */
+      status: string;
+      /**
+       * Attempt
+       * @default 0
+       */
+      attempt: number | null;
+      /**
+       * Max Attempts
+       * @default 3
+       */
+      max_attempts: number | null;
+      /**
+       * Queue
+       * @default default
+       */
+      queue: string | null;
+      /** Started At */
+      started_at?: string | null;
+      /** Finished At */
+      finished_at?: string | null;
+      /** Error Code */
+      error_code?: string | null;
+      /** Error Detail */
+      error_detail?: string | null;
+      /** Result Ref */
+      result_ref?: {
+        [key: string]: unknown;
+      } | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
     /** BatchFindingsRequest */
     BatchFindingsRequest: {
       /** Scan Run Id */
@@ -1653,6 +1819,29 @@ export interface components {
       item_count: number;
       /** Citations */
       citations?: components["schemas"]["BrainCitation"][];
+    };
+    /**
+     * CreateAnalysisRequest
+     * @description Request to initiate a background analysis or agent workflow (docs/03 §12.2).
+     */
+    CreateAnalysisRequest: {
+      /**
+       * Type
+       * @description Type of analysis to execute: ask_project, security_review, comprehensive_review, embed_chunks
+       */
+      type: string;
+      /**
+       * Params
+       * @description Execution parameters, query strings, and scope configuration
+       */
+      params?: {
+        [key: string]: unknown;
+      };
+      /**
+       * Consent Id
+       * @description Optional active consent UUID for accessing code snippets
+       */
+      consent_id?: string | null;
     };
     /**
      * CreateConsentRequest
@@ -3707,6 +3896,173 @@ export interface operations {
     responses: {
       /** @description Successful Response */
       204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_analysis_api_v1_projects__pid__analyses_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        "Idempotency-Key"?: string | null;
+      };
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateAnalysisRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisJobCreatedResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_jobs_api_v1_projects__pid__jobs_get: {
+    parameters: {
+      query?: {
+        /** @description Optional status filter */
+        status?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisJobResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_job_api_v1_jobs__id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisJobResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  cancel_job_api_v1_jobs__id__cancel_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisJobResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  stream_job_events_api_v1_jobs__id__events_get: {
+    parameters: {
+      query?: {
+        /** @description Resume sequence number */
+        since_seq?: number;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
         headers: {
           [name: string]: unknown;
         };
