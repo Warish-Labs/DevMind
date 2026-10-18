@@ -7,21 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `026b1fd` (feat(client): implement M8-04 project overview with health and recent jobs (S-04)) |
-| **Working tree** | Clean; M8-04 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 82 client tests pass |
+| **Branch** | `feature/m8-findings-ui` |
+| **Last commit** | `7540a2e` (docs: update BRAIN.md commit status for M8-04) |
+| **Working tree** | Clean; M8-05 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 90 client tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 82/82 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 90/90 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-05: Findings list and detail views with evidence transitions (S-06, S-07)** per `PLAN.md` and `docs/08 §11 S-07, S-08`:
-   - Inspect `docs/08 §11 S-07` (Findings list: dense table, filters: status, severity, category, evidence level, file; row actions: acknowledge, in progress; dismiss/accept-risk with reason) and `docs/08 §11 S-08` (Finding detail: title, status, severity/confidence/evidence strip, code excerpt with highlighted lines, why it matters, evidence items with sources, suggested remediation, status history).
-   - Create routes `/projects/[projectId]/findings/page.tsx` and `/projects/[projectId]/findings/[findingId]/page.tsx`.
-   - Author comprehensive unit tests in `client/tests/findings-ui.test.tsx`.
+1. Implement **Milestone M8-06: Job center and SSE streaming event client with fallback (Screen S-09 per docs/08 §11)**:
+   - Inspect `docs/08 §11 S-09` (Job center: list and detail of jobs with type, status, attempt, timestamps, error code; live progress via SSE with polling fallback; cancel action; approval prompts when status is `awaiting_approval`).
+   - Create job client streaming hooks and components in `client/components/jobs/`.
+   - Add routes `/projects/[projectId]/jobs/page.tsx` and `/projects/[projectId]/jobs/[jobId]/page.tsx`.
+   - Author unit tests in `client/tests/jobs-ui.test.tsx`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,7 +37,34 @@
 
 ## 4. Done log
 
-### Feature — M8-04: Project Overview with Health Score, Coverage, and Recent Jobs (Screen S-04)
+### Feature — M8-05: Findings List and Detail Views with Evidence Transitions (Screens S-07, S-08)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-findings-ui`
+- **What**:
+  - Implemented dense findings table and evidence-first detail views conforming to `docs/08 §11 S-07, S-08` and `docs/03 §5.1`:
+    - **API Client Extensions** ([`common/src/api/client.ts`](common/src/api/client.ts)):
+      - Re-exported `FindingEvidenceItem`, `FindingStatusHistoryItem`, and `FindingStatusTransitionRequest`.
+      - Added `listFindings`, `getFindingDetail`, and `transitionFindingStatus` methods to `DevMindApiClient`.
+    - **Dense Findings Table (Screen S-07)** ([`client/components/findings/FindingsTable.tsx`](client/components/findings/FindingsTable.tsx)):
+      - Multi-column dense layout with Severity, Evidence level (`E0`, `E1`, `E2`), Rule ID + Title, Location (`primary_path#L{line}`), Status badge, and Quick row actions (`Ack`, `Progress`, `Triage`, `Resolve`, `Re-verify`, `Reopen`).
+      - Filter bar with Status pills showing counts (`All`, `Open / Acknowledged`, `In Progress`, `Resolved`, `Dismissed / Triaged`, `Stale`), Severity dropdown, Category dropdown, Evidence Level dropdown, and text search query.
+      - Distinguishes empty states: "No findings detected" vs "Project not analyzed yet" with coverage prompt.
+      - Responsive 2-line cards on mobile viewports per `docs/08 §11 S-07`.
+    - **Finding Triage Modal** ([`client/components/findings/FindingTriageModal.tsx`](client/components/findings/FindingTriageModal.tsx)):
+      - Accessible modal dialog for triaging findings to `dismissed` or `accepted_risk`.
+      - Reason code dropdown for dismissal (`false_positive`, `not_applicable`, `duplicate`, `other`) and rationale textarea.
+      - Enforces maintainer permission rule (`docs/08 §11 S-07`): disables confirm button with warning if caller lacks maintainer role.
+      - Displays explicit notice regarding immutable recording to `finding_status_history` and tenant audit events.
+    - **Finding Detail View (Screen S-08)** ([`client/components/findings/FindingDetail.tsx`](client/components/findings/FindingDetail.tsx)):
+      - Evidence-first hierarchy: title & status, severity/confidence/evidence strip, "What and where" code excerpt with highlighted target lines, "Why it matters" explanation, machine-checkable evidence list with source tags (`structural_check`, `retrieved_context`, `rule_hit`), suggested remediation ("Review and apply yourself", no auto-apply), and status history audit timeline.
+      - Prominent stale finding banner with "Re-verify finding" action when `status === 'stale'` per `docs/08 §11 S-08`.
+      - Code Excerpt component ([`client/components/findings/CodeExcerpt.tsx`](client/components/findings/CodeExcerpt.tsx)) with dark editor container, line numbers, and copy reference button.
+    - **Next.js App Router Pages**:
+      - Added `client/app/projects/[projectId]/findings/page.tsx` (Screen S-07).
+      - Added `client/app/projects/[projectId]/findings/[findingId]/page.tsx` (Screen S-08).
+    - **Comprehensive Tests** ([`client/tests/findings-ui.test.tsx`](client/tests/findings-ui.test.tsx)):
+      - Added 8 unit tests verifying S-07 table filtering, empty states, mobile collapse, triage modal permissions, code excerpt line highlighting, evidence-first hierarchy, suggested remediation label, and stale finding banner.
 
 - **Date**: 2026-10-18
 - **Branch**: `feature/m8-project-overview`

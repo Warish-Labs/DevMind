@@ -30,6 +30,10 @@ export type UserProfileResponse = components["schemas"]["UserProfileResponse"];
 export type UserPermissionsResponse = components["schemas"]["UserPermissionsResponse"];
 export type FindingItem = components["schemas"]["FindingItem"];
 export type FindingDetailItem = components["schemas"]["FindingDetailItem"];
+export type FindingEvidenceItem = components["schemas"]["FindingEvidenceItem"];
+export type FindingStatusHistoryItem = components["schemas"]["FindingStatusHistoryItem"];
+export type FindingStatusTransitionRequest =
+  components["schemas"]["FindingStatusTransitionRequest"];
 
 export class ApiError extends Error {
   public readonly status: number;
@@ -269,5 +273,49 @@ export class DevMindApiClient {
     return this.fetchInternal<void>(`/api/v1/projects/${projectId}/members/${userId}`, {
       method: "DELETE",
     });
+  }
+
+  // -------------------------------------------------------------------------
+  // Findings
+  // -------------------------------------------------------------------------
+
+  public async listFindings(
+    projectId: string,
+    filters?: {
+      status?: string;
+      severity?: string;
+      category?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<FindingItem[]> {
+    const query = new URLSearchParams();
+    if (filters?.status) query.set("status", filters.status);
+    if (filters?.severity) query.set("severity", filters.severity);
+    if (filters?.category) query.set("category", filters.category);
+    if (filters?.limit !== undefined) query.set("limit", String(filters.limit));
+    if (filters?.offset !== undefined) query.set("offset", String(filters.offset));
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return this.fetchInternal<FindingItem[]>(`/api/v1/projects/${projectId}/findings${qs}`);
+  }
+
+  public async getFindingDetail(projectId: string, findingId: string): Promise<FindingDetailItem> {
+    return this.fetchInternal<FindingDetailItem>(
+      `/api/v1/projects/${projectId}/findings/${findingId}`
+    );
+  }
+
+  public async transitionFindingStatus(
+    projectId: string,
+    findingId: string,
+    data: FindingStatusTransitionRequest
+  ): Promise<FindingDetailItem> {
+    return this.fetchInternal<FindingDetailItem>(
+      `/api/v1/projects/${projectId}/findings/${findingId}/transitions`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
   }
 }
