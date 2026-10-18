@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m7-eval-baselines` |
-| **Last commit** | `2e6021e` (docs: update BRAIN.md commit status for M7-08) |
+| **Branch** | `main` |
+| **Last commit** | `dc67f5f` (feat(server): implement M7-09 answer-quality and faithfulness evaluation baselines) |
 | **Working tree** | Clean; M7-09 complete; all 13 checks pass; 467 server tests pass (463 passed, 4 skipped) |
-| **Open PR** | None (working directly on feature/m7-eval-baselines) |
+| **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 463/467 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
