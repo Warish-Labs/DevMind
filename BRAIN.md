@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m7-agent-tools` |
-| **Last commit** | pending merge (feat(server): implement M7-02 agent tools with scoped access) |
-| **Working tree** | M7-02 complete; all 13 checks pass; 399 server tests pass |
-| **Open PR** | None (feature/m7-agent-tools) |
+| **Branch** | `main` |
+| **Last commit** | `ac87677` (feat(server): implement M7-02 agent tools with scoped access) |
+| **Working tree** | Clean; M7-02 complete; all 13 checks pass; 399 server tests pass |
+| **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 399/403 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
