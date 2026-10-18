@@ -258,7 +258,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 ### M7 · LangGraph, CodeMate, AuthCheck
 
-- [ ] M7-01 State schema and checkpointer (PostgreSQL checkpointer, ADR-037, OQ-12) (feature/m7-state-checkpointer)
+- [x] M7-01 State schema and checkpointer (PostgreSQL checkpointer, ADR-037, OQ-12) (feature/m7-state-checkpointer)
 - [ ] M7-02 Tools with scoped access: search_brain, get_symbol, get_file_range, get_relationships (feature/m7-agent-tools)
 - [ ] M7-03 Agent Manager graph and plan execution routing (feature/m7-manager-routing)
 - [ ] M7-04 CodeMate workflow nodes and citation validation (feature/m7-codemate)

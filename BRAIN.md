@@ -7,22 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
+| **Branch** | `feature/m7-state-checkpointer` (merging to `main`) |
 | **Last commit** | `db66fb7` (feat(server): implement M6-11 LLM evaluation benchmark harness and prompt injection corpus) |
-| **Working tree** | Clean; M6-11 complete; M6 phase fully finished; all 13 checks pass; 377 server tests pass |
+| **Working tree** | M7-01 complete; all 13 checks pass; 386 server tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 377/381 pass (4 skipped), client 46/46 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 386/390 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-01: State schema and checkpointer** per `PLAN.md`:
-   - Inspect `docs/05 §4.2`, `§4.5`, `docs/12` (ADR-006, ADR-037), and `docs/10 §9`:
-     - Implement LangGraph agent state schema for Agent Manager, CodeMate, and AuthCheck workflows.
-     - Implement PostgreSQL checkpointer adapter using database connection pool with thread-isolated checkpoints.
-     - Author comprehensive unit and integration tests in `server/tests/test_agent_state.py`.
+1. Implement **Milestone M7-02: Tools with scoped access: search_brain, get_symbol, get_file_range, get_relationships** per `PLAN.md`:
+   - Inspect `docs/05 §9` (Tool execution boundaries), `docs/03 §7`, `docs/07 §15`:
+     - Implement tool execution boundary layer with read-only defaults, `AuthContext` tenancy verification, and permission enforcement.
+     - Implement core specialist tools: `search_brain`, `get_symbol`, `get_file_range`, `get_relationships`.
+     - Author comprehensive unit tests in `server/tests/test_agent_tools.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +36,23 @@
 ---
 
 ## 4. Done log
+
+### Feature — M7-01: LangGraph State Schema and Checkpointer
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-state-checkpointer`
+- **What**:
+  - Implemented LangGraph state schema and reducers in [`server/app/orchestration/state.py`](server/app/orchestration/state.py) (docs/05 §4.2):
+    - `RunState`: TypedDict holding references and small structured values, never code bodies, keeping checkpoints small and free of source code.
+    - Reducer `append_items` for `drafts`, `context_refs`, and `errors`.
+    - Reducer `merge_usage_totals` accumulating tokens and cost units across parallel nodes.
+    - Structured state types: `RequestState`, `IntentState`, `SpecialistTask`, `CitationRef`, `DraftFinding`, `VerifiedFinding`, `Hypothesis`, `Proposal`, `ApprovalState`, `NodeError`, `BudgetState`, and `UsageTotals`.
+    - Factory function `create_initial_run_state`.
+  - Implemented checkpointer factory and thread identification in [`server/app/orchestration/checkpointer.py`](server/app/orchestration/checkpointer.py) (ADR-006, ADR-037, OQ-12):
+    - `format_thread_id` and `parse_thread_id` enforcing canonical `devmind:<project_id>:<run_id>` format.
+    - `CheckpointerFactory` supporting `InMemorySaver` for testing/local execution and `PostgresSaver`/`AsyncPostgresSaver` in schema `langgraph` with worker direct connection fallback (OQ-12).
+  - Added `AgentRun` model in [`server/app/persistence/models/brain.py`](server/app/persistence/models/brain.py) and created Alembic migration `0009_agent_runs.py` (docs/03 §3.3).
+  - Authored 9 unit and integration tests in [`server/tests/test_agent_state.py`](server/tests/test_agent_state.py) verifying state graph execution, state reducers, checkpointing, and human approval interrupt/resume. All 13 suite checks pass.
 
 ### Feature — M6-11: LLM Evaluation Benchmark Harness and Prompt Injection Test Corpus
 

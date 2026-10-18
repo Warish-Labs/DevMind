@@ -16,6 +16,8 @@ dependencies = [
     "alembic>=1.13.0",
     "psycopg[binary]>=3.2.0",
     "pyjwt[crypto]>=2.9.0",
+    "langgraph>=0.2.0",
+    "langgraph-checkpoint-postgres>=2.0.0",
 ]
 
 [project.optional-dependencies]

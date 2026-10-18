@@ -817,3 +817,44 @@ class FindingStatusHistory(Base, UUID7PrimaryKeyMixin):
 
     # Relationships
     finding: Mapped[Finding] = relationship("Finding", back_populates="status_history")
+
+
+class AgentRun(Base, UUID7PrimaryKeyMixin, TimestampMixin):
+    """A single LangGraph workflow execution pass (docs/03 §3.3, docs/05 §4.5)."""
+
+    __tablename__ = "agent_runs"
+    __table_args__ = (
+        UniqueConstraint("thread_id", name="uq_agent_runs_thread_id"),
+        Index("ix_agent_runs_job_id", "job_id"),
+        Index("ix_agent_runs_project_id", "project_id"),
+        Index("ix_agent_runs_workspace_id", "workspace_id"),
+    )
+
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("workspaces.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    job_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("analysis_jobs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    workflow: Mapped[str] = mapped_column(String(64), nullable=False)
+    thread_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="running")
+    prompt_versions: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    model_choices: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    config_hash: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    state_summary: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    usage_totals: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+
+    # Relationships
+    project: Mapped[Project] = relationship("Project", foreign_keys=[project_id])
+    workspace: Mapped[Workspace] = relationship("Workspace", foreign_keys=[workspace_id])
+    job: Mapped[AnalysisJob] = relationship("AnalysisJob", foreign_keys=[job_id])

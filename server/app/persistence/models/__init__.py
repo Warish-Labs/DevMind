@@ -8,6 +8,7 @@ from app.persistence.models.base import (
     UUID7PrimaryKeyMixin,
 )
 from app.persistence.models.brain import (
+    AgentRun,
     AnalysisJob,
     ChunkEmbedding,
     CodeChunk,
@@ -35,6 +36,7 @@ from app.persistence.models.user import User
 from app.persistence.models.workspace import Workspace, WorkspaceMembership
 
 __all__ = [
+    "AgentRun",
     "AnalysisJob",
     "AuditEvent",
     "Base",
