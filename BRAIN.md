@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `feature/m9-sync-mode` |
-| **Last commit** | In progress (feat(project): implement M9-01 sync-mode transitions and purge consequences) |
+| **Last commit** | `3eeacc5` (feat(server): implement M9-01 sync-mode transitions and purge consequences) |
 | **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes: 14 static, 11 dynamic); 137 client tests pass; server tests pass |
 | **Open PR** | `feature/m9-sync-mode` -> `main` |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 471/475 pass (4 skipped), client 137/137 pass |
