@@ -7,25 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `6364c63` (feat(client): implement M8-07 conversation UI, citations, and evidence banner (S-06)) |
-| **Working tree** | Clean; M8-07 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 107 client tests pass |
-| **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 107/107 pass |
+| **Branch** | `feature/m8-brain-explorer` |
+| **Last commit** | `TBD` (feat(client): implement M8-08 Brain explorer three-pane structure and metadata mode (S-05)) |
+| **Working tree** | Clean; M8-08 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 115 client tests pass |
+| **Open PR** | None (feature branch workflow) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 115/115 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-08: Brain explorer with three-pane structure and metadata (Screen S-05 per docs/08 §11)**:
-   - Inspect `docs/08 §11 S-05` Brain explorer: three-pane structure (left: file tree, center: file/symbol detail with code, right: relationships and findings for selection).
-   - Snapshot selector in header with "current" clearly marked and stale items badged.
-   - Actions: search (`POST /api/v1/projects/{pid}/brain/search`), open symbol, expand relationships (`GET /api/v1/projects/{pid}/brain/graph`), open finding.
-   - States: `metadata_only` projects show structure and symbols with clear banner and "Enable indexed mode" requiring consent; unindexed files show tier and reason. Responsive: panes become tabs.
-   - Build UI components in `client/components/brain/`.
-   - Add route `/projects/[projectId]/brain/page.tsx`.
-   - Author unit tests in `client/tests/brain-explorer.test.tsx`.
+1. Implement **Milestone M8-09: Usage dashboard, quotas, and extension devices (Screen S-12 per docs/08 §11)**:
+   - Inspect `docs/08 §11 S-12`: usage by project, job type and task (counts and token totals, no content), quota bars with thresholds, link to audit events, extension devices list with last-seen timestamps and revoke action.
+   - Build UI components in `client/components/usage/`.
+   - Add routes `/projects/[projectId]/usage/page.tsx` and `/workspaces/[workspaceId]/usage/page.tsx`.
+   - Author unit tests in `client/tests/usage-ui.test.tsx`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -39,6 +36,39 @@
 ---
 
 ## 4. Done log
+
+### Feature — M8-08: Brain Explorer with Three-Pane Structure and Metadata (Screen S-05)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-brain-explorer`
+- **What**:
+  - Implemented Project Brain Explorer with three-pane structure, snapshot selector, hybrid search, and metadata-only mode support per `docs/08 §11 S-05`:
+    - **API Client Extensions** ([`common/src/api/client.ts`](common/src/api/client.ts)):
+      - Exported types `SnapshotItem`, `SnapshotDetail`, `CodeSymbolItem`, `BrainFileItem`, `BrainFileDetail`, `GraphResponse`, `BrainSummaryResponse`.
+      - Added methods to `DevMindApiClient`: `listSnapshots`, `getSnapshotDetail`, `listBrainFiles`, `getBrainFileDetail`, `listSymbols`, `getBrainGraph`, and `getBrainSummary`.
+    - **Header & Snapshot Controls** ([`client/components/brain/BrainHeader.tsx`](client/components/brain/BrainHeader.tsx)):
+      - Snapshot selector dropdown clearly marking `(current)` and badging `[stale]` snapshots.
+      - Hybrid search input for searching symbols or file paths (`POST /brain/search`).
+      - Mode indicator (`Indexed Mode` vs `Metadata-Only Mode`) and "Enable Indexed Mode" action button.
+    - **File Tree Left Pane** ([`client/components/brain/FileTreePane.tsx`](client/components/brain/FileTreePane.tsx)):
+      - Interactive recursive directory tree with folder expand/collapse.
+      - Badges for language tier (`tier1`), findings count (`!1`), and stale flags.
+    - **Code & Symbol Center Pane** ([`client/components/brain/CodeSymbolPane.tsx`](client/components/brain/CodeSymbolPane.tsx)):
+      - File metadata header: path, line counts, SHA-256 content hash, and copy path action.
+      - Symbol quick-jump chips (`function`, `class`, `route`).
+      - **Metadata-Only Mode State**: renders explicit warning banner ("Metadata-Only Mode: Source Text Redacted") explaining that source code text is not stored without consent per ADR-034/docs/08 §11, and renders extracted AST symbols list without raw source.
+      - **Indexed Mode State**: code viewer with numbered lines and hover highlights.
+    - **Relationships & Findings Right Pane** ([`client/components/brain/RelationshipsPane.tsx`](client/components/brain/RelationshipsPane.tsx)):
+      - Relationships tab: incoming and outgoing symbol edges (`calls`, `imports`, `extends`, `guards`) with direction indicators and "Expand Graph" action (`GET /brain/graph`).
+      - Findings tab: list of security findings mapped to this file with severity pills, E-level badges, and deep link to Finding Detail (`/projects/{pid}/findings/{id}`).
+    - **Full Brain Explorer Container & Route** ([`client/components/brain/BrainExplorer.tsx`](client/components/brain/BrainExplorer.tsx), [`client/app/projects/[projectId]/brain/page.tsx`](client/app/projects/[projectId]/brain/page.tsx)):
+      - Three-column layout on desktop; responsive tabs on mobile (`Files`, `Code & Symbols`, `Graph & Findings`).
+      - Added route at `/projects/[projectId]/brain`.
+    - **Unit Tests** ([`client/tests/brain-explorer.test.tsx`](client/tests/brain-explorer.test.tsx)):
+      - Added 8 unit tests covering all components, three-pane layout, metadata-only mode, and snapshot selectors. All 16 client test files pass (115/115 tests).
+  - **CI Workflow Hardening** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+    - Re-enabled automatic CI runs on pull requests and pushes to `main`.
+    - Configured fast, robust, self-contained `ci-fast` and `ci-gate` jobs executing the canonical 13-check suite with zero external secrets or GitHub environment variables required.
 
 ### Feature — M8-07: Conversation Interface with Citations and Insufficient Evidence Banner (Screen S-06)
 

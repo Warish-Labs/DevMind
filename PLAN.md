@@ -278,7 +278,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M8-05 Findings list and detail views with evidence transitions (S-07, S-08) (feature/m8-findings-ui)
 - [x] M8-06 Job center and SSE streaming event client with fallback (S-09) (feature/m8-jobs-sse)
 - [x] M8-07 Conversation interface with citations and insufficient evidence banner (S-06) (feature/m8-conversation-ui)
-- [ ] M8-08 Brain explorer with three-pane structure and metadata (S-05) (feature/m8-brain-explorer)
+- [x] M8-08 Brain explorer with three-pane structure and metadata (S-05) (feature/m8-brain-explorer)
 - [ ] M8-09 Usage dashboard, quotas, and extension devices (S-12) (feature/m8-usage-ui)
 - [ ] M8-10 Empty, error, loading states, accessibility audit, and keyboard navigation pass (feature/m8-a11y-polish)
 

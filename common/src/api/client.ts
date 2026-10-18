@@ -37,6 +37,13 @@ export type FindingStatusTransitionRequest =
 export type AnalysisJobResponse = components["schemas"]["AnalysisJobResponse"];
 export type AnalysisJobCreatedResponse = components["schemas"]["AnalysisJobCreatedResponse"];
 export type CreateAnalysisRequest = components["schemas"]["CreateAnalysisRequest"];
+export type SnapshotItem = components["schemas"]["SnapshotItem"];
+export type SnapshotDetail = components["schemas"]["SnapshotDetail"];
+export type CodeSymbolItem = components["schemas"]["CodeSymbolItem"];
+export type BrainFileItem = components["schemas"]["BrainFileItem"];
+export type BrainFileDetail = components["schemas"]["BrainFileDetail"];
+export type GraphResponse = components["schemas"]["GraphResponse"];
+export type BrainSummaryResponse = components["schemas"]["BrainSummaryResponse"];
 
 export class ApiError extends Error {
   public readonly status: number;
@@ -369,5 +376,52 @@ export class DevMindApiClient {
         body: JSON.stringify(data),
       }
     );
+  }
+
+  public async listSnapshots(projectId: string, limit: number = 20): Promise<SnapshotItem[]> {
+    return this.fetchInternal<SnapshotItem[]>(
+      `/api/v1/projects/${projectId}/brain/snapshots?limit=${limit}`
+    );
+  }
+
+  public async getSnapshotDetail(projectId: string, snapshotId: string): Promise<SnapshotDetail> {
+    return this.fetchInternal<SnapshotDetail>(
+      `/api/v1/projects/${projectId}/brain/snapshots/${snapshotId}`
+    );
+  }
+
+  public async listBrainFiles(projectId: string): Promise<BrainFileItem[]> {
+    return this.fetchInternal<BrainFileItem[]>(`/api/v1/projects/${projectId}/brain/files`);
+  }
+
+  public async getBrainFileDetail(projectId: string, fileId: string): Promise<BrainFileDetail> {
+    return this.fetchInternal<BrainFileDetail>(
+      `/api/v1/projects/${projectId}/brain/files/${fileId}`
+    );
+  }
+
+  public async listSymbols(
+    projectId: string,
+    kind?: string,
+    limit: number = 100
+  ): Promise<CodeSymbolItem[]> {
+    const qs = kind ? `?kind=${encodeURIComponent(kind)}&limit=${limit}` : `?limit=${limit}`;
+    return this.fetchInternal<CodeSymbolItem[]>(`/api/v1/projects/${projectId}/brain/symbols${qs}`);
+  }
+
+  public async getBrainGraph(
+    projectId: string,
+    symbolKey?: string,
+    depth: number = 2
+  ): Promise<GraphResponse> {
+    const query = new URLSearchParams({ depth: String(depth) });
+    if (symbolKey) query.set("symbol_key", symbolKey);
+    return this.fetchInternal<GraphResponse>(
+      `/api/v1/projects/${projectId}/brain/graph?${query.toString()}`
+    );
+  }
+
+  public async getBrainSummary(projectId: string): Promise<BrainSummaryResponse> {
+    return this.fetchInternal<BrainSummaryResponse>(`/api/v1/projects/${projectId}/brain/summary`);
   }
 }
