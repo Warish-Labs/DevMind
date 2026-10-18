@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `TBD` (feat(client): implement M8-07 conversation interface with citations and insufficient evidence banner (S-06)) |
+| **Last commit** | `6364c63` (feat(client): implement M8-07 conversation UI, citations, and evidence banner (S-06)) |
 | **Working tree** | Clean; M8-07 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 107 client tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 107/107 pass |
