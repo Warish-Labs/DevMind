@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `feature/m8-brain-explorer` |
-| **Last commit** | `TBD` (feat(client): implement M8-08 Brain explorer three-pane structure and metadata mode (S-05)) |
+| **Last commit** | `495a38a` (feat(client): implement M8-08 Brain explorer three-pane view and metadata mode (S-05)) |
 | **Working tree** | Clean; M8-08 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 115 client tests pass |
 | **Open PR** | None (feature branch workflow) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 115/115 pass |
