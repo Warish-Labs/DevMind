@@ -8,6 +8,8 @@ interface ChatPageProps {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "AI Project Conversation · DevMind",
   description:

@@ -36,28 +36,66 @@ describe("Authentication and Onboarding (Screen S-02, docs/08 §11, M8-02)", () 
 
   describe("Sign In Page (/sign-in)", () => {
     it("renders branding and fallback developer sign-in when Clerk key is unconfigured", () => {
-      const html = renderToString(<SignInPage />);
-      expect(html).toContain("DevMind");
-      expect(html).toContain("Sign in to your Project Brain");
-      expect(html).toContain("Developer Access");
-      expect(html).toContain('id="email"');
-      expect(html).toContain('id="password"');
-      expect(html).toContain("Continue to Onboarding");
-      expect(html).toContain('href="/sign-up"');
+      const orig = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+      delete process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+      try {
+        const html = renderToString(<SignInPage />);
+        expect(html).toContain("DevMind");
+        expect(html).toContain("Sign in to your Project Brain");
+        expect(html).toContain("Developer Access");
+        expect(html).toContain('id="email"');
+        expect(html).toContain('id="password"');
+        expect(html).toContain("Continue to Onboarding");
+        expect(html).toContain('href="/sign-up"');
+      } finally {
+        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = orig;
+      }
+    });
+
+    it("renders Clerk SignIn component when Clerk key is configured", () => {
+      const orig = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_sample_key";
+      try {
+        const html = renderToString(<SignInPage />);
+        expect(html).toContain("DevMind");
+        expect(html).toContain("Sign in to your Project Brain");
+        expect(html).toContain("mock-clerk-signin");
+      } finally {
+        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = orig;
+      }
     });
   });
 
   describe("Sign Up Page (/sign-up)", () => {
-    it("renders branding and registration form with name, email, and password inputs", () => {
-      const html = renderToString(<SignUpPage />);
-      expect(html).toContain("DevMind");
-      expect(html).toContain("Create your DevMind account");
-      expect(html).toContain("Developer Registration");
-      expect(html).toContain('id="name"');
-      expect(html).toContain('id="email"');
-      expect(html).toContain('id="password"');
-      expect(html).toContain("Create Account &amp; Onboard");
-      expect(html).toContain('href="/sign-in"');
+    it("renders branding and registration form when Clerk key is unconfigured", () => {
+      const orig = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+      delete process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+      try {
+        const html = renderToString(<SignUpPage />);
+        expect(html).toContain("DevMind");
+        expect(html).toContain("Create your DevMind account");
+        expect(html).toContain("Developer Registration");
+        expect(html).toContain('id="name"');
+        expect(html).toContain('id="email"');
+        expect(html).toContain('id="password"');
+        expect(html).toContain("Create Account &amp; Onboard");
+        expect(html).toContain('href="/sign-in"');
+      } finally {
+        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = orig;
+      }
+    });
+
+    it("renders Clerk SignUp component when Clerk key is configured", () => {
+      const orig = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_sample_key";
+      try {
+        const html = renderToString(<SignUpPage />);
+        expect(html).toContain("DevMind");
+        expect(html).toContain("Create your DevMind account");
+        expect(html).toContain("mock-clerk-signup");
+      } finally {
+        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = orig;
+      }
     });
   });
 

@@ -8,6 +8,8 @@ interface FindingsPageProps {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Findings · DevMind",
   description:

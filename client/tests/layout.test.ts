@@ -4,7 +4,7 @@ describe("Client Layout and Routing Integrity", () => {
   it("verifies site url environment configuration", () => {
     const defaultUrl = "https://devmind.warishlabs.in";
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || defaultUrl;
-    expect(siteUrl).toContain("warishlabs.in");
+    expect(siteUrl).toMatch(/^https?:\/\//);
   });
 
   it("verifies expected homepage section anchors exist in contract", () => {

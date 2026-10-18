@@ -11,6 +11,8 @@ interface BrainPageProps {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Project Brain Explorer · DevMind",
   description:

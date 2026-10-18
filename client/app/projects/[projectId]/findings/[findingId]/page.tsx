@@ -9,6 +9,8 @@ interface FindingDetailPageProps {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Finding Detail · DevMind",
   description:

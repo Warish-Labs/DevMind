@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m8-brain-explorer` |
-| **Last commit** | `495a38a` (feat(client): implement M8-08 Brain explorer three-pane view and metadata mode (S-05)) |
-| **Working tree** | Clean; M8-08 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 115 client tests pass |
-| **Open PR** | None (feature branch workflow) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 115/115 pass |
+| **Last commit** | `8d68a47` (docs: update BRAIN.md commit status for M8-08) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (22 routes); Vercel configuration in place |
+| **Open PR** | `feature/m8-brain-explorer` -> `main` |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; client build passed (14 static, 8 dynamic); 117 client tests pass |
 | **Date** | 2026-10-18 |
 
 ---

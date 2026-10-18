@@ -9,6 +9,8 @@ interface JobDetailPageProps {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Job Details · DevMind",
   description:

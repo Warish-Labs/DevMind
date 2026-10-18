@@ -8,6 +8,8 @@ interface ProjectOverviewPageProps {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Project Overview · DevMind",
   description:
