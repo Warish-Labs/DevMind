@@ -8,6 +8,7 @@ export type EvidenceLevel = "E0" | "E1" | "E2";
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
   evidenceLevel?: EvidenceLevel;
+  size?: "sm" | "md";
   mono?: boolean;
   glyph?: React.ReactNode;
 }
@@ -31,6 +32,7 @@ const defaultGlyphs: Record<BadgeVariant, string> = {
 export function Badge({
   variant = "neutral",
   evidenceLevel,
+  size = "md",
   mono = false,
   glyph,
   className = "",
@@ -49,10 +51,12 @@ export function Badge({
 
   const displayGlyph = glyph !== undefined ? glyph : defaultGlyphs[activeVariant];
   const isMono = mono || Boolean(evidenceLevel);
+  const sizeClasses =
+    size === "sm" ? "px-1.5 py-0 text-[10px] leading-3.5" : "px-2 py-0.5 text-[11px] leading-4";
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] leading-4 border rounded-[var(--radius-chip)] select-none ${
+      className={`inline-flex items-center gap-1.5 border rounded-[var(--radius-chip)] select-none ${sizeClasses} ${
         isMono ? "font-mono tracking-tight" : "font-sans"
       } ${variantStyles[activeVariant]} ${className}`}
       {...props}

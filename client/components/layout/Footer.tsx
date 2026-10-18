@@ -1,7 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
+  const pathname = usePathname();
+  const isAppRoute = pathname?.startsWith("/projects") || pathname?.startsWith("/workspaces");
+
+  if (isAppRoute) return null;
+
   return (
     <footer className="w-full border-t border-[var(--line-1)] bg-[var(--bg-0)] py-16 px-4 sm:px-6 lg:px-8 text-xs text-[var(--fg-1)]">
       <div className="max-w-7xl mx-auto flex flex-col gap-12">

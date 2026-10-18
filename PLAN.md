@@ -273,7 +273,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 - [x] M8-01 Tokens and base UI components (Button, Badge, Card, Dialog, Skeleton, Input, Tabs) (feature/m8-components)
 - [x] M8-02 Authentication and onboarding (S-02: Clerk SignIn/SignUp pages, onboarding wizard) (feature/m8-auth-onboarding)
-- [ ] M8-03 App shell, navigation, and workspace/project selection (S-03) (feature/m8-app-shell)
+- [x] M8-03 App shell, navigation, and workspace/project selection (S-03) (feature/m8-app-shell)
 - [ ] M8-04 Project overview with health score, coverage, and recent jobs (S-04) (feature/m8-project-overview)
 - [ ] M8-05 Findings list and detail views with evidence transitions (S-06, S-07) (feature/m8-findings-ui)
 - [ ] M8-06 Job center and SSE streaming event client with fallback (S-08) (feature/m8-jobs-sse)

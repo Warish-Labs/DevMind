@@ -1,2 +1,2 @@
-export * from "./schema.js";
+export type * from "./schema.js";
 export * from "./client.js";

@@ -7,22 +7,26 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m8-auth-onboarding` |
-| **Last commit** | `4c8d559` (docs: update BRAIN.md commit status for M8-01) |
-| **Working tree** | Clean; M8-02 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 65 client tests pass |
-| **Open PR** | None (working directly on feature/m8-auth-onboarding) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 65/65 pass |
+| **Branch** | `feature/m8-app-shell` |
+| **Last commit** | `89211f9` (feat(client): implement M8-02 authentication routes and onboarding wizard) |
+| **Working tree** | Clean; M8-03 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 73 client tests pass |
+| **Open PR** | None (working on feature/m8-app-shell) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 73/73 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M8-03: App shell, navigation, and workspace/project selection (S-03)** per `PLAN.md` and `docs/08 §11 S-03`:
-   - Inspect `docs/08 §10` (App shell: gutter rail, top bar, status bar) and `docs/08 §11 S-03` (Workspace and project selection):
-     - Implement persistent app shell for authenticated routes with left gutter rail (56px desktop, collapsible on mobile), top breadcrumb bar with command palette trigger, and bottom status bar (active scan, job, sync mode).
-     - Build Screen S-03: Workspace and project switcher popover + project index table (name, source, sync mode, last scan, open findings by severity).
-     - Author comprehensive unit tests in `client/tests/app-shell.test.tsx`.
+1. Implement **Milestone M8-04: Project overview with health score, coverage, and recent jobs (S-04)** per `PLAN.md` and `docs/08 §11 S-04`:
+   - Inspect `docs/08 §11 S-04` (Screen specifications: Project overview answering the five questions):
+     - Question 1: What is happening? (Recent scans and jobs with status, last sync, sync mode)
+     - Question 2: What is broken? (Open findings by severity, bug counts)
+     - Question 3: What is risky? (Top findings with evidence level and file reference)
+     - Question 4: What should I do next? ("Highest-priority finding to fix", rule-based ordering)
+     - Question 5: Is the project healthy? (Security score and analysis coverage)
+     - Create route `/projects/[projectId]/page.tsx` and overview dashboard components.
+     - Author comprehensive unit tests in `client/tests/project-overview.test.tsx`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +40,42 @@
 ---
 
 ## 4. Done log
+
+### Feature — M8-03: App Shell, Navigation, and Workspace/Project Selection (Screen S-03)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m8-app-shell`
+- **What**:
+  - Implemented application shell, global navigation, and Screen S-03 conforming to `docs/08 §10` and `docs/08 §11 S-03`:
+    - **Application Context** ([`client/context/AppContext.tsx`](client/context/AppContext.tsx)):
+      - Manages active workspace, active project, list of workspaces and projects, sync mode (`metadata_only` vs `indexed`), scan status, active jobs count, command palette toggle, and mobile navigation state.
+      - Implements project creation via `apiClient.createProject` with fallback for offline/preview environments.
+    - **SVG Icon Library** ([`client/components/shell/icons.tsx`](client/components/shell/icons.tsx)):
+      - Accessible SVG icons for Overview, Brain, Chat, Findings, Jobs, Settings, Search, Plus, Folder, ChevronDown, Check, ExternalLink, and Close.
+    - **Gutter Rail** ([`client/components/shell/AppGutterRail.tsx`](client/components/shell/AppGutterRail.tsx)):
+      - Desktop 56px left navigation rail (`w-14`, `lg:flex`) with active workspace monogram trigger, project section links with accessible tooltips, and bottom account & documentation links.
+    - **Top Bar** ([`client/components/shell/AppTopBar.tsx`](client/components/shell/AppTopBar.tsx)):
+      - Breadcrumb trail (Workspace / Project / Active section), Command Palette trigger button (`⌘K` shortcut badge), Job tray status indicator, user avatar, and mobile navigation drawer.
+    - **Bottom Status Bar** ([`client/components/shell/AppStatusBar.tsx`](client/components/shell/AppStatusBar.tsx)):
+      - Fixed 28px bottom status bar displaying local scan status, sync mode badge with plain-language tooltip, job queue count, and VS Code extension companion status.
+    - **Command Palette** ([`client/components/shell/CommandPalette.tsx`](client/components/shell/CommandPalette.tsx)):
+      - Accessible modal dialog triggered by `Cmd+K` / `Ctrl+K` with real-time fuzzy search across Navigation targets, Projects, and quick Actions (Trigger Scan, Toggle Sync Mode, Connect VS Code).
+    - **Workspace & Project Switcher** ([`client/components/shell/WorkspaceProjectSwitcher.tsx`](client/components/shell/WorkspaceProjectSwitcher.tsx)):
+      - Accessible dropdown popover allowing seamless context switching across isolated workspaces and projects.
+    - **Screen S-03 Project Index** ([`client/components/projects/ProjectIndex.tsx`](client/components/projects/ProjectIndex.tsx) & [`client/app/projects/page.tsx`](client/app/projects/page.tsx)):
+      - Workspace header with VS Code extension connect deep-link (`vscode://devmind.devmind-vscode/connect`) and New Project action.
+      - Project index table (desktop $\ge$ 1024px) with Project (name, slug, language), Source, Sync Mode, Last Scan, Open Findings by severity breakdown (Critical, High, Medium, Low), and Open actions.
+      - Responsive stacked cards layout for mobile ($<$ 1024px).
+      - Interactive search filter and sync mode filter tabs (`All`, `Indexed`, `Metadata only`).
+      - Empty state card ("Create your first project") with VS Code extension connection instructions.
+      - Accessible New Project modal dialog ([`client/components/projects/CreateProjectDialog.tsx`](client/components/projects/CreateProjectDialog.tsx)).
+    - **Marketing Layout Isolation** ([`client/components/layout/Header.tsx`](client/components/layout/Header.tsx), [`Footer.tsx`](client/components/layout/Footer.tsx), [`GutterRail.tsx`](client/components/layout/GutterRail.tsx)):
+      - Suppressed marketing headers and footers on app routes (`/projects*`, `/workspaces*`) to ensure the App Shell has full viewport control.
+    - **Unit Tests** ([`client/tests/app-shell.test.tsx`](client/tests/app-shell.test.tsx)):
+      - 8 Vitest tests covering AppShell composition, GutterRail, TopBar, StatusBar, WorkspaceProjectSwitcher, CommandPalette, Screen S-03 ProjectIndex table, and CreateProjectDialog.
+  - Verified with `pnpm --filter client test`: all 11 test files passed (73/73 tests).
+  - Verified with `node scripts/test-all.mjs --fast`: 13/13 checks passed.
+  - Verified with `node scripts/docs-links.mjs`: 50 files, 452 links valid.
 
 ### Feature — M8-02: Authentication and Onboarding (Screen S-02)
 
