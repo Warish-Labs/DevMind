@@ -7,9 +7,9 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m6-llm-eval` (merging to `main`) |
-| **Last commit** | `5b2b134` (feat(server): implement M6-10 versioned prompt template loader with untrusted context escaping) |
-| **Working tree** | M6-11 complete; all 13 checks pass; 377 server tests pass |
+| **Branch** | `main` |
+| **Last commit** | `db66fb7` (feat(server): implement M6-11 LLM evaluation benchmark harness and prompt injection corpus) |
+| **Working tree** | Clean; M6-11 complete; M6 phase fully finished; all 13 checks pass; 377 server tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 377/381 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
