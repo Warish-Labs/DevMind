@@ -26,6 +26,7 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import StateSnapshot
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.ids import generate_uuid7
 from app.llm.models import LLMGenerationRequest
@@ -33,6 +34,7 @@ from app.llm.prompt_loader import PromptLoader
 from app.llm.router import LLMGatewayRouter
 from app.llm.schemas import AgentPlan
 from app.orchestration.checkpointer import format_thread_id
+from app.orchestration.codemate import run_codemate_specialist
 from app.orchestration.state import (
     ApprovalState,
     IntentState,
@@ -349,22 +351,24 @@ def route_specialists(state: RunState) -> list[str]:
     return destinations or ["join"]
 
 
-async def codemate_node(state: RunState) -> dict[str, Any]:
-    """Execute CodeMate specialist task (docs/05 §6.1, CAP-01)."""
-    logger.info("Executing CodeMate specialist for run %s", state.get("run_id"))
-    plan = list(state.get("plan", []))
-    task = next((t for t in plan if t.specialist == "codemate"), None)
-    if not task:
-        return {}
+def codemate_node_factory(
+    router: LLMGatewayRouter | None = None,
+    prompt_loader: PromptLoader | None = None,
+    session: AsyncSession | None = None,
+):
+    """Factory creating the CodeMate execution node."""
 
-    completed_task = SpecialistTask(
-        specialist=task.specialist,
-        task_id=task.task_id,
-        status="completed",
-        input_refs=task.input_refs,
-        params=task.params,
-    )
-    return {"plan": [completed_task]}
+    async def codemate_node(state: RunState) -> dict[str, Any]:
+        """Execute CodeMate specialist task (docs/05 §6.1, CAP-01)."""
+        logger.info("Executing CodeMate specialist for run %s", state.get("run_id"))
+        return await run_codemate_specialist(
+            state=state,
+            router=router,
+            prompt_loader=prompt_loader,
+            session=session,
+        )
+
+    return codemate_node
 
 
 async def authcheck_node(state: RunState) -> dict[str, Any]:
@@ -486,6 +490,7 @@ def respond_node(state: RunState) -> dict[str, Any]:
 def build_agent_manager_graph(
     router: LLMGatewayRouter | None = None,
     prompt_loader: PromptLoader | None = None,
+    session: AsyncSession | None = None,
     checkpointer: BaseCheckpointSaver | None = None,
     interrupt_on_approval: bool = True,
 ) -> CompiledStateGraph:
@@ -500,7 +505,10 @@ def build_agent_manager_graph(
     builder.add_node("llm_route", llm_route)
 
     builder.add_node("plan", plan_node)
-    builder.add_node("codemate", codemate_node)
+    builder.add_node(
+        "codemate",
+        codemate_node_factory(router=router, prompt_loader=prompt_loader, session=session),
+    )
     builder.add_node("authcheck", authcheck_node)
     builder.add_node("join", join_node)
     builder.add_node("verify", verify_node)
@@ -543,17 +551,20 @@ class AgentManager:
         self,
         router: LLMGatewayRouter | None = None,
         prompt_loader: PromptLoader | None = None,
+        session: AsyncSession | None = None,
         checkpointer: BaseCheckpointSaver | None = None,
         interrupt_on_approval: bool = True,
         prompts_dir: Path | str | None = None,
     ) -> None:
         self.router = router
         self.prompt_loader = prompt_loader or PromptLoader(prompts_dir=prompts_dir)
+        self.session = session
         self.checkpointer = checkpointer
         self.interrupt_on_approval = interrupt_on_approval
         self.graph = build_agent_manager_graph(
             router=self.router,
             prompt_loader=self.prompt_loader,
+            session=self.session,
             checkpointer=self.checkpointer,
             interrupt_on_approval=self.interrupt_on_approval,
         )

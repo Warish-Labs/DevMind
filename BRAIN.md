@@ -8,21 +8,23 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `cd82b9d` (feat(server): implement M7-03 Agent Manager graph and plan execution routing) |
-| **Working tree** | Clean; M7-03 complete; all 13 checks pass; 409 server tests pass |
+| **Last commit** | `5b8f597` (docs: update BRAIN.md commit status for M7-03) |
+| **Working tree** | Clean; M7-04 complete; all 13 checks pass; 416 server tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 409/413 pass (4 skipped), client 46/46 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 416/420 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-04: CodeMate workflow nodes and citation validation** per `PLAN.md`:
-   - Inspect `docs/05 §4`, `docs/05 §6.1`, `docs/04 §8`:
-     - Implement CodeMate workflow subgraph and reasoning loop with scoped tools (`search_brain`, `get_symbol`, `get_file_range`, `get_relationships`).
-     - Implement deterministic citation validation ensuring all claims reference resolvable file/symbol provenance.
-     - Author comprehensive unit tests in `server/tests/test_codemate.py`.
+1. Implement **Milestone M7-05: Guard resolution and structural route check (E2 deterministic confirmation)** per `PLAN.md`:
+   - Inspect `docs/03 §3.2`, `docs/05 §6.3`, `docs/07 §7`:
+     - Route enumeration from `defines_route` edges.
+     - Guard chain resolution (middleware, dependencies, decorators, inline checks) from `guarded_by` edges.
+     - Sensitivity classification (deterministic rules + project config).
+     - Deterministic E2 confirmation.
+     - Author comprehensive unit tests in `server/tests/test_guard_resolution.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +38,22 @@
 ---
 
 ## 4. Done log
+
+### Feature — M7-04: CodeMate Workflow Nodes and Citation Validation
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-codemate`
+- **What**:
+  - Implemented the canonical CodeMate workflow subgraph in [`server/app/orchestration/codemate.py`](server/app/orchestration/codemate.py) per `docs/05 §4` and `docs/05 §6.1`:
+    - Context retrieval node (`retrieve_context_node_factory`) running hybrid retrieval search via `search_brain`.
+    - Insufficient context fallback node (`insufficient_context_node`) producing explicit `SynthesizedAnswer` explanations when no context packs match.
+    - Grounded generation node (`generate_answer_node_factory`) rendering versioned `codemate_generate` prompt and streaming synthesis with strict citation syntax `[source: <target>]`.
+    - Deterministic citation verification (`validate_citations` / `validate_citations_node`) validating provenance against ContextPack reference docs, symbol keys, exact file paths, and overlapping line ranges `[path:start-end]`.
+    - Single-retry regeneration node (`regenerate_answer_node_factory`) instructing LLM to regenerate removing or fixing ungrounded citations when hallucination is detected.
+    - Final answer extraction node (`finalize_node`) producing verified `SynthesizedAnswer` state.
+  - Wired CodeMate specialist execution directly into `AgentManager`'s `codemate_node_factory` in [`server/app/orchestration/manager.py`](server/app/orchestration/manager.py).
+  - Exported CodeMate components in [`server/app/orchestration/__init__.py`](server/app/orchestration/__init__.py).
+  - Authored 7 unit tests in [`server/tests/test_codemate.py`](server/tests/test_codemate.py) covering citation parsing, line range overlap math, insufficient context fallback, grounded generation, regeneration on hallucinated citations, and specialist integration. All 13 test-all checks pass (416 server tests pass).
 
 ### Feature — M7-03: Agent Manager Graph and Plan Execution Routing
 

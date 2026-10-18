@@ -5,6 +5,15 @@ from app.orchestration.checkpointer import (
     format_thread_id,
     parse_thread_id,
 )
+from app.orchestration.codemate import (
+    CitationValidationResult,
+    CodeMateAgent,
+    CodeMateState,
+    build_codemate_graph,
+    create_initial_codemate_state,
+    run_codemate_specialist,
+    validate_citations,
+)
 from app.orchestration.manager import (
     RELEASED_SPECIALISTS,
     AgentManager,
@@ -49,6 +58,9 @@ __all__ = [
     "BudgetState",
     "CheckpointerFactory",
     "CitationRef",
+    "CitationValidationResult",
+    "CodeMateAgent",
+    "CodeMateState",
     "DraftFinding",
     "GetFileRangeInput",
     "GetRelationshipsInput",
@@ -66,8 +78,10 @@ __all__ = [
     "VerifiedFinding",
     "append_items",
     "build_agent_manager_graph",
+    "build_codemate_graph",
     "classify_intent_deterministically",
     "create_agent_tools",
+    "create_initial_codemate_state",
     "create_initial_run_state",
     "format_thread_id",
     "get_file_range",
@@ -75,5 +89,7 @@ __all__ = [
     "get_symbol",
     "merge_usage_totals",
     "parse_thread_id",
+    "run_codemate_specialist",
     "search_brain",
+    "validate_citations",
 ]
