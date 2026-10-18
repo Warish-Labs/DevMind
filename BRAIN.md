@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `feat(server): implement M6-09 structured output validation and schema repair` |
+| **Last commit** | `5b6b1fd` (feat(server): implement M6-09 structured output validation and schema repair) |
 | **Working tree** | Clean; M6-09 complete; all 13 checks pass; 355 server tests pass |
 | **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 355/359 pass (4 skipped), client 46/46 pass |
