@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m8-app-shell` |
-| **Last commit** | `89211f9` (feat(client): implement M8-02 authentication routes and onboarding wizard) |
+| **Branch** | `main` |
+| **Last commit** | `a053e90` (feat(client): implement M8-03 app shell, navigation, and workspace selection (S-03)) |
 | **Working tree** | Clean; M8-03 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 73 client tests pass |
-| **Open PR** | None (working on feature/m8-app-shell) |
+| **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 73/73 pass |
 | **Date** | 2026-10-18 |
 
