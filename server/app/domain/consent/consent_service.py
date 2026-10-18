@@ -12,7 +12,10 @@ from app.core.auth_context import AuthContext, SystemContext
 from app.core.errors import ConsentRequiredError, NotFoundError, ValidationError
 from app.persistence.database import session_scope
 from app.persistence.models.consent import ConsentRecord
+from app.persistence.repositories.audit_repo import AuditEventRepository
+from app.persistence.repositories.brain_repo import BrainRepository
 from app.persistence.repositories.consent_repo import ConsentRepository
+from app.persistence.repositories.project_repo import ProjectRepository
 
 ConsentScopeType = Literal["snippet_transmission", "cloud_index", "llm_processing"]
 ConsentGrantedForType = Literal["single_request", "project"]
@@ -38,9 +41,18 @@ class ConsentItem(BaseModel):
     expires_at: str | None
     revoked_at: str | None
     is_active: bool
+    purged_counts: dict[str, int] | None = None
+    sync_mode_updated: bool = False
+    new_sync_mode: str | None = None
 
     @classmethod
-    def from_model(cls, record: ConsentRecord) -> ConsentItem:
+    def from_model(
+        cls,
+        record: ConsentRecord,
+        purged_counts: dict[str, int] | None = None,
+        sync_mode_updated: bool = False,
+        new_sync_mode: str | None = None,
+    ) -> ConsentItem:
         return cls(
             id=str(record.id),
             workspace_id=str(record.workspace_id),
@@ -56,6 +68,9 @@ class ConsentItem(BaseModel):
             expires_at=record.expires_at.isoformat() if record.expires_at else None,
             revoked_at=record.revoked_at.isoformat() if record.revoked_at else None,
             is_active=record.is_active(),
+            purged_counts=purged_counts,
+            sync_mode_updated=sync_mode_updated,
+            new_sync_mode=new_sync_mode,
         )
 
 
@@ -154,6 +169,25 @@ class ConsentService:
                 preview_hash=req.preview_hash,
                 expires_at=req.expires_at,
             )
+
+            # Record immutable audit event for consent grant per ADR-047
+            audit_repo = AuditEventRepository(session)
+            actor_id = ctx.user_id if isinstance(ctx, AuthContext) and ctx.user_id else None
+            await audit_repo.record(
+                ctx=ctx,
+                action="consent.granted",
+                actor_id=actor_id,
+                target_type="consent",
+                target_id=str(record.id),
+                metadata={
+                    "scope": record.scope,
+                    "provider_ids": record.provider_ids,
+                    "data_categories": record.data_categories,
+                    "granted_for": record.granted_for,
+                    "policy_version": record.policy_version,
+                },
+            )
+
             return ConsentItem.from_model(record)
 
     @classmethod
@@ -163,7 +197,7 @@ class ConsentService:
         project_id: uuid.UUID,
         consent_id: uuid.UUID,
     ) -> ConsentItem:
-        """Revoke a consent record immediately."""
+        """Revoke a consent record immediately and execute dependent data purges (docs/07 §7, docs/11)."""
         async with session_scope() as session:
             repo = ConsentRepository(session)
             record = await repo.revoke_consent(
@@ -173,7 +207,53 @@ class ConsentService:
                 raise NotFoundError(
                     detail=f"Consent record '{consent_id}' not found for project '{project_id}'"
                 )
-            return ConsentItem.from_model(record)
+
+            purged_counts: dict[str, int] = {"code_chunks": 0, "embeddings": 0}
+            sync_mode_updated = False
+            new_sync_mode: str | None = None
+
+            # Consequence check: If revoked consent covered cloud_index, check remaining active grants
+            if record.scope == "cloud_index":
+                has_active_index = await repo.has_active_consent(
+                    ctx=ctx, project_id=project_id, scope="cloud_index"
+                )
+                if not has_active_index:
+                    # Irreversibly purge all chunks and embeddings from the cloud
+                    brain_repo = BrainRepository(session)
+                    purged_counts = await brain_repo.purge_project_chunks(ctx, project_id)
+
+                    # Update project sync_mode to metadata_only
+                    project_repo = ProjectRepository(session)
+                    project = await project_repo.get_by_id(ctx, project_id)
+                    if project and project.sync_mode == "indexed":
+                        await project_repo.update(ctx, project_id, sync_mode="metadata_only")
+                        sync_mode_updated = True
+                        new_sync_mode = "metadata_only"
+
+            # Emit immutable audit event for revocation per ADR-047
+            audit_repo = AuditEventRepository(session)
+            actor_id = ctx.user_id if isinstance(ctx, AuthContext) and ctx.user_id else None
+            await audit_repo.record(
+                ctx=ctx,
+                action="consent.revoked",
+                actor_id=actor_id,
+                target_type="consent",
+                target_id=str(consent_id),
+                metadata={
+                    "scope": record.scope,
+                    "provider_ids": record.provider_ids,
+                    "purged_counts": purged_counts,
+                    "sync_mode_updated": sync_mode_updated,
+                    "new_sync_mode": new_sync_mode,
+                },
+            )
+
+            return ConsentItem.from_model(
+                record,
+                purged_counts=purged_counts,
+                sync_mode_updated=sync_mode_updated,
+                new_sync_mode=new_sync_mode,
+            )
 
     @classmethod
     async def get_consent(

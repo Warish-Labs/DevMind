@@ -322,3 +322,79 @@ def test_consent_rest_api_endpoints(monkeypatch, test_settings) -> None:
     res = client.get(f"/api/v1/projects/{project_id}/consents/check?scope=cloud_index")
     assert res.status_code == 200
     assert res.json()["has_consent"] is False
+
+
+@pytest.mark.asyncio
+async def test_consent_service_revoke_cloud_index_triggers_purge_and_audit(monkeypatch) -> None:
+    """Verify revoking cloud_index consent purges chunks and writes audit event."""
+    from contextlib import asynccontextmanager
+
+    project_id = generate_uuid7()
+    workspace_id = generate_uuid7()
+    consent_id = generate_uuid7()
+    user_id = generate_uuid7()
+    ctx = _make_auth_ctx(workspace_id=workspace_id, user_id=user_id)
+
+    mock_record = ConsentRecord(
+        id=consent_id,
+        workspace_id=workspace_id,
+        project_id=project_id,
+        user_id=user_id,
+        scope="cloud_index",
+        provider_ids=["google-gemini"],
+        data_categories=["code_snippets", "ast_metadata"],
+        granted_for="project",
+        policy_version="1.0",
+        granted_at=datetime.now(UTC),
+        revoked_at=datetime.now(UTC),
+    )
+
+    mock_project = MagicMock(spec=Project)
+    mock_project.id = project_id
+    mock_project.sync_mode = "indexed"
+
+    mock_session = AsyncMock()
+
+    @asynccontextmanager
+    async def mock_session_scope():
+        yield mock_session
+
+    monkeypatch.setattr("app.domain.consent.consent_service.session_scope", mock_session_scope)
+
+    mock_consent_repo = MagicMock()
+    mock_consent_repo.revoke_consent = AsyncMock(return_value=mock_record)
+    mock_consent_repo.has_active_consent = AsyncMock(return_value=False)
+    monkeypatch.setattr("app.domain.consent.consent_service.ConsentRepository", lambda s: mock_consent_repo)
+
+    mock_brain_repo = MagicMock()
+    mock_brain_repo.purge_project_chunks = AsyncMock(return_value={"code_chunks": 42, "embeddings": 42})
+    monkeypatch.setattr("app.domain.consent.consent_service.BrainRepository", lambda s: mock_brain_repo)
+
+    mock_project_repo = MagicMock()
+    mock_project_repo.get_by_id = AsyncMock(return_value=mock_project)
+    mock_project_repo.update = AsyncMock(return_value=mock_project)
+    monkeypatch.setattr("app.domain.consent.consent_service.ProjectRepository", lambda s: mock_project_repo)
+
+    mock_audit_repo = MagicMock()
+    mock_audit_repo.record = AsyncMock()
+    monkeypatch.setattr("app.domain.consent.consent_service.AuditEventRepository", lambda s: mock_audit_repo)
+
+    # Execute revoke
+    result = await ConsentService.revoke_consent(ctx, project_id, consent_id)
+
+    assert result.id == str(consent_id)
+    assert result.purged_counts == {"code_chunks": 42, "embeddings": 42}
+    assert result.sync_mode_updated is True
+    assert result.new_sync_mode == "metadata_only"
+
+    # Verify purges and updates were executed
+    mock_brain_repo.purge_project_chunks.assert_awaited_once_with(ctx, project_id)
+    mock_project_repo.update.assert_awaited_once_with(ctx, project_id, sync_mode="metadata_only")
+    mock_audit_repo.record.assert_awaited_once()
+
+    audit_kwargs = mock_audit_repo.record.await_args.kwargs
+    assert audit_kwargs["action"] == "consent.revoked"
+    assert audit_kwargs["target_id"] == str(consent_id)
+    assert audit_kwargs["metadata"]["purged_counts"] == {"code_chunks": 42, "embeddings": 42}
+    assert audit_kwargs["metadata"]["sync_mode_updated"] is True
+

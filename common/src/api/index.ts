@@ -112,6 +112,44 @@ export interface SyncModeTransitionResponse {
   transitioned_at: string;
 }
 
+export interface ConsentItem {
+  id: string;
+  workspace_id: string;
+  project_id: string;
+  user_id: string;
+  scope: "snippet_transmission" | "cloud_index" | "llm_processing";
+  provider_ids: string[];
+  data_categories: string[];
+  granted_for: "single_request" | "project";
+  policy_version: string;
+  preview_hash: string | null;
+  granted_at: string;
+  expires_at: string | null;
+  revoked_at: string | null;
+  is_active: boolean;
+  purged_counts?: {
+    code_chunks: number;
+    embeddings: number;
+  } | null;
+  sync_mode_updated?: boolean;
+  new_sync_mode?: string | null;
+}
+
+export interface ConsentListResponse {
+  items: ConsentItem[];
+  total: number;
+}
+
+export interface CreateConsentRequest {
+  scope: "snippet_transmission" | "cloud_index" | "llm_processing";
+  provider_ids?: string[];
+  data_categories?: string[];
+  granted_for?: "single_request" | "project";
+  policy_version?: string;
+  preview_hash?: string;
+  expires_at?: string;
+}
+
 export class ApiError extends Error {
   public readonly status: number;
   public readonly code: string;
@@ -525,5 +563,36 @@ export class DevMindApiClient {
         body: JSON.stringify({ sync_mode: syncMode }),
       }
     );
+  }
+
+  // -------------------------------------------------------------------------
+  // Consents & Transmission Controls (docs/03 §11.1, docs/07 §7, Screen S-10)
+  // -------------------------------------------------------------------------
+
+  public async listProjectConsents(
+    projectId: string,
+    params?: { activeOnly?: boolean; scope?: string }
+  ): Promise<ConsentListResponse> {
+    const query = new URLSearchParams();
+    if (params?.activeOnly) query.set("active_only", "true");
+    if (params?.scope) query.set("scope", params.scope);
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return this.fetchInternal<ConsentListResponse>(`/api/v1/projects/${projectId}/consents${qs}`);
+  }
+
+  public async createProjectConsent(
+    projectId: string,
+    req: CreateConsentRequest
+  ): Promise<ConsentItem> {
+    return this.fetchInternal<ConsentItem>(`/api/v1/projects/${projectId}/consents`, {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  }
+
+  public async revokeProjectConsent(projectId: string, consentId: string): Promise<ConsentItem> {
+    return this.fetchInternal<ConsentItem>(`/api/v1/projects/${projectId}/consents/${consentId}`, {
+      method: "DELETE",
+    });
   }
 }

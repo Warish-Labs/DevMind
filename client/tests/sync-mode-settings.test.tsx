@@ -103,6 +103,7 @@ describe("Project Settings & Sync Mode Manager (Screen S-10, ADR-022, M9-01)", (
       expect(html).toContain("Project Settings &amp; Privacy Controls");
       expect(html).toContain("S-10");
       expect(html).toContain("Sync Modes &amp; Privacy (ADR-022)");
+      expect(html).toContain("Consent Records (docs/07 §7)");
       expect(html).toContain("Retention Windows (ADR-026)");
       expect(html).toContain("Danger Zone");
     });

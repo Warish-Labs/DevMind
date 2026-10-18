@@ -57,6 +57,7 @@ async def create_project_consent(
 
 
 @router.delete("/{cid}", response_model=ConsentItem)
+@router.post("/{cid}/revoke", response_model=ConsentItem)
 @declare_permission(PERM_CONSENT_MANAGE)
 async def revoke_project_consent(
     pid: uuid.UUID,
