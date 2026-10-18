@@ -7,22 +7,22 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `main` |
-| **Last commit** | `54200a7` (feat(server): implement M7-01 LangGraph state schema, checkpointer, and AgentRun model) |
-| **Working tree** | Clean; M7-01 complete; all 13 checks pass; 386 server tests pass |
-| **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 386/390 pass (4 skipped), client 46/46 pass |
+| **Branch** | `feature/m7-agent-tools` |
+| **Last commit** | pending merge (feat(server): implement M7-02 agent tools with scoped access) |
+| **Working tree** | M7-02 complete; all 13 checks pass; 399 server tests pass |
+| **Open PR** | None (feature/m7-agent-tools) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 399/403 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-02: Tools with scoped access: search_brain, get_symbol, get_file_range, get_relationships** per `PLAN.md`:
-   - Inspect `docs/05 §9` (Tool execution boundaries), `docs/03 §7`, `docs/07 §15`:
-     - Implement tool execution boundary layer with read-only defaults, `AuthContext` tenancy verification, and permission enforcement.
-     - Implement core specialist tools: `search_brain`, `get_symbol`, `get_file_range`, `get_relationships`.
-     - Author comprehensive unit tests in `server/tests/test_agent_tools.py`.
+1. Implement **Milestone M7-03: Agent Manager graph and plan execution routing** per `PLAN.md`:
+   - Inspect `docs/05 §2.1`, `docs/05 §4`, `docs/05 §6`:
+     - Implement Agent Manager graph with intent classification, plan generation, and specialist task routing.
+     - Add conditional dispatch to CodeMate and AuthCheck specialists.
+     - Author comprehensive unit tests in `server/tests/test_agent_manager.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -36,6 +36,22 @@
 ---
 
 ## 4. Done log
+
+### Feature — M7-02: Tools with Scoped Access (search_brain, get_symbol, get_file_range, get_relationships)
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-agent-tools`
+- **What**:
+  - Implemented scoped retrieval and analysis tools in [`server/app/orchestration/tools.py`](server/app/orchestration/tools.py) adhering strictly to `docs/05 §9` tool execution boundaries:
+    - Closed allowlisted set: read-only by default, tenant-isolated via `AuthContext`, no code execution.
+    - `search_brain`: hybrid retrieval over Project Brain returning bounded items and `CitationRef` structures without exposing raw unconsented code.
+    - `get_symbol`: symbol declaration lookup by name and optional path filter, extracting qualified signatures, framework tags, and line ranges.
+    - `get_file_range`: line-bounded file slice reader strictly clamped to max 200 lines, reconstructing line text from current version code chunks.
+    - `get_relationships`: architectural call graph, import edge, and route guard inspector supporting incoming, outgoing, and bidirectional traversal.
+    - `AgentToolSet` wrapper and `create_agent_tools` factory generating LangChain `StructuredTool` instances and LLM gateway `ToolDefinition`s.
+    - Audit logging records tool name, counts, and durations without leaking raw queries or source code.
+  - Exported all tools and input schemas in [`server/app/orchestration/__init__.py`](server/app/orchestration/__init__.py).
+  - Authored 13 unit tests in [`server/tests/test_agent_tools.py`](server/tests/test_agent_tools.py) verifying success paths, cross-tenant isolation, line range clamping, symbol filtering, LangChain tool invocations, and tool definition schemas. All 13 test-all checks pass (399 server tests pass).
 
 ### Feature — M7-01: LangGraph State Schema and Checkpointer
 
