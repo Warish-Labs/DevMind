@@ -24,6 +24,7 @@ from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.analysis import EvidenceVerifier
 from app.analysis.guard_resolution import (
     ProjectSecurityConfig,
     RouteAnalysisResult,
@@ -68,12 +69,14 @@ class AuthCheckState(TypedDict, total=False):
     symbols: list[CodeSymbol | dict[str, Any]]
     relationships: list[CodeRelationship | dict[str, Any]]
     config: ProjectSecurityConfig | None
+    file_snapshot: dict[str, str]
     evaluations: list[RouteSecurityEvaluation]
     draft_findings: list[DraftFinding]
     proposals: list[Proposal]
     hypotheses: list[Hypothesis]
     unsupported_routes: list[dict[str, Any]]
     verified_findings: list[VerifiedFinding]
+    dropped_findings: list[dict[str, Any]]
     summary_report: str
     usage: Annotated[UsageTotals, merge_usage_totals]
     errors: Annotated[list[NodeError], append_items]
@@ -108,6 +111,7 @@ def create_initial_authcheck_state(
     symbols: list[CodeSymbol | dict[str, Any]] | None = None,
     relationships: list[CodeRelationship | dict[str, Any]] | None = None,
     config: ProjectSecurityConfig | None = None,
+    file_snapshot: dict[str, str] | None = None,
 ) -> AuthCheckState:
     """Initialize AuthCheckState with clean defaults."""
     return {
@@ -117,12 +121,14 @@ def create_initial_authcheck_state(
         "symbols": list(symbols or []),
         "relationships": list(relationships or []),
         "config": config,
+        "file_snapshot": dict(file_snapshot or {}),
         "evaluations": [],
         "draft_findings": [],
         "proposals": [],
         "hypotheses": [],
         "unsupported_routes": [],
         "verified_findings": [],
+        "dropped_findings": [],
         "summary_report": "",
         "usage": UsageTotals(),
         "errors": [],
@@ -266,7 +272,11 @@ def explain_findings_node_factory(
                         )
 
                 except Exception as exc:
-                    logger.warning("LLM security_explanation failed for %s: %s; using deterministic fallback", df.draft_id, exc)
+                    logger.warning(
+                        "LLM security_explanation failed for %s: %s; using deterministic fallback",
+                        df.draft_id,
+                        exc,
+                    )
                     errors.append(
                         NodeError(
                             node="explain_findings",
@@ -283,7 +293,9 @@ def explain_findings_node_factory(
                         impact="Unauthenticated callers can execute this endpoint without verified credentials.",
                         likely_cause="Route handler lacks an authentication middleware or dependency.",
                         remediation_proposal="Add an authentication guard (e.g. Depends(get_current_user) or requireAuth).",
-                        false_positive_indicators=["Route is intentionally public or guarded by upstream gateway."],
+                        false_positive_indicators=[
+                            "Route is intentionally public or guarded by upstream gateway."
+                        ],
                         confidence=0.9,
                     )
                 else:
@@ -292,7 +304,9 @@ def explain_findings_node_factory(
                         impact="Any authenticated caller can invoke administrative functionality regardless of assigned role.",
                         likely_cause="Route verifies caller identity but does not inspect caller role or permissions.",
                         remediation_proposal="Require an explicit role dependency (e.g. Depends(require_admin) or requireRole('admin')).",
-                        false_positive_indicators=["Object-level authorization is checked dynamically in callee."],
+                        false_positive_indicators=[
+                            "Object-level authorization is checked dynamically in callee."
+                        ],
                         confidence=0.85,
                     )
 
@@ -345,32 +359,46 @@ def explain_findings_node_factory(
 def verify_evidence_node(state: AuthCheckState) -> dict[str, Any]:
     """Deterministically verify draft findings against provenance citations (docs/05 §7)."""
     drafts = state.get("draft_findings", [])
+    file_snapshot = state.get("file_snapshot", {})
+
+    verifier = EvidenceVerifier(file_snapshot=file_snapshot)
     verified: list[VerifiedFinding] = []
+    dropped: list[dict[str, Any]] = []
 
     for d in drafts:
-        # Check that file path and line range are valid and grounded
-        if d.file_path and d.line_range and len(d.line_range) == 2:
-            s_line, e_line = d.line_range
-            if s_line > 0 and e_line >= s_line:
-                citation = f"{d.file_path}:{s_line}-{e_line}"
-                verified.append(
-                    VerifiedFinding(
-                        draft_id=d.draft_id,
-                        finding_id=f"vf_{d.draft_id}",
-                        is_verified=True,
-                        evidence_score=1.0,
-                        evidence_level=2,
-                        confidence=0.9,
-                        title=d.title,
-                        file_path=d.file_path,
-                        line_range=d.line_range,
-                        rule_id=d.rule_id,
-                        citation_ref=citation,
-                        resolution_notes="Statically verified on analyzed route and guard chain path.",
-                    )
+        res = verifier.verify_draft_finding(d)
+        if res.is_verified:
+            lvl = 2 if res.verified_level == "E2" else (1 if res.verified_level == "E1" else 0)
+            verified.append(
+                VerifiedFinding(
+                    draft_id=d.draft_id,
+                    finding_id=f"vf_{d.draft_id}",
+                    is_verified=True,
+                    evidence_score=res.evidence_score,
+                    evidence_level=lvl,
+                    confidence=res.confidence,
+                    title=res.title or d.title,
+                    file_path=res.file_path or d.file_path,
+                    line_range=res.line_range or d.line_range,
+                    rule_id=res.rule_id or d.rule_id,
+                    citation_ref=res.citation_ref
+                    or f"{d.file_path}:{d.line_range[0]}-{d.line_range[1]}",
+                    resolution_notes=res.resolution_notes,
                 )
+            )
+        else:
+            dropped.append(
+                {
+                    "draft_id": d.draft_id,
+                    "reasons": res.rejection_reasons,
+                    "title": d.title,
+                }
+            )
 
-    return {"verified_findings": verified}
+    return {
+        "verified_findings": verified,
+        "dropped_findings": dropped,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -401,7 +429,9 @@ def finalize_authcheck_node(state: AuthCheckState) -> dict[str, Any]:
     ]
 
     if unsupported:
-        lines.append(f"- **Not Analyzed (Unsupported Framework)**: {len(unsupported)} *(Notice: absence of finding is not safe)*")
+        lines.append(
+            f"- **Not Analyzed (Unsupported Framework)**: {len(unsupported)} *(Notice: absence of finding is not safe)*"
+        )
 
     lines.append("")
 
@@ -416,7 +446,9 @@ def finalize_authcheck_node(state: AuthCheckState) -> dict[str, Any]:
                 lines.append(f"- **Assessment**:\n{d.explanation}")
             lines.append("")
     else:
-        lines.append("✓ No route authorization or authentication gaps identified on the analyzed call paths.")
+        lines.append(
+            "✓ No route authorization or authentication gaps identified on the analyzed call paths."
+        )
 
     if unsupported:
         lines.append("### Unanalyzed Routes")
@@ -561,6 +593,7 @@ async def run_authcheck_specialist(
         symbols=symbols,
         relationships=relationships,
         config=config,
+        file_snapshot=state["request"].params.get("file_snapshot"),
     )
 
     res = await agent.run(init_state)
@@ -573,7 +606,10 @@ async def run_authcheck_specialist(
         specialist="authcheck",
         task_id=task_id,
         status="completed",
-        input_refs=[f"{d.file_path}:{d.line_range[0]}-{d.line_range[1]}" for d in res.get("draft_findings", [])],
+        input_refs=[
+            f"{d.file_path}:{d.line_range[0]}-{d.line_range[1]}"
+            for d in res.get("draft_findings", [])
+        ],
         params=state["request"].params,
     )
 

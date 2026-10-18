@@ -264,7 +264,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M7-04 CodeMate workflow nodes and citation validation (feature/m7-codemate)
 - [x] M7-05 Guard resolution and structural route check (E2 deterministic confirmation) (feature/m7-guard-resolution)
 - [x] M7-06 AuthCheck workflow nodes and evidence-constrained explanation (feature/m7-authcheck)
-- [ ] M7-07 Evidence verifier for grounding and citations (feature/m7-evidence-verifier)
+- [x] M7-07 Evidence verifier for grounding and citations (feature/m7-evidence-verifier)
 - [ ] M7-08 Job integration (ask_project, security_review) and SSE job event streaming (feature/m7-agent-jobs)
 - [ ] M7-09 Evaluation sets with baselines (answer-quality, faithfulness) (feature/m7-eval-baselines)
 - [ ] M7-10 Injection corpus run against graph workflows (docs/09 §12) (feature/m7-injection-run)

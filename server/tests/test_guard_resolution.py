@@ -88,59 +88,129 @@ def test_route_sensitivity_classification():
     analyzer = RouteGuardAnalyzer(config=config)
 
     # Public defaults
-    assert analyzer.classify_sensitivity(
-        analyzer.enumerate_routes(
-            [{"id": uuid4(), "symbol_key": "s1", "name": "health", "metadata": {"http_path": "/healthz", "http_method": "GET"}}],
-            [],
-        )[0]
-    ) == RouteSensitivity.PUBLIC
+    assert (
+        analyzer.classify_sensitivity(
+            analyzer.enumerate_routes(
+                [
+                    {
+                        "id": uuid4(),
+                        "symbol_key": "s1",
+                        "name": "health",
+                        "metadata": {"http_path": "/healthz", "http_method": "GET"},
+                    }
+                ],
+                [],
+            )[0]
+        )
+        == RouteSensitivity.PUBLIC
+    )
 
-    assert analyzer.classify_sensitivity(
-        analyzer.enumerate_routes(
-            [{"id": uuid4(), "symbol_key": "s2", "name": "docs", "metadata": {"http_path": "/docs", "http_method": "GET"}}],
-            [],
-        )[0]
-    ) == RouteSensitivity.PUBLIC
+    assert (
+        analyzer.classify_sensitivity(
+            analyzer.enumerate_routes(
+                [
+                    {
+                        "id": uuid4(),
+                        "symbol_key": "s2",
+                        "name": "docs",
+                        "metadata": {"http_path": "/docs", "http_method": "GET"},
+                    }
+                ],
+                [],
+            )[0]
+        )
+        == RouteSensitivity.PUBLIC
+    )
 
     # Custom public
-    assert analyzer.classify_sensitivity(
-        analyzer.enumerate_routes(
-            [{"id": uuid4(), "symbol_key": "s3", "name": "custom", "metadata": {"http_path": "/custom-public", "http_method": "GET"}}],
-            [],
-        )[0]
-    ) == RouteSensitivity.PUBLIC
+    assert (
+        analyzer.classify_sensitivity(
+            analyzer.enumerate_routes(
+                [
+                    {
+                        "id": uuid4(),
+                        "symbol_key": "s3",
+                        "name": "custom",
+                        "metadata": {"http_path": "/custom-public", "http_method": "GET"},
+                    }
+                ],
+                [],
+            )[0]
+        )
+        == RouteSensitivity.PUBLIC
+    )
 
     # Sensitive admin defaults
-    assert analyzer.classify_sensitivity(
-        analyzer.enumerate_routes(
-            [{"id": uuid4(), "symbol_key": "s4", "name": "admin_users", "metadata": {"http_path": "/admin/users", "http_method": "GET"}}],
-            [],
-        )[0]
-    ) == RouteSensitivity.SENSITIVE
+    assert (
+        analyzer.classify_sensitivity(
+            analyzer.enumerate_routes(
+                [
+                    {
+                        "id": uuid4(),
+                        "symbol_key": "s4",
+                        "name": "admin_users",
+                        "metadata": {"http_path": "/admin/users", "http_method": "GET"},
+                    }
+                ],
+                [],
+            )[0]
+        )
+        == RouteSensitivity.SENSITIVE
+    )
 
     # Mutating POST on resource
-    assert analyzer.classify_sensitivity(
-        analyzer.enumerate_routes(
-            [{"id": uuid4(), "symbol_key": "s5", "name": "delete_user", "metadata": {"http_path": "/api/v1/users/1", "http_method": "DELETE"}}],
-            [],
-        )[0]
-    ) == RouteSensitivity.SENSITIVE
+    assert (
+        analyzer.classify_sensitivity(
+            analyzer.enumerate_routes(
+                [
+                    {
+                        "id": uuid4(),
+                        "symbol_key": "s5",
+                        "name": "delete_user",
+                        "metadata": {"http_path": "/api/v1/users/1", "http_method": "DELETE"},
+                    }
+                ],
+                [],
+            )[0]
+        )
+        == RouteSensitivity.SENSITIVE
+    )
 
     # Custom sensitive
-    assert analyzer.classify_sensitivity(
-        analyzer.enumerate_routes(
-            [{"id": uuid4(), "symbol_key": "s6", "name": "custom_sens", "metadata": {"http_path": "/custom-sensitive", "http_method": "GET"}}],
-            [],
-        )[0]
-    ) == RouteSensitivity.SENSITIVE
+    assert (
+        analyzer.classify_sensitivity(
+            analyzer.enumerate_routes(
+                [
+                    {
+                        "id": uuid4(),
+                        "symbol_key": "s6",
+                        "name": "custom_sens",
+                        "metadata": {"http_path": "/custom-sensitive", "http_method": "GET"},
+                    }
+                ],
+                [],
+            )[0]
+        )
+        == RouteSensitivity.SENSITIVE
+    )
 
     # Authenticated default
-    assert analyzer.classify_sensitivity(
-        analyzer.enumerate_routes(
-            [{"id": uuid4(), "symbol_key": "s7", "name": "get_user", "metadata": {"http_path": "/api/v1/users/me", "http_method": "GET"}}],
-            [],
-        )[0]
-    ) == RouteSensitivity.AUTHENTICATED
+    assert (
+        analyzer.classify_sensitivity(
+            analyzer.enumerate_routes(
+                [
+                    {
+                        "id": uuid4(),
+                        "symbol_key": "s7",
+                        "name": "get_user",
+                        "metadata": {"http_path": "/api/v1/users/me", "http_method": "GET"},
+                    }
+                ],
+                [],
+            )[0]
+        )
+        == RouteSensitivity.AUTHENTICATED
+    )
 
 
 def test_route_enumeration_from_defines_route():
@@ -510,9 +580,15 @@ def test_unsupported_framework_recorded_as_not_analyzed():
 
 
 def test_fingerprint_generation():
-    fp1 = compute_fingerprint("devmind.authz.missing_role_check", "app/routes/admin.py", "GET /admin/users")
-    fp2 = compute_fingerprint("devmind.authz.missing_role_check", "app/routes/admin.py", "GET /admin/users")
-    fp3 = compute_fingerprint("devmind.authz.missing_role_check", "app/routes/admin.py", "POST /admin/users")
+    fp1 = compute_fingerprint(
+        "devmind.authz.missing_role_check", "app/routes/admin.py", "GET /admin/users"
+    )
+    fp2 = compute_fingerprint(
+        "devmind.authz.missing_role_check", "app/routes/admin.py", "GET /admin/users"
+    )
+    fp3 = compute_fingerprint(
+        "devmind.authz.missing_role_check", "app/routes/admin.py", "POST /admin/users"
+    )
 
     assert fp1 == fp2
     assert fp1 != fp3

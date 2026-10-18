@@ -8,23 +8,22 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `bb7434a` (feat(server): implement M7-06 AuthCheck workflow nodes and evidence-constrained explanation) |
-| **Working tree** | Clean; M7-06 complete; all 13 checks pass; 440 server tests pass |
+| **Last commit** | `to-be-updated` (feat(server): implement M7-07 evidence verifier for grounding and citations) |
+| **Working tree** | Clean; M7-07 complete; all 13 checks pass; 454 server tests pass (450 passed, 4 skipped) |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 436/440 pass (4 skipped), client 46/46 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 450/454 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-07: Evidence verifier for grounding and citations** per `PLAN.md`:
-   - Inspect `docs/05 §7` and `docs/03 §3.2`:
-     - Implement deterministic evidence verification service (`EvidenceVerifier`) validating snapshot file paths, versions, line ranges, snippet SHA-256 hashes, known rule IDs, and secret redaction.
-     - Verify structural claims for authorization findings by checking guard chain resolution results.
-     - Handle E2 downgrade to E1 when unresolved nodes exist within `analysis_scope`.
-     - Drop or downgrade invalid draft findings and record audit reasons.
-     - Author comprehensive unit tests in `server/tests/test_evidence_verifier.py`.
+1. Implement **Milestone M7-08: Job integration (ask_project, security_review) and SSE job event streaming** per `PLAN.md`:
+   - Inspect `docs/03 §5.2`, `docs/05 §4`, and `docs/02 §8.2`:
+     - Integrate AgentManager LangGraph execution into Celery / Redis background worker tasks for `ask_project` and `security_review` analysis job kinds.
+     - Stream execution events (`job_events` table and Redis pub/sub) with token counters, step transitions, citations, and draft/verified finding progress.
+     - Provide FastAPI SSE endpoint (`GET /api/v1/projects/{pid}/jobs/{jid}/events`) streaming RFC 8895 Server-Sent Events with heartbeat ping.
+     - Author comprehensive unit and integration tests in `server/tests/test_agent_jobs.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -38,6 +37,25 @@
 ---
 
 ## 4. Done log
+
+### Feature — M7-07: Evidence Verifier for Grounding and Citations
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-evidence-verifier`
+- **What**:
+  - Implemented the deterministic evidence and citation verification engine in [`server/app/analysis/evidence_verifier.py`](server/app/analysis/evidence_verifier.py) per `docs/05 §7`, `docs/03 §3.4`, and `docs/03 §12.1`:
+    - Full implementation of all 7 mandatory verification checks:
+      1. Snapshot presence and version check ensuring cited file path exists in snapshot and matches expected version ID.
+      2. Line range integrity validating positive start line, non-inverted range, and file length boundary checks.
+      3. Snippet hash confirmation computing normalized SHA-256 digest of cited line slices and rejecting tampered evidence.
+      4. Rule ID registry checking built-in DevMind rules and approved scanner prefixes (`bandit.*`, `semgrep.*`, `trivy.*`, `gitleaks.*`, `eslint.*`, `ruff.*`, `devmind.*`) with dynamic registration support.
+      5. Structural claim verification cross-referencing route authorization findings against `RouteGuardAnalyzer` evaluations and rejecting false claims on protected/exempt routes.
+      6. Evidence level verification downgrading E2 findings with unresolved callees or dynamic dependencies in `analysis_scope` to E1; downgrading disallowed E3 exploitability claims in v1 (ADR-041); sanitizing exploitability language (`vulnerable`, `exploitable`) for E0/E1 findings per `AGENTS.md §5.7`.
+      7. Secret detection and redaction identifying private keys, API tokens (Anthropic, OpenAI, Stripe, GitHub, GitLab, Slack, AWS), and database connection credentials, redacting them to `[REDACTED:<type>:<hash8>]`.
+    - Implemented `CitationVerifier` for structured and inline markdown citations (`[source: path:line-line]`, `[file]`, `[symbol]`, `[chunk_id]`), computing grounding ratios and identifying hallucinated references.
+    - Exported models and utilities in [`server/app/analysis/__init__.py`](server/app/analysis/__init__.py).
+    - Integrated `EvidenceVerifier` into AuthCheck's `verify_evidence_node` in [`server/app/orchestration/authcheck.py`](server/app/orchestration/authcheck.py) to filter, sanitize, and record dropped/downgraded findings.
+  - Authored 14 unit tests in [`server/tests/test_evidence_verifier.py`](server/tests/test_evidence_verifier.py) covering rule registry, file/version checks, line bounds, snippet hashing, structural claims, E2/E3 downgrades, secret redaction, and citation verification. All 13 test-all checks pass (450 server tests pass).
 
 ### Feature — M7-06: AuthCheck Workflow Nodes and Evidence-Constrained Explanation
 
