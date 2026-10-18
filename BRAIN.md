@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m8-project-overview` |
-| **Last commit** | `f39c566` (docs: update BRAIN.md commit status for M8-03) |
+| **Branch** | `main` |
+| **Last commit** | `026b1fd` (feat(client): implement M8-04 project overview with health and recent jobs (S-04)) |
 | **Working tree** | Clean; M8-04 complete; all 13 checks pass; 474 server tests pass (470 passed, 4 skipped); 82 client tests pass |
-| **Open PR** | None (working on feature/m8-project-overview) |
+| **Open PR** | None (working directly on main) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 470/474 pass (4 skipped), client 82/82 pass |
 | **Date** | 2026-10-18 |
 
