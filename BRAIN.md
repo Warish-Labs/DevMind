@@ -8,22 +8,23 @@
 
 | Field | Value |
 | **Branch** | `main` |
-| **Last commit** | `94bd087` (feat(server): implement M7-05 guard resolution and structural route check) |
-| **Working tree** | Clean; M7-05 complete; all 13 checks pass; 427 server tests pass |
+| **Last commit** | `to-be-updated` (feat(server): implement M7-06 AuthCheck workflow nodes and evidence-constrained explanation) |
+| **Working tree** | Clean; M7-06 complete; all 13 checks pass; 440 server tests pass |
 | **Open PR** | None (working directly on main) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 427/431 pass (4 skipped), client 46/46 pass |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 436/440 pass (4 skipped), client 46/46 pass |
 | **Date** | 2026-10-18 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Implement **Milestone M7-06: AuthCheck workflow nodes and evidence-constrained explanation** per `PLAN.md`:
-   - Inspect `docs/05 §6.3`:
-     - Build AuthCheck specialist workflow subgraph using `RouteGuardAnalyzer` for route enumeration and guard resolution.
-     - Wire LLM node (`security_explanation` prompt) to generate risk explanations and remediation diffs for emitted E2/E1 draft findings.
-     - Integrate with `AgentManager`'s `authcheck_node`.
-     - Author comprehensive unit tests in `server/tests/test_authcheck.py`.
+1. Implement **Milestone M7-07: Evidence verifier for grounding and citations** per `PLAN.md`:
+   - Inspect `docs/05 §7` and `docs/03 §3.2`:
+     - Implement deterministic evidence verification service (`EvidenceVerifier`) validating snapshot file paths, versions, line ranges, snippet SHA-256 hashes, known rule IDs, and secret redaction.
+     - Verify structural claims for authorization findings by checking guard chain resolution results.
+     - Handle E2 downgrade to E1 when unresolved nodes exist within `analysis_scope`.
+     - Drop or downgrade invalid draft findings and record audit reasons.
+     - Author comprehensive unit tests in `server/tests/test_evidence_verifier.py`.
    - Run verification test suite `node scripts/test-all.mjs --fast`.
 
 ---
@@ -37,6 +38,20 @@
 ---
 
 ## 4. Done log
+
+### Feature — M7-06: AuthCheck Workflow Nodes and Evidence-Constrained Explanation
+
+- **Date**: 2026-10-18
+- **Branch**: `feature/m7-authcheck`
+- **What**:
+  - Implemented the AuthCheck specialist workflow subgraph in [`server/app/orchestration/authcheck.py`](server/app/orchestration/authcheck.py) per `docs/05 §6.3`:
+    - Route analysis node (`analyze_routes_node_factory`) executing `RouteGuardAnalyzer` for deterministic route enumeration, guard chain resolution, and E2/E1 draft finding emission.
+    - Security explanation node (`explain_findings_node_factory`) rendering versioned `security_explanation` v1 prompt and parsing `FindingExplanation` structured output for risks and remediation diffs with evidence constraint enforcement.
+    - Evidence verification and synthesis node (`verify_evidence_node` / `finalize_authcheck_node`) formatting structured security summaries with endpoints discovered, protected, missing auth/authz, public exempt, and unsupported frameworks notice.
+    - Exported `AuthCheckAgent`, `build_authcheck_graph`, and `run_authcheck_specialist` in [`server/app/orchestration/__init__.py`](server/app/orchestration/__init__.py).
+  - Integrated AuthCheck specialist execution into `AgentManager` in [`server/app/orchestration/manager.py`](server/app/orchestration/manager.py) with parallel execution support.
+  - Added clean LangGraph reducer returns across specialist nodes in [`server/app/orchestration/codemate.py`](server/app/orchestration/codemate.py) and [`server/app/orchestration/state.py`](server/app/orchestration/state.py) to prevent duplicate accumulation during parallel fan-out.
+  - Authored 9 unit tests in [`server/tests/test_authcheck.py`](server/tests/test_authcheck.py) covering route analysis, prompt rendering, structured explanation parsing, E2 verification fallback, unsupported framework notices, and specialist integration. All 13 test-all checks pass (440 server tests pass).
 
 ### Feature — M7-05: Guard Resolution and Structural Route Check (E2 Deterministic Confirmation)
 

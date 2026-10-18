@@ -1,5 +1,13 @@
 """DevMind orchestration: LangGraph workflows, Agent Manager, CodeMate, AuthCheck (docs/05 §4)."""
 
+from app.orchestration.authcheck import (
+    AuthCheckAgent,
+    AuthCheckResult,
+    AuthCheckState,
+    build_authcheck_graph,
+    create_initial_authcheck_state,
+    run_authcheck_specialist,
+)
 from app.orchestration.checkpointer import (
     CheckpointerFactory,
     format_thread_id,
@@ -17,8 +25,10 @@ from app.orchestration.codemate import (
 from app.orchestration.manager import (
     RELEASED_SPECIALISTS,
     AgentManager,
+    authcheck_node_factory,
     build_agent_manager_graph,
     classify_intent_deterministically,
+    codemate_node_factory,
 )
 from app.orchestration.state import (
     ApprovalState,
@@ -55,6 +65,9 @@ __all__ = [
     "AgentManager",
     "AgentToolSet",
     "ApprovalState",
+    "AuthCheckAgent",
+    "AuthCheckResult",
+    "AuthCheckState",
     "BudgetState",
     "CheckpointerFactory",
     "CitationRef",
@@ -77,10 +90,14 @@ __all__ = [
     "UsageTotals",
     "VerifiedFinding",
     "append_items",
+    "authcheck_node_factory",
     "build_agent_manager_graph",
+    "build_authcheck_graph",
     "build_codemate_graph",
     "classify_intent_deterministically",
+    "codemate_node_factory",
     "create_agent_tools",
+    "create_initial_authcheck_state",
     "create_initial_codemate_state",
     "create_initial_run_state",
     "format_thread_id",
@@ -89,6 +106,7 @@ __all__ = [
     "get_symbol",
     "merge_usage_totals",
     "parse_thread_id",
+    "run_authcheck_specialist",
     "run_codemate_specialist",
     "search_brain",
     "validate_citations",

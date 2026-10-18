@@ -735,7 +735,7 @@ async def run_codemate_specialist(
         params=state["request"].params,
     )
 
-    hypotheses = list(state.get("hypotheses", []))
+    hypotheses = []
     if res.get("final_response"):
         hypotheses.append(
             Hypothesis(
