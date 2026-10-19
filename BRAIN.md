@@ -7,32 +7,72 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m9-purge-verification` |
-| **Last commit** | Pending commit (feat(server): implement M9-03 purge jobs and verification counts) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 141 client tests pass; server tests pass |
-| **Open PR** | `feature/m9-purge-verification` -> `main` (PR #60 pending) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 141/141 pass |
+| **Branch** | `feature/m9-retention-windows` |
+| **Last commit** | Pending commit (feat(server): implement M9-04 retention windows and scheduler cleanup) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 143 client tests pass; server tests pass |
+| **Open PR** | `feature/m9-retention-windows` -> `main` (PR #61 pending) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 143/143 pass |
 | **Date** | 2026-10-19 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m9-purge-verification` to GitHub.
-2. Open PR #60 (`feature/m9-purge-verification` -> `main`).
-3. After PR #60 is merged into `main`, proceed with **M9-04: Retention windows and scheduler cleanup (`feature/m9-retention-windows`)**.
+1. Commit and push `feature/m9-retention-windows` to GitHub.
+2. Open PR #61 (`feature/m9-retention-windows` -> `main`).
+3. After PR #61 is merged into `main`, proceed with **M9-05: Snapshot history (`feature/m9-snapshot-history`)**.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                      | Reference |
-| --- | ---------------------------------------------------------------------------------------------------- | --------- |
-| 1   | Review and merge PR #60 (`feature/m9-purge-verification` -> `main`) once GitHub Actions CI completes | M9-03     |
+| #   | Action required                                                                                     | Reference |
+| --- | --------------------------------------------------------------------------------------------------- | --------- |
+| 1   | Review and merge PR #61 (`feature/m9-retention-windows` -> `main`) once GitHub Actions CI completes | M9-04     |
 
 ---
 
 ## 4. Done log
+
+### Feature — M9-04: Retention Windows and Scheduler Cleanup
+
+- **Date**: 2026-10-19
+- **Branch**: `feature/m9-retention-windows`
+- **What**:
+  - Implemented configurable retention windows, ADR-026 interim defaults, periodic scheduler sweeps, and Screen S-10 retention UI per docs/03 §3.1, docs/07 §9, docs/08 (Screen S-10), and docs/10 §9:
+    - **Database & Migration (`RetentionPolicy`, `0010_retention_policies`)** ([`server/app/persistence/models/retention.py`](server/app/persistence/models/retention.py), [`server/alembic/versions/0010_retention_policies.py`](server/alembic/versions/0010_retention_policies.py)):
+      - Created `retention_policies` table scoped to `workspace_id` with optional `project_id` override, category `kind`, and `days` (with `CheckConstraint("days >= 1")` and unique constraint `(workspace_id, project_id, kind)`).
+      - Exported in `server/app/persistence/models/__init__.py`.
+    - **Persistence Layer (`RetentionRepository` & `BrainRepository`)** ([`server/app/persistence/repositories/`](server/app/persistence/repositories/)):
+      - Implemented `RetentionRepository` managing workspace and project retention policies with `AuthContext` tenancy verification.
+      - Added `sweep_project_retention(ctx, project_id, cutoffs)` to `BrainRepository`:
+        - Deletes expired `JobEvent` records older than cutoff.
+        - Nulls out expired evidence snippet text in `FindingEvidence` older than cutoff.
+        - Deletes stale non-current `FileVersion` records and unlinks associated `CodeChunk` and `ChunkEmbedding` rows older than snapshot retention cutoff.
+        - Deletes expired `AgentRun` records and associated LangGraph checkpoints older than cutoff.
+    - **Domain Layer (`RetentionService`)** ([`server/app/domain/retention/retention_service.py`](server/app/domain/retention/retention_service.py)):
+      - Implemented ADR-026 interim retention defaults (`job_events: 30d`, `snapshots: 90d`, `ephemeral_snippets: 7d`, `checkpoints: 30d`, `idempotency_keys: 1d`, `audit_events: 365d`).
+      - Implemented `get_workspace_retention`, `update_workspace_retention`, `get_project_retention`, `update_project_retention`, `reset_project_retention`, and `execute_retention_sweep`.
+      - Emits immutable `AuditEvent` on updates, overrides, resets, and completed sweeps (`action="retention.sweep_completed"`).
+    - **Scheduler Worker (`server/app/workers/scheduler.py`)** ([`server/app/workers/scheduler.py`](server/app/workers/scheduler.py)):
+      - Added `run_retention_sweep_job()` using explicit `SystemContext(reason="scheduled_retention_sweep")`.
+      - Added `periodic_sweep_worker` running automated sweeps periodically with graceful cancellation handling.
+    - **REST API Routes & Schemas** ([`server/app/api/retention.py`](server/app/api/retention.py), [`server/app/api/schemas.py`](server/app/api/schemas.py)):
+      - Added workspace routes `GET/PUT /api/v1/workspaces/{wid}/retention` guarded by `@declare_permission(PERM_WORKSPACE_READ/PERM_WORKSPACE_MANAGE)`.
+      - Added project routes `GET/PUT/DELETE /api/v1/projects/{pid}/retention` and `POST /api/v1/projects/{pid}/retention/sweep` guarded by `@declare_permission(PERM_PROJECT_READ/PERM_PROJECT_UPDATE)`.
+      - Mounted in `server/app/main.py`.
+    - **Common Client (`@devmind/common`)** ([`common/src/api/index.ts`](common/src/api/index.ts)):
+      - Added TypeScript interfaces: `RetentionPolicyItem`, `EffectiveRetentionCategory`, `EffectiveRetentionSummary`, `UpdateRetentionPolicyRequest`, `RetentionSweepReport`.
+      - Added client methods: `getWorkspaceRetention`, `updateWorkspaceRetention`, `getProjectRetention`, `updateProjectRetention`, `resetProjectRetention`, `triggerProjectRetentionSweep`.
+    - **Frontend UI (Screen S-10 Retention Tab)** ([`client/components/settings/`](client/components/settings/)):
+      - Created [`RetentionPolicyManager.tsx`](client/components/settings/RetentionPolicyManager.tsx) displaying category cards, days, status badges (Default vs Override), days edit dialog, provider backup retention disclosure (ADR-026 & docs/03 §8), and a "Run Retention Sweep Now" button with immediate swept counts report.
+      - Integrated into [`ProjectSettingsClient.tsx`](client/components/settings/ProjectSettingsClient.tsx).
+    - **Automated Verification**:
+      - Added `server/tests/test_retention.py` (8 tests passing).
+      - Added `client/tests/retention-policy.test.tsx` (2 tests, 143 total client tests passing).
+      - Updated `server/tests/test_migrations.py` verifying head `0010_retention_policies`.
+      - Next.js production build passes (25 routes).
+      - Full `node scripts/test-all.mjs --fast` passes all 13 checks.
 
 ### Feature — M9-03: Purge Jobs and Verification Counts
 

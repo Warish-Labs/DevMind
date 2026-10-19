@@ -20,6 +20,7 @@ from app.persistence.models.brain import (
     CodeRelationship,
     CodeSymbol,
     EmbeddingSpace,
+    File,
     FileVersion,
     Finding,
     FindingEvidence,
@@ -1002,6 +1003,102 @@ class BrainRepository(BaseRepository):
                 "threads_purged": threads_count,
             },
         }
+
+    async def sweep_project_retention(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        cutoffs: dict[str, datetime],
+    ) -> dict[str, int]:
+        """Sweep expired records for a project based on cutoff timestamps per kind (docs/03 §3.1, docs/07 §9).
+
+        Idempotent and safe to run multiple times. Returns count of purged records per kind.
+        """
+        await self._verify_project_access(ctx, project_id)
+        results: dict[str, int] = {
+            "job_events": 0,
+            "evidence_snippets": 0,
+            "snapshots": 0,
+            "checkpoints": 0,
+            "agent_runs": 0,
+        }
+
+        # 1. Sweep expired JobEvents
+        if "job_events" in cutoffs:
+            cutoff = cutoffs["job_events"]
+            job_ids_stmt = select(AnalysisJob.id).where(AnalysisJob.project_id == project_id)
+            del_events_stmt = (
+                delete(JobEvent)
+                .where(
+                    JobEvent.job_id.in_(job_ids_stmt),
+                    JobEvent.created_at < cutoff,
+                )
+            )
+            res = await self.session.execute(del_events_stmt)
+            results["job_events"] = res.rowcount or 0
+
+        # 2. Sweep expired evidence snippet text
+        if "ephemeral_snippets" in cutoffs or "evidence_snippets" in cutoffs:
+            cutoff = cutoffs.get("ephemeral_snippets") or cutoffs.get("evidence_snippets")
+            if cutoff:
+                finding_ids_stmt = select(Finding.id).where(Finding.project_id == project_id)
+                upd_snippets_stmt = (
+                    update(FindingEvidence)
+                    .where(
+                        FindingEvidence.finding_id.in_(finding_ids_stmt),
+                        FindingEvidence.snippet_text.is_not(None),
+                        FindingEvidence.created_at < cutoff,
+                    )
+                    .values(snippet_text=None)
+                )
+                res = await self.session.execute(upd_snippets_stmt)
+                results["evidence_snippets"] = res.rowcount or 0
+
+        # 3. Sweep expired snapshot versions (non-current FileVersion older than cutoff)
+        if "snapshots" in cutoffs:
+            cutoff = cutoffs["snapshots"]
+            active_file_version_ids_stmt = (
+                select(File.current_version_id)
+                .where(File.project_id == project_id, File.current_version_id.is_not(None))
+            )
+            stale_versions_stmt = (
+                select(FileVersion.id)
+                .where(
+                    FileVersion.file_id.in_(select(File.id).where(File.project_id == project_id)),
+                    FileVersion.created_at < cutoff,
+                    FileVersion.id.not_in(active_file_version_ids_stmt),
+                )
+            )
+            stale_version_ids = (await self.session.execute(stale_versions_stmt)).scalars().all()
+            if stale_version_ids:
+                stale_chunks_stmt = select(CodeChunk.id).where(CodeChunk.file_version_id.in_(stale_version_ids))
+                await self.session.execute(
+                    delete(ChunkEmbedding).where(ChunkEmbedding.chunk_id.in_(stale_chunks_stmt))
+                )
+                del_chunks_res = await self.session.execute(
+                    delete(CodeChunk).where(CodeChunk.file_version_id.in_(stale_version_ids))
+                )
+                del_vers_res = await self.session.execute(
+                    delete(FileVersion).where(FileVersion.id.in_(stale_version_ids))
+                )
+                results["snapshots"] = (del_vers_res.rowcount or 0) + (del_chunks_res.rowcount or 0)
+
+        # 4. Sweep expired agent runs & LangGraph checkpoints
+        if "checkpoints" in cutoffs:
+            cutoff = cutoffs["checkpoints"]
+            del_runs_stmt = (
+                delete(AgentRun)
+                .where(
+                    AgentRun.project_id == project_id,
+                    AgentRun.created_at < cutoff,
+                )
+            )
+            res = await self.session.execute(del_runs_stmt)
+            results["agent_runs"] = res.rowcount or 0
+            results["checkpoints"] = results["agent_runs"]
+
+        await self.session.flush()
+        return results
 
     async def get_active_embedding_space(
         self,

@@ -103,6 +103,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     from app.api.me import router as me_router
     from app.api.projects import projects_router, workspace_projects_router
     from app.api.public import router as public_router
+    from app.api.retention import project_retention_router, workspace_retention_router
     from app.api.scans import router as scans_router
     from app.api.webhooks import router as webhooks_router
     from app.api.workspaces import router as workspaces_router
@@ -122,9 +123,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_v1_router.include_router(workspaces_router)
     api_v1_router.include_router(workspace_projects_router)
     api_v1_router.include_router(workspace_integrations_router)
+    api_v1_router.include_router(workspace_retention_router)
     api_v1_router.include_router(integrations_router)
     api_v1_router.include_router(projects_router)
     api_v1_router.include_router(project_analyses_router)
+    api_v1_router.include_router(project_retention_router)
     api_v1_router.include_router(jobs_router)
     api_v1_router.include_router(brain_router)
     api_v1_router.include_router(scans_router)

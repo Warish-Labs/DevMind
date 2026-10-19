@@ -180,6 +180,44 @@ export interface PurgeProjectDataRequest {
   confirmation_slug?: string;
 }
 
+export interface RetentionPolicyItem {
+  id: string;
+  workspace_id: string;
+  project_id: string | null;
+  kind: string;
+  days: number;
+  is_override: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EffectiveRetentionCategory {
+  kind: string;
+  days: number;
+  default_days: number;
+  description: string;
+  is_custom: boolean;
+  source: "project_override" | "workspace_policy" | "default";
+}
+
+export interface EffectiveRetentionSummary {
+  workspace_id: string;
+  project_id?: string | null;
+  backup_retention_notice: string;
+  categories: EffectiveRetentionCategory[];
+}
+
+export interface UpdateRetentionPolicyRequest {
+  days: number;
+}
+
+export interface RetentionSweepReport {
+  project_id: string;
+  swept_at: string;
+  purged_counts: Record<string, number>;
+  effective_windows: Record<string, number>;
+}
+
 export class ApiError extends Error {
   public readonly status: number;
   public readonly code: string;
@@ -634,5 +672,62 @@ export class DevMindApiClient {
       method: "POST",
       body: JSON.stringify(req || {}),
     });
+  }
+
+  // -------------------------------------------------------------------------
+  // Retention Windows & Scheduled Sweeps (ADR-026, docs/03 §3.1, docs/07 §9)
+  // -------------------------------------------------------------------------
+
+  public async getWorkspaceRetention(workspaceId: string): Promise<EffectiveRetentionSummary> {
+    return this.fetchInternal<EffectiveRetentionSummary>(
+      `/api/v1/workspaces/${workspaceId}/retention`
+    );
+  }
+
+  public async updateWorkspaceRetention(
+    workspaceId: string,
+    kind: string,
+    req: UpdateRetentionPolicyRequest
+  ): Promise<RetentionPolicyItem> {
+    return this.fetchInternal<RetentionPolicyItem>(
+      `/api/v1/workspaces/${workspaceId}/retention/${kind}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(req),
+      }
+    );
+  }
+
+  public async getProjectRetention(projectId: string): Promise<EffectiveRetentionSummary> {
+    return this.fetchInternal<EffectiveRetentionSummary>(`/api/v1/projects/${projectId}/retention`);
+  }
+
+  public async updateProjectRetention(
+    projectId: string,
+    kind: string,
+    req: UpdateRetentionPolicyRequest
+  ): Promise<RetentionPolicyItem> {
+    return this.fetchInternal<RetentionPolicyItem>(
+      `/api/v1/projects/${projectId}/retention/${kind}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(req),
+      }
+    );
+  }
+
+  public async resetProjectRetention(projectId: string, kind: string): Promise<void> {
+    return this.fetchInternal<void>(`/api/v1/projects/${projectId}/retention/${kind}`, {
+      method: "DELETE",
+    });
+  }
+
+  public async triggerProjectRetentionSweep(projectId: string): Promise<RetentionSweepReport> {
+    return this.fetchInternal<RetentionSweepReport>(
+      `/api/v1/projects/${projectId}/retention/sweep`,
+      {
+        method: "POST",
+      }
+    );
   }
 }

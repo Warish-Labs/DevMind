@@ -286,7 +286,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M9-01 Sync-mode transitions and consequences API & UI (switching to metadata_only purges chunks/embeddings) (feature/m9-sync-mode)
 - [x] M9-02 Consent revoke flow (feature/m9-consent-revoke)
 - [x] M9-03 Purge jobs and verification counts (feature/m9-purge-verification)
-- [ ] M9-04 Retention windows and scheduler cleanup (feature/m9-retention-windows)
+- [x] M9-04 Retention windows and scheduler cleanup (feature/m9-retention-windows)
 - [ ] M9-05 Snapshot history (feature/m9-snapshot-history)
 - [ ] M9-06 Audit endpoints (feature/m9-audit-endpoints)
 - [ ] M9-07 Extension sync log (feature/m9-extension-sync-log)

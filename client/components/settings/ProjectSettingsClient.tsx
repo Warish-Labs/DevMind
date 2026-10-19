@@ -6,9 +6,8 @@ import { useApp } from "@/context/AppContext";
 import { SyncModeManager } from "./SyncModeManager";
 import { ConsentManager } from "./ConsentManager";
 import { ProjectPurgeManager } from "./ProjectPurgeManager";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { RetentionPolicyManager } from "./RetentionPolicyManager";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 
 interface ProjectSettingsClientProps {
   projectId: string;
@@ -150,62 +149,12 @@ export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps)
               Data Retention Windows &amp; Expiration (ADR-026)
             </h2>
             <p className="text-xs text-[var(--fg-2)] mt-0.5 max-w-2xl leading-relaxed">
-              Automated cleanup schedules for transient analysis logs, snapshot blobs, and vector
-              embeddings.
+              Automated cleanup schedules for transient analysis logs, snapshot versions, and vector
+              embeddings per docs/03 §3.1 and docs/07 §9.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-            <Card className="border-[var(--line-1)] bg-[var(--bg-1)]/40">
-              <CardHeader>
-                <span className="text-[10px] text-[var(--fg-2)] uppercase">Transient Data</span>
-                <CardTitle className="text-sm font-semibold text-[var(--fg-0)]">
-                  Job Events &amp; SSE Logs
-                </CardTitle>
-                <CardDescription className="text-xs text-[var(--fg-2)]">
-                  Streaming execution records and step logs.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm font-bold text-[var(--signal)]">30 Days</div>
-                <div className="text-[11px] text-[var(--fg-2)] mt-1">Automatic vacuum sweep</div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-[var(--line-1)] bg-[var(--bg-1)]/40">
-              <CardHeader>
-                <span className="text-[10px] text-[var(--fg-2)] uppercase">Snapshot Blobs</span>
-                <CardTitle className="text-sm font-semibold text-[var(--fg-0)]">
-                  AST File Versions
-                </CardTitle>
-                <CardDescription className="text-xs text-[var(--fg-2)]">
-                  Historical AST syntax trees and symbol diffs.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm font-bold text-[var(--signal)]">90 Days</div>
-                <div className="text-[11px] text-[var(--fg-2)] mt-1">
-                  Retains up to 20 snapshots
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-[var(--line-1)] bg-[var(--bg-1)]/40">
-              <CardHeader>
-                <span className="text-[10px] text-[var(--fg-2)] uppercase">Audit Events</span>
-                <CardTitle className="text-sm font-semibold text-[var(--fg-0)]">
-                  Security Audit Trail
-                </CardTitle>
-                <CardDescription className="text-xs text-[var(--fg-2)]">
-                  Immutable security actions and tenant changes.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm font-bold text-[var(--signal)]">365 Days</div>
-                <div className="text-[11px] text-[var(--fg-2)] mt-1">Encrypted append-only log</div>
-              </CardContent>
-            </Card>
-          </div>
+          <RetentionPolicyManager projectId={projectId} />
         </section>
       )}
 
