@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { SyncModeManager } from "./SyncModeManager";
 import { ConsentManager } from "./ConsentManager";
+import { ProjectPurgeManager } from "./ProjectPurgeManager";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -212,33 +213,15 @@ export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps)
         <section aria-labelledby="danger-heading" className="space-y-6">
           <div>
             <h2 id="danger-heading" className="text-lg font-semibold text-[var(--danger)]">
-              Danger Zone
+              Danger Zone &amp; Cloud Data Purge
             </h2>
             <p className="text-xs text-[var(--fg-2)] mt-0.5 max-w-2xl leading-relaxed">
               Irreversible actions for project {projectName}. Be cautious when initiating full data
-              purges or project deletion.
+              purges across cloud stores.
             </p>
           </div>
 
-          <Card className="border-[var(--danger)]/40 bg-[rgba(255,107,94,0.04)] font-mono text-xs">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold text-[var(--danger)]">
-                Purge All Project Brain Indexes
-              </CardTitle>
-              <CardDescription className="text-xs text-[var(--fg-1)]">
-                Permanently deletes all code chunks, vector embeddings, symbols, relationships, and
-                snapshots for this project while keeping project membership intact.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center justify-between pt-2 border-t border-[var(--line-1)]">
-              <span className="text-[11px] text-[var(--fg-2)]">
-                Action requires workspace administrator role
-              </span>
-              <Button variant="destructive" size="sm">
-                Purge Project Brain
-              </Button>
-            </CardContent>
-          </Card>
+          <ProjectPurgeManager projectId={projectId} />
         </section>
       )}
     </div>

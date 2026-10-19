@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from datetime import UTC, datetime
 from typing import Any
@@ -234,6 +236,84 @@ class ProjectService:
             "purged_counts": purged_counts,
             "transitioned_at": datetime.now(UTC),
         }
+
+    async def purge_project_data(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        scope: str = "all",
+        confirmation_slug: str | None = None,
+    ) -> dict[str, Any]:
+        """Purge project data across stores and generate Deletion Verification Report (M9-03, docs/11).
+
+        Acceptance:
+        - Per-store deletion counts across PostgreSQL, Redis, and LangGraph checkpoints.
+        - Cryptographic verification hash (SHA-256) over report content.
+        - Automatic fallback/reset of project sync_mode to 'metadata_only'.
+        - Immutable AuditEvent recorded per ADR-047 (no source code logged).
+        """
+        project = await self.get_project(ctx, project_id)
+
+        if confirmation_slug is not None and confirmation_slug != project.slug:
+            raise ValidationError(
+                detail=f"Confirmation slug '{confirmation_slug}' does not match project slug '{project.slug}'"
+            )
+
+        # 1. Execute per-store purge
+        stores_breakdown = await self.brain_repo.purge_project_data(ctx, project_id, scope=scope)
+
+        # 2. Reset sync_mode to metadata_only
+        if project.sync_mode != "metadata_only":
+            await self.repo.update(ctx, project_id, sync_mode="metadata_only")
+
+        purged_at = datetime.now(UTC).isoformat()
+        requested_by = (
+            str(ctx.user_id) if isinstance(ctx, AuthContext) and ctx.user_id else "system"
+        )
+
+        # 3. Build deterministic canonical report dictionary for hashing
+        report_data = {
+            "project_id": str(project.id),
+            "workspace_id": str(project.workspace_id),
+            "requested_by": requested_by,
+            "purged_at": purged_at,
+            "scope": scope,
+            "stores": stores_breakdown,
+            "sync_mode": "metadata_only",
+            "status": "completed",
+        }
+
+        canonical_json = json.dumps(
+            {
+                "project_id": report_data["project_id"],
+                "workspace_id": report_data["workspace_id"],
+                "requested_by": report_data["requested_by"],
+                "purged_at": report_data["purged_at"],
+                "scope": report_data["scope"],
+                "stores": report_data["stores"],
+                "sync_mode": report_data["sync_mode"],
+            },
+            sort_keys=True,
+        )
+        verification_hash = f"sha256:{hashlib.sha256(canonical_json.encode('utf-8')).hexdigest()}"
+        report_data["verification_hash"] = verification_hash
+
+        # 4. Record audit event per ADR-047 (counts & hash only, zero source content)
+        await self.audit_repo.record(
+            ctx,
+            workspace_id=project.workspace_id,
+            action="project.data_purged",
+            target_kind="project",
+            target_id=str(project_id),
+            metadata={
+                "scope": scope,
+                "stores": stores_breakdown,
+                "verification_hash": verification_hash,
+                "sync_mode": "metadata_only",
+            },
+        )
+
+        return report_data
 
     async def delete_project(
         self,

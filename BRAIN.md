@@ -7,32 +7,67 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m9-consent-revoke` |
-| **Last commit** | `201f1ab` (feat(server): implement M9-02 consent revoke flow and dependent data purge) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes: 14 static, 11 dynamic); 139 client tests pass; server tests pass |
-| **Open PR** | `feature/m9-consent-revoke` -> `main` |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server 472/476 pass (4 skipped), client 139/139 pass |
-| **Date** | 2026-10-18 |
+| **Branch** | `feature/m9-purge-verification` |
+| **Last commit** | Pending commit (feat(server): implement M9-03 purge jobs and verification counts) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 141 client tests pass; server tests pass |
+| **Open PR** | `feature/m9-purge-verification` -> `main` (PR #60 pending) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 141/141 pass |
+| **Date** | 2026-10-19 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m9-consent-revoke` to GitHub.
-2. Open PR #59 (`feature/m9-consent-revoke` -> `main`).
-3. After PR #59 is merged into `main`, proceed with **M9-03: Purge jobs and verification counts (`feature/m9-purge-verification`)**.
+1. Commit and push `feature/m9-purge-verification` to GitHub.
+2. Open PR #60 (`feature/m9-purge-verification` -> `main`).
+3. After PR #60 is merged into `main`, proceed with **M9-04: Retention windows and scheduler cleanup (`feature/m9-retention-windows`)**.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                  | Reference |
-| --- | ------------------------------------------------------------------------------------------------ | --------- |
-| 1   | Review and merge PR #59 (`feature/m9-consent-revoke` -> `main`) once GitHub Actions CI completes | M9-02     |
+| #   | Action required                                                                                      | Reference |
+| --- | ---------------------------------------------------------------------------------------------------- | --------- |
+| 1   | Review and merge PR #60 (`feature/m9-purge-verification` -> `main`) once GitHub Actions CI completes | M9-03     |
 
 ---
 
 ## 4. Done log
+
+### Feature — M9-03: Purge Jobs and Verification Counts
+
+- **Date**: 2026-10-19
+- **Branch**: `feature/m9-purge-verification`
+- **What**:
+  - Implemented multi-store project data purging, cryptographic verification report generation, and Danger Zone UI per ADR-047, docs/03 §10, docs/07 §7, and docs/08 (Screen S-10):
+    - **Persistence Layer (`BrainRepository`)** ([`server/app/persistence/repositories/brain_repo.py`](server/app/persistence/repositories/brain_repo.py)):
+      - Implemented `purge_project_data(self, ctx, project_id, scope="all") -> dict[str, Any]` executing coordinated per-store purges:
+        - PostgreSQL: Deletes `ChunkEmbedding`, `CodeChunk`, redaction/evidence snippets in `FindingEvidence.snippet_text`, and `JobEvent` records scoped to `project_id`.
+        - Redis: Scan-and-delete pattern for temporary project cache keys `*{project_id}*`.
+        - LangGraph checkpoints: Purges thread state/checkpoints matching `devmind:{project_id}:%`.
+        - Returns structured store counts: `{ postgres: {...}, redis: {...}, checkpoints: {...} }`.
+    - **Domain Layer (`ProjectService`)** ([`server/app/domain/projects/service.py`](server/app/domain/projects/service.py)):
+      - Implemented `purge_project_data(self, ctx, project_id, scope="all", confirmation_slug=None)`:
+        - Validates typed confirmation slug against target project slug to prevent accidental deletion.
+        - Executes multi-store purge via `BrainRepository`.
+        - Automatically resets project `sync_mode` to `metadata_only`.
+        - Generates deterministic SHA-256 cryptographic `verification_hash` over sorted canonical payload without sensitive code snippets per ADR-047.
+        - Emits immutable `AuditEvent` (`action="project.data_purged"`).
+        - Returns `DeletionVerificationReport`.
+    - **REST API Route & Schemas** ([`server/app/api/projects.py`](server/app/api/projects.py), [`server/app/api/schemas.py`](server/app/api/schemas.py)):
+      - Added `PurgeProjectDataRequest` and `DeletionVerificationReport` schemas.
+      - Mounted `POST /api/v1/projects/{pid}/purge` protected by `@declare_permission(PERM_PROJECT_DELETE)` with RFC 9457 error handling.
+    - **Common API Client** ([`common/src/api/index.ts`](common/src/api/index.ts)):
+      - Added TypeScript interfaces `PurgeProjectDataRequest` and `DeletionVerificationReport`.
+      - Implemented `DevMindApiClient.purgeProjectData(projectId, data)`.
+    - **Frontend UI (Screen S-10 Danger Zone)** ([`client/components/settings/`](client/components/settings/)):
+      - Created [`ProjectPurgeManager.tsx`](client/components/settings/ProjectPurgeManager.tsx): dialog with typed confirmation slug, irreversible purge warning, per-store breakdown table (chunks, embeddings, evidence snippets, checkpoints, cache entries), and verification hash badge with copy button.
+      - Integrated into [`ProjectSettingsClient.tsx`](client/components/settings/ProjectSettingsClient.tsx) Danger Zone.
+    - **Automated Verification**:
+      - Added `client/tests/project-purge.test.tsx` (2 tests, 141 total client tests passing).
+      - Added `test_project_purge_forbidden_without_delete_role` and `test_project_service_purge_project_data_and_verification_report` in `server/tests/test_projects_api.py`.
+      - Next.js production build passes (25 routes).
+      - Full `node scripts/test-all.mjs --fast` passes all 13 checks.
 
 ### Feature — M9-02: Consent Revoke Flow & Dependent Data Purge
 

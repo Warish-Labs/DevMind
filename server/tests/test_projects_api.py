@@ -12,6 +12,7 @@ from app.core.auth_context import AuthContext
 from app.core.ids import generate_uuid7
 from app.core.settings import Settings
 from app.domain.auth import (
+    PERM_PROJECT_DELETE,
     PERM_PROJECT_READ,
     PERM_PROJECT_UPDATE,
     PERM_WORKSPACE_MANAGE,
@@ -251,6 +252,129 @@ async def test_project_service_sync_mode_transition_and_purge() -> None:
     # 3. Invalid sync mode raises ValidationError
     with pytest.raises(ValidationError):
         await service.update_sync_mode(ctx, pid, "invalid_mode")
+
+
+def test_project_purge_forbidden_without_delete_role(rsa_key_pair) -> None:
+    """Verify that project data purge endpoint rejects callers lacking PERM_PROJECT_DELETE."""
+    private_key, public_key = rsa_key_pair
+    settings = Settings(database_url="sqlite+aiosqlite:///:memory:", env="test")
+    app = create_app(settings=settings)
+
+    verifier = ClerkTokenVerifier(settings=settings, static_public_key=public_key)
+    app.dependency_overrides[get_token_verifier] = lambda: verifier
+
+    pid = generate_uuid7()
+    wid = generate_uuid7()
+    mock_ctx = AuthContext(
+        user_id=generate_uuid7(),
+        clerk_user_id="user_viewer",
+        email="viewer@example.com",
+        workspace_id=wid,
+        workspace_role="viewer",
+        project_id=pid,
+        project_role="viewer",
+        permissions=frozenset({PERMISSION_AUTHENTICATED, PERM_PROJECT_READ}),
+    )
+    app.dependency_overrides[get_auth_context] = lambda: mock_ctx
+
+    with TestClient(app=app) as client:
+        token = make_test_token(private_key, sub="user_viewer")
+        headers = {"Authorization": f"Bearer {token}"}
+
+        res = client.post(
+            f"/api/v1/projects/{pid}/purge",
+            json={"scope": "all"},
+            headers=headers,
+        )
+        assert res.status_code == 403
+        assert res.json()["code"] == "auth.forbidden"
+
+
+@pytest.mark.asyncio
+async def test_project_service_purge_project_data_and_verification_report() -> None:
+    """Verify ProjectService purge across stores, verification report, and audit recording."""
+    from unittest.mock import AsyncMock, MagicMock
+
+    from app.core.errors import ValidationError
+    from app.domain.projects.service import ProjectService
+    from app.persistence.models.project import Project
+
+    session = AsyncMock()
+    service = ProjectService(session)
+
+    pid = generate_uuid7()
+    wid = generate_uuid7()
+    user_id = generate_uuid7()
+    mock_project = MagicMock(spec=Project)
+    mock_project.id = pid
+    mock_project.workspace_id = wid
+    mock_project.slug = "demo-repo"
+    mock_project.sync_mode = "indexed"
+
+    service.repo.get_by_id = AsyncMock(return_value=mock_project)
+    service.repo.update = AsyncMock(return_value=mock_project)
+    service.brain_repo.purge_project_data = AsyncMock(
+        return_value={
+            "postgres": {
+                "code_chunks": 50,
+                "chunk_embeddings": 50,
+                "evidence_snippets": 5,
+                "job_events": 12,
+            },
+            "redis": {"cache_keys_purged": 6},
+            "checkpoints": {"threads_purged": 2},
+        }
+    )
+    service.audit_repo.record = AsyncMock()
+
+    ctx = AuthContext(
+        user_id=user_id,
+        clerk_user_id="user_admin",
+        email="admin@example.com",
+        workspace_id=wid,
+        workspace_role="admin",
+        project_id=pid,
+        project_role="maintainer",
+        permissions=frozenset({PERMISSION_AUTHENTICATED, PERM_PROJECT_READ, PERM_PROJECT_DELETE}),
+    )
+
+    # 1. Mismatched confirmation slug raises ValidationError
+    with pytest.raises(ValidationError):
+        await service.purge_project_data(
+            ctx, pid, scope="all", confirmation_slug="wrong-slug"
+        )
+
+    # 2. Matching confirmation slug executes purge and generates verification report
+    report = await service.purge_project_data(
+        ctx, pid, scope="all", confirmation_slug="demo-repo"
+    )
+
+    assert report["project_id"] == str(pid)
+    assert report["workspace_id"] == str(wid)
+    assert report["requested_by"] == str(user_id)
+    assert report["scope"] == "all"
+    assert report["sync_mode"] == "metadata_only"
+    assert report["status"] == "completed"
+    assert report["verification_hash"].startswith("sha256:")
+    assert len(report["verification_hash"]) == 71  # "sha256:" + 64 hex chars
+
+    # Verify per-store counts
+    assert report["stores"]["postgres"]["code_chunks"] == 50
+    assert report["stores"]["postgres"]["chunk_embeddings"] == 50
+    assert report["stores"]["redis"]["cache_keys_purged"] == 6
+    assert report["stores"]["checkpoints"]["threads_purged"] == 2
+
+    # Verify project sync_mode updated to metadata_only
+    service.repo.update.assert_awaited_once_with(ctx, pid, sync_mode="metadata_only")
+
+    # Verify audit event emitted with verification hash and counts, no source code
+    service.audit_repo.record.assert_awaited_once()
+    audit_kwargs = service.audit_repo.record.await_args.kwargs
+    assert audit_kwargs["action"] == "project.data_purged"
+    assert audit_kwargs["target_id"] == str(pid)
+    assert audit_kwargs["metadata"]["verification_hash"] == report["verification_hash"]
+    assert audit_kwargs["metadata"]["stores"]["postgres"]["code_chunks"] == 50
+
 
 
 def test_projects_crud_lifecycle_live_db(rsa_key_pair) -> None:

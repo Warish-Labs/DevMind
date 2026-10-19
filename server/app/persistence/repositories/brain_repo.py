@@ -6,13 +6,14 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import delete, func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.auth_context import AuthContext, SystemContext
 from app.core.ids import generate_uuid7
 from app.persistence.models.brain import (
+    AgentRun,
     AnalysisJob,
     ChunkEmbedding,
     CodeChunk,
@@ -887,6 +888,120 @@ class BrainRepository(BaseRepository):
 
         await self.session.flush()
         return {"code_chunks": chunk_count, "embeddings": emb_count}
+
+    async def purge_project_data(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        scope: str = "all",
+    ) -> dict[str, Any]:
+        """Purge data for a project across PostgreSQL, Redis, and LangGraph checkpoints (M9-03, docs/11).
+
+        Returns per-store deletion counts.
+        """
+        await self._verify_project_access(ctx, project_id)
+
+        # 1. PostgreSQL Purges
+        # Code chunks & vector embeddings
+        emb_count_stmt = select(func.count(ChunkEmbedding.chunk_id)).where(
+            ChunkEmbedding.project_id == project_id
+        )
+        emb_count = (await self.session.execute(emb_count_stmt)).scalar() or 0
+        if emb_count > 0:
+            await self.session.execute(
+                delete(ChunkEmbedding).where(ChunkEmbedding.project_id == project_id)
+            )
+
+        chunk_count_stmt = select(func.count(CodeChunk.id)).where(
+            CodeChunk.project_id == project_id
+        )
+        chunk_count = (await self.session.execute(chunk_count_stmt)).scalar() or 0
+        if chunk_count > 0:
+            await self.session.execute(
+                delete(CodeChunk).where(CodeChunk.project_id == project_id)
+            )
+
+        # Clear consented snippet texts from finding_evidence if full purge
+        snippet_count = 0
+        if scope == "all":
+            finding_ids_stmt = select(Finding.id).where(Finding.project_id == project_id)
+            evidence_count_stmt = select(func.count(FindingEvidence.id)).where(
+                FindingEvidence.finding_id.in_(finding_ids_stmt),
+                FindingEvidence.snippet_text.is_not(None),
+            )
+            snippet_count = (await self.session.execute(evidence_count_stmt)).scalar() or 0
+            if snippet_count > 0:
+                await self.session.execute(
+                    update(FindingEvidence)
+                    .where(
+                        FindingEvidence.finding_id.in_(finding_ids_stmt),
+                        FindingEvidence.snippet_text.is_not(None),
+                    )
+                    .values(snippet_text=None)
+                )
+
+        # Job events
+        job_ids_stmt = select(AnalysisJob.id).where(AnalysisJob.project_id == project_id)
+        events_count_stmt = select(func.count(JobEvent.id)).where(
+            JobEvent.job_id.in_(job_ids_stmt)
+        )
+        events_count = (await self.session.execute(events_count_stmt)).scalar() or 0
+        if events_count > 0 and scope == "all":
+            await self.session.execute(
+                delete(JobEvent).where(JobEvent.job_id.in_(job_ids_stmt))
+            )
+
+        # 2. Checkpoints (LangGraph thread writes and checkpoints)
+        thread_prefix = f"devmind:{project_id}:%"
+        threads_count = 0
+        try:
+            agent_runs_count_stmt = select(func.count(AgentRun.id)).where(
+                AgentRun.thread_id.like(thread_prefix)
+            )
+            threads_count = (await self.session.execute(agent_runs_count_stmt)).scalar() or 0
+            if scope == "all":
+                await self.session.execute(
+                    text("DELETE FROM langgraph.checkpoint_writes WHERE thread_id LIKE :prefix"),
+                    {"prefix": thread_prefix},
+                )
+                await self.session.execute(
+                    text("DELETE FROM langgraph.checkpoints WHERE thread_id LIKE :prefix"),
+                    {"prefix": thread_prefix},
+                )
+        except Exception:
+            pass
+
+        # 3. Redis Purge
+        redis_keys_purged = 0
+        try:
+            from app.core.redis import get_async_redis_client
+
+            redis_client = get_async_redis_client()
+            pattern = f"*{project_id}*"
+            keys = []
+            async for key in redis_client.scan_iter(match=pattern, count=100):
+                keys.append(key)
+            if keys:
+                redis_keys_purged = await redis_client.delete(*keys)
+        except Exception:
+            pass
+
+        await self.session.flush()
+
+        return {
+            "postgres": {
+                "code_chunks": chunk_count,
+                "chunk_embeddings": emb_count,
+                "evidence_snippets": snippet_count,
+                "job_events": events_count if scope == "all" else 0,
+            },
+            "redis": {
+                "cache_keys_purged": redis_keys_purged,
+            },
+            "checkpoints": {
+                "threads_purged": threads_count,
+            },
+        }
 
     async def get_active_embedding_space(
         self,

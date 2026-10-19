@@ -10,8 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.schemas import (
     AddProjectMemberRequest,
     CreateProjectRequest,
+    DeletionVerificationReport,
     ProjectMemberResponse,
     ProjectResponse,
+    PurgeProjectDataRequest,
     SyncModeTransitionResponse,
     UpdateProjectRequest,
     UpdateSyncModeRequest,
@@ -152,6 +154,30 @@ async def update_project_sync_mode(
     service = ProjectService(session)
     result = await service.update_sync_mode(ctx, pid, payload.sync_mode)
     return SyncModeTransitionResponse.model_validate(result)
+
+
+@projects_router.post(
+    "/purge",
+    response_model=DeletionVerificationReport,
+    summary="Purge project data",
+    description="Purge project data across PostgreSQL, Redis, and LangGraph checkpoints with cryptographic verification report (M9-03, docs/11).",
+)
+@declare_permission(PERM_PROJECT_DELETE)
+async def purge_project_data(
+    pid: UUID,
+    payload: PurgeProjectDataRequest | None = None,
+    ctx: AuthContext = Depends(require_permission(PERM_PROJECT_DELETE)),
+    session: AsyncSession = Depends(get_db_session),
+) -> DeletionVerificationReport:
+    req = payload or PurgeProjectDataRequest()
+    service = ProjectService(session)
+    result = await service.purge_project_data(
+        ctx,
+        pid,
+        scope=req.scope,
+        confirmation_slug=req.confirmation_slug,
+    )
+    return DeletionVerificationReport.model_validate(result)
 
 
 @projects_router.delete(
