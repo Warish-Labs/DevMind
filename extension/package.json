@@ -84,6 +84,16 @@
         "command": "devmind.signOut",
         "title": "DevMind: Sign Out",
         "category": "DevMind"
+      },
+      {
+        "command": "devmind.showSyncLog",
+        "title": "DevMind: View Sync History & Log",
+        "category": "DevMind"
+      },
+      {
+        "command": "devmind.clearSyncLog",
+        "title": "DevMind: Clear Local Sync Log",
+        "category": "DevMind"
       }
     ],
     "viewsContainers": {

@@ -7,32 +7,58 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m9-audit-endpoints` |
-| **Last commit** | Pending commit (feat(server): implement M9-06 workspace and project audit endpoints) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 154 client tests pass; server tests pass |
-| **Open PR** | `feature/m9-audit-endpoints` -> `main` (PR #63 pending) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 154/154 pass |
+| **Branch** | `feature/m9-extension-sync-log` |
+| **Last commit** | Pending commit (feat(extension): implement M9-07 extension sync log and history store) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 78 extension tests pass; server tests pass |
+| **Open PR** | `feature/m9-extension-sync-log` -> `main` (PR #64 pending) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 154/154 pass, extension 78/78 pass |
 | **Date** | 2026-10-19 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m9-audit-endpoints` to GitHub.
-2. Open PR #63 (`feature/m9-audit-endpoints` -> `main`).
-3. After PR #63 is merged into `main`, proceed with **M9-07: Extension sync log (`feature/m9-extension-sync-log`)**.
+1. Commit and push `feature/m9-extension-sync-log` to GitHub.
+2. Open PR #64 (`feature/m9-extension-sync-log` -> `main`).
+3. After PR #64 is merged into `main`, proceed with **Milestone 10: Hardening, observability, and capacity**.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                   | Reference |
-| --- | ------------------------------------------------------------------------------------------------- | --------- |
-| 1   | Review and merge PR #63 (`feature/m9-audit-endpoints` -> `main`) once GitHub Actions CI completes | M9-06     |
+| #   | Action required                                                                                      | Reference |
+| --- | ---------------------------------------------------------------------------------------------------- | --------- |
+| 1   | Review and merge PR #64 (`feature/m9-extension-sync-log` -> `main`) once GitHub Actions CI completes | M9-07     |
 
 ---
 
 ## 4. Done log
+
+### Feature — M9-07: Extension Sync Log and History Store
+
+- **Date**: 2026-10-19
+- **Branch**: `feature/m9-extension-sync-log`
+- **What**:
+  - Implemented append-only local synchronization audit logging and UI history inspection per docs/06 §9, §11.3, §13, and ADR-047:
+    - **Local Sync Log Store (`SyncLogStore`)** ([`extension/src/scanner/syncLog.ts`](extension/src/scanner/syncLog.ts)):
+      - Built `SyncLogStore` storing sync events strictly outside the repository in `storageDirectory/sync-log.json` (honoring Rule 5 and ADR-047 public repo zero-leak invariants).
+      - Tracks per-event execution status (`success`, `failed`, `stale_base_recovered`, `offline_queued`), file counts, version counts, symbol & edge counts, finding counts, duration ms, receipt hash, and errors.
+      - Implements FIFO capping to 100 entries, with `record()`, `getRecent()`, `getAll()`, `getLastSync()`, and `clear()`.
+    - **Sync Client Integration (`SyncClient`)** ([`extension/src/services/syncClient.ts`](extension/src/services/syncClient.ts)):
+      - Integrated `syncLogStore` into `SyncOptions` and `SyncResult`.
+      - Measures precise sync duration in milliseconds.
+      - Automatically logs both successful sync executions (with receipt hash) and failures (unauthenticated or network/server errors).
+    - **VS Code Extension UI (`SyncViewProvider` & Commands)** ([`extension/src/views/syncView.ts`](extension/src/views/syncView.ts), [`extension/src/extension.ts`](extension/src/extension.ts), [`extension/package.json`](extension/package.json)):
+      - Enhanced `SyncReceiptTreeItem` to dynamically show actual latest receipt hash, timestamp, and status.
+      - Added collapsible `SyncHistoryGroupTreeItem` rendering itemized `SyncLogEntryTreeItem` events with status badges (`✓`, `↺`, `✗`), file/symbol summary chips, and rich hover tooltips.
+      - Registered `devmind.showSyncLog`: Displays complete formatted audit log in a dedicated VS Code OutputChannel (`DevMind: Sync Log`).
+      - Registered `devmind.clearSyncLog`: Clears local sync history outside the repo and notifies the user.
+    - **Automated Verification**:
+      - Added `extension/tests/sync-log.test.ts` (8 tests passing).
+      - Full extension test suite: 15 test files, 78 passed.
+      - Extension packaged cleanly (`devmind-vscode.vsix`).
+      - Next.js production build passes (25 routes).
+      - `node scripts/test-all.mjs --fast` passes all 13 checks.
 
 ### Feature — M9-06: Workspace and Project Audit Endpoints & Governance UI
 

@@ -179,7 +179,7 @@ describe("Extension Views", () => {
       const provider = new SyncViewProvider();
       const roots = await provider.getChildren();
 
-      expect(roots.length).toBe(5);
+      expect(roots.length).toBe(6);
 
       const modeItem = roots.find((r): r is SyncModeTreeItem => r instanceof SyncModeTreeItem);
       expect(modeItem?.label).toBe("Mode: metadata_only");

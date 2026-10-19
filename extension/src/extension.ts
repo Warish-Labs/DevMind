@@ -15,11 +15,13 @@ import { ConsentWebviewManager } from "./views/consentWebview";
 
 import { ExtensionAuthService } from "./services/auth";
 import { SyncClient } from "./services/syncClient";
+import { SyncLogStore } from "./scanner/syncLog";
 
 let findingsSource: LocalScanFindingsSource;
 let diagnosticService: DiagnosticService;
 let statusBarService: StatusBarService;
 let authService: ExtensionAuthService;
+let syncLogStore: SyncLogStore;
 let findingsProvider: FindingsViewProvider;
 let structureProvider: StructureViewProvider;
 let scanProvider: ScanViewProvider;
@@ -43,16 +45,19 @@ export function activate(context: vscode.ExtensionContext): void {
   };
   authService = ExtensionAuthService.init(secrets as vscode.SecretStorage);
 
-  const storageDir = context.storageUri?.fsPath || context.globalStorageUri?.fsPath;
+  const storageDir = context.storageUri?.fsPath || context.globalStorageUri?.fsPath || "";
+  const initialRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || "";
   findingsSource = new LocalScanFindingsSource(storageDir);
   diagnosticService = new DiagnosticService();
   statusBarService = new StatusBarService(settings.fixtureMode);
+  syncLogStore = new SyncLogStore(storageDir, initialRoot);
+  syncLogStore.load().catch(() => {});
 
   // Initialize TreeView Providers
   findingsProvider = new FindingsViewProvider(findingsSource);
   structureProvider = new StructureViewProvider(findingsSource);
   scanProvider = new ScanViewProvider();
-  syncProvider = new SyncViewProvider();
+  syncProvider = new SyncViewProvider(syncLogStore);
   databaseProvider = new DatabaseViewProvider(findingsSource);
 
   // Register TreeDataProviders
@@ -207,6 +212,7 @@ export function activate(context: vscode.ExtensionContext): void {
             projectId,
             workspaceRoot,
             manifestStore,
+            syncLogStore,
             findings,
             modules,
             databaseModels,
@@ -216,6 +222,7 @@ export function activate(context: vscode.ExtensionContext): void {
           });
 
           statusBarService.setIdle();
+          syncProvider.refresh();
 
           if (res.success) {
             vscode.window.showInformationMessage(
@@ -226,6 +233,7 @@ export function activate(context: vscode.ExtensionContext): void {
           }
         } catch (err) {
           statusBarService.setIdle();
+          syncProvider.refresh();
           vscode.window.showErrorMessage(`DevMind sync encountered an error: ${String(err)}`);
         }
       }
@@ -359,9 +367,77 @@ export function activate(context: vscode.ExtensionContext): void {
     );
   });
 
+  // Register devmind.showSyncLog & devmind.clearSyncLog commands (Milestone M9-07)
+  const syncOutputChannel = vscode.window.createOutputChannel("DevMind: Sync Log");
+  const showSyncLogCmd = vscode.commands.registerCommand("devmind.showSyncLog", async () => {
+    await syncLogStore.load();
+    const entries = syncLogStore.getAll();
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || "Unknown";
+
+    syncOutputChannel.clear();
+    syncOutputChannel.appendLine(
+      "================================================================================"
+    );
+    syncOutputChannel.appendLine(
+      "DEVMIND EXTENSION CLOUD SYNCHRONIZATION LOG (Milestone M9-07, docs/06 §9, §11.3)"
+    );
+    syncOutputChannel.appendLine(
+      "================================================================================"
+    );
+    syncOutputChannel.appendLine(`Workspace Root:    ${workspaceRoot}`);
+    syncOutputChannel.appendLine(`Log Storage:       ${syncLogStore.getStoragePath()}`);
+    syncOutputChannel.appendLine(`Generated At:      ${new Date().toISOString()}`);
+    syncOutputChannel.appendLine(`Total Recorded:    ${entries.length} sync event(s)\n`);
+
+    if (entries.length === 0) {
+      syncOutputChannel.appendLine("No cloud synchronization events recorded yet.");
+      syncOutputChannel.appendLine(
+        "Run 'DevMind: Trigger Sync Now' to synchronize local metadata."
+      );
+    } else {
+      for (const e of entries) {
+        syncOutputChannel.appendLine(`[${e.timestamp}] STATUS: ${e.status.toUpperCase()}`);
+        syncOutputChannel.appendLine(`  Event ID:             ${e.id}`);
+        syncOutputChannel.appendLine(`  Project ID:           ${e.projectId}`);
+        syncOutputChannel.appendLine(`  Sync Mode:            ${e.syncMode}`);
+        syncOutputChannel.appendLine(
+          `  Files Synced:         ${e.filesCount} (versions created: ${e.versionsCreated}, removed: ${e.removedCount})`
+        );
+        syncOutputChannel.appendLine(
+          `  Symbols / Edges:      ${e.symbolsCount} symbols, ${e.relationshipsCount} relationships`
+        );
+        syncOutputChannel.appendLine(
+          `  Findings Ingested:    ${e.findingsIngested} (capped at E1)`
+        );
+        syncOutputChannel.appendLine(`  Duration:             ${e.durationMs ?? 0}ms`);
+        syncOutputChannel.appendLine(`  Receipt Hash:         ${e.receiptHash || "None"}`);
+        if (e.staleBaseRecovered) {
+          syncOutputChannel.appendLine(
+            `  Stale Base Recovery:  Yes (resolved 409 conflict via re-diff)`
+          );
+        }
+        if (e.error) {
+          syncOutputChannel.appendLine(`  Error Detail:         ${e.error}`);
+        }
+        syncOutputChannel.appendLine(
+          "--------------------------------------------------------------------------------"
+        );
+      }
+    }
+    syncOutputChannel.show(true);
+  });
+
+  const clearSyncLogCmd = vscode.commands.registerCommand("devmind.clearSyncLog", async () => {
+    await syncLogStore.clear();
+    syncProvider.refresh();
+    vscode.window.showInformationMessage("DevMind: Local sync history cleared.");
+    logger.info("Local sync history cleared");
+  });
+
   context.subscriptions.push(
     diagnosticService.getCollection(),
     statusBarService.getItem(),
+    syncOutputChannel,
     regFindings,
     regStructure,
     regScan,
@@ -376,6 +452,8 @@ export function activate(context: vscode.ExtensionContext): void {
     linkProjectCmd,
     showWhatLeavesCmd,
     reviewSyncCmd,
+    showSyncLogCmd,
+    clearSyncLogCmd,
     openLocCmd,
     refreshAllCmd,
     signInCmd,
