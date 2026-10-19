@@ -318,6 +318,13 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     req_id = _get_request_id(request)
     logger.exception("Unhandled server exception: %s", str(exc))
 
+    try:
+        from app.core.error_reporting import report_exception
+
+        report_exception(exc, request=request)
+    except Exception:
+        pass
+
     problem = ProblemDetails(
         type="about:blank",
         title="Internal Server Error",

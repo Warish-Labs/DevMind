@@ -153,6 +153,18 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
             return {"status": "skipped", "job_id": job_id_str}
 
         logger.info("Worker claimed job %s (type=%s)", job_id, job_type)
+        start_worker_time = time.perf_counter()
+        job_status = "succeeded"
+
+        from opentelemetry.trace import Status, StatusCode
+
+        from app.core.telemetry import get_tracer, record_worker_job, sanitize_span_attributes
+
+        tracer = get_tracer("devmind.worker")
+        span = tracer.start_span(
+            "devmind.worker.process_job",
+            attributes=sanitize_span_attributes({"job.id": str(job_id), "job.type": job_type}),
+        )
 
         try:
             # Check for cancellation before executing heavy work
@@ -163,6 +175,7 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
 
             if _run_async(_check_cancelled()):
                 logger.info("Job %s was cancelled before execution completed", job_id)
+                job_status = "cancelled"
                 return {"status": "cancelled", "job_id": job_id_str}
 
             # Dispatch based on job type (ingest_project, embed_chunks, security_review, etc.)
@@ -352,6 +365,9 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
             return {"status": "succeeded", "job_id": job_id_str, "result": result_data}
 
         except Exception as exc:
+            job_status = "failed"
+            span.record_exception(exc)
+            span.set_status(Status(StatusCode.ERROR, description=str(exc)))
             error_msg = str(exc)
             logger.error("Job %s failed with exception: %s", job_id, error_msg, exc_info=True)
 
@@ -368,6 +384,10 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
 
             _run_async(_fail())
             raise
+        finally:
+            span.end()
+            duration = time.perf_counter() - start_worker_time
+            record_worker_job(job_type=job_type, status=job_status, duration_seconds=duration)
 
     return app
 

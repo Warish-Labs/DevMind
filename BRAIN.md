@@ -7,32 +7,60 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-authz-suite` |
-| **Last commit** | Pending commit (feat(server): implement M10-01 complete authorization and tenant isolation test suite) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 174 authz matrix & rate limit tests pass; 657 server tests pass |
-| **Open PR** | `feature/m10-authz-suite` -> `main` (PR #65 pending) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 154/154 pass, extension 78/78 pass |
+| **Branch** | `feature/m10-observability` |
+| **Last commit** | Pending commit (feat(server): implement M10-02 observability stack and OpenTelemetry traces) |
+| **Working tree** | Clean; all 13 fast checks pass; 665 server tests pass, client 154/154 pass, extension 78/78 pass |
+| **Open PR** | `feature/m10-observability` -> `main` (PR #66 pending) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-19 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m10-authz-suite` to GitHub.
-2. Open PR #65 (`feature/m10-authz-suite` -> `main`).
-3. After PR #65 is merged into `main`, proceed with **M10-02: Observability stack & OpenTelemetry traces** (`feature/m10-observability`).
+1. Commit and push `feature/m10-observability` to GitHub.
+2. Open PR #66 (`feature/m10-observability` -> `main`).
+3. After PR #66 is merged into `main`, proceed with **M10-03: Alerting thresholds, health checks, and kill switches** (`feature/m10-alerts`).
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                | Reference |
-| --- | ---------------------------------------------------------------------------------------------- | --------- |
-| 1   | Review and merge PR #65 (`feature/m10-authz-suite` -> `main`) once GitHub Actions CI completes | M10-01    |
+| #   | Action required                                                                                  | Reference |
+| --- | ------------------------------------------------------------------------------------------------ | --------- |
+| 1   | Review and merge PR #66 (`feature/m10-observability` -> `main`) once GitHub Actions CI completes | M10-02    |
 
 ---
 
 ## 4. Done log
+
+### Feature — M10-02: Observability Stack & OpenTelemetry Traces
+
+- **Date**: 2026-10-19
+- **Branch**: `feature/m10-observability`
+- **What**:
+  - Implemented comprehensive OpenTelemetry tracing, metrics instrumentation, structured log correlation, and error reporting across the API, background workers, and LLM gateway per docs/02 §12, docs/10 §13, docs/11 §M10, ADR-030, ADR-046, and ADR-047:
+    - **OpenTelemetry Core Infrastructure** ([`server/app/core/telemetry.py`](server/app/core/telemetry.py)):
+      - Built `init_telemetry` configuring `TracerProvider` and `MeterProvider` with configurable exporter modes (`memory` for testing/diagnostics, `console` for Render log stream).
+      - Added `TelemetryMiddleware` for FastAPI requests automatically extracting route templates, HTTP methods, status codes, and request correlation IDs into server spans while populating `X-Trace-ID` response headers.
+      - Implemented strict attribute payload sanitization (`sanitize_span_attributes`): guarantees forbidden keys (`prompt`, `completion`, `code`, `source`, `raw_payload`, `password`, `secret`, `token`, `cookie`, `jwt`) are dropped and sensitive values are redacted with `redact_sensitive_text` (Rule 5 & ADR-047).
+      - Built in-memory metric reader with standard instruments: `devmind_http_requests_total`, `devmind_http_request_duration_seconds`, `devmind_worker_jobs_total`, `devmind_worker_job_duration_seconds`, `devmind_llm_requests_total`, `devmind_llm_tokens_total`, `devmind_llm_latency_seconds`, and `devmind_queue_depth`.
+    - **Structured Log Correlation** ([`server/app/core/logging.py`](server/app/core/logging.py)):
+      - Enhanced `JSONFormatter` to inspect active OpenTelemetry spans and automatically inject W3C standard 32-hex `trace_id` and 16-hex `span_id` into all structured log entries.
+      - Added `actor_id_ctx` context variable alongside `request_id_ctx`, `job_id_ctx`, `workspace_id_ctx`, and `project_id_ctx`.
+      - Preserved pytest `LogCaptureHandler` instances during log initialization for robust test isolation.
+    - **LLM Gateway & Background Worker Telemetry** ([`server/app/llm/router.py`](server/app/llm/router.py), [`server/app/workers/celery_app.py`](server/app/workers/celery_app.py)):
+      - Instrumented LLM generation requests with `devmind.llm.generate` spans and recorded `record_llm_call` token consumption and latency metrics without emitting prompts or completions.
+      - Instrumented Celery `process_job` background task with `devmind.worker.process_job` spans, execution duration histograms, and outcome metrics.
+    - **Free-Tier Error Reporting Fallback (OQ-15)** ([`server/app/core/error_reporting.py`](server/app/core/error_reporting.py), [`server/app/core/errors.py`](server/app/core/errors.py)):
+      - Built `report_exception` with payload scrubbing (stripping headers, request bodies, prompt/source text).
+      - Fallback to local structured JSON logging when `DEVMIND_SENTRY_DSN` is absent (100% free profile compliant, ADR-046).
+      - Wired `unhandled_exception_handler` in `errors.py` to `report_exception`.
+    - **Automated Verification**:
+      - Added [`server/tests/test_telemetry.py`](server/tests/test_telemetry.py) covering span creation, attribute redaction, trace correlation in JSON logs, middleware metrics, worker metrics, LLM metrics, and error fallback.
+      - 665 server tests passed in 89s.
+      - Layer import boundary check (`lint-imports`): 7 kept, 0 broken.
+      - `node scripts/test-all.mjs --fast`: all 13 checks passed.
 
 ### Feature — M10-01: Complete Authorization and Tenant Isolation Test Suite across All Routes
 

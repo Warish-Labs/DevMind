@@ -103,6 +103,15 @@ class Settings(BaseSettings):
     kill_llm: bool = False
     kill_embed: bool = False
 
+    # Observability, tracing, and error reporting (docs/02 §12, docs/10 §13, ADR-030, OQ-15)
+    otel_enabled: bool = True
+    otel_service_name: str = "devmind-api"
+    otel_exporter: Literal["console", "memory", "none"] = "memory"
+    sentry_dsn: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("DEVMIND_SENTRY_DSN", "SENTRY_DSN"),
+    )
+
     @field_validator("encryption_keys", mode="before")
     @classmethod
     def parse_encryption_keys(cls, value: str | list[str] | None) -> list[str]:
