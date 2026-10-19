@@ -18,6 +18,9 @@ workspace_id_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar(
 project_id_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "project_id", default=None
 )
+actor_id_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "actor_id", default=None
+)
 
 # Patterns for sensitive information redaction
 REDACTION_PATTERNS = [
@@ -99,6 +102,23 @@ class JSONFormatter(logging.Formatter):
         if proj_id:
             log_payload["project_id"] = proj_id
 
+        act_id = actor_id_ctx.get() or getattr(record, "actor_id", None)
+        if act_id:
+            log_payload["actor_id"] = act_id
+
+        # Correlated OpenTelemetry trace and span IDs (W3C standard 32-hex / 16-hex)
+        try:
+            from opentelemetry import trace
+
+            span = trace.get_current_span()
+            if span:
+                span_ctx = span.get_span_context()
+                if span_ctx and span_ctx.is_valid:
+                    log_payload["trace_id"] = f"{span_ctx.trace_id:032x}"
+                    log_payload["span_id"] = f"{span_ctx.span_id:016x}"
+        except Exception:
+            pass
+
         if record.exc_info and record.exc_text:
             log_payload["exception"] = redact_sensitive_text(record.exc_text)
 
@@ -111,8 +131,10 @@ def setup_logging(log_level: str = "INFO") -> None:
     root = logging.getLogger()
     root.setLevel(level)
 
-    # Remove existing handlers to avoid duplicates
+    # Remove existing handlers to avoid duplicates (preserve test log capture)
     for handler in list(root.handlers):
+        if handler.__class__.__name__ == "LogCaptureHandler":
+            continue
         root.removeHandler(handler)
 
     handler = logging.StreamHandler()

@@ -48,6 +48,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Configure structured logging with secret redaction
     setup_logging(log_level=settings.log_level)
 
+    # Initialize OpenTelemetry and error reporting (docs/02 §12, docs/10 §13, ADR-030)
+    from app.core.error_reporting import init_error_reporting
+    from app.core.telemetry import TelemetryMiddleware, init_telemetry
+
+    init_telemetry(settings=settings)
+    init_error_reporting(settings=settings)
+
     app = FastAPI(
         title="DevMind API",
         version="0.1.0",
@@ -68,6 +75,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # OpenTelemetry tracing and metrics middleware (docs/02 §12, docs/10 §13)
+    app.add_middleware(TelemetryMiddleware)
 
     # Request context middleware (correlation ID & timing)
     app.add_middleware(RequestContextMiddleware)

@@ -315,6 +315,21 @@ class LLMGatewayRouter:
             price_units=model_entry.price_units,
         )
 
+        try:
+            from app.core.telemetry import record_llm_call
+
+            record_llm_call(
+                provider=provider_key,
+                model=model_entry.model_id,
+                task_name=task,
+                status=outcome,
+                input_tokens=in_tokens,
+                output_tokens=out_tokens,
+                duration_seconds=latency_ms / 1000.0,
+            )
+        except Exception:
+            pass
+
     async def generate(self, request: LLMGenerationRequest) -> LLMGenerationResponse:
         """Route non-streaming request to the primary eligible model with fallback execution (docs/05 §12)."""
         may_contain_source = bool(request.metadata.get("may_contain_source", False))
@@ -408,7 +423,18 @@ class LLMGatewayRouter:
                 # 3. Concurrency semaphore acquisition per provider and workspace (docs/05 §13)
                 async with self.concurrency_manager.acquire(provider_key, workspace_id):
                     try:
-                        response = await adapter.generate(call_request)
+                        from app.core.telemetry import trace_span
+
+                        with trace_span(
+                            "devmind.llm.generate",
+                            attributes={
+                                "llm.provider": provider_key,
+                                "llm.model": model_entry.model_id,
+                                "llm.task": request.task,
+                                "llm.fallback": is_fallback,
+                            },
+                        ):
+                            response = await adapter.generate(call_request)
                     except LLMInvalidOutputError as initial_err:
                         # Adapter rejected syntax or failed JSON decoding -> attempt 1 repair (docs/05 §10)
                         if call_spec is None:
