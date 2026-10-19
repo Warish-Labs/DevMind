@@ -8,6 +8,7 @@ from app.domain.auth.dependencies import (
 from app.domain.auth.extension_dependencies import get_extension_auth_context
 from app.domain.auth.policy import (
     PERM_ANALYSIS_CREATE,
+    PERM_AUDIT_READ,
     PERM_BRAIN_READ,
     PERM_CONSENT_MANAGE,
     PERM_FINDING_ACKNOWLEDGE,
@@ -21,6 +22,7 @@ from app.domain.auth.policy import (
     PERM_PROJECT_READ,
     PERM_PROJECT_SYNC,
     PERM_PROJECT_UPDATE,
+    PERM_USAGE_READ,
     PERM_WORKSPACE_MANAGE,
     PERM_WORKSPACE_READ,
     PERMISSION_AUTHENTICATED,
@@ -37,6 +39,7 @@ from app.domain.auth.policy import (
 
 __all__ = [
     "PERM_ANALYSIS_CREATE",
+    "PERM_AUDIT_READ",
     "PERM_BRAIN_READ",
     "PERM_CONSENT_MANAGE",
     "PERM_FINDING_ACKNOWLEDGE",
@@ -49,6 +52,7 @@ __all__ = [
     "PERM_PROJECT_UPDATE",
     "PERM_PROJECT_DELETE",
     "PERM_MEMBERS_MANAGE",
+    "PERM_USAGE_READ",
     "PERM_WORKSPACE_READ",
     "PERM_WORKSPACE_MANAGE",
     "PERM_MEMBERS_MANAGE_WORKSPACE",

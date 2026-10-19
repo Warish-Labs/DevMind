@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth_context import AuthContext, SystemContext
 from app.core.errors import ConflictError, NotFoundError, ValidationError
 from app.persistence.models.workspace import Workspace, WorkspaceMembership
+from app.persistence.repositories.audit_repo import AuditEventRepository
 from app.persistence.repositories.workspace_repo import WorkspaceRepository
 
 SLUG_REGEX = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -22,6 +23,7 @@ class WorkspaceService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.repo = WorkspaceRepository(session)
+        self.audit_repo = AuditEventRepository(session)
 
     @staticmethod
     def validate_slug(slug: str) -> str:
@@ -128,6 +130,15 @@ class WorkspaceService:
 
         updated = await self.repo.update(ctx, workspace_id, **updates)
         assert updated is not None
+
+        await self.audit_repo.record(
+            ctx,
+            workspace_id=workspace_id,
+            action="workspace.updated",
+            target_kind="workspace",
+            target_id=str(workspace_id),
+            metadata={"updates": list(updates.keys())},
+        )
         return updated
 
     async def list_members(
@@ -161,9 +172,18 @@ class WorkspaceService:
                 detail=f"User '{user_id}' is already a member of workspace '{workspace_id}'"
             )
 
-        return await self.repo.add_member(
+        membership = await self.repo.add_member(
             ctx, workspace_id=workspace_id, user_id=user_id, role=role
         )
+        await self.audit_repo.record(
+            ctx,
+            workspace_id=workspace_id,
+            action="membership.added",
+            target_kind="membership",
+            target_id=str(user_id),
+            metadata={"user_id": str(user_id), "role": role},
+        )
+        return membership
 
     async def update_member_role(
         self,
@@ -188,6 +208,14 @@ class WorkspaceService:
             raise NotFoundError(
                 detail=f"Membership for user '{user_id}' not found in workspace '{workspace_id}'"
             )
+        await self.audit_repo.record(
+            ctx,
+            workspace_id=workspace_id,
+            action="membership.updated",
+            target_kind="membership",
+            target_id=str(user_id),
+            metadata={"user_id": str(user_id), "role": role},
+        )
         return membership
 
     async def remove_member(
@@ -204,4 +232,12 @@ class WorkspaceService:
             raise NotFoundError(
                 detail=f"Membership for user '{user_id}' not found in workspace '{workspace_id}'"
             )
+        await self.audit_repo.record(
+            ctx,
+            workspace_id=workspace_id,
+            action="membership.removed",
+            target_kind="membership",
+            target_id=str(user_id),
+            metadata={"user_id": str(user_id)},
+        )
         return True

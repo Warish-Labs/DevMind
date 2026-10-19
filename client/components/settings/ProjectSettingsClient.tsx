@@ -7,6 +7,7 @@ import { SyncModeManager } from "./SyncModeManager";
 import { ConsentManager } from "./ConsentManager";
 import { ProjectPurgeManager } from "./ProjectPurgeManager";
 import { RetentionPolicyManager } from "./RetentionPolicyManager";
+import { AuditLogViewer } from "@/components/audit";
 import { Badge } from "@/components/ui/Badge";
 
 interface ProjectSettingsClientProps {
@@ -15,7 +16,9 @@ interface ProjectSettingsClientProps {
 
 export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps) {
   const { currentProject } = useApp();
-  const [activeTab, setActiveTab] = useState<"sync" | "consents" | "retention" | "danger">("sync");
+  const [activeTab, setActiveTab] = useState<
+    "sync" | "consents" | "retention" | "audit" | "danger"
+  >("sync");
 
   const projectName = currentProject?.name || "Codebase Project";
   const projectSlug = currentProject?.slug || projectId;
@@ -107,6 +110,20 @@ export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps)
         <button
           type="button"
           role="tab"
+          aria-selected={activeTab === "audit"}
+          onClick={() => setActiveTab("audit")}
+          className={`px-4 py-2 border-b-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)] ${
+            activeTab === "audit"
+              ? "border-[var(--signal)] text-[var(--fg-0)]"
+              : "border-transparent text-[var(--fg-2)] hover:text-[var(--fg-1)]"
+          }`}
+        >
+          Audit Trail (docs/07 §16)
+        </button>
+
+        <button
+          type="button"
+          role="tab"
           aria-selected={activeTab === "danger"}
           onClick={() => setActiveTab("danger")}
           className={`px-4 py-2 border-b-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)] ${
@@ -155,6 +172,22 @@ export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps)
           </div>
 
           <RetentionPolicyManager projectId={projectId} />
+        </section>
+      )}
+
+      {activeTab === "audit" && (
+        <section aria-labelledby="audit-heading" className="space-y-6">
+          <div>
+            <h2 id="audit-heading" className="text-lg font-semibold text-[var(--fg-0)]">
+              Project Audit Trail &amp; Governance Events
+            </h2>
+            <p className="text-xs text-[var(--fg-2)] mt-0.5 max-w-2xl leading-relaxed">
+              Immutable security record of data purge requests, consent grants/revocations, and sync
+              mode transitions.
+            </p>
+          </div>
+
+          <AuditLogViewer projectId={projectId} showHeader={false} />
         </section>
       )}
 

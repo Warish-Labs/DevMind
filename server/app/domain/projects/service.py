@@ -76,7 +76,7 @@ class ProjectService:
                 detail=f"Project with slug '{clean_slug}' already exists in workspace"
             )
 
-        return await self.repo.create(
+        project = await self.repo.create(
             ctx,
             workspace_id=workspace_id,
             name=clean_name,
@@ -87,6 +87,16 @@ class ProjectService:
             primary_language=primary_language,
             default_branch=default_branch,
         )
+
+        await self.audit_repo.record(
+            ctx,
+            workspace_id=workspace_id,
+            action="project.created",
+            target_kind="project",
+            target_id=str(project.id),
+            metadata={"slug": clean_slug, "name": clean_name, "sync_mode": sync_mode},
+        )
+        return project
 
     async def get_project(
         self,
@@ -321,8 +331,16 @@ class ProjectService:
         project_id: UUID,
     ) -> bool:
         """Soft delete a project."""
-        await self.get_project(ctx, project_id)
+        project = await self.get_project(ctx, project_id)
         await self.repo.soft_delete(ctx, project_id)
+        await self.audit_repo.record(
+            ctx,
+            workspace_id=project.workspace_id,
+            action="project.deleted",
+            target_kind="project",
+            target_id=str(project_id),
+            metadata={"slug": project.slug, "name": project.name},
+        )
         return True
 
     async def list_members(
