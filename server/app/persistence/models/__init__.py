@@ -31,6 +31,7 @@ from app.persistence.models.consent import ConsentRecord
 from app.persistence.models.extension import ExtensionRegistration, ExtensionToken
 from app.persistence.models.github import GitHubConnection
 from app.persistence.models.project import Project, ProjectMembership
+from app.persistence.models.retention import RetentionPolicy
 from app.persistence.models.usage import UsageRecord
 from app.persistence.models.user import User
 from app.persistence.models.workspace import Workspace, WorkspaceMembership
@@ -60,6 +61,7 @@ __all__ = [
     "ProjectFile",
     "ProjectMembership",
     "ProjectSnapshot",
+    "RetentionPolicy",
     "ScanRun",
     "SnapshotFile",
     "SoftDeleteMixin",

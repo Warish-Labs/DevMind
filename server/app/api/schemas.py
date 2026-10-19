@@ -432,6 +432,60 @@ class JobEventResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Retention Policy Schemas (docs/03 §3.1, docs/07 §9, ADR-026)
+# ---------------------------------------------------------------------------
+
+
+class UpdateRetentionPolicyRequest(BaseModel):
+    """Payload to update retention period for a category."""
+
+    days: int = Field(ge=1, le=3650, description="Retention period in days (minimum 1 day)")
+
+
+class RetentionPolicyResponse(BaseModel):
+    """Configured retention policy record."""
+
+    id: str
+    workspace_id: str
+    project_id: str | None = None
+    kind: str
+    days: int
+    is_override: bool = False
+    created_at: str
+    updated_at: str
+
+
+class EffectiveRetentionCategory(BaseModel):
+    """Effective retention category status."""
+
+    kind: str
+    days: int
+    default_days: int
+    description: str
+    is_custom: bool
+    source: str
+
+
+class EffectiveRetentionResponse(BaseModel):
+    """Effective retention window settings for workspace or project."""
+
+    workspace_id: str
+    project_id: str | None = None
+    backup_retention_notice: str
+    categories: list[EffectiveRetentionCategory]
+
+
+class RetentionSweepResponse(BaseModel):
+    """Summary of executed retention cleanup sweep."""
+
+    project_id: str
+    swept_at: str
+    purged_counts: dict[str, int]
+    effective_windows: dict[str, int]
+
+
+
+# ---------------------------------------------------------------------------
 # Manifest and Brain Sync Schemas (docs/03 §12.3)
 # ---------------------------------------------------------------------------
 
