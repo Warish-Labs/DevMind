@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m10-observability` |
-| **Last commit** | Pending commit (feat(server): implement M10-02 observability stack and OpenTelemetry traces) |
+| **Last commit** | `ef8fe06` (feat(server): implement M10-02 observability stack and OpenTelemetry traces) |
 | **Working tree** | Clean; all 13 fast checks pass; 665 server tests pass, client 154/154 pass, extension 78/78 pass |
-| **Open PR** | `feature/m10-observability` -> `main` (PR #66 pending) |
+| **Open PR** | `feature/m10-observability` -> `main` ([PR #66](https://github.com/Warish-Labs/DevMind/pull/66)) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-19 |
 
