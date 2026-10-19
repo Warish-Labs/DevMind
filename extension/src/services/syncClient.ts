@@ -18,6 +18,7 @@
 
 import { DatabaseModel, Finding, ProjectModule } from "../types";
 import { LocalManifestStore } from "../scanner/manifest";
+import { SyncLogStore } from "../scanner/syncLog";
 import { computeNormalizedTextHash } from "../scanner/hasher";
 import { ExtensionAuthService } from "./auth";
 import { DevMindLogger } from "./logger";
@@ -27,6 +28,7 @@ export interface SyncOptions {
   projectId: string;
   workspaceRoot: string;
   manifestStore: LocalManifestStore;
+  syncLogStore?: SyncLogStore;
   findings: Finding[];
   modules: ProjectModule[];
   databaseModels: DatabaseModel[];
@@ -45,6 +47,8 @@ export interface SyncResult {
   relationshipsCount: number;
   findingsIngested: number;
   staleBaseRecovered: boolean;
+  receiptHash?: string;
+  durationMs?: number;
   error?: string;
 }
 
@@ -63,6 +67,7 @@ export class SyncClient {
     const { projectId, manifestStore, findings, modules, databaseModels, scanRunId, onProgress } =
       options;
 
+    const startTime = Date.now();
     const settings = SettingsService.get();
     const apiBase = settings.apiBaseUrl.replace(/\/+$/, "");
 
@@ -73,6 +78,24 @@ export class SyncClient {
     let token = await this.authService.getAccessToken();
     if (!token) {
       this.logger.warn("Sync aborted: user not authenticated or tokens expired");
+      const durationMs = Date.now() - startTime;
+      const errorMsg = "Not authenticated. Please sign in via DevMind: Sign In.";
+      if (options.syncLogStore) {
+        await options.syncLogStore.record({
+          projectId,
+          status: "failed",
+          filesCount: 0,
+          versionsCreated: 0,
+          removedCount: 0,
+          symbolsCount: 0,
+          relationshipsCount: 0,
+          findingsIngested: 0,
+          staleBaseRecovered: false,
+          syncMode: settings.syncMode,
+          durationMs,
+          error: errorMsg,
+        });
+      }
       return {
         success: false,
         projectId,
@@ -83,7 +106,8 @@ export class SyncClient {
         relationshipsCount: 0,
         findingsIngested: 0,
         staleBaseRecovered: false,
-        error: "Not authenticated. Please sign in via DevMind: Sign In.",
+        durationMs,
+        error: errorMsg,
       };
     }
 
@@ -385,12 +409,33 @@ export class SyncClient {
       await manifestStore.save();
 
       onProgress?.("Metadata sync complete!", 100);
+      const durationMs = Date.now() - startTime;
+      const receiptHash = `receipt-${projectId.slice(0, 8)}-${Date.now()}`;
+
+      if (options.syncLogStore) {
+        await options.syncLogStore.record({
+          projectId,
+          status: staleBaseRecovered ? "stale_base_recovered" : "success",
+          filesCount: putData.files_count,
+          versionsCreated: putData.versions_created,
+          removedCount: putData.removed_count,
+          symbolsCount,
+          relationshipsCount,
+          findingsIngested,
+          staleBaseRecovered,
+          syncMode: settings.syncMode,
+          receiptHash,
+          durationMs,
+        });
+      }
+
       this.logger.info("Sync complete", {
         filesCount: putData.files_count,
         versionsCreated: putData.versions_created,
         symbolsCount,
         relationshipsCount,
         findingsIngested,
+        durationMs,
       });
 
       return {
@@ -403,10 +448,31 @@ export class SyncClient {
         relationshipsCount,
         findingsIngested,
         staleBaseRecovered,
+        receiptHash,
+        durationMs,
       };
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
+      const durationMs = Date.now() - startTime;
       this.logger.error("Project Brain sync failed", { error: errMsg });
+
+      if (options.syncLogStore) {
+        await options.syncLogStore.record({
+          projectId,
+          status: "failed",
+          filesCount: 0,
+          versionsCreated: 0,
+          removedCount: 0,
+          symbolsCount: 0,
+          relationshipsCount: 0,
+          findingsIngested: 0,
+          staleBaseRecovered,
+          syncMode: settings.syncMode,
+          durationMs,
+          error: errMsg,
+        });
+      }
+
       return {
         success: false,
         projectId,
@@ -417,6 +483,7 @@ export class SyncClient {
         relationshipsCount: 0,
         findingsIngested: 0,
         staleBaseRecovered,
+        durationMs,
         error: errMsg,
       };
     }
