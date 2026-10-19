@@ -159,6 +159,29 @@ class SyncModeTransitionResponse(BaseModel):
     transitioned_at: datetime
 
 
+class PurgeProjectDataRequest(BaseModel):
+    """Payload for executing a project data purge (M9-03)."""
+
+    scope: str = Field(default="all", description="Purge scope: all | chunks_and_embeddings")
+    confirmation_slug: str | None = Field(
+        default=None, description="Typed confirmation slug matching the target project"
+    )
+
+
+class DeletionVerificationReport(BaseModel):
+    """Cryptographically signed deletion verification report (docs/11, Screen S-10)."""
+
+    project_id: str
+    workspace_id: str
+    requested_by: str
+    purged_at: str
+    scope: str
+    stores: dict[str, dict[str, int]]
+    verification_hash: str
+    sync_mode: str
+    status: str
+
+
 class ProjectResponse(BaseModel):
     """Serialized codebase project entity."""
 

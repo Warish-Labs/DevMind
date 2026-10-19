@@ -150,6 +150,36 @@ export interface CreateConsentRequest {
   expires_at?: string;
 }
 
+export interface DeletionVerificationReport {
+  project_id: string;
+  workspace_id: string;
+  requested_by: string;
+  purged_at: string;
+  scope: string;
+  stores: {
+    postgres: {
+      code_chunks: number;
+      chunk_embeddings: number;
+      evidence_snippets?: number;
+      job_events?: number;
+    };
+    redis: {
+      cache_keys_purged: number;
+    };
+    checkpoints: {
+      threads_purged: number;
+    };
+  };
+  verification_hash: string;
+  sync_mode: "metadata_only" | "indexed";
+  status: "completed" | "failed";
+}
+
+export interface PurgeProjectDataRequest {
+  scope?: "all" | "chunks_and_embeddings";
+  confirmation_slug?: string;
+}
+
 export class ApiError extends Error {
   public readonly status: number;
   public readonly code: string;
@@ -593,6 +623,16 @@ export class DevMindApiClient {
   public async revokeProjectConsent(projectId: string, consentId: string): Promise<ConsentItem> {
     return this.fetchInternal<ConsentItem>(`/api/v1/projects/${projectId}/consents/${consentId}`, {
       method: "DELETE",
+    });
+  }
+
+  public async purgeProjectData(
+    projectId: string,
+    req?: PurgeProjectDataRequest
+  ): Promise<DeletionVerificationReport> {
+    return this.fetchInternal<DeletionVerificationReport>(`/api/v1/projects/${projectId}/purge`, {
+      method: "POST",
+      body: JSON.stringify(req || {}),
     });
   }
 }
