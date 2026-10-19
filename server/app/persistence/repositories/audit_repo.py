@@ -185,4 +185,3 @@ class AuditEventRepository(BaseRepository):
 
         result = await self.session.execute(stmt)
         return result.scalar_one() or 0
-

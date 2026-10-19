@@ -2,6 +2,7 @@
 
 import uuid
 
+import pytest
 from starlette.testclient import TestClient
 
 from app.core.settings import Settings
@@ -13,14 +14,23 @@ from app.main import create_app
 from app.middleware.rate_limit import _in_memory_windows
 
 
+@pytest.fixture(autouse=True)
+def reset_rate_limit_windows() -> None:
+    _in_memory_windows.clear()
+    yield
+    _in_memory_windows.clear()
+
+
 def test_rate_limit_headers_on_allowed_requests() -> None:
     """Verify RateLimit-* headers are injected on successful responses."""
     settings = Settings(
         rate_limit_enabled=True,
         rate_limit_read=50,
         rate_limit_window_seconds=60,
+        redis_key_prefix=f"test_{uuid.uuid4().hex[:6]}:",
     )
     app = create_app(settings=settings)
+
 
     with TestClient(app) as client:
         response = client.get("/api/v1")

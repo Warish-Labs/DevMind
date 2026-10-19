@@ -50,8 +50,12 @@ def upgrade() -> None:
             name="uq_retention_policies_target_kind",
         ),
     )
-    op.create_index("ix_retention_policies_workspace_id", "retention_policies", ["workspace_id"], unique=False)
-    op.create_index("ix_retention_policies_project_id", "retention_policies", ["project_id"], unique=False)
+    op.create_index(
+        "ix_retention_policies_workspace_id", "retention_policies", ["workspace_id"], unique=False
+    )
+    op.create_index(
+        "ix_retention_policies_project_id", "retention_policies", ["project_id"], unique=False
+    )
 
 
 def downgrade() -> None:

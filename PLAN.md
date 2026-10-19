@@ -293,7 +293,16 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 ### M10 · Hardening, observability, capacity
 
-- [ ] Auth matrix, OTel traces, load tests, queue drills, runbooks, threat model review (feature/m10-*)
+- [x] M10-01 Complete authorization and tenant isolation test suite across all routes (feature/m10-authz-suite)
+- [ ] M10-02 Observability stack & OpenTelemetry traces (feature/m10-observability)
+- [ ] M10-03 Alerting thresholds, health checks, and kill switches (feature/m10-alerts)
+- [ ] M10-04 Free-profile load and capacity tests (feature/m10-load-tests)
+- [ ] M10-05 Queue soak and Redis failure drills (feature/m10-queue-drills)
+- [ ] M10-06 Database restore drill (feature/m10-restore-drill)
+- [ ] M10-07 Prompt-injection corpus expansion and abuse tests (feature/m10-injection-expansion)
+- [ ] M10-08 Operational runbooks (feature/m10-runbooks)
+- [ ] M10-09 Threat-model review and residual risk ledger update (feature/m10-threat-model)
+- [ ] M10-10 Staging promotion rehearsal (feature/m10-staging-rehearsal)
 
 ### M13 · UI polish and MVP release readiness
 

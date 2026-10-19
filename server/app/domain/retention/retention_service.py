@@ -148,7 +148,9 @@ class RetentionService:
     ) -> RetentionPolicyItem:
         """Set a workspace-level retention policy."""
         if kind not in DEFAULT_RETENTION_DAYS:
-            raise ValidationError(f"Unknown retention category: '{kind}'. Allowed: {list(DEFAULT_RETENTION_DAYS.keys())}")
+            raise ValidationError(
+                f"Unknown retention category: '{kind}'. Allowed: {list(DEFAULT_RETENTION_DAYS.keys())}"
+            )
         if days < 1:
             raise ValidationError("Retention period must be at least 1 day")
 
@@ -244,7 +246,9 @@ class RetentionService:
     ) -> RetentionPolicyItem:
         """Set a project-level retention override."""
         if kind not in DEFAULT_RETENTION_DAYS:
-            raise ValidationError(f"Unknown retention category: '{kind}'. Allowed: {list(DEFAULT_RETENTION_DAYS.keys())}")
+            raise ValidationError(
+                f"Unknown retention category: '{kind}'. Allowed: {list(DEFAULT_RETENTION_DAYS.keys())}"
+            )
         if days < 1:
             raise ValidationError("Retention period must be at least 1 day")
 
@@ -330,6 +334,7 @@ class RetentionService:
             else:
                 # System sweep: all non-deleted projects
                 from sqlalchemy import select
+
                 stmt = select(Project).where(Project.deleted_at.is_(None))
                 res = await session.execute(stmt)
                 target_projects = list(res.scalars().all())
@@ -339,8 +344,7 @@ class RetentionService:
                 effective_windows: dict[str, int] = {c.kind: c.days for c in summary.categories}
 
                 cutoffs: dict[str, datetime] = {
-                    kind: now - timedelta(days=days)
-                    for kind, days in effective_windows.items()
+                    kind: now - timedelta(days=days) for kind, days in effective_windows.items()
                 }
 
                 purged_counts = await brain_repo.sweep_project_retention(ctx, target.id, cutoffs)

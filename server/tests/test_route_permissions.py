@@ -6,7 +6,7 @@ A test enumerates all FastAPI routes and fails if any route lacks a declared per
 from fastapi import APIRouter
 from fastapi.routing import APIRoute
 
-from app.domain.auth import declare_permission, find_undeclared_routes
+from app.domain.auth import declare_permission, extract_api_routes, find_undeclared_routes
 from app.main import create_app
 
 
@@ -22,6 +22,9 @@ def test_all_api_routes_declare_permission() -> None:
     assert undeclared == [], (
         f"Found API routes lacking declared permissions (must declare permission or PERMISSION_PUBLIC): {undeclared}"
     )
+
+    all_routes = extract_api_routes(app.routes)
+    assert len(all_routes) >= 70, f"Expected at least 70 API routes, found {len(all_routes)}"
 
 
 def test_find_undeclared_routes_detects_missing_permission() -> None:
