@@ -255,6 +255,19 @@ def require_permission(permission: str) -> Any:
     return dependency
 
 
+def extract_api_routes(route_list: list[Any]) -> list[APIRoute]:
+    """Recursively extract all APIRoute instances from an application's routes hierarchy."""
+    extracted: list[APIRoute] = []
+    for r in route_list:
+        if isinstance(r, APIRoute):
+            extracted.append(r)
+        elif hasattr(r, "original_router") and hasattr(r.original_router, "routes"):
+            extracted.extend(extract_api_routes(r.original_router.routes))
+        elif hasattr(r, "routes"):
+            extracted.extend(extract_api_routes(r.routes))
+    return extracted
+
+
 def find_undeclared_routes(app_routes: list[Any]) -> list[str]:
     """Inspect all FastAPI routes and return those lacking a declared permission (docs/07 §3).
 
@@ -264,10 +277,7 @@ def find_undeclared_routes(app_routes: list[Any]) -> list[str]:
     """
     undeclared: list[str] = []
 
-    for route in app_routes:
-        if not isinstance(route, APIRoute):
-            continue
-
+    for route in extract_api_routes(app_routes):
         path = route.path
         if path in ("/docs", "/redoc", "/openapi.json"):
             continue

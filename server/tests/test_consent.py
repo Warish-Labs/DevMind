@@ -364,20 +364,30 @@ async def test_consent_service_revoke_cloud_index_triggers_purge_and_audit(monke
     mock_consent_repo = MagicMock()
     mock_consent_repo.revoke_consent = AsyncMock(return_value=mock_record)
     mock_consent_repo.has_active_consent = AsyncMock(return_value=False)
-    monkeypatch.setattr("app.domain.consent.consent_service.ConsentRepository", lambda s: mock_consent_repo)
+    monkeypatch.setattr(
+        "app.domain.consent.consent_service.ConsentRepository", lambda s: mock_consent_repo
+    )
 
     mock_brain_repo = MagicMock()
-    mock_brain_repo.purge_project_chunks = AsyncMock(return_value={"code_chunks": 42, "embeddings": 42})
-    monkeypatch.setattr("app.domain.consent.consent_service.BrainRepository", lambda s: mock_brain_repo)
+    mock_brain_repo.purge_project_chunks = AsyncMock(
+        return_value={"code_chunks": 42, "embeddings": 42}
+    )
+    monkeypatch.setattr(
+        "app.domain.consent.consent_service.BrainRepository", lambda s: mock_brain_repo
+    )
 
     mock_project_repo = MagicMock()
     mock_project_repo.get_by_id = AsyncMock(return_value=mock_project)
     mock_project_repo.update = AsyncMock(return_value=mock_project)
-    monkeypatch.setattr("app.domain.consent.consent_service.ProjectRepository", lambda s: mock_project_repo)
+    monkeypatch.setattr(
+        "app.domain.consent.consent_service.ProjectRepository", lambda s: mock_project_repo
+    )
 
     mock_audit_repo = MagicMock()
     mock_audit_repo.record = AsyncMock()
-    monkeypatch.setattr("app.domain.consent.consent_service.AuditEventRepository", lambda s: mock_audit_repo)
+    monkeypatch.setattr(
+        "app.domain.consent.consent_service.AuditEventRepository", lambda s: mock_audit_repo
+    )
 
     # Execute revoke
     result = await ConsentService.revoke_consent(ctx, project_id, consent_id)
@@ -397,4 +407,3 @@ async def test_consent_service_revoke_cloud_index_triggers_purge_and_audit(monke
     assert audit_kwargs["target_id"] == str(consent_id)
     assert audit_kwargs["metadata"]["purged_counts"] == {"code_chunks": 42, "embeddings": 42}
     assert audit_kwargs["metadata"]["sync_mode_updated"] is True
-

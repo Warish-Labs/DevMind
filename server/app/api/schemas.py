@@ -519,7 +519,6 @@ class RetentionSweepResponse(BaseModel):
     effective_windows: dict[str, int]
 
 
-
 # ---------------------------------------------------------------------------
 # Manifest and Brain Sync Schemas (docs/03 §12.3)
 # ---------------------------------------------------------------------------

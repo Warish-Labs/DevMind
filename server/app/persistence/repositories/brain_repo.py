@@ -918,9 +918,7 @@ class BrainRepository(BaseRepository):
         )
         chunk_count = (await self.session.execute(chunk_count_stmt)).scalar() or 0
         if chunk_count > 0:
-            await self.session.execute(
-                delete(CodeChunk).where(CodeChunk.project_id == project_id)
-            )
+            await self.session.execute(delete(CodeChunk).where(CodeChunk.project_id == project_id))
 
         # Clear consented snippet texts from finding_evidence if full purge
         snippet_count = 0
@@ -943,14 +941,10 @@ class BrainRepository(BaseRepository):
 
         # Job events
         job_ids_stmt = select(AnalysisJob.id).where(AnalysisJob.project_id == project_id)
-        events_count_stmt = select(func.count(JobEvent.id)).where(
-            JobEvent.job_id.in_(job_ids_stmt)
-        )
+        events_count_stmt = select(func.count(JobEvent.id)).where(JobEvent.job_id.in_(job_ids_stmt))
         events_count = (await self.session.execute(events_count_stmt)).scalar() or 0
         if events_count > 0 and scope == "all":
-            await self.session.execute(
-                delete(JobEvent).where(JobEvent.job_id.in_(job_ids_stmt))
-            )
+            await self.session.execute(delete(JobEvent).where(JobEvent.job_id.in_(job_ids_stmt)))
 
         # 2. Checkpoints (LangGraph thread writes and checkpoints)
         thread_prefix = f"devmind:{project_id}:%"
@@ -1027,12 +1021,9 @@ class BrainRepository(BaseRepository):
         if "job_events" in cutoffs:
             cutoff = cutoffs["job_events"]
             job_ids_stmt = select(AnalysisJob.id).where(AnalysisJob.project_id == project_id)
-            del_events_stmt = (
-                delete(JobEvent)
-                .where(
-                    JobEvent.job_id.in_(job_ids_stmt),
-                    JobEvent.created_at < cutoff,
-                )
+            del_events_stmt = delete(JobEvent).where(
+                JobEvent.job_id.in_(job_ids_stmt),
+                JobEvent.created_at < cutoff,
             )
             res = await self.session.execute(del_events_stmt)
             results["job_events"] = res.rowcount or 0
@@ -1057,21 +1048,19 @@ class BrainRepository(BaseRepository):
         # 3. Sweep expired snapshot versions (non-current FileVersion older than cutoff)
         if "snapshots" in cutoffs:
             cutoff = cutoffs["snapshots"]
-            active_file_version_ids_stmt = (
-                select(File.current_version_id)
-                .where(File.project_id == project_id, File.current_version_id.is_not(None))
+            active_file_version_ids_stmt = select(File.current_version_id).where(
+                File.project_id == project_id, File.current_version_id.is_not(None)
             )
-            stale_versions_stmt = (
-                select(FileVersion.id)
-                .where(
-                    FileVersion.file_id.in_(select(File.id).where(File.project_id == project_id)),
-                    FileVersion.created_at < cutoff,
-                    FileVersion.id.not_in(active_file_version_ids_stmt),
-                )
+            stale_versions_stmt = select(FileVersion.id).where(
+                FileVersion.file_id.in_(select(File.id).where(File.project_id == project_id)),
+                FileVersion.created_at < cutoff,
+                FileVersion.id.not_in(active_file_version_ids_stmt),
             )
             stale_version_ids = (await self.session.execute(stale_versions_stmt)).scalars().all()
             if stale_version_ids:
-                stale_chunks_stmt = select(CodeChunk.id).where(CodeChunk.file_version_id.in_(stale_version_ids))
+                stale_chunks_stmt = select(CodeChunk.id).where(
+                    CodeChunk.file_version_id.in_(stale_version_ids)
+                )
                 await self.session.execute(
                     delete(ChunkEmbedding).where(ChunkEmbedding.chunk_id.in_(stale_chunks_stmt))
                 )
@@ -1086,12 +1075,9 @@ class BrainRepository(BaseRepository):
         # 4. Sweep expired agent runs & LangGraph checkpoints
         if "checkpoints" in cutoffs:
             cutoff = cutoffs["checkpoints"]
-            del_runs_stmt = (
-                delete(AgentRun)
-                .where(
-                    AgentRun.project_id == project_id,
-                    AgentRun.created_at < cutoff,
-                )
+            del_runs_stmt = delete(AgentRun).where(
+                AgentRun.project_id == project_id,
+                AgentRun.created_at < cutoff,
             )
             res = await self.session.execute(del_runs_stmt)
             results["agent_runs"] = res.rowcount or 0

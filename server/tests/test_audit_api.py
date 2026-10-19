@@ -27,7 +27,11 @@ def _make_auth_ctx(
     role: str = "admin",
     permissions: frozenset[str] | None = None,
 ) -> AuthContext:
-    perms = permissions if permissions is not None else frozenset({PERM_AUDIT_READ, PERM_WORKSPACE_READ, PERM_PROJECT_READ})
+    perms = (
+        permissions
+        if permissions is not None
+        else frozenset({PERM_AUDIT_READ, PERM_WORKSPACE_READ, PERM_PROJECT_READ})
+    )
     return AuthContext(
         user_id=user_id or generate_uuid7(),
         clerk_user_id="user_clerk_audit_test",
@@ -62,12 +66,21 @@ def test_list_workspace_audit_events_as_admin() -> None:
         created_at=now,
     )
 
-    admin_ctx = _make_auth_ctx(workspace_id=wid, role="admin", permissions=frozenset({PERM_AUDIT_READ, PERM_WORKSPACE_READ}))
+    admin_ctx = _make_auth_ctx(
+        workspace_id=wid,
+        role="admin",
+        permissions=frozenset({PERM_AUDIT_READ, PERM_WORKSPACE_READ}),
+    )
     app.dependency_overrides[get_auth_context] = lambda: admin_ctx
 
     with (
-        patch("app.domain.audit.service.WorkspaceRepository.get_by_id", new_callable=AsyncMock) as mock_get_ws,
-        patch("app.domain.audit.service.AuditEventRepository.list_for_workspace", new_callable=AsyncMock) as mock_list,
+        patch(
+            "app.domain.audit.service.WorkspaceRepository.get_by_id", new_callable=AsyncMock
+        ) as mock_get_ws,
+        patch(
+            "app.domain.audit.service.AuditEventRepository.list_for_workspace",
+            new_callable=AsyncMock,
+        ) as mock_list,
     ):
         mock_get_ws.return_value = MagicMock()
         mock_list.return_value = [mock_event]
@@ -90,7 +103,9 @@ def test_list_workspace_audit_events_requires_audit_read_permission() -> None:
     client = TestClient(app)
 
     wid = generate_uuid7()
-    member_ctx = _make_auth_ctx(workspace_id=wid, role="member", permissions=frozenset({PERM_WORKSPACE_READ}))
+    member_ctx = _make_auth_ctx(
+        workspace_id=wid, role="member", permissions=frozenset({PERM_WORKSPACE_READ})
+    )
     app.dependency_overrides[get_auth_context] = lambda: member_ctx
 
     resp = client.get(f"/api/v1/workspaces/{wid}/audit-events")
@@ -107,7 +122,11 @@ def test_list_workspace_audit_events_cross_tenant_isolation() -> None:
     ws_a = generate_uuid7()
     ws_b = generate_uuid7()
 
-    admin_a_ctx = _make_auth_ctx(workspace_id=ws_a, role="admin", permissions=frozenset({PERM_AUDIT_READ, PERM_WORKSPACE_READ}))
+    admin_a_ctx = _make_auth_ctx(
+        workspace_id=ws_a,
+        role="admin",
+        permissions=frozenset({PERM_AUDIT_READ, PERM_WORKSPACE_READ}),
+    )
     app.dependency_overrides[get_auth_context] = lambda: admin_a_ctx
 
     resp = client.get(f"/api/v1/workspaces/{ws_b}/audit-events")
@@ -122,12 +141,21 @@ def test_list_workspace_audit_events_with_filters() -> None:
     client = TestClient(app)
 
     wid = generate_uuid7()
-    admin_ctx = _make_auth_ctx(workspace_id=wid, role="admin", permissions=frozenset({PERM_AUDIT_READ, PERM_WORKSPACE_READ}))
+    admin_ctx = _make_auth_ctx(
+        workspace_id=wid,
+        role="admin",
+        permissions=frozenset({PERM_AUDIT_READ, PERM_WORKSPACE_READ}),
+    )
     app.dependency_overrides[get_auth_context] = lambda: admin_ctx
 
     with (
-        patch("app.domain.audit.service.WorkspaceRepository.get_by_id", new_callable=AsyncMock) as mock_get_ws,
-        patch("app.domain.audit.service.AuditEventRepository.list_for_workspace", new_callable=AsyncMock) as mock_list,
+        patch(
+            "app.domain.audit.service.WorkspaceRepository.get_by_id", new_callable=AsyncMock
+        ) as mock_get_ws,
+        patch(
+            "app.domain.audit.service.AuditEventRepository.list_for_workspace",
+            new_callable=AsyncMock,
+        ) as mock_list,
     ):
         mock_get_ws.return_value = MagicMock()
         mock_list.return_value = []
@@ -171,12 +199,18 @@ def test_list_project_audit_events() -> None:
         created_at=datetime.now(UTC),
     )
 
-    proj_ctx = _make_auth_ctx(workspace_id=wid, role="contributor", permissions=frozenset({PERM_PROJECT_READ}))
+    proj_ctx = _make_auth_ctx(
+        workspace_id=wid, role="contributor", permissions=frozenset({PERM_PROJECT_READ})
+    )
     app.dependency_overrides[get_auth_context] = lambda: proj_ctx
 
     with (
-        patch("app.domain.audit.service.ProjectRepository.get_by_id", new_callable=AsyncMock) as mock_get_proj,
-        patch("app.domain.audit.service.AuditEventRepository.list_for_project", new_callable=AsyncMock) as mock_list,
+        patch(
+            "app.domain.audit.service.ProjectRepository.get_by_id", new_callable=AsyncMock
+        ) as mock_get_proj,
+        patch(
+            "app.domain.audit.service.AuditEventRepository.list_for_project", new_callable=AsyncMock
+        ) as mock_list,
     ):
         mock_proj = MagicMock(workspace_id=wid)
         mock_get_proj.return_value = mock_proj
@@ -200,14 +234,17 @@ def test_list_project_audit_events_cross_tenant_isolation() -> None:
     ws_b = generate_uuid7()
     pid = generate_uuid7()
 
-    ctx = _make_auth_ctx(workspace_id=ws_a, role="admin", permissions=frozenset({PERM_PROJECT_READ}))
+    ctx = _make_auth_ctx(
+        workspace_id=ws_a, role="admin", permissions=frozenset({PERM_PROJECT_READ})
+    )
     app.dependency_overrides[get_auth_context] = lambda: ctx
 
-    with patch("app.domain.audit.service.ProjectRepository.get_by_id", new_callable=AsyncMock) as mock_get_proj:
+    with patch(
+        "app.domain.audit.service.ProjectRepository.get_by_id", new_callable=AsyncMock
+    ) as mock_get_proj:
         mock_proj = MagicMock(workspace_id=ws_b)
         mock_get_proj.return_value = mock_proj
 
         resp = client.get(f"/api/v1/projects/{pid}/audit-events")
         assert resp.status_code == 403
         assert resp.headers.get("content-type") == "application/problem+json"
-

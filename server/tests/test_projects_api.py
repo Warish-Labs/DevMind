@@ -340,14 +340,10 @@ async def test_project_service_purge_project_data_and_verification_report() -> N
 
     # 1. Mismatched confirmation slug raises ValidationError
     with pytest.raises(ValidationError):
-        await service.purge_project_data(
-            ctx, pid, scope="all", confirmation_slug="wrong-slug"
-        )
+        await service.purge_project_data(ctx, pid, scope="all", confirmation_slug="wrong-slug")
 
     # 2. Matching confirmation slug executes purge and generates verification report
-    report = await service.purge_project_data(
-        ctx, pid, scope="all", confirmation_slug="demo-repo"
-    )
+    report = await service.purge_project_data(ctx, pid, scope="all", confirmation_slug="demo-repo")
 
     assert report["project_id"] == str(pid)
     assert report["workspace_id"] == str(wid)
@@ -374,7 +370,6 @@ async def test_project_service_purge_project_data_and_verification_report() -> N
     assert audit_kwargs["target_id"] == str(pid)
     assert audit_kwargs["metadata"]["verification_hash"] == report["verification_hash"]
     assert audit_kwargs["metadata"]["stores"]["postgres"]["code_chunks"] == 50
-
 
 
 def test_projects_crud_lifecycle_live_db(rsa_key_pair) -> None:

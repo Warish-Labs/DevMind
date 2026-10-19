@@ -29,6 +29,7 @@ from app.domain.auth import (
     declare_permission,
     get_auth_context,
     get_db_session,
+    require_permission,
 )
 from app.domain.integrations.github_oauth_service import GitHubOAuthService
 
@@ -163,7 +164,7 @@ async def github_callback(
 @declare_permission(PERM_INTEGRATIONS_MANAGE)
 async def get_workspace_github_connections(
     wid: UUID,
-    ctx: AuthContext = Depends(get_auth_context),
+    ctx: AuthContext = Depends(require_permission(PERM_INTEGRATIONS_MANAGE)),
     session: AsyncSession = Depends(get_db_session),
     settings: Settings = Depends(get_settings),
 ) -> list[GitHubConnectionSummary]:
@@ -192,7 +193,7 @@ async def get_workspace_github_connections(
 @declare_permission(PERM_INTEGRATIONS_MANAGE)
 async def delete_workspace_github_connection(
     wid: UUID,
-    ctx: AuthContext = Depends(get_auth_context),
+    ctx: AuthContext = Depends(require_permission(PERM_INTEGRATIONS_MANAGE)),
     session: AsyncSession = Depends(get_db_session),
     settings: Settings = Depends(get_settings),
 ) -> None:

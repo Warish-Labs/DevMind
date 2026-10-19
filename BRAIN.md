@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m9-extension-sync-log` |
-| **Last commit** | Pending commit (feat(extension): implement M9-07 extension sync log and history store) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 78 extension tests pass; server tests pass |
-| **Open PR** | `feature/m9-extension-sync-log` -> `main` (PR #64 pending) |
+| **Branch** | `feature/m10-authz-suite` |
+| **Last commit** | Pending commit (feat(server): implement M10-01 complete authorization and tenant isolation test suite) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 174 authz matrix & rate limit tests pass; 657 server tests pass |
+| **Open PR** | `feature/m10-authz-suite` -> `main` (PR #65 pending) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 154/154 pass, extension 78/78 pass |
 | **Date** | 2026-10-19 |
 
@@ -18,21 +18,60 @@
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m9-extension-sync-log` to GitHub.
-2. Open PR #64 (`feature/m9-extension-sync-log` -> `main`).
-3. After PR #64 is merged into `main`, proceed with **Milestone 10: Hardening, observability, and capacity**.
+1. Commit and push `feature/m10-authz-suite` to GitHub.
+2. Open PR #65 (`feature/m10-authz-suite` -> `main`).
+3. After PR #65 is merged into `main`, proceed with **M10-02: Observability stack & OpenTelemetry traces** (`feature/m10-observability`).
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                      | Reference |
-| --- | ---------------------------------------------------------------------------------------------------- | --------- |
-| 1   | Review and merge PR #64 (`feature/m9-extension-sync-log` -> `main`) once GitHub Actions CI completes | M9-07     |
+| #   | Action required                                                                                | Reference |
+| --- | ---------------------------------------------------------------------------------------------- | --------- |
+| 1   | Review and merge PR #65 (`feature/m10-authz-suite` -> `main`) once GitHub Actions CI completes | M10-01    |
 
 ---
 
 ## 4. Done log
+
+### Feature — M10-01: Complete Authorization and Tenant Isolation Test Suite across All Routes
+
+- **Date**: 2026-10-19
+- **Branch**: `feature/m10-authz-suite`
+- **What**:
+  - Implemented comprehensive Quality Gate G3 test suite enforcing tenant isolation, authorization, and scheme separation across all API endpoints, repositories, and workflows per docs/09 §6, docs/03 §4 & §13, docs/07 §3, ADR-010, ADR-012, and ADR-047:
+    - **FastAPI Route Registry Discovery & Validation** ([`server/app/domain/auth/policy.py`](server/app/domain/auth/policy.py), [`server/tests/test_route_permissions.py`](server/tests/test_route_permissions.py)):
+      - Implemented `extract_api_routes(app_routes)` recursively inspecting nested routers and `_IncludedRouter` mounts.
+      - Updated `find_undeclared_routes` to scan the full route tree (75 endpoints).
+      - Added assertion in `test_all_api_routes_declare_permission` verifying >= 70 routes are inspected and zero routes lack declared permissions.
+    - **Security & Authorization Hardening** ([`server/app/api/integrations.py`](server/app/api/integrations.py)):
+      - Fixed missing permission enforcement on `GET /api/v1/workspaces/{wid}/integrations/github` and `DELETE /api/v1/workspaces/{wid}/integrations/github` by binding `require_permission(PERM_INTEGRATIONS_MANAGE)` dependency.
+    - **Scheme Separation Suite** ([`server/tests/test_authz_matrix.py`](server/tests/test_authz_matrix.py)):
+      - Asserted browser API routes (`/api/v1/...`) strictly reject DevMind extension tokens (`Bearer dme_at_...`) with RFC 9457 `401 Unauthorized` (`auth.unauthenticated`).
+      - Asserted extension routes (`/api/v1/ext/...`) strictly reject Clerk browser JWT tokens with `401 Unauthorized`.
+      - Asserted extension routes reject unauthenticated requests with `401 Unauthorized`.
+    - **Cross-Tenant & Role Permission Matrix** ([`server/tests/test_authz_matrix.py`](server/tests/test_authz_matrix.py)):
+      - Parameterized 54 distinct resource endpoint variations covering Workspaces, Members, Projects, Analyses, Retention, Brain (Snapshots, Symbols, Graph, Files, Search), Findings, Consents, Jobs, and Extension Sync.
+      - Asserted anonymous calls return `401 Unauthorized`.
+      - Asserted cross-tenant access attempts (Workspace B user accessing Workspace A resource) return `403 Forbidden` (`auth.forbidden`).
+      - Asserted insufficient role attempts (Workspace Viewer attempting admin mutations, Project Contributor attempting delete/purge) return `403 Forbidden`.
+    - **Repository Layer Context Enforcement** ([`server/tests/test_authz_matrix.py`](server/tests/test_authz_matrix.py), [`server/app/persistence/repositories/`](server/app/persistence/repositories/)):
+      - Verified `BaseRepository._validate_context(None)` and `_validate_context("invalid")` raises `TypeError` across all 10 repositories (`UserRepository`, `WorkspaceRepository`, `ProjectRepository`, `BrainRepository`, `AuditEventRepository`, `UsageRecordRepository`, `ExtensionRepository`, `RetentionRepository`, `ConsentRepository`, `GitHubRepository`).
+      - Exported `ConsentRepository` and `RetentionRepository` cleanly in repositories module.
+    - **Cross-Tenant Zero-Hit & Consent Enforcement Tests**:
+      - Verified project access boundary raises `PermissionError` on alien project access and vector/keyword queries strictly bind `project_id`.
+      - Verified snippet upload without active consent returns RFC 9457 `403 Forbidden` (`consent.required`).
+      - Verified cross-tenant job detail and SSE event streaming access rejection (`403 Forbidden`).
+      - Verified extension access token expiry/revocation and replay detection.
+      - Verified audit event metadata zero-leak invariant (no source code, prompts, completions, or raw secrets).
+    - **Test Isolation Hardening** ([`server/tests/test_rate_limit.py`](server/tests/test_rate_limit.py)):
+      - Added autouse `reset_rate_limit_windows` fixture and isolated `redis_key_prefix` to prevent rate limit test cross-contamination.
+    - **Automated Verification**:
+      - `tests/test_authz_matrix.py`: 169 passed in 58s.
+      - Full test suite: 657 server tests passed.
+      - Layer import boundary check (`lint-imports`): 7 kept, 0 broken.
+      - Next.js production build passes with 25 routes compiled.
+      - Master `node scripts/test-all.mjs --fast`: 13 passed, 0 failed, 1 skipped.
 
 ### Feature — M9-07: Extension Sync Log and History Store
 

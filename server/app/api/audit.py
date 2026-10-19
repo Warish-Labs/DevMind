@@ -41,8 +41,12 @@ project_audit_router = APIRouter(
 @declare_permission(PERM_AUDIT_READ)
 async def list_workspace_audit_events(
     workspace_id: UUID,
-    action: str | None = Query(default=None, description="Filter by event action (e.g. consent.revoked)"),
-    target_kind: str | None = Query(default=None, description="Filter by target kind (e.g. project, consent)"),
+    action: str | None = Query(
+        default=None, description="Filter by event action (e.g. consent.revoked)"
+    ),
+    target_kind: str | None = Query(
+        default=None, description="Filter by target kind (e.g. project, consent)"
+    ),
     target_id: str | None = Query(default=None, description="Filter by target identifier"),
     actor_id: UUID | None = Query(default=None, description="Filter by actor user ID"),
     limit: int = Query(default=50, ge=1, le=100, description="Maximum number of events to return"),
