@@ -288,7 +288,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M9-03 Purge jobs and verification counts (feature/m9-purge-verification)
 - [x] M9-04 Retention windows and scheduler cleanup (feature/m9-retention-windows)
 - [x] M9-05 Snapshot history (feature/m9-snapshot-history)
-- [ ] M9-06 Audit endpoints (feature/m9-audit-endpoints)
+- [x] M9-06 Audit endpoints (feature/m9-audit-endpoints)
 - [ ] M9-07 Extension sync log (feature/m9-extension-sync-log)
 
 ### M10 · Hardening, observability, capacity

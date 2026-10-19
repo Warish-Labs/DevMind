@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.domain.brain import (
     BatchFindingsRequest,
@@ -112,6 +112,41 @@ class UpdateWorkspaceMemberRequest(BaseModel):
     """Payload for updating a member's workspace role."""
 
     role: str = Field(description="owner | admin | member | viewer")
+
+
+class AuditEventItem(BaseModel):
+    """Serialized audit event for workspace governance and security logs (docs/03 §3.5 & docs/07 §16)."""
+
+    id: UUID
+    workspace_id: UUID
+    actor_id: UUID | None = None
+    actor_kind: str
+    action: str
+    target_kind: str
+    target_id: str | None = None
+    ip_hash: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_metadata(cls, data: Any) -> Any:
+        if hasattr(data, "metadata_json") and not isinstance(data, dict):
+            return {
+                "id": data.id,
+                "workspace_id": data.workspace_id,
+                "actor_id": data.actor_id,
+                "actor_kind": data.actor_kind,
+                "action": data.action,
+                "target_kind": data.target_kind,
+                "target_id": data.target_id,
+                "ip_hash": data.ip_hash,
+                "metadata": data.metadata_json or {},
+                "created_at": data.created_at,
+            }
+        return data
 
 
 # ---------------------------------------------------------------------------
@@ -492,6 +527,7 @@ class RetentionSweepResponse(BaseModel):
 __all__ = [
     "AnalysisJobCreatedResponse",
     "AnalysisJobResponse",
+    "AuditEventItem",
     "CreateAnalysisRequest",
     "JobEventResponse",
     "AddProjectMemberRequest",

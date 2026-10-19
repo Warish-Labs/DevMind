@@ -7,32 +7,71 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m9-snapshot-history` |
-| **Last commit** | Pending commit (feat(client): implement M9-05 snapshot history and diff viewer) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 148 client tests pass; server tests pass |
-| **Open PR** | `feature/m9-snapshot-history` -> `main` (PR #62 pending) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 148/148 pass |
+| **Branch** | `feature/m9-audit-endpoints` |
+| **Last commit** | Pending commit (feat(server): implement M9-06 workspace and project audit endpoints) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 154 client tests pass; server tests pass |
+| **Open PR** | `feature/m9-audit-endpoints` -> `main` (PR #63 pending) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 154/154 pass |
 | **Date** | 2026-10-19 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m9-snapshot-history` to GitHub.
-2. Open PR #62 (`feature/m9-snapshot-history` -> `main`).
-3. After PR #62 is merged into `main`, proceed with **M9-06: Audit endpoints (`feature/m9-audit-endpoints`)**.
+1. Commit and push `feature/m9-audit-endpoints` to GitHub.
+2. Open PR #63 (`feature/m9-audit-endpoints` -> `main`).
+3. After PR #63 is merged into `main`, proceed with **M9-07: Extension sync log (`feature/m9-extension-sync-log`)**.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                    | Reference |
-| --- | -------------------------------------------------------------------------------------------------- | --------- |
-| 1   | Review and merge PR #62 (`feature/m9-snapshot-history` -> `main`) once GitHub Actions CI completes | M9-05     |
+| #   | Action required                                                                                   | Reference |
+| --- | ------------------------------------------------------------------------------------------------- | --------- |
+| 1   | Review and merge PR #63 (`feature/m9-audit-endpoints` -> `main`) once GitHub Actions CI completes | M9-06     |
 
 ---
 
 ## 4. Done log
+
+### Feature — M9-06: Workspace and Project Audit Endpoints & Governance UI
+
+- **Date**: 2026-10-19
+- **Branch**: `feature/m9-audit-endpoints`
+- **What**:
+  - Implemented immutable audit event logging, REST API endpoints, and frontend governance UI per docs/03 §3.5 & §11.1, docs/07 §16, and docs/08 (Screens S-10, S-12):
+    - **Persistence & Repository (`AuditEventRepository`)** ([`server/app/persistence/repositories/audit_repo.py`](server/app/persistence/repositories/audit_repo.py)):
+      - Enhanced `AuditEventRepository` with tenant-isolated filtering methods:
+        - `list_for_workspace` and `count_for_workspace` filtering by `action`, `target_kind`, `target_id`, `actor_id`, with limit/offset pagination.
+        - `list_for_project` and `count_for_project` filtering by project identifier either directly on `target_id` or inside `metadata_json->>'project_id'`.
+    - **Domain Layer (`AuditService`)** ([`server/app/domain/audit/service.py`](server/app/domain/audit/service.py)):
+      - Built `AuditService` with tenant verification (`ForbiddenError` on cross-tenant workspace or cross-tenant project access).
+      - Added audit event logging on sensitive workspace and project operations:
+        - Membership changes: `membership.added`, `membership.updated`, `membership.removed`.
+        - Workspace updates: `workspace.updated`.
+        - Project creation and deletion: `project.created`, `project.deleted`.
+    - **REST API Endpoints & Schemas** ([`server/app/api/audit.py`](server/app/api/audit.py), [`server/app/api/schemas.py`](server/app/api/schemas.py)):
+      - Added `AuditEventItem` Pydantic schema mapping `metadata_json` to `metadata` attribute.
+      - Added `GET /api/v1/workspaces/{workspace_id}/audit-events` guarded by `PERM_AUDIT_READ` (requires workspace admin/owner).
+      - Added `GET /api/v1/projects/{pid}/audit-events` guarded by `PERM_PROJECT_READ`.
+      - Mounted routers in `server/app/main.py`.
+    - **Common Client API (`@devmind/common`)** ([`common/src/api/index.ts`](common/src/api/index.ts)):
+      - Exported `AuditEventItem` and `ListAuditEventsParams`.
+      - Added `getWorkspaceAuditEvents(workspaceId, params)` and `getProjectAuditEvents(projectId, params)` to `DevMindApiClient`.
+      - Built and verified `@devmind/common`.
+    - **Frontend UI & Governance Integration** ([`client/components/audit/`](client/components/audit/)):
+      - Built `AuditLogViewer` supporting action filtering, status-colored chips (`danger`, `signal`, `ref`, `neutral`), UTC timestamp formatting, actor/target display, hashed IP chips, and expandable metadata JSON drawer.
+      - Built `AuditLogModal` dialog container.
+      - Integrated "Audit Events →" modal trigger into Screen S-12 `UsageDashboard` ([`client/components/usage/UsageDashboard.tsx`](client/components/usage/UsageDashboard.tsx)).
+      - Added "Audit Trail (docs/07 §16)" tab to Screen S-10 Project Settings ([`client/components/settings/ProjectSettingsClient.tsx`](client/components/settings/ProjectSettingsClient.tsx)).
+    - **Automated Verification**:
+      - Added `server/tests/test_audit_api.py` (6 tests passing, including cross-tenant isolation and permission checks).
+      - Verified route permissions (`server/tests/test_route_permissions.py`) and layer import boundaries (`lint-imports`).
+      - Added `client/tests/audit-events.test.tsx` (6 tests passing).
+      - Full client test suite: 24 test files, 154 tests passing.
+      - TypeScript check on client and root passes with 0 errors.
+      - `node scripts/test-all.mjs --fast` passes all 13 checks.
+      - Next.js production build passes with 25 routes compiled.
 
 ### Feature — M9-05: Snapshot History and Diff Viewer
 

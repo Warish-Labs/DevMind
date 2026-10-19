@@ -221,6 +221,28 @@ export interface RetentionSweepReport {
   effective_windows: Record<string, number>;
 }
 
+export interface AuditEventItem {
+  id: string;
+  workspace_id: string;
+  actor_id?: string | null;
+  actor_kind: string;
+  action: string;
+  target_kind: string;
+  target_id?: string | null;
+  ip_hash?: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface ListAuditEventsParams {
+  action?: string;
+  target_kind?: string;
+  target_id?: string;
+  actor_id?: string;
+  limit?: number;
+  offset?: number;
+}
+
 export class ApiError extends Error {
   public readonly status: number;
   public readonly code: string;
@@ -757,5 +779,40 @@ export class DevMindApiClient {
         method: "POST",
       }
     );
+  }
+
+  // -------------------------------------------------------------------------
+  // Audit Events & Compliance Logging (M9-06, docs/03 §3.5 & §11.1, docs/07 §16)
+  // -------------------------------------------------------------------------
+
+  public async getWorkspaceAuditEvents(
+    workspaceId: string,
+    params?: ListAuditEventsParams
+  ): Promise<AuditEventItem[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.action) searchParams.set("action", params.action);
+    if (params?.target_kind) searchParams.set("target_kind", params.target_kind);
+    if (params?.target_id) searchParams.set("target_id", params.target_id);
+    if (params?.actor_id) searchParams.set("actor_id", params.actor_id);
+    if (params?.limit !== undefined) searchParams.set("limit", String(params.limit));
+    if (params?.offset !== undefined) searchParams.set("offset", String(params.offset));
+
+    const qs = searchParams.toString();
+    const endpoint = `/api/v1/workspaces/${workspaceId}/audit-events${qs ? `?${qs}` : ""}`;
+    return this.fetchInternal<AuditEventItem[]>(endpoint);
+  }
+
+  public async getProjectAuditEvents(
+    projectId: string,
+    params?: { action?: string; limit?: number; offset?: number }
+  ): Promise<AuditEventItem[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.action) searchParams.set("action", params.action);
+    if (params?.limit !== undefined) searchParams.set("limit", String(params.limit));
+    if (params?.offset !== undefined) searchParams.set("offset", String(params.offset));
+
+    const qs = searchParams.toString();
+    const endpoint = `/api/v1/projects/${projectId}/audit-events${qs ? `?${qs}` : ""}`;
+    return this.fetchInternal<AuditEventItem[]>(endpoint);
   }
 }

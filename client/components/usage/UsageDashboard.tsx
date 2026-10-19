@@ -6,6 +6,7 @@ import { Badge, Button } from "@/components/ui";
 import { QuotaOverview } from "./QuotaOverview";
 import { UsageBreakdownPane } from "./UsageBreakdownPane";
 import { ExtensionDevicesPane } from "./ExtensionDevicesPane";
+import { AuditLogModal } from "@/components/audit";
 import {
   INITIAL_QUOTAS,
   INITIAL_TASK_USAGE,
@@ -40,6 +41,7 @@ export function UsageDashboard({
   const [tasks] = useState<TaskUsageBreakdown[]>(initialTasks);
   const [projects] = useState<ProjectUsageBreakdown[]>(initialProjects);
   const [devices] = useState<ExtensionDeviceItem[]>(initialDevices);
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
 
   // Calculate totals
   const totalTokens = tasks.reduce((acc, t) => acc + t.totalTokens, 0);
@@ -84,11 +86,14 @@ export function UsageDashboard({
             Period: <span className="text-[var(--signal)] font-semibold">October 2026</span>
           </div>
 
-          <Link href={projectId ? `/projects/${projectId}/jobs` : "/projects"}>
-            <Button variant="secondary" size="sm" className="font-mono text-xs">
-              Audit Events &rarr;
-            </Button>
-          </Link>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="font-mono text-xs"
+            onClick={() => setIsAuditModalOpen(true)}
+          >
+            Audit Events &rarr;
+          </Button>
         </div>
       </div>
 
@@ -120,6 +125,15 @@ export function UsageDashboard({
         </h2>
         <ExtensionDevicesPane devices={devices} />
       </section>
+
+      {/* 4. Audit Log Dialog Modal */}
+      <AuditLogModal
+        isOpen={isAuditModalOpen}
+        onClose={() => setIsAuditModalOpen(false)}
+        workspaceId={workspaceId}
+        projectId={projectId}
+        title={`${workspaceName} Audit Events`}
+      />
     </div>
   );
 }
