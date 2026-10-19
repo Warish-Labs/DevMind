@@ -5,6 +5,7 @@ import { BrainHeader } from "./BrainHeader";
 import { FileTreePane } from "./FileTreePane";
 import { CodeSymbolPane } from "./CodeSymbolPane";
 import { RelationshipsPane } from "./RelationshipsPane";
+import { SnapshotHistoryModal } from "./SnapshotHistoryModal";
 import type {
   BrainFileNode,
   BrainFileContent,
@@ -41,6 +42,7 @@ export function BrainExplorer({
   const [selectedSymbolId, setSelectedSymbolId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [mobileTab, setMobileTab] = useState<"files" | "code" | "relationships">("code");
+  const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
 
   const currentFileContent = useMemo<BrainFileContent | null>(() => {
     if (!selectedFilePath) return null;
@@ -90,6 +92,7 @@ export function BrainExplorer({
         onToggleMode={handleToggleMode}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onOpenHistory={() => setIsHistoryOpen(true)}
       />
 
       {/* Mobile Panes Tabs Bar (< 1024px) */}
@@ -189,6 +192,15 @@ export function BrainExplorer({
           />
         </div>
       </div>
+
+      {/* Snapshot History & Diff Viewer Modal */}
+      <SnapshotHistoryModal
+        projectId={projectId}
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        currentSnapshotId={selectedSnapshotId}
+        onSelectSnapshot={(id) => setSelectedSnapshotId(id)}
+      />
     </div>
   );
 }

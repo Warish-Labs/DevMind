@@ -14,6 +14,7 @@ export interface BrainHeaderProps {
   onToggleMode?: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onOpenHistory?: () => void;
   className?: string;
 }
 
@@ -26,6 +27,7 @@ export function BrainHeader({
   onToggleMode,
   searchQuery,
   onSearchChange,
+  onOpenHistory,
   className = "",
 }: BrainHeaderProps) {
   const currentSnapshot = snapshots.find((s) => s.id === selectedSnapshotId) || snapshots[0];
@@ -95,6 +97,17 @@ export function BrainHeader({
                 </option>
               ))}
             </select>
+
+            {onOpenHistory && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onOpenHistory}
+                className="h-7 text-xs font-mono"
+              >
+                History & Diffs
+              </Button>
+            )}
           </div>
 
           {/* Stale Warning Badge if selected snapshot is not current */}

@@ -7,32 +7,58 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m9-retention-windows` |
-| **Last commit** | Pending commit (feat(server): implement M9-04 retention windows and scheduler cleanup) |
-| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 143 client tests pass; server tests pass |
-| **Open PR** | `feature/m9-retention-windows` -> `main` (PR #61 pending) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 143/143 pass |
+| **Branch** | `feature/m9-snapshot-history` |
+| **Last commit** | Pending commit (feat(client): implement M9-05 snapshot history and diff viewer) |
+| **Working tree** | Clean; all 13 fast checks pass; Next.js production build passes (25 routes); 148 client tests pass; server tests pass |
+| **Open PR** | `feature/m9-snapshot-history` -> `main` (PR #62 pending) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped; server tests pass, client 148/148 pass |
 | **Date** | 2026-10-19 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m9-retention-windows` to GitHub.
-2. Open PR #61 (`feature/m9-retention-windows` -> `main`).
-3. After PR #61 is merged into `main`, proceed with **M9-05: Snapshot history (`feature/m9-snapshot-history`)**.
+1. Commit and push `feature/m9-snapshot-history` to GitHub.
+2. Open PR #62 (`feature/m9-snapshot-history` -> `main`).
+3. After PR #62 is merged into `main`, proceed with **M9-06: Audit endpoints (`feature/m9-audit-endpoints`)**.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                     | Reference |
-| --- | --------------------------------------------------------------------------------------------------- | --------- |
-| 1   | Review and merge PR #61 (`feature/m9-retention-windows` -> `main`) once GitHub Actions CI completes | M9-04     |
+| #   | Action required                                                                                    | Reference |
+| --- | -------------------------------------------------------------------------------------------------- | --------- |
+| 1   | Review and merge PR #62 (`feature/m9-snapshot-history` -> `main`) once GitHub Actions CI completes | M9-05     |
 
 ---
 
 ## 4. Done log
+
+### Feature — M9-05: Snapshot History and Diff Viewer
+
+- **Date**: 2026-10-19
+- **Branch**: `feature/m9-snapshot-history`
+- **What**:
+  - Implemented Snapshot History and Point-in-time Diff Viewer UI and common API client methods per docs/03 §3.2 & §7, docs/08 (Screen S-05), and docs/11 (M9-05):
+    - **Common Client API (`@devmind/common`)** ([`common/src/api/index.ts`](common/src/api/index.ts)):
+      - Exported `CreateSnapshotRequest`, `SnapshotDiffItem`, and `SnapshotDiffResponse` schema types.
+      - Added `createSnapshot(projectId, data)` executing `POST /api/v1/projects/{pid}/brain/snapshots`.
+      - Added `compareSnapshots(projectId, snapshotId, targetSnapshotId?)` executing `GET /api/v1/projects/{pid}/brain/snapshots/{sid}/diff`.
+      - Rebuilt and verified `@devmind/common`.
+    - **Snapshot History Modal & Diff Viewer Component** ([`client/components/brain/SnapshotHistoryModal.tsx`](client/components/brain/SnapshotHistoryModal.tsx)):
+      - Built multi-tab modal dialog (`history`, `diff`, `capture` tabs):
+        - **Timeline Tab**: Lists historical and current snapshots with origin kind badge (`scan`, `commit`, `manual`), created timestamp, file count, active state badge, and quick actions to run diff comparison or switch active Brain Explorer snapshot.
+        - **Diff & Comparison Tab**: Allows selecting a Base Snapshot and Target Snapshot (or against "Current Active Project State"). Displays 4 summary metric counters (`+Added`, `-Removed`, `~Modified`, `=Unchanged`) and an itemized difference list with status chips, file paths, and truncated SHA-256 content hash transitions (`base_hash -> target_hash`), with status filtering and file path search input.
+        - **Capture Snapshot Tab**: Dedicated form to capture immediate immutable point-in-time project snapshot with kind (`manual` / `scan` / `commit`), optional reference SHA / tag, and human label.
+    - **Brain Explorer Integration** ([`client/components/brain/BrainHeader.tsx`](client/components/brain/BrainHeader.tsx), [`client/components/brain/BrainExplorer.tsx`](client/components/brain/BrainExplorer.tsx)):
+      - Added "History & Diffs" button next to snapshot selector in `BrainHeader`.
+      - Integrated `SnapshotHistoryModal` with state management into `BrainExplorer`.
+    - **Automated Verification**:
+      - Added `client/tests/snapshot-history.test.tsx` (5 tests passing).
+      - Full client test suite passes: 23 test files, 148 passed.
+      - Server snapshot tests pass: `tests/test_snapshots.py` (8 passed).
+      - Next.js production build passes with 25 routes compiled.
+      - `node scripts/test-all.mjs --fast` passes all 13 checks.
 
 ### Feature — M9-04: Retention Windows and Scheduler Cleanup
 

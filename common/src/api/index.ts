@@ -39,6 +39,9 @@ export type AnalysisJobCreatedResponse = components["schemas"]["AnalysisJobCreat
 export type CreateAnalysisRequest = components["schemas"]["CreateAnalysisRequest"];
 export type SnapshotItem = components["schemas"]["SnapshotItem"];
 export type SnapshotDetail = components["schemas"]["SnapshotDetail"];
+export type CreateSnapshotRequest = components["schemas"]["CreateSnapshotRequest"];
+export type SnapshotDiffItem = components["schemas"]["SnapshotDiffItem"];
+export type SnapshotDiffResponse = components["schemas"]["SnapshotDiffResponse"];
 export type CodeSymbolItem = components["schemas"]["CodeSymbolItem"];
 export type BrainFileItem = components["schemas"]["BrainFileItem"];
 export type BrainFileDetail = components["schemas"]["BrainFileDetail"];
@@ -560,6 +563,31 @@ export class DevMindApiClient {
   public async getSnapshotDetail(projectId: string, snapshotId: string): Promise<SnapshotDetail> {
     return this.fetchInternal<SnapshotDetail>(
       `/api/v1/projects/${projectId}/brain/snapshots/${snapshotId}`
+    );
+  }
+
+  public async createSnapshot(
+    projectId: string,
+    data: CreateSnapshotRequest
+  ): Promise<SnapshotItem> {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    return this.fetchInternal<SnapshotItem>(`/api/v1/projects/${projectId}/brain/snapshots`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(data),
+    });
+  }
+
+  public async compareSnapshots(
+    projectId: string,
+    snapshotId: string,
+    targetSnapshotId?: string
+  ): Promise<SnapshotDiffResponse> {
+    const query = targetSnapshotId
+      ? `?target_snapshot_id=${encodeURIComponent(targetSnapshotId)}`
+      : "";
+    return this.fetchInternal<SnapshotDiffResponse>(
+      `/api/v1/projects/${projectId}/brain/snapshots/${snapshotId}/diff${query}`
     );
   }
 
