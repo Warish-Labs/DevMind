@@ -19,6 +19,20 @@
     "url": "https://github.com/Warish-Labs/DevMind.git",
     "directory": "extension"
   },
+  "homepage": "https://devmind.warishlabs.in",
+  "bugs": {
+    "url": "https://github.com/Warish-Labs/DevMind/issues"
+  },
+  "qna": "https://github.com/Warish-Labs/DevMind/discussions",
+  "keywords": [
+    "devmind",
+    "security",
+    "ast",
+    "authorization",
+    "linter",
+    "architecture",
+    "static-analysis"
+  ],
   "main": "./dist/extension.js",
   "activationEvents": [
     "onStartupFinished"
@@ -192,7 +206,8 @@
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "package": "vsce package --no-dependencies --out dist/devmind-vscode.vsix"
+    "package": "vsce package --no-dependencies --out dist/devmind-vscode.vsix",
+    "package:pre-release": "vsce package --pre-release --no-dependencies --out dist/devmind-vscode-pre-release.vsix"
   },
   "devDependencies": {
     "@types/node": "26.6.5",

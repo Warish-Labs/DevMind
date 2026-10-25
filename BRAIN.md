@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m13-app-shell-polish` |
-| **Last commit** | In progress (feat(client): implement M13-03 authenticated app shell and screen states review) |
-| **Working tree** | Clean; ready to commit and push PR |
-| **Open PR** | None (`feature/m13-app-shell-polish` ready to open) |
+| **Branch** | `feature/m13-extension-packaging` |
+| **Last commit** | `9d185e5` (feat(extension): implement M13-04 extension packaging and marketplace release readiness) |
+| **Working tree** | Clean; PR #80 open |
+| **Open PR** | [#80](https://github.com/Warish-Labs/DevMind/pull/80) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,22 +18,34 @@
 
 ## 2. Next action (exact)
 
-1. Commit changes on `feature/m13-app-shell-polish`.
-2. Push branch to `origin/feature/m13-app-shell-polish`.
-3. Open PR via `gh pr create`.
-4. Update `BRAIN.md` with PR link.
-5. Owner reviews and merges PR on GitHub.
-6. Run post-merge routine and initiate M13-04 (`feature/m13-extension-packaging`).
+1. Owner reviews and merges PR [#80](https://github.com/Warish-Labs/DevMind/pull/80) on GitHub.
+2. Run post-merge routine (`git checkout main && git pull origin main`).
+3. Delete local and remote feature branch `feature/m13-extension-packaging`.
+4. Initiate M13-05: Documentation consistency, broken link, and brand audit (`feature/m13-docs-audit`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR once opened.
+Review and merge of PR [#80](https://github.com/Warish-Labs/DevMind/pull/80).
 
 ---
 
 ## 4. Done log
+
+### Feature — M13-04: Extension Packaging & Marketplace Release Readiness
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m13-extension-packaging`
+- **What**:
+  - Prepared the VS Code companion extension for Visual Studio Marketplace and Open VSX release readiness per [`docs/06`](docs/06-vscode-extension-and-local-scanning.md) §18:
+    - Added complete marketplace manifest metadata in [`extension/package.json`](extension/package.json) (`homepage`, `bugs`, `qna`, `keywords`, and gallery categorization).
+    - Added dedicated pre-release packaging target script (`package:pre-release`) running `vsce package --pre-release --no-dependencies --out dist/devmind-vscode-pre-release.vsix`.
+    - Created [`extension/CHANGELOG.md`](extension/CHANGELOG.md) adhering to Semantic Versioning and documenting v0.1.0 through v0.1.2 releases with full Known Limitations Ledger (Language tiers 1 & 2, zero live DB connections per ADR-034, and no in-extension AI chat).
+    - Standardized license references to MIT in [`extension/README.md`](extension/README.md) and [`extension/package.json`](extension/package.json).
+    - Expanded automated test coverage in [`extension/tests/quality.test.ts`](extension/tests/quality.test.ts) (80 passed across 15 test files).
+    - Packaged and verified both stable (`dist/devmind-vscode.vsix`, 55.77 KB) and pre-release (`dist/devmind-vscode-pre-release.vsix`, 55.78 KB) bundles with zero dependencies.
+  - Validated full test suite via `scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped).
 
 ### Feature — M13-03: Authenticated App Shell & Screen States Review
 
