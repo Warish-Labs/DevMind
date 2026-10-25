@@ -300,7 +300,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M10-05 Queue soak and Redis failure drills (feature/m10-queue-drills)
 - [x] M10-06 Database restore drill (feature/m10-restore-drill)
 - [x] M10-07 Prompt-injection corpus expansion and abuse tests (feature/m10-injection-expansion)
-- [ ] M10-08 Operational runbooks (feature/m10-runbooks)
+- [x] M10-08 Operational runbooks (feature/m10-runbooks)
 - [ ] M10-09 Threat-model review and residual risk ledger update (feature/m10-threat-model)
 - [ ] M10-10 Staging promotion rehearsal (feature/m10-staging-rehearsal)
 

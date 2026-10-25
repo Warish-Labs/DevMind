@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-injection-expansion` |
-| **Last commit** | `4d0b41b` (`feat(server): implement M10-07 prompt-injection corpus expansion and abuse tests`) |
+| **Branch** | `feature/m10-runbooks` |
+| **Last commit** | `033e545` (`feat(docs): implement M10-08 operational runbooks and disaster recovery playbooks`) |
 | **Working tree** | Clean |
-| **Open PR** | [#73](https://github.com/Warish-Labs/DevMind/pull/73) |
+| **Open PR** | [#74](https://github.com/Warish-Labs/DevMind/pull/74) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -19,20 +19,49 @@
 ## 2. Next action (exact)
 
 1. Verify full suite with `test-all.mjs --fast`.
-2. Commit changes: `feat(server): implement M10-07 prompt-injection corpus expansion and abuse tests`.
-3. Push branch `feature/m10-injection-expansion` to `origin`.
+2. Commit changes: `feat(docs): implement M10-08 operational runbooks and disaster recovery playbooks`.
+3. Push branch `feature/m10-runbooks` to `origin`.
 4. Create GitHub Pull Request targeting `main`.
-5. After merge, proceed with M10-08: Operational runbooks (`feature/m10-runbooks`).
+5. After merge, proceed with M10-09: Threat-model review and residual risk ledger update (`feature/m10-threat-model`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m10-injection-expansion`.
+Review and merge PR for `feature/m10-runbooks`.
 
 ---
 
 ## 4. Done log
+
+### Feature — M10-08: Operational Runbooks and Disaster Recovery Playbooks
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m10-runbooks`
+- **What**:
+  - Authored and verified complete operational runbooks and playbooks per docs/10 §11, §16, §18, §21, §22, docs/07 §12, §17, and ADR-046:
+    - **Incident Diagnosis & Response Playbooks** ([`docs/runbooks/incident-response.md`](docs/runbooks/incident-response.md)):
+      - Standardized 4-tier incident severity matrix (SEV-1 to SEV-4) with response time objectives.
+      - Core diagnostic and step-by-step remediation playbooks for all 5 failure modes:
+        - Playbook 1: Worker stall, backpressure, and stranded task reaping (`sweep_stranded_jobs`).
+        - Playbook 2: Retrieval degradation, provider rate-limit backpressure, pgvector vacuum/reindex, and keyword fallback.
+        - Playbook 3: Real-time SSE disconnects, 15s keep-alive verification, and HTTP long-polling fallback.
+        - Playbook 4: Cross-tenant isolation suspicion, emergency write freeze, and forensic log preservation.
+        - Playbook 5: Duplicate task execution, atomic claim locks (`SKIP LOCKED`), and visibility timeout handling.
+      - Subsystem kill switch catalog: `DEVMIND_KILL_INDEXING`, `DEVMIND_KILL_LLM`, `DEVMIND_KILL_EMBED`, `DEVMIND_KILL_WEBHOOKS`, `DEVMIND_PAUSE_QUEUES`.
+    - **Disaster Recovery & Business Continuity** ([`docs/runbooks/disaster-recovery.md`](docs/runbooks/disaster-recovery.md)):
+      - Scenario 1: Regional and host infrastructure outage (multi-AZ Paxos storage, secondary Render Blueprint deployment, Vercel edge CDN reroute).
+      - Scenario 2: Corrupted or incompatible embedding space (pgvector index drop, batch re-embedding pipeline).
+      - Scenario 3: Accidental destructive migration and database loss (Neon Point-In-Time Restore to branch, RTO < 5m, RPO window).
+      - Scenario 4: Critical secret and token compromise (zero-downtime envelope encryption dual-key rollover, Clerk session revocation).
+    - **Free-Tier Operations & Resource Quotas** ([`docs/runbooks/free-tier-operations.md`](docs/runbooks/free-tier-operations.md)):
+      - Operational guidelines and mitigations under ADR-046 free-profile topology.
+      - Render 15-minute idle spin-down, 50s-90s cold start tolerance, and 512 MB RAM ceiling (batch chunking $< 25$ MB).
+      - Neon 5-minute auto-suspend, `pool_pre_ping=True`, and 512 MB storage quota.
+      - Upstash Redis 10,000 cmd/day ceiling, daily consumption budget (~5,580 cmds/day), in-memory rate-limiter fallback, and SSE polling fallback.
+    - **Automated Verification Suite** ([`server/tests/test_operational_runbooks.py`](server/tests/test_operational_runbooks.py)):
+      - Automated pytest suite validating runbook file inventory, all 5 failure playbooks, 5 kill switches consistency with code and settings, disaster scenarios, and free quota alignment (5 passed in 0.10s).
+      - Verified markdown documentation links and anchors across all 54 files via `scripts/docs-links.mjs` (661 links checked, 0 broken).
 
 ### Feature — M10-07: Prompt-Injection Corpus Expansion and Abuse Tests
 
