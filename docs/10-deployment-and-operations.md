@@ -220,7 +220,7 @@ Metrics: queue length and oldest-message age per queue; active/reserved tasks; t
 | R2 | Objects are artifacts; deletion is intentional; versioning/lifecycle per kind `[VERIFY]` |
 | Secrets | Recoverable from the platform secret store and a separate secure record of ownership; no secrets in backups of code |
 | Deleted data | Provider backups can retain deleted data for their window; this is disclosed in the privacy notice ([07](07-security-privacy-and-threat-model.md) §9) |
-| Disaster scenarios | Region outage, accidental destructive migration, credential compromise, corrupted embedding space; each has a short runbook in `docs/runbooks/` |
+| Disaster scenarios | Region outage, accidental destructive migration, credential compromise, corrupted embedding space; each has an operational runbook in [`docs/runbooks/disaster-recovery.md`](runbooks/disaster-recovery.md) and [`docs/runbooks/database-restore.md`](runbooks/database-restore.md) |
 
 ## 17. CI/CD and rollbacks
 
@@ -260,7 +260,7 @@ flowchart LR
 | Cross-tenant suspicion | Treat as security incident ([07](07-security-privacy-and-threat-model.md) §17): disable affected feature, preserve audit events, scope by workspace/time |
 | Duplicate effects | Claim logic, idempotency keys, visibility timeout versus task duration (§9) |
 
-Use request/job IDs; never request user source to debug. Runbooks to be written during hardening ([11](11-mvp-and-implementation-roadmap.md) M10).
+Use request/job IDs; never request user source to debug. Step-by-step diagnostic and remediation playbooks for each failure mode are defined in [`docs/runbooks/incident-response.md`](runbooks/incident-response.md) ([11](11-mvp-and-implementation-roadmap.md) M10-08).
 
 ## 19. Resource limits and graceful shutdown
 
@@ -305,7 +305,7 @@ Measured values validated by load, concurrency, and capacity testing:
 
 ## 22. Free deployment profile (active; ADR-046)
 
-The owner uses free tiers only. This profile keeps the code and the target architecture unchanged and changes only how the processes are packaged and hosted. Vendor facts and their verification dates are in [12](12-architecture-decisions-and-open-questions.md) §5.
+The owner uses free tiers only. This profile keeps the code and the target architecture unchanged and changes only how the processes are packaged and hosted. Operational procedures and quota limits are documented in [`docs/runbooks/free-tier-operations.md`](runbooks/free-tier-operations.md). Vendor facts and their verification dates are in [12](12-architecture-decisions-and-open-questions.md) §5.
 
 | Aspect | Free profile | Target profile (§4) |
 |---|---|---|
