@@ -39,7 +39,7 @@ export default function EarlyAccessPage() {
           <ul className="space-y-2 text-sm text-[var(--fg-1)] leading-relaxed">
             <li className="flex items-start gap-2">
               <span className="text-[var(--signal)]">✓</span>
-              <span>47 Architecture Decision Records (ADRs) fully documented</span>
+              <span>49 Architecture Decision Records (ADRs) fully documented</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[var(--signal)]">✓</span>
