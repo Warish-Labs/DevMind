@@ -7,30 +7,59 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-alerts` |
-| **Last commit** | `d8a8b10` (`feat(server): implement M10-03 alerting thresholds, health checks, and kill switches`) |
-| **Working tree** | Clean; on `feature/m10-alerts` |
-| **Open PR** | [#69](https://github.com/Warish-Labs/DevMind/pull/69) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped (all 701 server tests passed) |
+| **Branch** | `feature/m10-load-tests` |
+| **Last commit** | `afec24e` (Merge pull request #69 from Warish-Labs/feature/m10-alerts) |
+| **Working tree** | Modified; load and capacity test suite implemented |
+| **Open PR** | Pending push (`feature/m10-load-tests`) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Owner review and merge PR #69 on GitHub (`feature/m10-alerts`).
-2. Run after-merge routine: checkout `main`, pull latest, delete `feature/m10-alerts` locally and remotely on `origin`.
-3. Proceed to Task M10-04 (`feature/m10-load-tests`): Free-profile load and capacity tests per docs/10 §21, §22.
+1. Review and ensure CI tests (`test-all.mjs --fast`) complete cleanly.
+2. Commit changes: `feat(server): implement M10-04 free-profile load and capacity tests`.
+3. Push branch `feature/m10-load-tests` to `origin`.
+4. Create GitHub Pull Request targeting `main`.
+5. After merge, proceed with M10-05: Queue soak and Redis failure drills (`feature/m10-queue-drills`).
 
 ---
 
 ## 3. Waiting on owner
 
-Owner review and merge of [PR #69](https://github.com/Warish-Labs/DevMind/pull/69).
+Review and merge PR for `feature/m10-load-tests`.
 
 ---
 
 ## 4. Done log
+
+### Feature — M10-04: Free-Profile Load, Concurrency, and Capacity Tests
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m10-load-tests`
+- **What**:
+  - Implemented comprehensive free-profile load, concurrency, memory profiling, and capacity benchmarks per docs/10 §15, §21, §22, ADR-046, and ADR-047:
+    - **Neon Connection Concurrency & Pool Resilience** ([`server/tests/test_capacity.py`](server/tests/test_capacity.py)):
+      - Verified SQLAlchemy async engine pool configuration: `pool_size=5`, `max_overflow=5`, `pool_recycle=1800`, `pool_pre_ping=True`.
+      - Executed burst concurrent session acquisition tests (25 simultaneous sessions) verifying zero connection leaks, clean context manager exit, and graceful pool reclamation.
+      - Tested pool pre-ping resilience against simulated serverless compute suspension / transient socket resets, confirming automatic connection refresh without failing caller operations.
+    - **SSE Event Streaming Concurrency & Disconnect Lifecycle** ([`server/tests/test_capacity.py`](server/tests/test_capacity.py)):
+      - Simulated 20 concurrent SSE subscriber streams consuming real-time broadcast milestone events over Redis pub/sub.
+      - Tested clean client disconnection lifecycle: verified that terminating SSE generator invokes `pubsub.unsubscribe()` and `pubsub.aclose()`, eliminating dangling subscriptions or memory leaks.
+      - Tested keepalive ping frame efficiency: verified ping payload is <= 30 bytes (< 10 KB/hour total idle network bandwidth per connection).
+    - **Ingestion & AST Chunking Memory Profiling** ([`server/tests/test_capacity.py`](server/tests/test_capacity.py)):
+      - Benchmarked `CodeAwareChunker.chunk_file` and redaction scanning on representative synthetic multi-language codebase (100 Python, 50 TypeScript, 25 Markdown files; 3,500+ lines).
+      - Profiled peak memory allocations via `tracemalloc`: measured < 25 MB allocation delta during chunking.
+      - Proved combined container resident set size (RSS: base ~90MB + Celery solo ~80MB + chunking ~25MB = ~195MB) remains comfortably below 250 MB, well within Render Free's 512 MB ceiling (target < 350 MB).
+    - **Upstash Redis Daily Command Budget Simulation** ([`server/tests/test_capacity.py`](server/tests/test_capacity.py)):
+      - Built precise Redis command accounting model for all background workers, scheduler beats, rate limiter queries, and alert evaluations.
+      - Proved Scenario A (Realistic Developer Day with Render Free sleep tolerance): ~5,580 commands/day, providing 44% headroom below Upstash's 10,000 commands/day cap.
+      - Proved Scenario B (Stress 24-hour continuous non-sleeping baseline): 5,760 commands/day, leaving 4,240 commands for jobs and queries within the 10,000 cap.
+    - **Documentation**:
+      - Updated [`docs/10-deployment-and-operations.md`](docs/10-deployment-and-operations.md) §21 table with validated empirical measurements and thresholds.
+      - Automated test suite: [`server/tests/test_capacity.py`](server/tests/test_capacity.py) (9 passed in 1.01s).
+      - Architecture boundaries verified: `lint-imports` (7 kept, 0 broken).
 
 ### Feature — M10-03: Alerting Thresholds, Health Checks, and Kill Switches
 

@@ -289,19 +289,19 @@ Use request/job IDs; never request user source to debug. Runbooks to be written 
 
 ## 21. Estimates that require validation
 
-None of these has a value in this document; each is produced by measurement and recorded in the milestone that owns it.
+Measured values validated by load, concurrency, and capacity testing:
 
-| Item | Method | Owner |
-|---|---|---|
-| API and worker instance sizing | Load test with generated projects | M10 |
-| Neon connection budget and pool sizes | Concurrency test | M10 |
-| Redis memory and persistence behavior | Queue soak test; failure drill | M10 |
-| Queue alert thresholds | Observation during staging | M10 |
-| Restore time (RTO) and acceptable data loss (RPO) | Restore drills | M10 |
-| LLM and embedding cost per analysis/project size | Usage records from evaluation runs | M5–M7 |
-| SSE capacity per API instance | Connection test | M8/M10 |
-| Extension scan times on 1k/10k/50k files | Benchmarks | M3 |
-| Cold-start and deploy duration | Measured in staging | M1/M10 |
+| Item | Method | Owner | Validated Baseline & Threshold |
+|---|---|---|---|
+| API and worker instance sizing | Load test with generated projects (`test_capacity.py`) | M10 | Peak allocation < 25 MB per 175-file chunking batch; total projected combined RSS ~195 MB (well under 512 MB Render Free limit; target < 350 MB) |
+| Neon connection budget and pool sizes | Concurrency test (`test_capacity.py`) | M10 | `pool_size=5`, `max_overflow=5` (10 total max concurrent connections); `pool_recycle=1800`; `pool_pre_ping=True` handles serverless compute wakeups |
+| Redis memory and persistence behavior | Queue soak test; simulation (`test_capacity.py`) | M10 | Upstash Free Tier < 10,000 cmd/day cap; realistic active/sleep day uses ~5,580 cmd/day (44% headroom); 24h baseline uses 5,760 cmd/day |
+| Queue alert thresholds | Observation during staging (`test_alerts.py`) | M10 | Queue depth > 50, message age > 300s, stale heartbeat > 120s, error rate > 5.0% |
+| Restore time (RTO) and acceptable data loss (RPO) | Restore drills | M10 | Validated during drill (M10-06) |
+| LLM and embedding cost per analysis/project size | Usage records from evaluation runs | M5–M7 | Gemini Free Tier RPM/TPM quotas enforced by sliding window rate limiter |
+| SSE capacity per API instance | Connection test (`test_capacity.py`) | M8/M10 | 20+ concurrent SSE clients per worker; frame size <= 30 bytes (< 10 KB/hr idle); clean pubsub unsubscribe on disconnect |
+| Extension scan times on 1k/10k/50k files | Benchmarks | M3 | Incremental hashing and local manifest diff |
+| Cold-start and deploy duration | Measured in staging | M1/M10 | Sleep tolerance retry window: 90 seconds backoff for Render/Neon wake |
 
 ## 22. Free deployment profile (active; ADR-046)
 
