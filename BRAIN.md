@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-staging-rehearsal` |
-| **Last commit** | `4108f26` (feat(docs): implement M10-10 staging promotion rehearsal and release verification) |
-| **Working tree** | Clean; PR #76 open targeting main |
-| **Open PR** | [#76](https://github.com/Warish-Labs/DevMind/pull/76) (`feature/m10-staging-rehearsal`) |
+| **Branch** | `feature/m13-homepage-audit` |
+| **Last commit** | `891195d` (Merge pull request #76 from Warish-Labs/feature/m10-staging-rehearsal) |
+| **Working tree** | Completed M13-01 homepage and navigation audit, updated ADR count claim to 49, added automated content-integrity test cases |
+| **Open PR** | Pending push (`feature/m13-homepage-audit`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,23 +18,33 @@
 
 ## 2. Next action (exact)
 
-1. Owner reviews and merges PR #76 on GitHub (`https://github.com/Warish-Labs/DevMind/pull/76`).
-2. Run post-merge routine:
-   - `git checkout main && git pull origin main`
-   - Delete local branch: `git branch -d feature/m10-staging-rehearsal`
-   - Delete remote branch: `git push origin --delete feature/m10-staging-rehearsal`
-   - Prune remote refs: `git fetch --prune origin`
-3. Milestone 10 is 100% complete! Proceed to Milestone 13: UI polish and MVP release readiness (`feature/m13-*`).
+1. Verify `git status` and commit changes: `feat(client): implement M13-01 public homepage and navigation audit`.
+2. Push branch `feature/m13-homepage-audit` to `origin`.
+3. Open PR for M13-01 targeting `main`.
+4. After merge, proceed with M13-02: Motion polish, custom cursor, and keyboard accessibility pass (`feature/m13-motion-a11y`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #76: https://github.com/Warish-Labs/DevMind/pull/76
+Review and merge PR for `feature/m13-homepage-audit` (once opened).
 
 ---
 
 ## 4. Done log
+
+### Feature — M13-01: Public Homepage & Navigation Audit
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m13-homepage-audit`
+- **What**:
+  - Audited all 8 public homepage sections and the hero Trace component against `docs/08` §8 and §9:
+    - Verified synchronization with single sources of truth in `common/data/` (`rule-catalog.json`, `release-status.json`, `privacy-ledger.json`, `capabilities.json`, `walkthrough.json`).
+    - Verified all 8 section anchors (`#section-01` to `#section-08` and `#walkthrough`), brand logo, and header/footer navigation links.
+    - Updated the Architecture Decision Record claim on `/early-access` from 47 to 49 to match ADR-001 through ADR-049 in [`docs/12-architecture-decisions-and-open-questions.md`](docs/12-architecture-decisions-and-open-questions.md).
+    - Expanded [`client/tests/content-integrity.test.ts`](client/tests/content-integrity.test.ts) with automated tests verifying the exact ADR count matches `docs/12` and all 8 homepage section components are rendered in sequence.
+  - Verified Next.js production build (`next build`) generating 14 static and 12 dynamic routes without error.
+  - Ran full test suite via `scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped).
 
 ### Feature — M10-10: Staging Promotion Rehearsal & Release Verification
 

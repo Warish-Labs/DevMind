@@ -142,4 +142,35 @@ describe("Content Integrity & Single Source of Truth", () => {
       expect(heroRaw).not.toMatch(pattern);
     }
   });
+
+  it("verifies early-access page ADR count accurately reflects docs/12", () => {
+    const docs12 = fs.readFileSync(
+      path.join(ROOT, "docs/12-architecture-decisions-and-open-questions.md"),
+      "utf8"
+    );
+    const adrMatches = docs12.match(/^### ADR-\d{3}\b/gm) || [];
+    const adrCount = adrMatches.length;
+    expect(adrCount).toBe(49);
+
+    const earlyAccessPath = path.resolve(__dirname, "../app/early-access/page.tsx");
+    const earlyAccessContent = fs.readFileSync(earlyAccessPath, "utf8");
+    expect(earlyAccessContent).toContain(
+      `${adrCount} Architecture Decision Records (ADRs) fully documented`
+    );
+  });
+
+  it("audits homepage navigation and section anchors consistency", () => {
+    const pagePath = path.resolve(__dirname, "../app/page.tsx");
+    const pageContent = fs.readFileSync(pagePath, "utf8");
+
+    // All 8 sections are imported and rendered in order
+    expect(pageContent).toContain("<Hero />");
+    expect(pageContent).toContain("<Section02BlastRadius />");
+    expect(pageContent).toContain("<Section03BrainStrata />");
+    expect(pageContent).toContain("<Section04Capabilities />");
+    expect(pageContent).toContain("<Section05Walkthrough />");
+    expect(pageContent).toContain("<Section06Diptych />");
+    expect(pageContent).toContain("<Section07PrivacyLedger />");
+    expect(pageContent).toContain("<Section08CTA />");
+  });
 });
