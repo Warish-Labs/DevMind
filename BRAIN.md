@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-threat-model` |
-| **Last commit** | `7a0f922` (`feat(docs): complete M10-09 threat-model review and residual risk ledger update`) |
-| **Working tree** | Clean |
-| **Open PR** | [#75](https://github.com/Warish-Labs/DevMind/pull/75) |
+| **Branch** | `feature/m10-staging-rehearsal` |
+| **Last commit** | `4108f26` (feat(docs): implement M10-10 staging promotion rehearsal and release verification) |
+| **Working tree** | Clean; PR #76 open targeting main |
+| **Open PR** | [#76](https://github.com/Warish-Labs/DevMind/pull/76) (`feature/m10-staging-rehearsal`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,21 +18,44 @@
 
 ## 2. Next action (exact)
 
-1. Verify full suite with `test-all.mjs --fast`.
-2. Commit changes: `feat(docs): complete M10-09 threat-model review and residual risk ledger update`.
-3. Push branch `feature/m10-threat-model` to `origin`.
-4. Create GitHub Pull Request targeting `main`.
-5. After merge, proceed with M10-10: Staging promotion rehearsal (`feature/m10-staging-rehearsal`).
+1. Owner reviews and merges PR #76 on GitHub (`https://github.com/Warish-Labs/DevMind/pull/76`).
+2. Run post-merge routine:
+   - `git checkout main && git pull origin main`
+   - Delete local branch: `git branch -d feature/m10-staging-rehearsal`
+   - Delete remote branch: `git push origin --delete feature/m10-staging-rehearsal`
+   - Prune remote refs: `git fetch --prune origin`
+3. Milestone 10 is 100% complete! Proceed to Milestone 13: UI polish and MVP release readiness (`feature/m13-*`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m10-threat-model`.
+Review and merge PR #76: https://github.com/Warish-Labs/DevMind/pull/76
 
 ---
 
 ## 4. Done log
+
+### Feature — M10-10: Staging Promotion Rehearsal & Release Verification
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m10-staging-rehearsal`
+- **What**:
+  - Authored and verified complete staging promotion protocol, pre-promotion smoke rehearsal, and rollback playbooks per docs/10 §2, §17, §22, docs/09 §15, ADR-046, and AGENTS.md:
+    - **Staging Promotion Runbook** ([`docs/runbooks/staging-promotion.md`](docs/runbooks/staging-promotion.md)):
+      - Documented the immutable container image promotion workflow (`DEVMIND_BUILD_SHA`).
+      - Staging vs Production environment parity matrix under ADR-046 free-profile topology.
+      - 5-phase promotion rehearsal lifecycle: (1) Build & Tag Image, (2) Deploy & Migrate Staging, (3) Automated Smoke Harness, (4) Human Approval Decision Gate (G1–G6 Quality Gates), (5) Production Zero-Downtime Rollout.
+      - Emergency Rollback Rehearsal: Application code rollback, kill switch isolation, and Neon PITR database branch restoration.
+    - **Automated Verification Suite** ([`server/tests/test_staging_promotion.py`](server/tests/test_staging_promotion.py)):
+      - Validated runbook lifecycle completeness, rollback strategies, and G1–G6 Quality Gates.
+      - Validated `Settings` behavior under staging (`DEVMIND_ENV=staging`, `is_production=False`) and production.
+      - Verified `/readyz` probe contract under healthy dependencies and graceful degradation.
+      - Tested synthetic staging smoke workflow: prompt template rendering, delimiter escaping, and structured schema conformance.
+      - Validated backward-compatible Alembic migration expand-contract invariants for zero-downtime rollback safety (5 passed in 0.71s).
+    - **Documentation & Cross-Links**:
+      - Updated cross-links in [`docs/10-deployment-and-operations.md`](docs/10-deployment-and-operations.md) §17 and [`docs/runbooks/deploy-render-vercel.md`](docs/runbooks/deploy-render-vercel.md).
+      - Verified documentation links across all 55 Markdown files via `scripts/docs-links.mjs` (720 links checked, 0 broken).
 
 ### Feature — M10-09: Threat-Model Review and Residual Risk Ledger Update
 
