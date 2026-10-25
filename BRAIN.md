@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m10-runbooks` |
-| **Last commit** | `3124f7e` (Merge pull request #73 from Warish-Labs/feature/m10-injection-expansion) |
-| **Working tree** | Modified; operational runbooks and test suite added |
-| **Open PR** | Pending push (`feature/m10-runbooks`) |
+| **Last commit** | `033e545` (`feat(docs): implement M10-08 operational runbooks and disaster recovery playbooks`) |
+| **Working tree** | Clean |
+| **Open PR** | [#74](https://github.com/Warish-Labs/DevMind/pull/74) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
