@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m13-motion-a11y` |
-| **Last commit** | `bd3022f` (Merge pull request #77 from Warish-Labs/feature/m13-homepage-audit) |
-| **Working tree** | Completed M13-02 motion polish, custom cursor, and keyboard accessibility pass |
-| **Open PR** | Pending push (`feature/m13-motion-a11y`) |
+| **Last commit** | `7b0f752` (feat(client): implement M13-02 motion polish and keyboard accessibility pass) |
+| **Working tree** | Clean; PR #78 open targeting main |
+| **Open PR** | [#78](https://github.com/Warish-Labs/DevMind/pull/78) (`feature/m13-motion-a11y`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,16 +18,19 @@
 
 ## 2. Next action (exact)
 
-1. Verify `git status` and commit changes: `feat(client): implement M13-02 motion polish and keyboard accessibility pass`.
-2. Push branch `feature/m13-motion-a11y` to `origin`.
-3. Open PR for M13-02 targeting `main`.
-4. After merge, proceed with M13-03: Authenticated app shell and screen states review (`feature/m13-app-shell-polish`).
+1. Owner reviews and merges PR #78 on GitHub (`https://github.com/Warish-Labs/DevMind/pull/78`).
+2. Run post-merge routine:
+   - `git checkout main && git pull origin main`
+   - Delete local branch: `git branch -d feature/m13-motion-a11y`
+   - Delete remote branch: `git push origin --delete feature/m13-motion-a11y`
+   - Prune remote refs: `git fetch --prune origin`
+3. Initiate next task in Milestone 13: M13-03 Authenticated app shell and screen states review (`feature/m13-app-shell-polish`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m13-motion-a11y` (once opened).
+Review and merge PR #78: https://github.com/Warish-Labs/DevMind/pull/78
 
 ---
 
