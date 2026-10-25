@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m10-threat-model` |
-| **Last commit** | `3af383a` (Merge pull request #74 from Warish-Labs/feature/m10-runbooks) |
-| **Working tree** | Modified; threat-model matrix review and residual risk ledger updated |
-| **Open PR** | Pending push (`feature/m10-threat-model`) |
+| **Last commit** | `7a0f922` (`feat(docs): complete M10-09 threat-model review and residual risk ledger update`) |
+| **Working tree** | Clean |
+| **Open PR** | [#75](https://github.com/Warish-Labs/DevMind/pull/75) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
