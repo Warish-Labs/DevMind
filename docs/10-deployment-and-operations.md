@@ -245,7 +245,9 @@ flowchart LR
 | Rollback | Redeploy the previous image digest; schema is backward compatible for one release so rollback needs no downgrade; for a bad migration, forward-fix or restore per §16 |
 | Feature flags / kill switches | Configuration flags to disable `indexed` mode, a provider, queues or webhooks without a deploy |
 | Extension releases | Separate pipeline ([06](06-vscode-extension-and-local-scanning.md) §18); the API's minimum client version prevents silent incompatibility |
-| Approvals | Production deploys, migrations on production and key rotations are human-approved ([AGENTS.md](../AGENTS.md) §12) |
+| Approvals | Production deploys, migrations on production and key rotations are human-approved ([AGENTS.md](../AGENTS.md) §13) |
+
+The step-by-step staging promotion, smoke check, and rollback rehearsal runbook is documented in [`docs/runbooks/staging-promotion.md`](runbooks/staging-promotion.md) ([11](11-mvp-and-implementation-roadmap.md) M10-10).
 
 ## 18. Production incident diagnosis
 
