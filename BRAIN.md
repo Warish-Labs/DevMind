@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m13-extension-packaging` |
-| **Last commit** | `6026cca` (Merge pull request #79 from Warish-Labs/feature/m13-app-shell-polish) |
-| **Working tree** | M13-04 complete; ready to commit and push PR |
-| **Open PR** | None (`feature/m13-extension-packaging` ready to open) |
+| **Last commit** | `9d185e5` (feat(extension): implement M13-04 extension packaging and marketplace release readiness) |
+| **Working tree** | Clean; PR #80 open |
+| **Open PR** | [#80](https://github.com/Warish-Labs/DevMind/pull/80) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,18 +18,16 @@
 
 ## 2. Next action (exact)
 
-1. Commit changes on `feature/m13-extension-packaging`.
-2. Push branch to `origin/feature/m13-extension-packaging`.
-3. Open PR via `gh pr create`.
-4. Update `BRAIN.md` with PR link.
-5. Owner reviews and merges PR on GitHub.
-6. Run post-merge routine and initiate M13-05 (`feature/m13-docs-audit`).
+1. Owner reviews and merges PR [#80](https://github.com/Warish-Labs/DevMind/pull/80) on GitHub.
+2. Run post-merge routine (`git checkout main && git pull origin main`).
+3. Delete local and remote feature branch `feature/m13-extension-packaging`.
+4. Initiate M13-05: Documentation consistency, broken link, and brand audit (`feature/m13-docs-audit`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR once opened.
+Review and merge of PR [#80](https://github.com/Warish-Labs/DevMind/pull/80).
 
 ---
 
