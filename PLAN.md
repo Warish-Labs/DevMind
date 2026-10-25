@@ -296,7 +296,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M10-01 Complete authorization and tenant isolation test suite across all routes (feature/m10-authz-suite)
 - [x] M10-02 Observability stack & OpenTelemetry traces (feature/m10-observability)
 - [x] M10-03 Alerting thresholds, health checks, and kill switches (feature/m10-alerts)
-- [ ] M10-04 Free-profile load and capacity tests (feature/m10-load-tests)
+- [x] M10-04 Free-profile load and capacity tests (feature/m10-load-tests)
 - [ ] M10-05 Queue soak and Redis failure drills (feature/m10-queue-drills)
 - [ ] M10-06 Database restore drill (feature/m10-restore-drill)
 - [ ] M10-07 Prompt-injection corpus expansion and abuse tests (feature/m10-injection-expansion)
