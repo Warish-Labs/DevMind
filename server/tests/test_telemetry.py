@@ -81,7 +81,9 @@ def test_sanitize_span_attributes_drops_forbidden_keys() -> None:
 
 def test_trace_span_context_manager() -> None:
     """Verify trace_span correctly opens, decorates, and closes a span with clean attributes."""
-    with trace_span("test.operation", attributes={"operation_id": "op-42", "token": "secret"}) as span:
+    with trace_span(
+        "test.operation", attributes={"operation_id": "op-42", "token": "secret"}
+    ) as span:
         assert span.is_recording()
 
     spans = get_in_memory_spans()

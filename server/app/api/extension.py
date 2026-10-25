@@ -37,6 +37,7 @@ from app.api.schemas import (
 )
 from app.core.auth_context import AuthContext, SystemContext
 from app.core.errors import ForbiddenError, ValidationError
+from app.core.kill_switches import check_kill_switch
 from app.domain.auth import (
     PERM_PROJECT_SYNC,
     PERMISSION_AUTHENTICATED,
@@ -320,6 +321,8 @@ async def post_snippets(
     - Snippet total size <= 2MB route ceiling.
     - Server independently re-runs redaction across all snippet content, increasing redaction count if needed.
     """
+    check_kill_switch("indexing")
+
     if not ctx.has_permission(PERM_PROJECT_SYNC):
         raise ForbiddenError(detail="Forbidden: extension token lacks 'project:sync' scope")
 

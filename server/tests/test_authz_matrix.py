@@ -134,6 +134,7 @@ def test_route_registry_completeness() -> None:
         "/healthz",
         "/health",
         "/readyz",
+        "/readyz/alerts",
         "/api/v1",
         "/public/waitlist",
         "/public/contact",

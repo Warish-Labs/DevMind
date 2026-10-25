@@ -1,5 +1,6 @@
 from app.domain.auth.dependencies import (
     check_database_connectivity,
+    check_migrations_readiness,
     get_auth_context,
     get_current_user_claims,
     get_db_session,
@@ -67,6 +68,7 @@ __all__ = [
     "extract_api_routes",
     "find_undeclared_routes",
     "check_database_connectivity",
+    "check_migrations_readiness",
     "get_auth_context",
     "get_current_user_claims",
     "get_db_session",

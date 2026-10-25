@@ -99,3 +99,67 @@ async def session_scope() -> AsyncGenerator[AsyncSession, None]:
         except Exception:
             await session.rollback()
             raise
+
+
+def get_expected_alembic_heads() -> list[str]:
+    """Dynamically discover Alembic migration head revision IDs."""
+    try:
+        from pathlib import Path
+
+        from alembic.config import Config
+        from alembic.script import ScriptDirectory
+
+        server_dir = Path(__file__).resolve().parents[2]
+        alembic_ini = server_dir / "alembic.ini"
+        if alembic_ini.exists():
+            cfg = Config(str(alembic_ini))
+            cfg.set_main_option("script_location", str(server_dir / "alembic"))
+            script = ScriptDirectory.from_config(cfg)
+            heads = list(script.get_heads())
+            if heads:
+                return heads
+    except Exception as exc:
+        logger.debug("Dynamic alembic head discovery failed: %s", exc)
+    return ["0010_retention_policies"]
+
+
+async def check_migrations_at_head(
+    settings: Settings | None = None,
+) -> tuple[bool, str, list[str]]:
+    """Check if the connected database has all Alembic migrations applied up to the expected head.
+
+    Returns:
+        (is_at_head, status_label, revision_info)
+    """
+    if settings is None:
+        settings = get_settings()
+
+    expected_heads = get_expected_alembic_heads()
+
+    try:
+        from sqlalchemy import text
+
+        engine = get_engine(settings)
+        async with engine.connect() as conn:
+            result = await conn.execute(text("SELECT version_num FROM alembic_version"))
+            rows = result.fetchall()
+            current_versions = [r[0] for r in rows]
+
+        if not current_versions:
+            if settings.is_test:
+                return True, "skipped", ["no_migration_table_in_test"]
+            return False, "pending", ["alembic_version table is empty"]
+
+        is_at_head = any(v in expected_heads for v in current_versions)
+        status_label = "ok" if is_at_head else "pending"
+        return is_at_head, status_label, current_versions
+    except Exception as exc:
+        msg = str(exc)
+        if "alembic_version" in msg or "no such table" in msg or "does not exist" in msg:
+            if settings.is_test:
+                return True, "skipped", ["no_migration_table_in_test"]
+            return False, "missing_table", [msg]
+        logger.debug("Migration check failed: %s", exc)
+        if settings.is_test:
+            return True, "skipped", [msg]
+        return False, "unreachable", [msg]

@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, Header, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AuthenticationError, ValidationError
+from app.core.kill_switches import require_kill_switch_inactive
 from app.core.settings import Settings, get_settings
 from app.domain.auth import PERMISSION_WEBHOOK, declare_permission, get_db_session
 from app.domain.webhooks.service import ClerkWebhookService
@@ -17,7 +18,11 @@ from app.integrations.clerk_webhook import verify_svix_signature
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
+router = APIRouter(
+    prefix="/webhooks",
+    tags=["Webhooks"],
+    dependencies=[Depends(require_kill_switch_inactive("webhooks"))],
+)
 
 
 @router.post(

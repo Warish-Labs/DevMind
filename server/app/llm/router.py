@@ -16,6 +16,7 @@ import time
 from collections.abc import AsyncIterator
 from typing import Any
 
+from app.core.kill_switches import check_kill_switch
 from app.llm.adapter import LLMAdapter
 from app.llm.config import GatewayConfig, ModelEntry, load_gateway_config
 from app.llm.exceptions import (
@@ -332,6 +333,7 @@ class LLMGatewayRouter:
 
     async def generate(self, request: LLMGenerationRequest) -> LLMGenerationResponse:
         """Route non-streaming request to the primary eligible model with fallback execution (docs/05 §12)."""
+        check_kill_switch("llm")
         may_contain_source = bool(request.metadata.get("may_contain_source", False))
         candidates = self.resolve_candidates(
             task_name=request.task,
@@ -659,6 +661,7 @@ class LLMGatewayRouter:
 
     async def stream_generate(self, request: LLMGenerationRequest) -> AsyncIterator[LLMStreamChunk]:
         """Route streaming request to primary eligible model with fallback on initial connection failure (docs/05 §12)."""
+        check_kill_switch("llm")
         may_contain_source = bool(request.metadata.get("may_contain_source", False))
         candidates = self.resolve_candidates(
             task_name=request.task,

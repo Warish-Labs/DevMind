@@ -84,7 +84,9 @@ def init_error_reporting(settings: Settings | None = None) -> None:
             "DEVMIND_SENTRY_DSN provided but sentry-sdk not installed; defaulting to structured logging"
         )
     except Exception as exc:
-        logger.error("Failed to initialize external error reporting: %s", redact_sensitive_text(str(exc)))
+        logger.error(
+            "Failed to initialize external error reporting: %s", redact_sensitive_text(str(exc))
+        )
 
 
 def report_exception(
@@ -105,9 +107,7 @@ def report_exception(
         metadata["request_id"] = req_id
 
     trace_id = (
-        getattr(request.state, "trace_id", None)
-        if request and hasattr(request, "state")
-        else None
+        getattr(request.state, "trace_id", None) if request and hasattr(request, "state") else None
     )
     if trace_id:
         metadata["trace_id"] = trace_id

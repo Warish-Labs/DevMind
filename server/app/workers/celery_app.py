@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import socket
 import time
 from collections.abc import Coroutine
 from typing import Any
@@ -14,6 +15,8 @@ from kombu import Queue
 from sqlalchemy import select
 
 from app.core.auth_context import SystemContext
+from app.core.heartbeat import record_scheduler_heartbeat_sync, record_worker_heartbeat_sync
+from app.core.kill_switches import is_kill_switch_active
 from app.core.settings import Settings, get_settings
 from app.domain.brain.embedding_service import EmbeddingService
 from app.domain.jobs import register_job_enqueuer
@@ -89,6 +92,10 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
                 "task": "devmind.stale_job_reaper",
                 "schedule": 60.0,
             },
+            "devmind.scheduler_heartbeat": {
+                "task": "devmind.scheduler_heartbeat",
+                "schedule": 30.0,
+            },
         },
     )
 
@@ -97,9 +104,29 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
         """Health check probe task."""
         return "pong"
 
+    @app.task(name="devmind.scheduler_heartbeat")
+    def scheduler_heartbeat_task() -> dict[str, Any]:
+        """Periodic heartbeat tick emitted by Celery Beat scheduler (docs/10 §12, §14)."""
+        hb = record_scheduler_heartbeat_sync(settings=settings)
+        return {"status": "ok", "epoch": hb.epoch, "timestamp": hb.timestamp}
+
+    @app.task(name="devmind.worker_heartbeat")
+    def worker_heartbeat_task(
+        worker_id: str | None = None,
+        queues: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Record worker heartbeat on demand or on schedule."""
+        wid = worker_id or socket.gethostname()
+        hb = record_worker_heartbeat_sync(worker_id=wid, queues=queues, settings=settings)
+        return {"status": "ok", "worker_id": hb.worker_id, "epoch": hb.epoch}
+
     @app.task(name="devmind.enqueuer_sweep")
     def enqueuer_sweep() -> dict[str, Any]:
         """Periodic scheduler task finding queued jobs stranded by container restarts/sleeps (docs/02 §10.2)."""
+        if is_kill_switch_active("pause_queues", settings):
+            logger.warning("Enqueuer sweep skipped: 'pause_queues' kill switch is active")
+            return {"status": "paused", "swept": 0, "job_ids": []}
+
         logger.info("Executing periodic enqueuer sweep")
 
         async def _sweep() -> list[UUID]:
@@ -137,6 +164,10 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
     def process_job(self: Any, job_id_str: str) -> dict[str, Any]:
         """Worker task processing an analysis job by ID with compare-and-set claim and heartbeat lease."""
         job_id = UUID(job_id_str)
+        if is_kill_switch_active("pause_queues", settings):
+            logger.warning("Worker skipping job %s: 'pause_queues' kill switch is active", job_id)
+            return {"status": "paused", "job_id": job_id_str}
+
         sys_ctx = SystemContext(reason=f"worker_process_job_{job_id}")
 
         async def _claim() -> tuple[bool, str, dict[str, Any]]:
