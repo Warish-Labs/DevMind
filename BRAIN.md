@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m10-restore-drill` |
-| **Last commit** | `eaa4e47` (Merge pull request #71 from Warish-Labs/feature/m10-queue-drills) |
-| **Working tree** | Modified; database restore drill and runbook implemented |
-| **Open PR** | Pending push (`feature/m10-restore-drill`) |
+| **Last commit** | `433f991` (`feat(server): implement M10-06 database restore drill and runbook`) |
+| **Working tree** | Clean; on `feature/m10-restore-drill` |
+| **Open PR** | [#72](https://github.com/Warish-Labs/DevMind/pull/72) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
