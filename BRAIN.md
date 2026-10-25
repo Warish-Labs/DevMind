@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-queue-drills` |
-| **Last commit** | `44a7e1e` (`feat(server): implement M10-05 queue soak and Redis failure drills`) |
-| **Working tree** | Clean; on `feature/m10-queue-drills` |
-| **Open PR** | [#71](https://github.com/Warish-Labs/DevMind/pull/71) |
+| **Branch** | `feature/m10-restore-drill` |
+| **Last commit** | `433f991` (`feat(server): implement M10-06 database restore drill and runbook`) |
+| **Working tree** | Clean; on `feature/m10-restore-drill` |
+| **Open PR** | [#72](https://github.com/Warish-Labs/DevMind/pull/72) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -19,16 +19,48 @@
 ## 2. Next action (exact)
 
 1. Verify full suite with `test-all.mjs --fast`.
-2. Commit changes: `feat(server): implement M10-05 queue soak and Redis failure drills`.
-3. Push branch `feature/m10-queue-drills` to `origin`.
+2. Commit changes: `feat(server): implement M10-06 database restore drill and runbook`.
+3. Push branch `feature/m10-restore-drill` to `origin`.
 4. Create GitHub Pull Request targeting `main`.
-5. After merge, proceed with M10-06: Database restore drill (`feature/m10-restore-drill`).
+5. After merge, proceed with M10-07: Prompt-injection corpus expansion and abuse tests (`feature/m10-injection-expansion`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m10-queue-drills`.
+Review and merge PR for `feature/m10-restore-drill`.
+
+---
+
+## 4. Done log
+
+### Feature — M10-06: Database Restore Drill & Runbook
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m10-restore-drill`
+- **What**:
+  - Implemented database point-in-time restore (PITR) verification, disaster recovery drills, and operational runbook per docs/10 §16, §21, §22, and ADR-046:
+    - **Schema Inventory & Table Integrity Drill** ([`server/tests/test_restore_drill.py`](server/tests/test_restore_drill.py)):
+      - Validated all 29 core database tables declared in `Base.metadata` matching Alembic migrations.
+      - Confirmed each table has defined primary keys, foreign keys, indexes, and constraints.
+      - Confirmed Alembic script directory has exactly 1 head revision (`0010_retention_policies`).
+    - **Point-In-Time Snapshot & Restore Simulation** ([`server/tests/test_restore_drill.py`](server/tests/test_restore_drill.py)):
+      - Simulated point-in-time snapshot and restore of tenant records (workspaces, projects, audit events).
+      - Verified primary key integrity, foreign key relationship consistency, cross-tenant isolation (0 records returned for alien tenants), and cascading deletes (`ON DELETE CASCADE`).
+    - **Post-Restore Reconciliation & Job Sweep** ([`server/tests/test_restore_drill.py`](server/tests/test_restore_drill.py)):
+      - Simulated restoring a database containing in-flight jobs from 15 minutes prior.
+      - Verified that `reap_stale_jobs` detects dead worker heartbeat timeouts and safely requeues running jobs back to `queued`.
+      - Verified that `sweep_stranded_jobs` discovers all stranded jobs and prepares them for Celery re-dispatch.
+    - **Connection Pool Switchover & Reconnection** ([`server/tests/test_restore_drill.py`](server/tests/test_restore_drill.py)):
+      - Tested `close_db_engine()` cleanly disposing existing engine pools.
+      - Tested clean initialization of new async connection pool pointing to the recovery database endpoint without connection leaks.
+    - **Operational Runbook** ([`docs/runbooks/database-restore.md`](docs/runbooks/database-restore.md)):
+      - Documented complete 5-phase procedure for Neon PITR branch creation, schema verification, application connection string update, and post-restore reconciliation sweep.
+      - Documented RTO target (< 5 min; local schema & seed replay measured < 3.0s) and RPO window.
+      - Updated [`docs/10-deployment-and-operations.md`](docs/10-deployment-and-operations.md) §21 table.
+    - **Automated Verification**:
+      - Automated test suite: [`server/tests/test_restore_drill.py`](server/tests/test_restore_drill.py) (5 passed in 0.82s).
+      - Architecture boundaries verified: `lint-imports` (7 kept, 0 broken).
 
 ---
 

@@ -297,7 +297,7 @@ Measured values validated by load, concurrency, and capacity testing:
 | Neon connection budget and pool sizes | Concurrency test (`test_capacity.py`) | M10 | `pool_size=5`, `max_overflow=5` (10 total max concurrent connections); `pool_recycle=1800`; `pool_pre_ping=True` handles serverless compute wakeups |
 | Redis memory and persistence behavior | Queue soak test; simulation (`test_capacity.py`) | M10 | Upstash Free Tier < 10,000 cmd/day cap; realistic active/sleep day uses ~5,580 cmd/day (44% headroom); 24h baseline uses 5,760 cmd/day |
 | Queue alert thresholds | Observation during staging (`test_alerts.py`) | M10 | Queue depth > 50, message age > 300s, stale heartbeat > 120s, error rate > 5.0% |
-| Restore time (RTO) and acceptable data loss (RPO) | Restore drills | M10 | Validated during drill (M10-06) |
+| Restore time (RTO) and acceptable data loss (RPO) | Restore drills (`test_restore_drill.py`, runbook) | M10 | RTO target < 5 min (local schema replay < 3.0s); RPO defined by Neon PITR window; post-restore sweep reconciles in-flight jobs |
 | LLM and embedding cost per analysis/project size | Usage records from evaluation runs | M5–M7 | Gemini Free Tier RPM/TPM quotas enforced by sliding window rate limiter |
 | SSE capacity per API instance | Connection test (`test_capacity.py`) | M8/M10 | 20+ concurrent SSE clients per worker; frame size <= 30 bytes (< 10 KB/hr idle); clean pubsub unsubscribe on disconnect |
 | Extension scan times on 1k/10k/50k files | Benchmarks | M3 | Incremental hashing and local manifest diff |
