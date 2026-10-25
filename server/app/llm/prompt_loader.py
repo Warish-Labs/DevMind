@@ -32,13 +32,13 @@ DEFAULT_PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 _INJECTION_PATTERNS = [
     (
         re.compile(
-            r"(?i)(?:ignore|disregard|forget|override|bypass)[-_\s]+(?:(?:all|previous|prior|above|developer|system|authorization|auth|retrieved)[-_\s]+)*(?:instructions|prompts|rules|commands|constraints|checks|guards|context|auth|tokens)"
+            r"(?i)(?:ignore|disregard|forget|override|bypass|disable)[-_\s]+(?:(?:all|previous|prior|above|developer|system|security|authorization|auth|retrieved|tenant)[-_\s]+)*(?:instructions|prompts|rules|commands|constraints|checks|guards|context|auth|tokens|rate[-_\s]*limits?|configuration)"
         ),
         "Instruction override attempt: ignore previous instructions or bypass rules",
     ),
     (
         re.compile(
-            r"(?i)\b(?:system|security)\s+override\b|\bprompt\s+injection\b|\bdisregard\s+developer\s+instructions\b"
+            r"(?i)\b(?:system|security)\s+override\b|\bprompt\s+injection\b|\bdisregard\s+developer\s+instructions\b|\bauth[-_]override\b|\bsystem[-_\s]+retrieval[-_\s]+hook\b"
         ),
         "Privileged system override instruction attempt",
     ),
@@ -50,7 +50,7 @@ _INJECTION_PATTERNS = [
     ),
     (
         re.compile(
-            r"(?i)(?:^|\n)\s*(?:system|assistant|human|user)\s*:\s*(?:you are|i confirm|great|understood|ignore)"
+            r"(?i)(?:^|\n)\s*(?:system|assistant|human|user)\s*:\s*(?:you are|i confirm|great|understood|ignore|please|review)"
         ),
         "Role-prefix impersonation attempt",
     ),
@@ -60,19 +60,35 @@ _INJECTION_PATTERNS = [
     ),
     (
         re.compile(
-            r"(?i)(?:reveal|print|exfiltrate|leak|show|output)[-_\s]+(?:the[-_\s]+|all[-_\s]+)?(?:system[-_\s]+prompt|developer[-_\s]+secrets|process\.env|secrets?|tokens?|api[-_]?keys?|passwords?|credentials?|database[-_\s]+credentials)\b"
+            r"(?i)(?:reveal|print|exfiltrate|leak|show|output)[-_\s]+(?:the[-_\s]+|all[-_\s]+)?(?:system[-_\s]+prompt|developer[-_\s]+secrets|process\.env|secrets?|tokens?|api[-_]?keys?|passwords?|credentials?|database[-_\s]+credentials|jwt[-_\s]*(?:signing[-_\s]*)?keys?|signing[-_\s]*keys?|clerk[-_\s]*(?:public[-_\s]*)?pem|clerk_pem_public)\b"
         ),
         "Secret exfiltration instruction attempt",
     ),
     (
         re.compile(
-            r"(?i)\b(?:call|execute|invoke)\s+(?:the\s+)?(?:deploy|admin|delete)\s+(?:tool|function|api)\b|\bmark\s+(?:this\s+route\s+)?safe\b|\breport\s+0\s+findings\b"
+            r"(?i)\b(?:call|execute|invoke)\s+(?:the\s+)?(?:deploy|admin|delete|export_env)\s+(?:tool|function|api)\b|\bmark\s+(?:this\s+route\s+)?safe\b|\bmark\s+(?:and\s+mark\s+)?safe\b|\breport\s+0\s+findings\b"
         ),
         "Adversarial tool invocation or finding suppression attempt",
     ),
     (
-        re.compile(r"(?i)\b(?:reveal\s+project_id|reveal\s+other\s+projects?|cross[-_]tenant)\b"),
+        re.compile(
+            r"(?i)\b(?:reveal\s+project_id|reveal\s+other\s+projects?|cross[-_]tenant|output\s+all\s+(?:active\s+)?(?:workspace|project)[-_]id)\b"
+        ),
         "Cross-tenant data extraction attempt",
+    ),
+    (
+        re.compile(r"(?i)<\|(?:im_start|im_end|system)\|>|<<SYS>>|<</SYS>>|\[INST\]|\[/INST\]"),
+        "Special token / chat format injection attempt",
+    ),
+    (
+        re.compile(r"[\u202a-\u202e\u2066-\u2069]"),
+        "Bidirectional (BiDi) override smuggling attempt",
+    ),
+    (
+        re.compile(
+            r"(?i)\b(?:suppress|demote|hide)\s+(?:all\s+)?(?:[a-z0-9_-]+\s+)*(?:findings?|vulnerabilities|alerts?|sec-\d+|cwe-\d+)\b|\boutput\s+0\s+findings\b|\b0\s+vulnerabilities\s+found\b|\bdev-approved\b"
+        ),
+        "Finding suppression or gaslighting attempt",
     ),
 ]
 
@@ -99,6 +115,10 @@ def escape_untrusted_content(var_name: str, raw_content: Any) -> tuple[str, list
         "[sanitized_delimiter]",
         text,
     )
+    # Neutralize special chat template tokens
+    sanitized = re.sub(r"(?i)<\|(?:im_start|im_end|system)\|>", "[sanitized_token]", sanitized)
+    # Strip bidirectional control overrides
+    sanitized = re.sub(r"[\u202a-\u202e\u2066-\u2069]", "", sanitized)
 
     wrapped = f'<untrusted_data name="{var_name}">\n{sanitized}\n</untrusted_data>'
     return wrapped, signals

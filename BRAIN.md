@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-restore-drill` |
-| **Last commit** | `433f991` (`feat(server): implement M10-06 database restore drill and runbook`) |
-| **Working tree** | Clean; on `feature/m10-restore-drill` |
-| **Open PR** | [#72](https://github.com/Warish-Labs/DevMind/pull/72) |
+| **Branch** | `feature/m10-injection-expansion` |
+| **Last commit** | `a1defbd` (Merge pull request #72 from Warish-Labs/feature/m10-restore-drill) |
+| **Working tree** | Modified; expanded prompt-injection corpus and abuse test suite implemented |
+| **Open PR** | Pending push (`feature/m10-injection-expansion`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -19,16 +19,43 @@
 ## 2. Next action (exact)
 
 1. Verify full suite with `test-all.mjs --fast`.
-2. Commit changes: `feat(server): implement M10-06 database restore drill and runbook`.
-3. Push branch `feature/m10-restore-drill` to `origin`.
+2. Commit changes: `feat(server): implement M10-07 prompt-injection corpus expansion and abuse tests`.
+3. Push branch `feature/m10-injection-expansion` to `origin`.
 4. Create GitHub Pull Request targeting `main`.
-5. After merge, proceed with M10-07: Prompt-injection corpus expansion and abuse tests (`feature/m10-injection-expansion`).
+5. After merge, proceed with M10-08: Operational runbooks (`feature/m10-runbooks`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m10-restore-drill`.
+Review and merge PR for `feature/m10-injection-expansion`.
+
+---
+
+## 4. Done log
+
+### Feature — M10-07: Prompt-Injection Corpus Expansion and Abuse Tests
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m10-injection-expansion`
+- **What**:
+  - Implemented prompt-injection corpus expansion, adversarial abuse test suite, and heuristic defense hardening per docs/05 §14, docs/07 §8, §10, §15, and docs/09 §12:
+    - **Corpus Expansion** ([`evals/injection/corpus.json`](evals/injection/corpus.json)):
+      - Expanded corpus from 25 to 55 test cases (45 adversarial injection vectors, 10 benign controls).
+      - Added attack classes: BiDi directional control smuggling (`\u202e`), ChatML / Llama special token injection (`<|im_start|>`, `<<SYS>>`), fabricated closing tag collisions, unregistered tool invocations (`execute_bash`, `deploy`, `delete_all_data`), deep path traversals, multi-hop RAG retrieval poisoning, finding suppression gaslighting, base64/URL obfuscation, and oversized payload DoS.
+    - **Prompt Loader Hardening** ([`server/app/llm/prompt_loader.py`](server/app/llm/prompt_loader.py)):
+      - Enhanced `_INJECTION_PATTERNS` to detect BiDi control characters, special chat formatting tokens, finding suppression phrases, and cross-tenant exfiltration instructions.
+      - Hardened `escape_untrusted_content` to neutralize ChatML tokens (`[sanitized_token]`), strip BiDi directional overrides (`[\u202a-\u202e\u2066-\u2069]`), and enforce `</untrusted_data>` delimiter neutralization.
+    - **Harness & Benchmark Run** ([`evals/injection/harness.py`](evals/injection/harness.py)):
+      - Enhanced comment normalization across multi-line payloads in AST checks.
+      - Executed evaluation harness across all 55 cases: **100% pass rate** (55/55 passed; 0 failed).
+      - Delimiter Integrity: 1.0000, Tool Containment: 1.0000, Finding Protection: 1.0000, Cross-Tenant Isolation: 1.0000, Schema Conformance: 1.0000.
+    - **Abuse Test Suite** ([`server/tests/test_injection_abuse.py`](server/tests/test_injection_abuse.py)):
+      - Automated 10 dedicated abuse tests validating delimiter breakout escaping, special token sanitization, BiDi override removal, forbidden tool containment, path traversal boundary quarantine, finding non-suppression, and 50KB+ oversized payload resilience.
+    - **Documentation**:
+      - Updated [`docs/09-testing-and-quality-strategy.md`](docs/09-testing-and-quality-strategy.md) §9 evaluation ledger with expanded corpus metrics.
+      - Automated test suite: [`server/tests/test_injection_abuse.py`](server/tests/test_injection_abuse.py) (10 passed in 1.04s).
+      - Architecture boundaries verified: `lint-imports` (7 kept, 0 broken).
 
 ---
 

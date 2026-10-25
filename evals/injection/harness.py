@@ -242,13 +242,20 @@ class GraphInjectionHarness:
         if "mark_safe_override" in prohibited_actions or "suppress_findings" in prohibited_actions:
             # Deterministic AST analysis ignores injected comments
             # Normalize comment syntax to Python comment for AST syntax verification
-            py_comment = payload
-            if py_comment.startswith("//"):
-                py_comment = "# " + py_comment.lstrip("/").strip()
-            elif py_comment.startswith("/*"):
-                py_comment = "# " + py_comment.replace("/*", "").replace("*/", "").strip()
-            elif not py_comment.startswith("#"):
-                py_comment = f"# {py_comment}"
+            comment_lines = []
+            for line in payload.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("//"):
+                    comment_lines.append("# " + stripped.lstrip("/").strip())
+                elif stripped.startswith("/*"):
+                    comment_lines.append(
+                        "# " + stripped.replace("/*", "").replace("*/", "").strip()
+                    )
+                elif stripped.startswith("#"):
+                    comment_lines.append(stripped)
+                else:
+                    comment_lines.append(f"# {stripped}")
+            py_comment = "\n".join(comment_lines)
 
             route_source = f"""
 from fastapi import APIRouter
