@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m13-motion-a11y` |
-| **Last commit** | `7b0f752` (feat(client): implement M13-02 motion polish and keyboard accessibility pass) |
-| **Working tree** | Clean; PR #78 open targeting main |
-| **Open PR** | [#78](https://github.com/Warish-Labs/DevMind/pull/78) (`feature/m13-motion-a11y`) |
+| **Branch** | `feature/m13-app-shell-polish` |
+| **Last commit** | In progress (feat(client): implement M13-03 authenticated app shell and screen states review) |
+| **Working tree** | Clean; ready to commit and push PR |
+| **Open PR** | None (`feature/m13-app-shell-polish` ready to open) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,23 +18,39 @@
 
 ## 2. Next action (exact)
 
-1. Owner reviews and merges PR #78 on GitHub (`https://github.com/Warish-Labs/DevMind/pull/78`).
-2. Run post-merge routine:
-   - `git checkout main && git pull origin main`
-   - Delete local branch: `git branch -d feature/m13-motion-a11y`
-   - Delete remote branch: `git push origin --delete feature/m13-motion-a11y`
-   - Prune remote refs: `git fetch --prune origin`
-3. Initiate next task in Milestone 13: M13-03 Authenticated app shell and screen states review (`feature/m13-app-shell-polish`).
+1. Commit changes on `feature/m13-app-shell-polish`.
+2. Push branch to `origin/feature/m13-app-shell-polish`.
+3. Open PR via `gh pr create`.
+4. Update `BRAIN.md` with PR link.
+5. Owner reviews and merges PR on GitHub.
+6. Run post-merge routine and initiate M13-04 (`feature/m13-extension-packaging`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #78: https://github.com/Warish-Labs/DevMind/pull/78
+Review and merge PR once opened.
 
 ---
 
 ## 4. Done log
+
+### Feature — M13-03: Authenticated App Shell & Screen States Review
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m13-app-shell-polish`
+- **What**:
+  - Audited authenticated app shell and screen states across screens S-02 through S-12 per `docs/08` §10 and §11:
+    - Verified desktop 56px gutter rail ([`AppGutterRail`](client/components/shell/AppGutterRail.tsx)), top bar ([`AppTopBar`](client/components/shell/AppTopBar.tsx)), status bar ([`AppStatusBar`](client/components/shell/AppStatusBar.tsx)), and global Cmd+K palette ([`CommandPalette`](client/components/shell/CommandPalette.tsx)).
+    - S-03: Verified Project selection empty state ("Create your first project" with VS Code companion connect deep link).
+    - S-05: Verified Project Brain explorer empty file selection state and `metadata_only` mode banner with source text redaction (ADR-034) and consent action.
+    - S-06: Verified AI project conversation empty citations panel, clickable inline citations `[1]`, execution trace lines, and distinct insufficient evidence banner styling with suggested next steps.
+    - S-07: Verified findings table empty states distinguishing unanalyzed projects ("Project not analyzed yet") from clean projects ("No security findings detected") and filtered results.
+    - S-08: Verified finding detail triage modal with strict maintainer permission gate (disabled with error notice when not maintainer; enabled when maintainer).
+    - S-09: Verified background jobs table empty state and floating job tray.
+    - S-10: Added loading skeleton verification for [`ProjectSettingsLoading`](client/app/projects/[projectId]/settings/loading.tsx).
+    - Expanded automated test coverage in [`client/tests/a11y-empty-error-loading.test.tsx`](client/tests/a11y-empty-error-loading.test.tsx) (12 passed).
+  - Validated full test suite via `scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped).
 
 ### Feature — M13-02: Motion Polish, Custom Cursor & Keyboard Accessibility Pass
 

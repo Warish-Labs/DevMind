@@ -18,6 +18,16 @@ import ChatLoading from "../app/projects/[projectId]/chat/loading";
 import JobsLoading from "../app/projects/[projectId]/jobs/loading";
 import UsageLoading from "../app/projects/[projectId]/usage/loading";
 import WorkspacesLoading from "../app/workspaces/loading";
+import ProjectSettingsLoading from "../app/projects/[projectId]/settings/loading";
+
+import { CitationsPanel } from "../components/chat/CitationsPanel";
+import { ChatMessageItem } from "../components/chat/ChatMessageItem";
+import { CodeSymbolPane } from "../components/brain/CodeSymbolPane";
+import { FindingsTable } from "../components/findings/FindingsTable";
+import { FindingTriageModal } from "../components/findings/FindingTriageModal";
+import { JobsTable } from "../components/jobs/JobsTable";
+import { SAMPLE_FINDINGS_LIST } from "../components/findings/types";
+import { SAMPLE_FILE_CONTENTS } from "../components/brain/types";
 
 // Error boundaries
 import RootError from "../app/error";
@@ -155,6 +165,11 @@ describe("M8-10 Accessibility, Empty, Error, and Loading State Polish", () => {
           comp: <WorkspacesLoading />,
           label: "Loading workspaces directory",
         },
+        {
+          name: "ProjectSettingsLoading",
+          comp: <ProjectSettingsLoading />,
+          label: "Loading project settings",
+        },
       ];
 
       for (const { name, comp, label } of skeletons) {
@@ -180,6 +195,169 @@ describe("M8-10 Accessibility, Empty, Error, and Loading State Polish", () => {
       expect(html).toContain('role="region"');
       expect(html).toContain('aria-label="Application content"');
       expect(html).toContain("Dashboard Content");
+    });
+  });
+
+  describe("Screen S-05 & S-06 Brain & Conversation States (Empty, Citations, Insufficient Evidence)", () => {
+    it("renders BrainExplorer empty file selection and metadata_only mode banner", () => {
+      // Empty file selection
+      const emptyHtml = renderToString(
+        <CodeSymbolPane
+          projectId="proj_test_123"
+          fileContent={null}
+          projectMode="indexed"
+          selectedSymbolId={null}
+          onSelectSymbol={vi.fn()}
+        />
+      );
+      expect(emptyHtml).toContain(
+        "Select a file from the repository tree to inspect symbols and code."
+      );
+
+      // Metadata-only mode with source text redacted
+      const sampleFile = SAMPLE_FILE_CONTENTS["server/app/domain/auth/permissions.py"];
+      const metadataOnlyHtml = renderToString(
+        <CodeSymbolPane
+          projectId="proj_test_123"
+          fileContent={sampleFile}
+          projectMode="metadata_only"
+          selectedSymbolId={null}
+          onSelectSymbol={vi.fn()}
+        />
+      );
+      expect(metadataOnlyHtml).toContain("Metadata-Only Mode: Source Text Redacted");
+      expect(metadataOnlyHtml).toContain("ADR-034");
+      expect(metadataOnlyHtml).toContain("Enable Indexed Mode with Consent");
+    });
+
+    it("renders ConversationView empty citations and insufficient evidence styling", () => {
+      // Empty citations panel
+      const emptyCitHtml = renderToString(
+        <CitationsPanel
+          projectId="proj_test_123"
+          citations={[]}
+          selectedCitationId={null}
+          onSelectCitation={vi.fn()}
+          onClose={vi.fn()}
+        />
+      );
+      expect(emptyCitHtml).toContain("No citations referenced in selected response.");
+
+      // Insufficient evidence banner and actionable next steps
+      const mockMessage = {
+        id: "msg-insufficient",
+        role: "assistant" as const,
+        content: "I could not locate direct authorization checks for this handler in the AST [1].",
+        citations: [
+          {
+            id: "cit-1",
+            index: 1,
+            path: "server/app/api/v1/auth.py",
+            startLine: 45,
+            endLine: 60,
+            symbolName: "verify_access_token",
+            snippet: "def verify_access_token(token: str) -> AuthContext:\n    ...",
+          },
+        ],
+        hasInsufficientEvidence: true,
+        insufficientEvidenceReason:
+          "Target function does not invoke check_permission before writing database records.",
+        suggestedNextSteps: [
+          "Enable indexed mode in Project Settings",
+          "Run full repository scan to re-index call graph",
+        ],
+        activityLines: ["Loaded AST for auth.py", "Traversed caller graph"],
+        createdAt: new Date().toISOString(),
+      };
+
+      const msgHtml = renderToString(
+        <ChatMessageItem
+          message={mockMessage}
+          onSelectCitation={vi.fn()}
+          onOpenCitationsPanel={vi.fn()}
+        />
+      );
+      expect(msgHtml).toContain("Insufficient Evidence for Grounded Answer");
+      expect(msgHtml).toContain(
+        "Target function does not invoke check_permission before writing database records."
+      );
+      expect(msgHtml).toContain("Suggested Next Steps:");
+      expect(msgHtml).toContain("Enable indexed mode in Project Settings");
+      expect(msgHtml).toContain("Run full repository scan to re-index call graph");
+      expect(msgHtml).toContain("[1]");
+    });
+  });
+
+  describe("Screen S-07 & S-08 Findings & Triage States", () => {
+    it("distinguishes unanalyzed project vs clean project with zero findings", () => {
+      // Unanalyzed project
+      const unanalyzedHtml = renderToString(
+        <FindingsTable
+          projectId="proj_test_123"
+          findings={[]}
+          isAnalyzed={false}
+          hasMaintainerPermission={true}
+          onStatusTransition={vi.fn()}
+        />
+      );
+      expect(unanalyzedHtml).toContain("Project not analyzed yet");
+      expect(unanalyzedHtml).toContain("Run your first repository scan");
+
+      // Analyzed project with 0 findings
+      const cleanHtml = renderToString(
+        <FindingsTable
+          projectId="proj_test_123"
+          findings={[]}
+          isAnalyzed={true}
+          hasMaintainerPermission={true}
+          onStatusTransition={vi.fn()}
+        />
+      );
+      expect(cleanHtml).toContain("No security findings detected");
+      expect(cleanHtml).toContain("All active rules and deterministic guards are passing");
+    });
+
+    it("verifies maintainer permission gate on triage modal", () => {
+      const sampleFinding = SAMPLE_FINDINGS_LIST[0];
+
+      // Non-maintainer: button disabled with explanatory warning
+      const nonMaintainerHtml = renderToString(
+        <FindingTriageModal
+          isOpen={true}
+          onClose={vi.fn()}
+          finding={sampleFinding}
+          hasMaintainerPermission={false}
+          onConfirm={vi.fn()}
+        />
+      );
+      expect(nonMaintainerHtml).toContain("Maintainer permission required to triage.");
+      expect(nonMaintainerHtml).toContain("disabled");
+
+      // Maintainer: button enabled
+      const maintainerHtml = renderToString(
+        <FindingTriageModal
+          isOpen={true}
+          onClose={vi.fn()}
+          finding={sampleFinding}
+          hasMaintainerPermission={true}
+          onConfirm={vi.fn()}
+        />
+      );
+      expect(maintainerHtml).not.toContain("Maintainer permission required to triage.");
+      expect(maintainerHtml).toContain("Dismissal");
+      expect(maintainerHtml).toContain('form="triage-finding-form"');
+    });
+  });
+
+  describe("Screen S-09 Job Center States", () => {
+    it("renders empty background jobs state cleanly", () => {
+      const emptyJobsHtml = renderToString(
+        <JobsTable projectId="proj_test_123" jobs={[]} onCancelJob={vi.fn()} />
+      );
+      expect(emptyJobsHtml).toContain("No background jobs found");
+      expect(emptyJobsHtml).toContain(
+        "No background jobs or agent workflows have been run for this project yet."
+      );
     });
   });
 });
