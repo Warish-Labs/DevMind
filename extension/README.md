@@ -85,4 +85,4 @@ The DevMind Companion extension connects your local VS Code workspace with the *
 
 ## License
 
-Apache-2.0
+MIT (see [LICENSE](LICENSE))

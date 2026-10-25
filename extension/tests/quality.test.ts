@@ -65,7 +65,7 @@ describe("Extension Quality and Packaging (Slice B12)", () => {
     });
   });
 
-  describe("VSIX Packaging Verification (S2-13)", () => {
+  describe("VSIX Packaging & Marketplace Readiness (M13-04, docs/06 §18)", () => {
     it("verifies VSIX package artifact exists and package.json is compliant", () => {
       const pkgJsonPath = path.join(__dirname, "../package.json");
       const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
@@ -77,6 +77,14 @@ describe("Extension Quality and Packaging (Slice B12)", () => {
       expect(pkg.main).toBe("./dist/extension.js");
       expect(pkg.engines?.vscode).toBeDefined();
 
+      // Marketplace metadata (docs/06 §18)
+      expect(pkg.homepage).toBe("https://devmind.warishlabs.in");
+      expect(pkg.bugs?.url).toBe("https://github.com/Warish-Labs/DevMind/issues");
+      expect(pkg.qna).toBe("https://github.com/Warish-Labs/DevMind/discussions");
+      expect(pkg.keywords).toContain("devmind");
+      expect(pkg.keywords).toContain("security");
+      expect(pkg.scripts?.["package:pre-release"]).toBeDefined();
+
       const vsixPath = path.join(__dirname, "../dist/devmind-vscode.vsix");
       if (fs.existsSync(vsixPath)) {
         const stat = fs.statSync(vsixPath);
@@ -85,6 +93,26 @@ describe("Extension Quality and Packaging (Slice B12)", () => {
         const extJsPath = path.join(__dirname, "../dist/extension.js");
         expect(fs.existsSync(extJsPath)).toBe(true);
       }
+    });
+
+    it("verifies CHANGELOG.md exists and contains release notes and known limitations", () => {
+      const changelogPath = path.join(__dirname, "../CHANGELOG.md");
+      expect(fs.existsSync(changelogPath)).toBe(true);
+
+      const content = fs.readFileSync(changelogPath, "utf8");
+      expect(content).toContain("## [0.1.2]");
+      expect(content).toContain("## [0.1.1]");
+      expect(content).toContain("## [0.1.0]");
+      expect(content).toContain("Known Limitations Ledger");
+      expect(content).toContain("Language Tier Support");
+      expect(content).toContain("Zero Live Database Connections");
+    });
+
+    it("verifies README.md license aligns with package.json (MIT)", () => {
+      const readmePath = path.join(__dirname, "../README.md");
+      const content = fs.readFileSync(readmePath, "utf8");
+      expect(content).toContain("MIT");
+      expect(content).not.toContain("Apache-2.0");
     });
   });
 });
