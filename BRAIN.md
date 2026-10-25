@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m10-alerts` |
-| **Last commit** | `4013207` (Merge pull request #66 from Warish-Labs/feature/m10-observability) |
-| **Working tree** | Changes ready to commit; on `feature/m10-alerts` |
-| **Open PR** | Pending commit and push |
+| **Last commit** | `d8a8b10` (`feat(server): implement M10-03 alerting thresholds, health checks, and kill switches`) |
+| **Working tree** | Clean; on `feature/m10-alerts` |
+| **Open PR** | [#69](https://github.com/Warish-Labs/DevMind/pull/69) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped (all 701 server tests passed) |
 | **Date** | 2026-10-25 |
 
@@ -18,16 +18,15 @@
 
 ## 2. Next action (exact)
 
-1. Commit changes on `feature/m10-alerts`.
-2. Push branch to GitHub origin and create Pull Request for M10-03.
-3. Owner review and merge PR.
-4. Delete branch locally and remotely, then proceed to M10-04 (`feature/m10-load-tests`).
+1. Owner review and merge PR #69 on GitHub (`feature/m10-alerts`).
+2. Run after-merge routine: checkout `main`, pull latest, delete `feature/m10-alerts` locally and remotely on `origin`.
+3. Proceed to Task M10-04 (`feature/m10-load-tests`): Free-profile load and capacity tests per docs/10 §21, §22.
 
 ---
 
 ## 3. Waiting on owner
 
-Owner review and merge of PR for `feature/m10-alerts`.
+Owner review and merge of [PR #69](https://github.com/Warish-Labs/DevMind/pull/69).
 
 ---
 
