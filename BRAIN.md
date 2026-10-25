@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m10-staging-rehearsal` |
-| **Last commit** | `a017564` (Merge pull request #75 from Warish-Labs/feature/m10-threat-model) |
-| **Working tree** | Modified; staging promotion runbook and automated rehearsal suite implemented |
-| **Open PR** | Pending push (`feature/m10-staging-rehearsal`) |
+| **Last commit** | `4108f26` (feat(docs): implement M10-10 staging promotion rehearsal and release verification) |
+| **Working tree** | Clean; PR #76 open targeting main |
+| **Open PR** | [#76](https://github.com/Warish-Labs/DevMind/pull/76) (`feature/m10-staging-rehearsal`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,17 +18,19 @@
 
 ## 2. Next action (exact)
 
-1. Verify full suite with `test-all.mjs --fast`.
-2. Commit changes: `feat(docs): implement M10-10 staging promotion rehearsal and release verification`.
-3. Push branch `feature/m10-staging-rehearsal` to `origin`.
-4. Create GitHub Pull Request targeting `main`.
-5. After merge, Milestone 10 is complete; proceed with Milestone 13: UI polish and MVP release readiness (`feature/m13-*`).
+1. Owner reviews and merges PR #76 on GitHub (`https://github.com/Warish-Labs/DevMind/pull/76`).
+2. Run post-merge routine:
+   - `git checkout main && git pull origin main`
+   - Delete local branch: `git branch -d feature/m10-staging-rehearsal`
+   - Delete remote branch: `git push origin --delete feature/m10-staging-rehearsal`
+   - Prune remote refs: `git fetch --prune origin`
+3. Milestone 10 is 100% complete! Proceed to Milestone 13: UI polish and MVP release readiness (`feature/m13-*`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m10-staging-rehearsal`.
+Review and merge PR #76: https://github.com/Warish-Labs/DevMind/pull/76
 
 ---
 
