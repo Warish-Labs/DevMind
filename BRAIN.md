@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-runbooks` |
-| **Last commit** | `033e545` (`feat(docs): implement M10-08 operational runbooks and disaster recovery playbooks`) |
-| **Working tree** | Clean |
-| **Open PR** | [#74](https://github.com/Warish-Labs/DevMind/pull/74) |
+| **Branch** | `feature/m10-threat-model` |
+| **Last commit** | `3af383a` (Merge pull request #74 from Warish-Labs/feature/m10-runbooks) |
+| **Working tree** | Modified; threat-model matrix review and residual risk ledger updated |
+| **Open PR** | Pending push (`feature/m10-threat-model`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -19,20 +19,43 @@
 ## 2. Next action (exact)
 
 1. Verify full suite with `test-all.mjs --fast`.
-2. Commit changes: `feat(docs): implement M10-08 operational runbooks and disaster recovery playbooks`.
-3. Push branch `feature/m10-runbooks` to `origin`.
+2. Commit changes: `feat(docs): complete M10-09 threat-model review and residual risk ledger update`.
+3. Push branch `feature/m10-threat-model` to `origin`.
 4. Create GitHub Pull Request targeting `main`.
-5. After merge, proceed with M10-09: Threat-model review and residual risk ledger update (`feature/m10-threat-model`).
+5. After merge, proceed with M10-10: Staging promotion rehearsal (`feature/m10-staging-rehearsal`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m10-runbooks`.
+Review and merge PR for `feature/m10-threat-model`.
 
 ---
 
 ## 4. Done log
+
+### Feature — M10-09: Threat-Model Review and Residual Risk Ledger Update
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m10-threat-model`
+- **What**:
+  - Completed comprehensive threat model audit and residual risk ledger update per docs/07 §17, §18, §20, docs/09 §11, and docs/11 M10-09:
+    - **Threat Model Matrix Audit** ([`docs/07-security-privacy-and-threat-model.md`](docs/07-security-privacy-and-threat-model.md) §18):
+      - Reviewed all 24 cataloged threats (T-01 through T-24) against implementation milestones, automated tests, and architectural boundaries.
+      - Added explicit `Verification Evidence` column mapping each threat to its automated test suite (e.g. T-01 to `test_authz_matrix.py`, T-02 to `test_extension_auth.py`, T-03 to `test_injection_abuse.py` and 55-vector corpus, T-04 to `test_redaction.py`, T-08 to `test_queue_drills.py`).
+      - Updated incident response playbooks section with direct links to [`docs/runbooks/incident-response.md`](docs/runbooks/incident-response.md), [`docs/runbooks/disaster-recovery.md`](docs/runbooks/disaster-recovery.md), and [`docs/runbooks/database-restore.md`](docs/runbooks/database-restore.md).
+    - **Residual Risk Ledger** ([`docs/07-security-privacy-and-threat-model.md`](docs/07-security-privacy-and-threat-model.md) §20):
+      - Expanded the summary into a structured, active **DevMind Residual Risk Ledger** covering the six principal residual risks:
+        - `RR-01` (T-19): AI Provider Data Handling & Model Training Risk.
+        - `RR-02` (T-04): Novel or Unrecognized Secret Formats escaping entropy/regex.
+        - `RR-03` (T-03): Subtle Prompt-Induced Misleading Explanations.
+        - `RR-04` (T-11): GitHub OAuth Scope Breadth on Private Repositories.
+        - `RR-05` (T-01): Cross-Tenant Authorization Drift on Additive Endpoints.
+        - `RR-06` (T-18): Provider Backup Retention Window Persistence.
+      - Cataloged inherent severity, verified mitigations, accepted risk posture, ownership, review frequency, and kill switch safeguards for each risk.
+    - **Automated Verification Suite** ([`server/tests/test_threat_model.py`](server/tests/test_threat_model.py)):
+      - Automated pytest suite verifying catalog completeness (all 24 threats T-01 to T-24), verification evidence file existence (15+ test files verified), residual risk ledger completeness (RR-01 to RR-06), and playbook cross-links (4 passed in 0.08s).
+      - Verified documentation links across all 54 Markdown files via `scripts/docs-links.mjs` (699 links checked, 0 broken).
 
 ### Feature — M10-08: Operational Runbooks and Disaster Recovery Playbooks
 
