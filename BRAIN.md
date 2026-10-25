@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m13-homepage-audit` |
-| **Last commit** | `891195d` (Merge pull request #76 from Warish-Labs/feature/m10-staging-rehearsal) |
-| **Working tree** | Completed M13-01 homepage and navigation audit, updated ADR count claim to 49, added automated content-integrity test cases |
-| **Open PR** | Pending push (`feature/m13-homepage-audit`) |
+| **Last commit** | `84bc471` (feat(client): implement M13-01 public homepage and navigation audit) |
+| **Working tree** | Clean; PR #77 open targeting main |
+| **Open PR** | [#77](https://github.com/Warish-Labs/DevMind/pull/77) (`feature/m13-homepage-audit`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,16 +18,19 @@
 
 ## 2. Next action (exact)
 
-1. Verify `git status` and commit changes: `feat(client): implement M13-01 public homepage and navigation audit`.
-2. Push branch `feature/m13-homepage-audit` to `origin`.
-3. Open PR for M13-01 targeting `main`.
-4. After merge, proceed with M13-02: Motion polish, custom cursor, and keyboard accessibility pass (`feature/m13-motion-a11y`).
+1. Owner reviews and merges PR #77 on GitHub (`https://github.com/Warish-Labs/DevMind/pull/77`).
+2. Run post-merge routine:
+   - `git checkout main && git pull origin main`
+   - Delete local branch: `git branch -d feature/m13-homepage-audit`
+   - Delete remote branch: `git push origin --delete feature/m13-homepage-audit`
+   - Prune remote refs: `git fetch --prune origin`
+3. Initiate next task in Milestone 13: M13-02 Motion polish, custom cursor, and keyboard accessibility pass (`feature/m13-motion-a11y`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m13-homepage-audit` (once opened).
+Review and merge PR #77: https://github.com/Warish-Labs/DevMind/pull/77
 
 ---
 
