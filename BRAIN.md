@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m13-homepage-audit` |
-| **Last commit** | `84bc471` (feat(client): implement M13-01 public homepage and navigation audit) |
-| **Working tree** | Clean; PR #77 open targeting main |
-| **Open PR** | [#77](https://github.com/Warish-Labs/DevMind/pull/77) (`feature/m13-homepage-audit`) |
+| **Branch** | `feature/m13-motion-a11y` |
+| **Last commit** | `7b0f752` (feat(client): implement M13-02 motion polish and keyboard accessibility pass) |
+| **Working tree** | Clean; PR #78 open targeting main |
+| **Open PR** | [#78](https://github.com/Warish-Labs/DevMind/pull/78) (`feature/m13-motion-a11y`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,23 +18,36 @@
 
 ## 2. Next action (exact)
 
-1. Owner reviews and merges PR #77 on GitHub (`https://github.com/Warish-Labs/DevMind/pull/77`).
+1. Owner reviews and merges PR #78 on GitHub (`https://github.com/Warish-Labs/DevMind/pull/78`).
 2. Run post-merge routine:
    - `git checkout main && git pull origin main`
-   - Delete local branch: `git branch -d feature/m13-homepage-audit`
-   - Delete remote branch: `git push origin --delete feature/m13-homepage-audit`
+   - Delete local branch: `git branch -d feature/m13-motion-a11y`
+   - Delete remote branch: `git push origin --delete feature/m13-motion-a11y`
    - Prune remote refs: `git fetch --prune origin`
-3. Initiate next task in Milestone 13: M13-02 Motion polish, custom cursor, and keyboard accessibility pass (`feature/m13-motion-a11y`).
+3. Initiate next task in Milestone 13: M13-03 Authenticated app shell and screen states review (`feature/m13-app-shell-polish`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #77: https://github.com/Warish-Labs/DevMind/pull/77
+Review and merge PR #78: https://github.com/Warish-Labs/DevMind/pull/78
 
 ---
 
 ## 4. Done log
+
+### Feature — M13-02: Motion Polish, Custom Cursor & Keyboard Accessibility Pass
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m13-motion-a11y`
+- **What**:
+  - Audited motion tokens (`dur1` through `durStory`, `easeOut`, `easeIn`, `easeMove`) and smoothing math (`dampLerp`) in [`client/lib/motion/`](client/lib/motion/):
+    - Verified magnetic attraction offset capping strictly `<= 8px` and RAF loop auto-pause after 1s of pointer inactivity to conserve GPU/CPU cycles.
+    - Verified `@media (prefers-reduced-motion: reduce)` global overrides in [`client/app/tokens.css`](client/app/tokens.css) resetting animation/transition durations to 0.01ms.
+    - Verified [`SequenceRunner`](client/lib/motion/sequence.ts) immediate execution bypass under reduced motion.
+    - Verified WCAG 2.2 focus appearance ring (`2px solid var(--ref)` with `2px` offset) on interactive controls ([`Button`](client/components/ui/Button.tsx), [`Dialog`](client/components/ui/Dialog.tsx), [`CommandPalette`](client/components/shell/CommandPalette.tsx), [`Header`](client/components/layout/Header.tsx)).
+    - Expanded automated test coverage in [`client/tests/cursor-motion.test.ts`](client/tests/cursor-motion.test.ts) (15 passed in 0.38s).
+  - Validated full test suite via `scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped).
 
 ### Feature — M13-01: Public Homepage & Navigation Audit
 

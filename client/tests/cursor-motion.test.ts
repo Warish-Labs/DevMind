@@ -7,6 +7,7 @@ import {
   dampLerp,
   calculateMagneticOffset,
   resolveCursorState,
+  SequenceRunner,
 } from "../lib/motion";
 
 describe("Motion System & DevMindCursor Specifications (ADR-041)", () => {
@@ -138,6 +139,57 @@ describe("Motion System & DevMindCursor Specifications (ADR-041)", () => {
       expect(globalsCss).toContain("navigation: auto");
       expect(globalsCss).toContain("::view-transition-old(root)");
       expect(globalsCss).toContain("::view-transition-new(root)");
+    });
+
+    it("verifies tokens.css defines WCAG 2.2 focus appearance ring and reduced motion global overrides", () => {
+      const tokensCssPath = path.resolve(__dirname, "../app/tokens.css");
+      const tokensCss = fs.readFileSync(tokensCssPath, "utf-8");
+
+      // Focus ring is 2px solid var(--ref) with 2px offset (docs/08 §16)
+      expect(tokensCss).toContain("--focus-ring: 2px solid var(--ref);");
+      expect(tokensCss).toContain("--focus-offset: 2px;");
+
+      // Global reduced-motion override neutralizes animations to 0.01ms
+      expect(tokensCss).toContain("@media (prefers-reduced-motion: reduce)");
+      expect(tokensCss).toContain("animation-duration: 0.01ms !important");
+      expect(tokensCss).toContain("transition-duration: 0.01ms !important");
+      expect(tokensCss).toContain("scroll-behavior: auto !important");
+    });
+  });
+
+  describe("SequenceRunner Orchestration & Reduced Motion Bypass", () => {
+    it("runs steps immediately without timeouts when reducedMotion is true", () => {
+      const runner = new SequenceRunner();
+
+      const executed: number[] = [];
+      const steps = [
+        { delayMs: 100, run: () => executed.push(1) },
+        { delayMs: 200, run: () => executed.push(2) },
+        { delayMs: 300, run: () => executed.push(3) },
+      ];
+
+      runner.run(steps, true);
+
+      // All 3 steps executed synchronously
+      expect(executed).toEqual([1, 2, 3]);
+      expect(runner.active).toBe(false);
+    });
+
+    it("cancels running timers cleanly when cancel is invoked", () => {
+      const runner = new SequenceRunner();
+
+      const executed: number[] = [];
+      const steps = [
+        { delayMs: 500, run: () => executed.push(1) },
+        { delayMs: 1000, run: () => executed.push(2) },
+      ];
+
+      runner.run(steps, false);
+      expect(runner.active).toBe(true);
+
+      runner.cancel();
+      expect(runner.active).toBe(false);
+      expect(executed).toEqual([]);
     });
   });
 });
