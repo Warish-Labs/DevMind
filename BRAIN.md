@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-load-tests` |
-| **Last commit** | `3cbabce` (`feat(server): implement M10-04 free-profile load and capacity tests`) |
-| **Working tree** | Clean; on `feature/m10-load-tests` |
-| **Open PR** | [#70](https://github.com/Warish-Labs/DevMind/pull/70) |
+| **Branch** | `feature/m10-queue-drills` |
+| **Last commit** | `471bccc` (Merge pull request #70 from Warish-Labs/feature/m10-load-tests) |
+| **Working tree** | Modified; queue soak and Redis failure drill test suite implemented |
+| **Open PR** | Pending push (`feature/m10-queue-drills`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
@@ -18,17 +18,47 @@
 
 ## 2. Next action (exact)
 
-1. Review and ensure CI tests (`test-all.mjs --fast`) complete cleanly.
-2. Commit changes: `feat(server): implement M10-04 free-profile load and capacity tests`.
-3. Push branch `feature/m10-load-tests` to `origin`.
+1. Verify full suite with `test-all.mjs --fast`.
+2. Commit changes: `feat(server): implement M10-05 queue soak and Redis failure drills`.
+3. Push branch `feature/m10-queue-drills` to `origin`.
 4. Create GitHub Pull Request targeting `main`.
-5. After merge, proceed with M10-05: Queue soak and Redis failure drills (`feature/m10-queue-drills`).
+5. After merge, proceed with M10-06: Database restore drill (`feature/m10-restore-drill`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m10-load-tests`.
+Review and merge PR for `feature/m10-queue-drills`.
+
+---
+
+## 4. Done log
+
+### Feature — M10-05: Queue Soak and Redis Failure Drills
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m10-queue-drills`
+- **What**:
+  - Implemented comprehensive queue soak benchmarks, disaster recovery drills, and Redis failure tests per docs/02 §10, §11, docs/10 §9, §14, §16, §18, and ADR-046:
+    - **Redis Outage & Graceful Degradation Drill** ([`server/tests/test_queue_drills.py`](server/tests/test_queue_drills.py)):
+      - Validated Rate Limiter fallback: `RateLimitMiddleware` seamlessly degrades to an in-memory sliding window when Redis raises `ConnectionError`, enforcing rate limits without failing client requests with 500 errors.
+      - Validated SSE Event Stream resilience: `JobLifecycleService.stream_job_events` catches Redis Pub/Sub disconnections and gracefully falls back to database polling for terminal state transitions.
+      - Validated Heartbeat resilience: Worker and Celery Beat scheduler synchronous heartbeats log warnings and gracefully continue without crashing when Redis is unreachable.
+      - Validated Alert evaluation resilience: `evaluate_system_alerts` handles broker connection errors gracefully and emits operational alerts.
+    - **Redis Crash & Queue Rebuild Drill (Reconstructibility from PostgreSQL)** ([`server/tests/test_queue_drills.py`](server/tests/test_queue_drills.py)):
+      - Simulated total Redis wipe with in-flight tasks in PostgreSQL (`queued` and abandoned `running` jobs).
+      - Verified that `reap_stale_jobs` detects dead worker heartbeat timeouts and safely requeues jobs back to `queued`.
+      - Verified that `sweep_stranded_jobs` sweeps all stranded jobs from PostgreSQL and re-enqueues them to Celery.
+      - Verified atomic compare-and-set claim prevents duplicate execution on redundant deliveries.
+    - **Worker Termination Mid-Task & Retry Handling** ([`server/tests/test_queue_drills.py`](server/tests/test_queue_drills.py)):
+      - Verified Celery reliability configuration: `task_acks_late=True`, `task_reject_on_worker_lost=True`, `visibility_timeout >= 3600`.
+      - Tested dead-worker lease expiration: jobs repeatedly abandoned reach `max_attempts` and transition cleanly to `failed` with error code `DEAD_WORKER_HEARTBEAT_TIMEOUT`.
+    - **Queue Soak & Backpressure Drill** ([`server/tests/test_queue_drills.py`](server/tests/test_queue_drills.py)):
+      - Verified multi-queue routing rules across partitions (`default`, `ingest`, `embed`, `analysis`).
+      - Verified queue depth monitoring: depth > 50 messages triggers `queue_depth_exceeded` warning alert, and clears when drained.
+    - **Automated Verification**:
+      - Automated test suite: [`server/tests/test_queue_drills.py`](server/tests/test_queue_drills.py) (9 passed in 0.77s).
+      - Architecture boundaries verified: `lint-imports` (7 kept, 0 broken).
 
 ---
 
