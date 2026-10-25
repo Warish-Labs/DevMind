@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m10-injection-expansion` |
-| **Last commit** | `a1defbd` (Merge pull request #72 from Warish-Labs/feature/m10-restore-drill) |
-| **Working tree** | Modified; expanded prompt-injection corpus and abuse test suite implemented |
-| **Open PR** | Pending push (`feature/m10-injection-expansion`) |
+| **Last commit** | `4d0b41b` (`feat(server): implement M10-07 prompt-injection corpus expansion and abuse tests`) |
+| **Working tree** | Clean |
+| **Open PR** | [#73](https://github.com/Warish-Labs/DevMind/pull/73) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-25 |
 
