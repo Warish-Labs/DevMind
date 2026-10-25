@@ -31,7 +31,6 @@ def test_rate_limit_headers_on_allowed_requests() -> None:
     )
     app = create_app(settings=settings)
 
-
     with TestClient(app) as client:
         response = client.get("/api/v1")
         assert response.status_code == 200

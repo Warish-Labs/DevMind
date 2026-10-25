@@ -9,6 +9,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth_context import AuthContext, SystemContext
+from app.core.kill_switches import check_kill_switch
 from app.llm.embedding_adapter import EmbeddingAdapter, get_embedding_adapter
 from app.persistence.models.brain import CodeChunk, EmbeddingSpace
 from app.persistence.repositories.brain_repo import BrainRepository
@@ -66,6 +67,8 @@ class EmbeddingService:
         Returns:
             Dictionary with batch processing statistics and status.
         """
+        check_kill_switch("embed")
+
         # 1. Resolve embedding space
         if space_id:
             space = await self.session.get(EmbeddingSpace, space_id)

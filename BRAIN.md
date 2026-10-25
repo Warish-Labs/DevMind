@@ -7,32 +7,70 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m10-observability` |
-| **Last commit** | `ef8fe06` (feat(server): implement M10-02 observability stack and OpenTelemetry traces) |
-| **Working tree** | Clean; all 13 fast checks pass; 665 server tests pass, client 154/154 pass, extension 78/78 pass |
-| **Open PR** | `feature/m10-observability` -> `main` ([PR #66](https://github.com/Warish-Labs/DevMind/pull/66)) |
-| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
-| **Date** | 2026-10-19 |
+| **Branch** | `feature/m10-alerts` |
+| **Last commit** | `d8a8b10` (`feat(server): implement M10-03 alerting thresholds, health checks, and kill switches`) |
+| **Working tree** | Clean; on `feature/m10-alerts` |
+| **Open PR** | [#69](https://github.com/Warish-Labs/DevMind/pull/69) |
+| **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped (all 701 server tests passed) |
+| **Date** | 2026-10-25 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m10-observability` to GitHub.
-2. Open PR #66 (`feature/m10-observability` -> `main`).
-3. After PR #66 is merged into `main`, proceed with **M10-03: Alerting thresholds, health checks, and kill switches** (`feature/m10-alerts`).
+1. Owner review and merge PR #69 on GitHub (`feature/m10-alerts`).
+2. Run after-merge routine: checkout `main`, pull latest, delete `feature/m10-alerts` locally and remotely on `origin`.
+3. Proceed to Task M10-04 (`feature/m10-load-tests`): Free-profile load and capacity tests per docs/10 §21, §22.
 
 ---
 
 ## 3. Waiting on owner
 
-| #   | Action required                                                                                  | Reference |
-| --- | ------------------------------------------------------------------------------------------------ | --------- |
-| 1   | Review and merge PR #66 (`feature/m10-observability` -> `main`) once GitHub Actions CI completes | M10-02    |
+Owner review and merge of [PR #69](https://github.com/Warish-Labs/DevMind/pull/69).
 
 ---
 
 ## 4. Done log
+
+### Feature — M10-03: Alerting Thresholds, Health Checks, and Kill Switches
+
+- **Date**: 2026-10-25
+- **Branch**: `feature/m10-alerts`
+- **What**:
+  - Implemented comprehensive operational alerting thresholds, enhanced health & readiness probes, worker/scheduler heartbeat tracking, and centralized administrative kill switches per docs/07 §12, docs/10 §11, §12, §14, §15, §18, ADR-046, and ADR-047:
+    - **Centralized Subsystem Kill Switches** ([`server/app/core/kill_switches.py`](server/app/core/kill_switches.py)):
+      - Built operational flag controllers for 5 critical subsystems: `indexing`, `llm`, `embed`, `webhooks`, and `pause_queues`.
+      - Added dynamic in-memory override controls (`set_dynamic_kill_switch`, `reset_dynamic_kill_switches`) for operational drills and automated testing.
+      - Integrated FastAPI route dependency (`require_kill_switch_inactive`) and core check (`check_kill_switch`) raising `FeatureDisabledError` (RFC 9457 Problem Details HTTP 503, `code: "feature.disabled"`).
+      - Wired kill switch enforcement directly into:
+        - `server/app/api/webhooks.py`: router dependency blocks external webhooks when `kill_webhooks=True`.
+        - `server/app/api/extension.py`: `post_snippets` blocks snippet intake when `kill_indexing=True`.
+        - `server/app/llm/router.py`: `generate` and `stream_generate` block LLM invocations when `kill_llm=True`.
+        - `server/app/domain/brain/embedding_service.py`: `process_embed_chunks` blocks vector generation when `kill_embed=True`.
+        - `server/app/workers/celery_app.py`: `enqueuer_sweep` and `process_job` defer processing and return paused status when `pause_queues=True`.
+    - **Worker & Scheduler Heartbeat Tracking** ([`server/app/core/heartbeat.py`](server/app/core/heartbeat.py)):
+      - Implemented Redis-backed heartbeat recording with configurable TTLs for Celery background workers (`WorkerHeartbeat` with worker ID, hostname, pid, serviced queues) and Celery Beat scheduler (`SchedulerHeartbeat`).
+      - Built liveness evaluators (`check_worker_liveness`, `check_scheduler_liveness`) detecting stale heartbeats against `alert_max_heartbeat_stale_seconds` (default 120s) and worker drop.
+      - Added Celery Beat periodic task (`devmind.scheduler_heartbeat`) every 30s and worker heartbeat tasks.
+    - **Operational Alert Evaluator** ([`server/app/core/alerts.py`](server/app/core/alerts.py)):
+      - Built non-blocking operational evaluator (`evaluate_system_alerts`) monitoring 6 health dimensions:
+        1. Queue depth per queue (`default`, `ingest`, `embed`, `analysis`) against `alert_max_queue_depth` (default 500).
+        2. Oldest message age against `alert_max_queue_age_seconds` (default 300s).
+        3. Stale worker heartbeats and worker drop against `alert_max_heartbeat_stale_seconds` (default 120s).
+        4. Stale Celery Beat scheduler heartbeats.
+        5. Active kill switch notifications (`INFO` / `WARNING`).
+        6. Error rate percentages from in-memory telemetry snapshots against `alert_max_error_rate_percent` (default 5.0%).
+      - Guaranteed zero secrets, tokens, or source code in alert payloads (ADR-047).
+    - **Enhanced Health & Readiness Probes** ([`server/app/api/health.py`](server/app/api/health.py)):
+      - Updated `/health` and `/healthz` liveness probes to return process status and build SHA (`DEVMIND_BUILD_SHA`).
+      - Enhanced `/readyz` to verify PostgreSQL connectivity, Redis connectivity, and Alembic migration status against expected heads (`check_migrations_at_head` in [`database.py`](server/app/persistence/database.py)) while reporting active kill switches and alert counts.
+      - Added `/readyz/alerts` operational endpoint returning structured `SystemAlertsResponse`.
+    - **Configuration & Documentation Updates**:
+      - Updated `Settings` in [`server/app/core/settings.py`](server/app/core/settings.py) and [`server/.env.example`](server/.env.example) with kill switch flags, alerting thresholds, and `DEVMIND_BUILD_SHA`.
+    - **Automated Verification**:
+      - Added [`server/tests/test_alerts.py`](server/tests/test_alerts.py) with 15 unit and integration tests covering kill switch enforcement, heartbeat recording/expiration, alert threshold triggers, and zero-secret guarantees.
+      - Updated [`server/tests/test_health.py`](server/tests/test_health.py) and [`server/tests/test_authz_matrix.py`](server/tests/test_authz_matrix.py).
+      - Verified `test-all.mjs --fast`: 13 passed, 0 failed, 1 skipped (all 701 server tests passed).
 
 ### Feature — M10-02: Observability Stack & OpenTelemetry Traces
 

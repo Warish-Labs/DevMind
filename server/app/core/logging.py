@@ -18,9 +18,7 @@ workspace_id_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar(
 project_id_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "project_id", default=None
 )
-actor_id_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar(
-    "actor_id", default=None
-)
+actor_id_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar("actor_id", default=None)
 
 # Patterns for sensitive information redaction
 REDACTION_PATTERNS = [

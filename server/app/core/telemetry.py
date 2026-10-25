@@ -40,10 +40,36 @@ logger = logging.getLogger("devmind.telemetry")
 
 # Forbidden attribute keys and substrings that must NEVER be placed in telemetry payloads (Rule 5, ADR-047)
 FORBIDDEN_EXACT_KEYS = frozenset(
-    {"prompt", "completion", "code", "source", "body", "payload", "password", "secret", "token", "key", "cookie", "authorization"}
+    {
+        "prompt",
+        "completion",
+        "code",
+        "source",
+        "body",
+        "payload",
+        "password",
+        "secret",
+        "token",
+        "key",
+        "cookie",
+        "authorization",
+    }
 )
 FORBIDDEN_SUBSTRING_KEYS = frozenset(
-    {"prompt", "completion", "source_code", "raw_payload", "password", "secret", "token", "pepper", "jwt", "cookie", "authorization", "api_key"}
+    {
+        "prompt",
+        "completion",
+        "source_code",
+        "raw_payload",
+        "password",
+        "secret",
+        "token",
+        "pepper",
+        "jwt",
+        "cookie",
+        "authorization",
+        "api_key",
+    }
 )
 
 # Global in-memory storage for test validation and diagnostics
@@ -72,7 +98,9 @@ def sanitize_span_attributes(attributes: dict[str, Any] | None) -> dict[str, Any
     for key, val in attributes.items():
         k_lower = key.lower()
         # Drop forbidden payload keys
-        if k_lower in FORBIDDEN_EXACT_KEYS or any(sub in k_lower for sub in FORBIDDEN_SUBSTRING_KEYS):
+        if k_lower in FORBIDDEN_EXACT_KEYS or any(
+            sub in k_lower for sub in FORBIDDEN_SUBSTRING_KEYS
+        ):
             continue
 
         if isinstance(val, (int, float, bool)):

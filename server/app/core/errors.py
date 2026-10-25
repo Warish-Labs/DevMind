@@ -240,6 +240,25 @@ class ServiceUnavailableError(DevMindError):
         )
 
 
+class FeatureDisabledError(DevMindError):
+    """Raised when an operation is attempted on a feature disabled by a kill switch (503)."""
+
+    def __init__(
+        self,
+        feature: str,
+        detail: str | None = None,
+        errors: list[dict[str, Any]] | None = None,
+    ) -> None:
+        super().__init__(
+            detail=detail or f"Subsystem '{feature}' is currently disabled by system kill switch",
+            code="feature.disabled",
+            status_code=503,
+            title="Service Unavailable",
+            errors=errors,
+        )
+        self.feature = feature
+
+
 class TurnstileError(DevMindError):
     """Cloudflare Turnstile challenge verification failure (400, 403, 502, 504)."""
 

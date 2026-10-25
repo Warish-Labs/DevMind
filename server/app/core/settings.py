@@ -102,6 +102,22 @@ class Settings(BaseSettings):
     kill_indexing: bool = False
     kill_llm: bool = False
     kill_embed: bool = False
+    kill_webhooks: bool = False
+    pause_queues: bool = False
+
+    # Operational alerting thresholds (docs/10 §14, §15, §18)
+    alert_max_queue_depth: int = 500
+    alert_max_queue_age_seconds: int = 300
+    alert_max_heartbeat_stale_seconds: int = 120
+    alert_max_error_rate_percent: float = 5.0
+
+    # Build and deployment metadata (docs/10 §12)
+    build_sha: str = Field(
+        default="dev",
+        validation_alias=AliasChoices(
+            "DEVMIND_BUILD_SHA", "RENDER_GIT_COMMIT", "GIT_COMMIT", "VERCEL_GIT_COMMIT_SHA"
+        ),
+    )
 
     # Observability, tracing, and error reporting (docs/02 §12, docs/10 §13, ADR-030, OQ-15)
     otel_enabled: bool = True

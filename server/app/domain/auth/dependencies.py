@@ -52,6 +52,15 @@ async def check_database_connectivity() -> bool:
         return False
 
 
+async def check_migrations_readiness(
+    settings: Settings | None = None,
+) -> tuple[bool, str, list[str]]:
+    """Check database migration state without exposing connection secrets (docs/10 §12)."""
+    from app.persistence.database import check_migrations_at_head
+
+    return await check_migrations_at_head(settings)
+
+
 async def get_current_user_claims(
     request: Request,
     verifier: ClerkTokenVerifier = Depends(get_token_verifier),
