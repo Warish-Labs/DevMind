@@ -8,9 +8,9 @@
 
 | Field | Value |
 | **Branch** | `feature/m13-release-checklist` |
-| **Last commit** | `94b0269` (Merge pull request #81 from Warish-Labs/feature/m13-docs-audit) |
-| **Working tree** | M13-06 complete; ready to commit and push PR |
-| **Open PR** | None (`feature/m13-release-checklist` ready to open) |
+| **Last commit** | `402e63d` (feat(docs): implement M13-06 MVP release checklist, release notes, and known limitations ledger) |
+| **Working tree** | Clean; PR #82 open |
+| **Open PR** | [#82](https://github.com/Warish-Labs/DevMind/pull/82) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-27 |
 
@@ -18,20 +18,16 @@
 
 ## 2. Next action (exact)
 
-1. Commit changes on `feature/m13-release-checklist`.
-2. Push branch to `origin/feature/m13-release-checklist`.
-3. Open PR via `gh pr create`.
-4. Update `BRAIN.md` with PR link.
-5. Owner reviews and merges PR on GitHub.
-6. Run post-merge routine (`git checkout main && git pull origin main`).
-7. Delete local and remote feature branch `feature/m13-release-checklist`.
-8. Tag MVP Release `v0.1.0`!
+1. Owner reviews and merges PR [#82](https://github.com/Warish-Labs/DevMind/pull/82) on GitHub.
+2. Run post-merge routine (`git checkout main && git pull origin main`).
+3. Delete local and remote feature branch `feature/m13-release-checklist`.
+4. Tag MVP release candidate `v0.1.0`!
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR once opened.
+Review and merge of PR [#82](https://github.com/Warish-Labs/DevMind/pull/82).
 
 ---
 
