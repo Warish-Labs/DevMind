@@ -11,7 +11,7 @@
 | **Last commit** | `9cf9321` (Merge pull request #83 from Warish-Labs/feature/m11-permissions-adr15) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
 | **Working tree** | M11-02 completed; ready for PR |
-| **Open PR** | Awaiting PR creation for `feature/m11-oauth-tokens` |
+| **Open PR** | [#84](https://github.com/Warish-Labs/DevMind/pull/84) (`feature/m11-oauth-tokens`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-27 |
 
