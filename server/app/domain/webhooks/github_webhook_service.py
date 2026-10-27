@@ -111,6 +111,49 @@ class GitHubWebhookService:
                     "commits": commits,
                 }
 
+            case "installation":
+                action = payload.get("action")
+                installation = payload.get("installation", {})
+                inst_id = installation.get("id")
+                account = installation.get("account", {}).get("login")
+                logger.info(
+                    "GitHub installation event: action=%s, id=%s, account=%s",
+                    action,
+                    inst_id,
+                    account,
+                )
+                return {
+                    "status": "received",
+                    "event": "installation",
+                    "action": action,
+                    "installation_id": inst_id,
+                    "account": account,
+                }
+
+            case "installation_repositories":
+                action = payload.get("action")
+                installation = payload.get("installation", {})
+                inst_id = installation.get("id")
+                repos_added = [r.get("full_name") for r in payload.get("repositories_added", [])]
+                repos_removed = [
+                    r.get("full_name") for r in payload.get("repositories_removed", [])
+                ]
+                logger.info(
+                    "GitHub installation_repositories event: action=%s, inst_id=%s, added=%d, removed=%d",
+                    action,
+                    inst_id,
+                    len(repos_added),
+                    len(repos_removed),
+                )
+                return {
+                    "status": "received",
+                    "event": "installation_repositories",
+                    "action": action,
+                    "installation_id": inst_id,
+                    "repositories_added": repos_added,
+                    "repositories_removed": repos_removed,
+                }
+
             case _:
                 logger.info("Ignoring unhandled GitHub event type: %s", event_type)
                 return {

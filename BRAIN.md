@@ -7,10 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m13-release-checklist` |
-| **Last commit** | `402e63d` (feat(docs): implement M13-06 MVP release checklist, release notes, and known limitations ledger) |
-| **Working tree** | Clean; PR #82 open |
-| **Open PR** | [#82](https://github.com/Warish-Labs/DevMind/pull/82) |
+| **Branch** | `feature/m11-permissions-adr15` |
+| **Last commit** | `b4db340` docs(repo): record MVP release v0.1.0 and expand M11 plan |
+| **Release Tag** | `v0.1.0` (MVP Release Candidate) |
+| **Working tree** | M11-01 completed; awaiting PR merge |
+| **Open PR** | [#83](https://github.com/Warish-Labs/DevMind/pull/83) (`feature/m11-permissions-adr15`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-27 |
 
@@ -18,20 +19,38 @@
 
 ## 2. Next action (exact)
 
-1. Owner reviews and merges PR [#82](https://github.com/Warish-Labs/DevMind/pull/82) on GitHub.
-2. Run post-merge routine (`git checkout main && git pull origin main`).
-3. Delete local and remote feature branch `feature/m13-release-checklist`.
-4. Tag MVP release candidate `v0.1.0`!
+1. Open PR for `feature/m11-permissions-adr15`.
+2. Await PR merge by owner.
+3. Switch to `main`, pull merged commit, delete `feature/m11-permissions-adr15` locally and on origin.
+4. Branch `feature/m11-oauth-tokens` for task M11-02 (GitHub OAuth linking, encrypted credential repository, and token management).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge of PR [#82](https://github.com/Warish-Labs/DevMind/pull/82).
+Review and merge PR for `feature/m11-permissions-adr15`.
 
 ---
 
 ## 4. Done log
+
+### Feature — M11-01: GitHub Permissions Review, Encrypted Token Storage Spec, and ADR-015 Update
+
+- **Date**: 2026-10-27
+- **Branch**: `feature/m11-permissions-adr15`
+- **What**:
+  - Implemented M11-01 per [`docs/01`](docs/01-product-requirements.md) §9 (CAP-05, CAP-06), [`docs/07`](docs/07-security-privacy-and-threat-model.md) §6, [`docs/10`](docs/10-deployment-and-operations.md) §11.1, and [`docs/11`](docs/11-mvp-and-implementation-roadmap.md) §M11:
+    - Updated [`docs/12-architecture-decisions-and-open-questions.md`](docs/12-architecture-decisions-and-open-questions.md) confirming ADR-015 and resolving OQ-11:
+      - Established the dual-tier integration architecture: Tier 1 GitHub OAuth for developer identity linking (`read:user`, `user:email`), Tier 2 GitHub App installation for granular repository permissions (`pull_requests:read`, `contents:read`, `metadata:read`) and webhook events.
+      - Mandated AES-256-GCM envelope encryption (`DEVMIND_ENCRYPTION_KEYS`) for stored installation and user credentials in Neon, with multi-key rotation and zero plaintext secrets in logs, database dumps, or API errors.
+      - Defined HMAC-SHA256 signature verification (`X-Hub-Signature-256`) and 24-hour LRU delivery deduplication for webhook events.
+      - Documented permission degradation protocol and RFC 9457 error classification (`integration.github.permission_denied`, `integration.github.token_revoked`, `integration.github.rate_limited`).
+      - Confirmed strict prohibition of unapproved external side effects (automated PR commenting or auto-merging strictly forbidden; human approval gate enforced).
+    - Updated [`docs/03-data-model-and-api.md`](docs/03-data-model-and-api.md) §10.1 adding stable error codes for GitHub permission denied, token revoked, signature invalid, and rate limited.
+    - Implemented [`server/app/domain/integrations/github_permissions.py`](server/app/domain/integrations/github_permissions.py) defining permission matrices, forbidden scopes rejection, degradation evaluator, human approval gate checker, and RFC 9457 error mapping.
+    - Enhanced [`server/app/domain/webhooks/github_webhook_service.py`](server/app/domain/webhooks/github_webhook_service.py) with lifecycle handlers for `installation` and `installation_repositories` events.
+    - Created comprehensive contract test suite [`server/tests/test_github_permissions_contract.py`](server/tests/test_github_permissions_contract.py) covering 18 test cases (36 total tests across crypto and github suites).
+  - Validated full test suite via `scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped) and `npm run docs:audit` (0 broken links, 0 ADR/OQ errors).
 
 ### Feature — M13-06: MVP Release Checklist, Release Notes, and Known Limitations Ledger
 
