@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m11-webhooks-ingest` |
-| **Last commit** | `a6887e5` (Merge pull request #84 from Warish-Labs/feature/m11-oauth-tokens) |
+| **Last commit** | `dca5d3c` (feat(server): implement M11-03 GitHub repository ingestion and webhook receiver) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
 | **Working tree** | M11-03 completed; ready for PR |
-| **Open PR** | None (ready to open PR for `feature/m11-webhooks-ingest`) |
+| **Open PR** | [#85](https://github.com/Warish-Labs/DevMind/pull/85) (`feature/m11-webhooks-ingest`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-27 |
 
