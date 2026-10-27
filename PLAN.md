@@ -315,6 +315,16 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 ### M11 · Release 1.1 (GitHub, PR Intelligence, Review Intelligence)
 
+- [ ] M11-01 GitHub permissions review, encrypted token storage spec, and ADR-015 update (feature/m11-permissions-adr15)
+- [ ] M11-02 GitHub OAuth linking, encrypted credential repository, and token management (feature/m11-oauth-tokens)
+- [ ] M11-03 GitHub repository ingestion and webhook receiver with signature validation & deduplication (feature/m11-webhooks-ingest)
+- [ ] M11-04 Review rules schema, migration, and ReviewBuddy checklist engine (feature/m11-review-rules)
+- [ ] M11-05 PRAgent change-impact analysis, subgraph dependency traversal, and PR summary (feature/m11-pr-agent)
+- [ ] M11-06 Pull Request web screens (list, overview, change-impact graph, checklist triage) (feature/m11-pr-ui)
+- [ ] M11-07 Workspace invitations via Resend and audit event viewer (feature/m11-invitations-audit)
+- [ ] M11-08 End-to-end integration tests, webhook replay fixtures, and evaluation suites (feature/m11-tests-evals)
+- [ ] M11-09 Milestone 11 documentation update and operational runbook (feature/m11-docs)
+
 ### M12 · Releases 1.2–1.4 (Bug Memory, Living Docs, Mentor, Evaluation, Deployment Diagnosis)
 
 Expand each M-item into task lines (from docs/11) when its phase starts; keep branch-per-slice.

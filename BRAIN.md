@@ -7,10 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m13-release-checklist` |
-| **Last commit** | `402e63d` (feat(docs): implement M13-06 MVP release checklist, release notes, and known limitations ledger) |
-| **Working tree** | Clean; PR #82 open |
-| **Open PR** | [#82](https://github.com/Warish-Labs/DevMind/pull/82) |
+| **Branch** | `main` |
+| **Last commit** | `25e0164` (Merge pull request #82 from Warish-Labs/feature/m13-release-checklist) |
+| **Release Tag** | `v0.1.0` (MVP Release Candidate) |
+| **Working tree** | Clean; Milestone 13 & MVP completed |
+| **Open PR** | None |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-27 |
 
@@ -18,16 +19,15 @@
 
 ## 2. Next action (exact)
 
-1. Owner reviews and merges PR [#82](https://github.com/Warish-Labs/DevMind/pull/82) on GitHub.
-2. Run post-merge routine (`git checkout main && git pull origin main`).
-3. Delete local and remote feature branch `feature/m13-release-checklist`.
-4. Tag MVP release candidate `v0.1.0`!
+1. Branch `feature/m11-permissions-adr15` from `main`.
+2. Implement M11-01: GitHub permissions review, encrypted token storage specification, and update ADR-015.
+3. Open PR for M11-01.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge of PR [#82](https://github.com/Warish-Labs/DevMind/pull/82).
+None (ready to proceed to M11-01).
 
 ---
 
