@@ -27,7 +27,12 @@ from app.core.auth_context import AuthContext, SystemContext
 from app.core.crypto import EncryptionService
 from app.core.errors import AuthenticationError, ValidationError
 from app.core.settings import Settings, get_settings
+from app.domain.integrations.github_permissions import (
+    evaluate_app_permissions,
+    evaluate_oauth_permissions,
+)
 from app.persistence.models.github import GitHubConnection
+from app.persistence.repositories.audit_repo import AuditEventRepository
 from app.persistence.repositories.github_repo import GitHubRepository
 
 logger = logging.getLogger(__name__)
@@ -44,7 +49,8 @@ class GitHubOAuthService:
     def __init__(self, session: AsyncSession, settings: Settings | None = None) -> None:
         self.session = session
         self.settings = settings or get_settings()
-        self.repo = GitHubRepository(session)
+        self.repo = GitHubRepository(session, settings=self.settings)
+        self.audit_repo = AuditEventRepository(session)
         self.crypto = EncryptionService(self.settings)
 
     def _get_signing_secret(self) -> bytes:
@@ -253,6 +259,21 @@ class GitHubOAuthService:
             user_id,
             external_account,
         )
+
+        # 5. Record security audit event
+        try:
+            await self.audit_repo.record(
+                ctx=sys_ctx,
+                action="integration.github.connected",
+                target_kind="github_connection",
+                target_id=str(conn.id),
+                actor_id=user_id,
+                workspace_id=workspace_id,
+                metadata={"account": external_account, "scopes": scopes, "kind": "oauth"},
+            )
+        except Exception as exc:
+            logger.warning("Failed to record audit event for GitHub connection: %s", exc)
+
         return return_to, conn
 
     async def list_workspace_connections(
@@ -261,7 +282,7 @@ class GitHubOAuthService:
         workspace_id: UUID,
     ) -> list[GitHubConnection]:
         """List active GitHub connections for workspace (safe summary view)."""
-        return await self.repo.list_workspace_connections(ctx, workspace_id)
+        return list(await self.repo.list_workspace_connections(ctx, workspace_id))
 
     async def revoke_connection(
         self,
@@ -270,5 +291,100 @@ class GitHubOAuthService:
         user_id: UUID,
         kind: str = "oauth",
     ) -> bool:
-        """Revoke a GitHub connection for workspace and user."""
-        return await self.repo.revoke_connection(ctx, workspace_id, user_id, kind=kind)
+        """Revoke a GitHub connection for workspace and user, emitting audit event."""
+        revoked = await self.repo.revoke_connection(ctx, workspace_id, user_id, kind=kind)
+        if revoked:
+            try:
+                await self.audit_repo.record(
+                    ctx=ctx,
+                    action="integration.github.revoked",
+                    target_kind="github_connection",
+                    actor_id=user_id,
+                    workspace_id=workspace_id,
+                    metadata={"kind": kind},
+                )
+            except Exception as exc:
+                logger.warning("Failed to record audit event for GitHub revocation: %s", exc)
+        return revoked
+
+    async def get_decrypted_token(
+        self,
+        ctx: AuthContext | SystemContext,
+        workspace_id: UUID,
+        user_id: UUID,
+        kind: str = "oauth",
+    ) -> str | None:
+        """Retrieve and decrypt the credential token for authorized API operations.
+
+        Plaintext token is never logged or exposed in responses.
+        """
+        return await self.repo.get_decrypted_token(ctx, workspace_id, user_id, kind=kind)
+
+    async def rotate_connection_credential(
+        self,
+        ctx: AuthContext,
+        workspace_id: UUID,
+        user_id: UUID,
+        kind: str = "oauth",
+    ) -> GitHubConnection | None:
+        """Re-encrypt stored credential under the latest primary encryption key."""
+        conn = await self.repo.rotate_credential(ctx, workspace_id, user_id, kind=kind)
+        if conn is not None:
+            try:
+                await self.audit_repo.record(
+                    ctx=ctx,
+                    action="integration.github.rotated",
+                    target_kind="github_connection",
+                    target_id=str(conn.id),
+                    actor_id=user_id,
+                    workspace_id=workspace_id,
+                    metadata={"kind": kind, "account": conn.external_account},
+                )
+            except Exception as exc:
+                logger.warning("Failed to record audit event for token rotation: %s", exc)
+        return conn
+
+    async def get_connection_status(
+        self,
+        ctx: AuthContext,
+        workspace_id: UUID,
+        user_id: UUID,
+        kind: str = "oauth",
+    ) -> dict[str, Any]:
+        """Evaluate credential lifecycle status and permissions sufficiency."""
+        conn = await self.repo.get_connection(ctx, workspace_id, user_id, kind=kind)
+        if conn is None:
+            return {
+                "connection_id": None,
+                "status": "unlinked",
+                "kind": None,
+                "external_account": None,
+                "scopes": [],
+                "can_perform_analysis": False,
+                "missing_permissions": (
+                    ["read:user", "repo"]
+                    if kind == "oauth"
+                    else ["pull_requests:read", "contents:read", "metadata:read"]
+                ),
+                "resolution_hint": "Connect your GitHub account to enable repository and PR analysis.",
+                "revoked_at": None,
+                "updated_at": None,
+            }
+
+        eval_result = (
+            evaluate_oauth_permissions(conn.scopes)
+            if conn.kind == "oauth"
+            else evaluate_app_permissions(conn.scopes)
+        )
+        return {
+            "connection_id": conn.id,
+            "status": eval_result.status.value,
+            "kind": conn.kind,
+            "external_account": conn.external_account,
+            "scopes": conn.scopes,
+            "can_perform_analysis": eval_result.can_perform_analysis,
+            "missing_permissions": eval_result.missing_permissions,
+            "resolution_hint": eval_result.resolution_hint,
+            "revoked_at": conn.revoked_at,
+            "updated_at": conn.updated_at,
+        }

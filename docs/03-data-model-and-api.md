@@ -316,7 +316,7 @@ See the state diagram in [02](02-system-architecture.md) §10.1. The API exposes
 | Project Brain | `GET /projects/{pid}/brain/summary` · `/brain/files` · `/brain/files/{file_id}` · `/brain/symbols` · `POST /brain/search` · `GET /brain/graph?symbol_key=&depth=` · `/brain/snapshots` | `brain:read` |
 | Reports | `GET /projects/{pid}/evaluations` · `GET /evaluations/{id}` · `GET /projects/{pid}/release-readiness/latest` · `POST /projects/{pid}/reports` (export) | `project:read` / `analysis:create` |
 | Bug memory | `GET/POST /projects/{pid}/bugs` · `GET /bugs/{id}` | R1.2 |
-| GitHub | `GET /integrations/github/authorize` · `GET /integrations/github/callback` · `GET /workspaces/{wid}/integrations/github` · `POST /projects/{pid}/github/link` · `GET /projects/{pid}/pull-requests` · `GET /pull-requests/{id}` · `POST /pull-requests/{id}/analyze` | `integrations:manage` / read |
+| GitHub | `GET /integrations/github/authorize` · `GET /integrations/github/callback` · `GET/DELETE /workspaces/{wid}/integrations/github` · `GET /workspaces/{wid}/integrations/github/status` · `POST /workspaces/{wid}/integrations/github/rotate` · `POST /projects/{pid}/github/link` · `GET /projects/{pid}/pull-requests` · `GET /pull-requests/{id}` · `POST /pull-requests/{id}/analyze` | `integrations:manage` / read |
 | Consent and privacy | `GET/POST /projects/{pid}/consents` · `DELETE /consents/{id}` · `PATCH /projects/{pid}/sync-mode` · `POST /projects/{pid}/data-deletion` | `consent:manage` |
 | Usage and audit | `GET /workspaces/{wid}/usage` · `GET /workspaces/{wid}/quotas` · `GET /workspaces/{wid}/audit-events` | workspace admin |
 | Webhooks | `POST /webhooks/github` · `POST /webhooks/clerk` | signature-verified, no user token |
