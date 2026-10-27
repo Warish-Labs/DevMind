@@ -293,6 +293,10 @@ See the state diagram in [02](02-system-architecture.md) §10.1. The API exposes
 | `payload.too_large` | 413 | Over size limit |
 | `llm.unavailable` | 503 | No configured provider could serve the task |
 | `job.not_cancellable` | 409 | Job already terminal |
+| `integration.github.permission_denied` | 403 | GitHub token lacks required permission scope (ADR-015) |
+| `integration.github.token_revoked` | 401 | GitHub credential revoked, expired, or uninstalled (ADR-015) |
+| `integration.github.signature_invalid` | 401 | Webhook HMAC-SHA256 signature missing or mismatch (ADR-015) |
+| `integration.github.rate_limited` | 429 | GitHub API rate limit reached (ADR-015) |
 
 ## 11. Endpoint families
 

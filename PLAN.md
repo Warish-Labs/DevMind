@@ -315,7 +315,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 ### M11 · Release 1.1 (GitHub, PR Intelligence, Review Intelligence)
 
-- [ ] M11-01 GitHub permissions review, encrypted token storage spec, and ADR-015 update (feature/m11-permissions-adr15)
+- [x] M11-01 GitHub permissions review, encrypted token storage spec, and ADR-015 update (feature/m11-permissions-adr15)
 - [ ] M11-02 GitHub OAuth linking, encrypted credential repository, and token management (feature/m11-oauth-tokens)
 - [ ] M11-03 GitHub repository ingestion and webhook receiver with signature validation & deduplication (feature/m11-webhooks-ingest)
 - [ ] M11-04 Review rules schema, migration, and ReviewBuddy checklist engine (feature/m11-review-rules)

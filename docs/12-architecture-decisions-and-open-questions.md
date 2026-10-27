@@ -35,7 +35,7 @@ Source of each decision is stated as **Source: prompt** (confirmed by the owner)
 | ADR-012 | Extension authentication through DevMind-issued, scoped, revocable tokens | Recommended |
 | ADR-013 | Cloudflare R2 for suitable artifacts only | Confirmed |
 | ADR-014 | Resend for transactional email, introduced only when a feature needs it | Deferred |
-| ADR-015 | GitHub: OAuth first, GitHub App evaluated for webhooks and automated PR review | Confirmed (direction) |
+| ADR-015 | GitHub integration: Hybrid OAuth (user identity) and GitHub App (fine-grained repo permissions & webhooks) | Confirmed |
 | ADR-016 | Provider-adapter LLM layer with configuration-driven routing | Confirmed |
 | ADR-017 | Choice of generation provider(s) and exact models | **Open** |
 | ADR-018 | Hybrid retrieval inside PostgreSQL (keyword + vector + metadata + symbols) | Confirmed |
@@ -170,10 +170,26 @@ Source of each decision is stated as **Source: prompt** (confirmed by the owner)
 - **Decision:** Not part of the MVP. Introduce for workspace invitations and notifications when a feature requires it.
 
 ### ADR-015 · GitHub integration path
-- **Status:** Confirmed (direction). **Source:** prompt. Details Recommended. See OQ-11.
-- **Decision:** Start with GitHub OAuth for repository and pull-request reads. Evaluate a GitHub App when automated PR reviews, webhooks or CI status are needed. OAuth alone is never assumed to grant every needed permission.
-- **Trade-offs:** OAuth app scopes for private repositories are coarse; a GitHub App offers fine-grained permissions and webhooks but requires more setup.
-- **Consequences:** `github_connections` is modeled to hold either credential kind ([03](03-data-model-and-api.md)).
+- **Status:** Confirmed. **Source:** prompt / design (M11-01). Resolves OQ-11.
+- **Decision:** Adopt a hybrid integration model:
+  1. **User Identity (GitHub OAuth App):** Used exclusively for authenticating developer identity (`read:user`, `user:email`), linking GitHub accounts to DevMind workspace users, and displaying a list of accessible repositories.
+  2. **Repository Permissions (GitHub App Installation):** Used for repository analysis, PR intelligence, and webhooks. The DevMind GitHub App is installed per-organization or per-repository with strictly minimal, least-privilege permissions:
+     - `pull_requests:read`: read PR metadata, diffs, patches, author, base/head SHAs.
+     - `contents:read`: read repository tree, files, commit log for AST symbol extraction and impact analysis.
+     - `metadata:read`: basic repository metadata.
+     - Forbidden: DevMind never requests or requires over-privileged administrative or destructive scopes (`delete_repo`, `admin:org`, `admin:repo_hook`).
+  3. **Credential Storage & Encryption:** All GitHub tokens (OAuth access tokens, App installation tokens, App private keys) are encrypted at rest using AES-256-GCM envelope encryption (`DEVMIND_ENCRYPTION_KEYS`) via `app.core.crypto.EncryptionService`. Plaintext credentials are never written to logs, error responses, or database records.
+  4. **Webhook Security:** Webhooks delivered to `/api/v1/webhooks/github` are signed with HMAC-SHA256 (`X-Hub-Signature-256`) against `DEVMIND_GITHUB_WEBHOOK_SECRET`. Unsigned or invalid requests are rejected with 401. Replays are deduplicated via `X-GitHub-Delivery` ID with a 24-hour cache window. Maximum payload size is capped at 10 MB.
+  5. **Permission Degradation & Revocation:**
+     - Expired tokens (HTTP 401): GitHub App installation tokens auto-refresh using the App private key; expired OAuth user tokens transition to degraded status with a re-authentication prompt.
+     - Revocation / Uninstallation: Handled via `installation.deleted` and `installation.suspend` webhooks or API 403 responses, setting `revoked_at` and marking linked repositories inactive.
+     - RFC 9457 error taxonomy: Permission failures emit stable error codes (`integration.github.permission_denied`, `integration.github.token_revoked`, `integration.github.rate_limited`). Background jobs fail fast with clear diagnostic messages instead of stalling the queue.
+  6. **Zero Unapproved Side Effects:** Automated PR commenting or auto-merging is strictly prohibited in v1. Mutating actions require explicit human approval gates.
+- **Rationale:** Standard GitHub OAuth `repo` scope is coarse and grants write access to all private repositories. A GitHub App restricts access to explicitly selected repositories, provides short-lived (1-hour) installation tokens, and natively delivers webhook events.
+- **Alternatives:**
+  - OAuth-only: Rejected for production repo access due to lack of granular read-only scopes on private repos. Kept only as a fallback for user identity linking.
+  - GitHub Personal Access Tokens (PAT): Rejected; poor security hygiene and awkward UX for team workspaces.
+- **Consequences:** `github_connections` supports both `kind='oauth'` and `kind='app_installation'` ([03](03-data-model-and-api.md)). The GitHub App manifest and credentials are required for webhook-triggered PR analysis.
 
 ### ADR-016 · Provider-adapter LLM layer
 - **Status:** Confirmed. **Source:** prompt.
@@ -326,7 +342,7 @@ Source of each decision is stated as **Source: prompt** (confirmed by the owner)
 | OQ-08 | Can Clerk alone satisfy extension auth scoping/revocation? | Avoid custom token code | Review current Clerk docs | DevMind-issued tokens (ADR-012) |
 | OQ-09 | Adopt PostgreSQL RLS, and when? | Defense in depth vs complexity | Prototype with pooled Neon connections | App-layer authorization first |
 | OQ-10 | MVP breadth for the academic demonstration | Viva expectations vs engineering focus | Decide with supervisor; see doc 11 §3 | Depth on two capabilities |
-| OQ-11 | When to move from OAuth to a GitHub App | Webhooks, permissions | Review current GitHub permission model | OAuth read-only first |
+| OQ-11 | When to move from OAuth to a GitHub App | Webhooks, permissions | Review current GitHub permission model | Resolved (see ADR-015): Hybrid model adopted (OAuth for user identity, GitHub App for repo analysis & webhooks) |
 | OQ-12 | Does the LangGraph PostgreSQL checkpointer work through Neon's pooled endpoint? | Workflow resume | Test; otherwise use direct endpoint for workers | Workers use direct connection |
 | OQ-13 | Does SSE survive the hosting proxy idle timeouts? | Streaming UX | Test with keep-alive comments | Poll fallback |
 | OQ-14 | Frontend host | Streaming support, cost | Deploy a probe | Vercel |
