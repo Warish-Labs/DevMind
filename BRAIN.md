@@ -11,7 +11,7 @@
 | **Last commit** | `b4db340` docs(repo): record MVP release v0.1.0 and expand M11 plan |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
 | **Working tree** | M11-01 completed; awaiting PR merge |
-| **Open PR** | Awaiting PR creation for `feature/m11-permissions-adr15` |
+| **Open PR** | [#83](https://github.com/Warish-Labs/DevMind/pull/83) (`feature/m11-permissions-adr15`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-27 |
 
