@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m11-oauth-tokens` |
-| **Last commit** | `9cf9321` (Merge pull request #83 from Warish-Labs/feature/m11-permissions-adr15) |
+| **Branch** | `feature/m11-webhooks-ingest` |
+| **Last commit** | `dca5d3c` (feat(server): implement M11-03 GitHub repository ingestion and webhook receiver) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | M11-02 completed; ready for PR |
-| **Open PR** | [#84](https://github.com/Warish-Labs/DevMind/pull/84) (`feature/m11-oauth-tokens`) |
+| **Working tree** | M11-03 completed; ready for PR |
+| **Open PR** | [#85](https://github.com/Warish-Labs/DevMind/pull/85) (`feature/m11-webhooks-ingest`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-27 |
 
@@ -19,20 +19,47 @@
 
 ## 2. Next action (exact)
 
-1. Open PR for `feature/m11-oauth-tokens`.
+1. Open PR for `feature/m11-webhooks-ingest`.
 2. Await PR merge by owner.
-3. Switch to `main`, pull merged commit, delete `feature/m11-oauth-tokens` locally and on origin.
-4. Branch `feature/m11-webhooks-ingest` for task M11-03 (GitHub repository ingestion and webhook receiver with signature validation & deduplication).
+3. Switch to `main`, pull merged commit, delete `feature/m11-webhooks-ingest` locally and on origin.
+4. Branch `feature/m11-review-rules` for task M11-04 (Review rules schema and ReviewBuddy checklist engine).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m11-oauth-tokens`.
+Review and merge PR for `feature/m11-webhooks-ingest`.
 
 ---
 
 ## 4. Done log
+
+### Feature — M11-03: GitHub Repository Ingestion, Webhook Receiver, and PR Mirroring
+
+- **Date**: 2026-10-27
+- **Branch**: `feature/m11-webhooks-ingest`
+- **What**:
+  - Implemented M11-03 per [`docs/01`](docs/01-product-requirements.md) §9 (CAP-05, CAP-06), [`docs/03`](docs/03-data-model-and-api.md) §3.5 and §11.1, [`docs/07`](docs/07-security-privacy-and-threat-model.md) §6, [`docs/10`](docs/10-deployment-and-operations.md) §11.1, and [`docs/12`](docs/12-architecture-decisions-and-open-questions.md) (ADR-015):
+    - **Database Migration**: Created [`server/alembic/versions/0011_github_repositories_and_prs.py`](server/alembic/versions/0011_github_repositories_and_prs.py) adding `github_repositories` and `pull_requests` tables, indexed on `workspace_id`, `project_id`, `full_name`, and `number`.
+    - **Persistence Models**: Added `GitHubRepositoryBinding` and `PullRequest` in [`server/app/persistence/models/github.py`](server/app/persistence/models/github.py) and exported in [`server/app/persistence/models/__init__.py`](server/app/persistence/models/__init__.py).
+    - **Repository Layer**: Extended [`server/app/persistence/repositories/github_repo.py`](server/app/persistence/repositories/github_repo.py) with `link_repository`, `get_repository_by_project`, `get_repository_by_full_name`, `unlink_repository`, `upsert_pull_request`, `get_pull_request`, and `list_pull_requests`.
+    - **Ingestion & Webhook Services**:
+      - Authored [`server/app/domain/integrations/github_ingest_service.py`](server/app/domain/integrations/github_ingest_service.py) supporting repository linking/unlinking, PR listing, PR detail retrieval, and manual live sync from GitHub REST API.
+      - Updated [`server/app/domain/webhooks/github_webhook_service.py`](server/app/domain/webhooks/github_webhook_service.py) to automatically ingest and mirror incoming `pull_request` webhook payloads into PostgreSQL with robust error handling and delivery deduplication.
+    - **API Routes**:
+      - Registered routes in [`server/app/api/integrations.py`](server/app/api/integrations.py) and mounted in [`server/app/main.py`](server/app/main.py):
+        - `POST /api/v1/projects/{pid}/github/link`
+        - `DELETE /api/v1/projects/{pid}/github/unlink`
+        - `GET /api/v1/projects/{pid}/github/repository`
+        - `GET /api/v1/projects/{pid}/pull-requests`
+        - `POST /api/v1/projects/{pid}/pull-requests/sync`
+        - `GET /api/v1/pull-requests/{id}`
+      - Declared required permissions (`PERM_INTEGRATIONS_MANAGE` and `PERM_INTEGRATIONS_READ`) on all routes.
+    - **Tests & Migration Parity**:
+      - Authored [`server/tests/test_github_ingest.py`](server/tests/test_github_ingest.py) (8 tests passing).
+      - Updated `server/tests/test_github_webhook.py` with mock session injection (5 tests passing).
+      - Updated head revisions in `test_migrations.py`, `test_restore_drill.py`, `test_health.py`, and `test_staging_promotion.py`.
+  - Validated full test suite via `scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped) and `npm run docs:audit` (0 broken links, 0 ADR/OQ errors).
 
 ### Feature — M11-02: GitHub OAuth Linking, Encrypted Credential Repository, and Token Management
 

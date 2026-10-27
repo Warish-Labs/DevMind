@@ -14,11 +14,12 @@ def test_alembic_config_and_revisions() -> None:
     assert ini_path.exists(), "alembic.ini must exist in server root"
 
     cfg = Config(str(ini_path))
+    cfg.set_main_option("script_location", str(ini_path.parent / "alembic"))
     script_dir = ScriptDirectory.from_config(cfg)
 
     heads = script_dir.get_heads()
     assert len(heads) == 1, f"Expected exactly 1 migration head, got: {heads}"
-    assert heads[0] == "0010_retention_policies"
+    assert heads[0] == "0011_github_repositories_and_prs"
 
 
 def test_migration_models_match_metadata() -> None:
@@ -45,6 +46,8 @@ def test_migration_models_match_metadata() -> None:
         "embedding_spaces",
         "chunk_embeddings",
         "github_connections",
+        "github_repositories",
+        "pull_requests",
         "agent_runs",
         "analysis_jobs",
         "job_events",

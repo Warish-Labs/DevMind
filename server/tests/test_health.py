@@ -37,7 +37,7 @@ def test_readyz_readiness(client: TestClient, monkeypatch) -> None:
     )
     monkeypatch.setattr(
         "app.domain.auth.check_migrations_readiness",
-        AsyncMock(return_value=(True, "ok", ["0010_retention_policies"])),
+        AsyncMock(return_value=(True, "ok", ["0011_github_repositories_and_prs"])),
     )
     response = client.get("/readyz")
     assert response.status_code == 200
@@ -62,7 +62,7 @@ def test_readyz_degraded_when_database_down(client: TestClient, monkeypatch) -> 
     )
     monkeypatch.setattr(
         "app.domain.auth.check_migrations_readiness",
-        AsyncMock(return_value=(True, "ok", ["0010_retention_policies"])),
+        AsyncMock(return_value=(True, "ok", ["0011_github_repositories_and_prs"])),
     )
     response = client.get("/readyz")
     assert response.status_code == 503

@@ -94,7 +94,7 @@ def test_readiness_probe_staging_contract(client: TestClient, monkeypatch: pytes
     )
     monkeypatch.setattr(
         "app.domain.auth.check_migrations_readiness",
-        AsyncMock(return_value=(True, "ok", ["0010_retention_policies"])),
+        AsyncMock(return_value=(True, "ok", ["0011_github_repositories_and_prs"])),
     )
 
     response = client.get("/readyz")
