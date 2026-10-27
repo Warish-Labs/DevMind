@@ -58,6 +58,21 @@ class GitHubConnectionSummary(BaseModel):
     created_at: Any
 
 
+class GitHubConnectionStatusSummary(BaseModel):
+    """Lifecycle status, granted scopes, and analysis capability of a GitHub connection."""
+
+    connection_id: UUID | None = None
+    status: str
+    kind: str | None = None
+    external_account: str | None = None
+    scopes: list[str] = []
+    can_perform_analysis: bool = False
+    missing_permissions: list[str] = []
+    resolution_hint: str | None = None
+    revoked_at: Any = None
+    updated_at: Any = None
+
+
 def _get_callback_url(request: Request, settings: Settings) -> str:
     """Resolve the canonical callback URL for GitHub OAuth."""
     if settings.is_production:
@@ -201,3 +216,52 @@ async def delete_workspace_github_connection(
     service = GitHubOAuthService(session, settings)
     await service.revoke_connection(ctx, wid, ctx.user_id, kind="oauth")
     await session.commit()
+
+
+@workspace_integrations_router.get(
+    "/status",
+    response_model=GitHubConnectionStatusSummary,
+    status_code=status.HTTP_200_OK,
+    summary="Get GitHub connection lifecycle and permission health status",
+)
+@declare_permission(PERM_INTEGRATIONS_MANAGE)
+async def get_workspace_github_connection_status(
+    wid: UUID,
+    ctx: AuthContext = Depends(require_permission(PERM_INTEGRATIONS_MANAGE)),
+    session: AsyncSession = Depends(get_db_session),
+    settings: Settings = Depends(get_settings),
+) -> GitHubConnectionStatusSummary:
+    """Evaluate whether the user's GitHub credential is active, degraded, expired, or unlinked."""
+    service = GitHubOAuthService(session, settings)
+    data = await service.get_connection_status(ctx, wid, ctx.user_id, kind="oauth")
+    return GitHubConnectionStatusSummary(**data)
+
+
+@workspace_integrations_router.post(
+    "/rotate",
+    response_model=GitHubConnectionSummary,
+    status_code=status.HTTP_200_OK,
+    summary="Rotate GitHub connection credential envelope encryption",
+)
+@declare_permission(PERM_INTEGRATIONS_MANAGE)
+async def rotate_workspace_github_connection(
+    wid: UUID,
+    ctx: AuthContext = Depends(require_permission(PERM_INTEGRATIONS_MANAGE)),
+    session: AsyncSession = Depends(get_db_session),
+    settings: Settings = Depends(get_settings),
+) -> GitHubConnectionSummary:
+    """Re-encrypt the user's stored GitHub credential under the latest primary encryption key."""
+    service = GitHubOAuthService(session, settings)
+    conn = await service.rotate_connection_credential(ctx, wid, ctx.user_id, kind="oauth")
+    if conn is None:
+        raise ValidationError(detail="No active GitHub connection found to rotate")
+    await session.commit()
+    return GitHubConnectionSummary(
+        id=conn.id,
+        workspace_id=conn.workspace_id,
+        user_id=conn.user_id,
+        kind=conn.kind,
+        external_account=conn.external_account,
+        scopes=conn.scopes,
+        created_at=conn.created_at,
+    )

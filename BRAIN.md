@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m11-permissions-adr15` |
-| **Last commit** | `b4db340` docs(repo): record MVP release v0.1.0 and expand M11 plan |
+| **Branch** | `feature/m11-oauth-tokens` |
+| **Last commit** | `9cf9321` (Merge pull request #83 from Warish-Labs/feature/m11-permissions-adr15) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | M11-01 completed; awaiting PR merge |
-| **Open PR** | [#83](https://github.com/Warish-Labs/DevMind/pull/83) (`feature/m11-permissions-adr15`) |
+| **Working tree** | M11-02 completed; ready for PR |
+| **Open PR** | [#84](https://github.com/Warish-Labs/DevMind/pull/84) (`feature/m11-oauth-tokens`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-27 |
 
@@ -19,20 +19,41 @@
 
 ## 2. Next action (exact)
 
-1. Open PR for `feature/m11-permissions-adr15`.
+1. Open PR for `feature/m11-oauth-tokens`.
 2. Await PR merge by owner.
-3. Switch to `main`, pull merged commit, delete `feature/m11-permissions-adr15` locally and on origin.
-4. Branch `feature/m11-oauth-tokens` for task M11-02 (GitHub OAuth linking, encrypted credential repository, and token management).
+3. Switch to `main`, pull merged commit, delete `feature/m11-oauth-tokens` locally and on origin.
+4. Branch `feature/m11-webhooks-ingest` for task M11-03 (GitHub repository ingestion and webhook receiver with signature validation & deduplication).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m11-permissions-adr15`.
+Review and merge PR for `feature/m11-oauth-tokens`.
 
 ---
 
 ## 4. Done log
+
+### Feature — M11-02: GitHub OAuth Linking, Encrypted Credential Repository, and Token Management
+
+- **Date**: 2026-10-27
+- **Branch**: `feature/m11-oauth-tokens`
+- **What**:
+  - Implemented M11-02 per [`docs/03`](docs/03-data-model-and-api.md) §3.5 and §11.1, [`docs/07`](docs/07-security-privacy-and-threat-model.md) §6, [`docs/10`](docs/10-deployment-and-operations.md) §11.1, and [`docs/12`](docs/12-architecture-decisions-and-open-questions.md) (ADR-015):
+    - Extended [`server/app/persistence/repositories/github_repo.py`](server/app/persistence/repositories/github_repo.py):
+      - Added `get_connection_by_id` with strict workspace tenancy scoping (preventing cross-tenant IDOR).
+      - Added `get_decrypted_token` for authenticated and authorized operations, securely retrieving and decrypting AES-256-GCM credential envelopes without ever logging or exposing plaintext secrets.
+      - Added `rotate_credential` enabling zero-downtime key rotation: decrypts legacy envelopes encrypted under secondary keys and re-encrypts under the current primary key (`v1:0:`).
+    - Enhanced [`server/app/domain/integrations/github_oauth_service.py`](server/app/domain/integrations/github_oauth_service.py):
+      - Integrated audit event logging for all sensitive credential lifecycle transitions via `AuditEventRepository` (`integration.github.connected`, `integration.github.revoked`, `integration.github.rotated`).
+      - Added `get_connection_status` evaluating active, degraded, revoked, expired, and unlinked states with resolution hints and analysis readiness.
+      - Added `rotate_connection_credential` wrapper with audit event emission.
+    - Updated [`server/app/api/integrations.py`](server/app/api/integrations.py) and [`docs/03-data-model-and-api.md`](docs/03-data-model-and-api.md) §11.1:
+      - Added `GET /api/v1/workspaces/{wid}/integrations/github/status` returning `GitHubConnectionStatusSummary`.
+      - Added `POST /api/v1/workspaces/{wid}/integrations/github/rotate` triggering credential re-encryption.
+      - Enforced `@declare_permission(PERM_INTEGRATIONS_MANAGE)` on all routes.
+    - Created unit, isolation, key rotation, and API integration tests in [`server/tests/test_github_token_management.py`](server/tests/test_github_token_management.py) (8 tests passing; 46 total tests across crypto, github, and route permissions suites).
+  - Validated full test suite via `scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped) and `npm run docs:audit` (0 broken links, 0 ADR/OQ errors).
 
 ### Feature — M11-01: GitHub Permissions Review, Encrypted Token Storage Spec, and ADR-015 Update
 
