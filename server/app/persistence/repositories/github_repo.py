@@ -14,7 +14,11 @@ from app.core.auth_context import AuthContext, SystemContext
 from app.core.crypto import EncryptionService
 from app.core.errors import ForbiddenError
 from app.core.settings import Settings, get_settings
-from app.persistence.models.github import GitHubConnection
+from app.persistence.models.github import (
+    GitHubConnection,
+    GitHubRepositoryBinding,
+    PullRequest,
+)
 from app.persistence.repositories.base import BaseRepository
 
 logger = logging.getLogger(__name__)
@@ -207,3 +211,210 @@ class GitHubRepository(BaseRepository):
             user_id,
         )
         return conn
+
+    # ---------------------------------------------------------------------------
+    # GitHub Repository Linking & Mirror Operations (FR-BRN-07)
+    # ---------------------------------------------------------------------------
+
+    async def link_repository(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        connection_id: UUID,
+        full_name: str,
+        default_branch: str = "main",
+        external_id: str | None = None,
+    ) -> GitHubRepositoryBinding:
+        """Bind a project to a GitHub repository."""
+        self._validate_context(ctx)
+
+        stmt = select(GitHubRepositoryBinding).where(GitHubRepositoryBinding.project_id == project_id)
+        result = await self.session.execute(stmt)
+        repo = result.scalar_one_or_none()
+
+        if repo is not None:
+            repo.connection_id = connection_id
+            repo.full_name = full_name
+            repo.default_branch = default_branch
+            repo.external_id = external_id
+            repo.is_active = True
+            repo.updated_at = datetime.now(UTC)
+        else:
+            repo = GitHubRepositoryBinding(
+                project_id=project_id,
+                connection_id=connection_id,
+                full_name=full_name,
+                default_branch=default_branch,
+                external_id=external_id,
+                is_active=True,
+            )
+            self.session.add(repo)
+
+        await self.session.flush()
+        return repo
+
+    async def get_repository_by_project(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+    ) -> GitHubRepositoryBinding | None:
+        """Retrieve active repository binding for a project."""
+        self._validate_context(ctx)
+
+        stmt = select(GitHubRepositoryBinding).where(
+            GitHubRepositoryBinding.project_id == project_id,
+            GitHubRepositoryBinding.is_active.is_(True),
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_repository_by_id(
+        self,
+        ctx: AuthContext | SystemContext,
+        repository_id: UUID,
+    ) -> GitHubRepositoryBinding | None:
+        """Retrieve repository binding by primary key."""
+        self._validate_context(ctx)
+
+        stmt = select(GitHubRepositoryBinding).where(GitHubRepositoryBinding.id == repository_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_repository_by_full_name(
+        self,
+        ctx: AuthContext | SystemContext,
+        full_name: str,
+    ) -> GitHubRepositoryBinding | None:
+        """Retrieve active repository binding by owner/repo name."""
+        self._validate_context(ctx)
+
+        stmt = select(GitHubRepositoryBinding).where(
+            GitHubRepositoryBinding.full_name == full_name,
+            GitHubRepositoryBinding.is_active.is_(True),
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def unlink_repository(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+    ) -> bool:
+        """Deactivate a project's repository binding."""
+        repo = await self.get_repository_by_project(ctx, project_id)
+        if repo is None:
+            return False
+
+        repo.is_active = False
+        repo.updated_at = datetime.now(UTC)
+        await self.session.flush()
+        return True
+
+    # ---------------------------------------------------------------------------
+    # Pull Request Mirror Operations (CAP-06)
+    # ---------------------------------------------------------------------------
+
+    async def upsert_pull_request(
+        self,
+        ctx: AuthContext | SystemContext,
+        repository_id: UUID,
+        number: int,
+        title: str,
+        author_login: str,
+        head_sha: str,
+        base_sha: str,
+        state: str = "open",
+        head_ref: str | None = None,
+        base_ref: str | None = None,
+        diff_url: str | None = None,
+        merged_at: datetime | None = None,
+        closed_at: datetime | None = None,
+    ) -> PullRequest:
+        """Upsert a mirrored pull request for a repository."""
+        self._validate_context(ctx)
+
+        stmt = select(PullRequest).where(
+            PullRequest.repository_id == repository_id,
+            PullRequest.number == number,
+        )
+        result = await self.session.execute(stmt)
+        pr = result.scalar_one_or_none()
+
+        if pr is not None:
+            pr.title = title
+            pr.author_login = author_login
+            pr.state = state
+            pr.head_sha = head_sha
+            pr.base_sha = base_sha
+            pr.head_ref = head_ref
+            pr.base_ref = base_ref
+            pr.diff_url = diff_url
+            pr.merged_at = merged_at
+            pr.closed_at = closed_at
+            pr.updated_at = datetime.now(UTC)
+        else:
+            pr = PullRequest(
+                repository_id=repository_id,
+                number=number,
+                title=title,
+                author_login=author_login,
+                state=state,
+                head_sha=head_sha,
+                base_sha=base_sha,
+                head_ref=head_ref,
+                base_ref=base_ref,
+                diff_url=diff_url,
+                merged_at=merged_at,
+                closed_at=closed_at,
+            )
+            self.session.add(pr)
+
+        await self.session.flush()
+        return pr
+
+    async def get_pull_request(
+        self,
+        ctx: AuthContext | SystemContext,
+        repository_id: UUID,
+        number: int,
+    ) -> PullRequest | None:
+        """Retrieve mirrored PR by repository and PR number."""
+        self._validate_context(ctx)
+
+        stmt = select(PullRequest).where(
+            PullRequest.repository_id == repository_id,
+            PullRequest.number == number,
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_pull_request_by_id(
+        self,
+        ctx: AuthContext | SystemContext,
+        pr_id: UUID,
+    ) -> PullRequest | None:
+        """Retrieve mirrored PR by primary key."""
+        self._validate_context(ctx)
+
+        stmt = select(PullRequest).where(PullRequest.id == pr_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def list_pull_requests(
+        self,
+        ctx: AuthContext | SystemContext,
+        repository_id: UUID,
+        state: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> Sequence[PullRequest]:
+        """List mirrored PRs for repository with optional state filter."""
+        self._validate_context(ctx)
+
+        stmt = select(PullRequest).where(PullRequest.repository_id == repository_id)
+        if state:
+            stmt = stmt.where(PullRequest.state == state)
+        stmt = stmt.order_by(PullRequest.number.desc()).limit(limit).offset(offset)
+
+        result = await self.session.execute(stmt)
+        return result.scalars().all()

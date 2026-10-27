@@ -6,12 +6,15 @@ import hashlib
 import hmac
 import logging
 from collections import OrderedDict
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth_context import SystemContext
 from app.core.errors import AuthenticationError
 from app.core.settings import Settings, get_settings
+from app.persistence.repositories.github_repo import GitHubRepository
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +29,7 @@ class GitHubWebhookService:
     def __init__(self, session: AsyncSession, settings: Settings | None = None) -> None:
         self.session = session
         self.settings = settings or get_settings()
+        self.repo = GitHubRepository(session, settings=self.settings)
 
     def verify_signature(self, signature_header: str | None, raw_body: bytes) -> bool:
         """Verify GitHub HMAC-SHA256 signature from X-Hub-Signature-256 header."""
@@ -83,19 +87,72 @@ class GitHubWebhookService:
                 action = payload.get("action")
                 pr = payload.get("pull_request", {})
                 pr_number = pr.get("number")
-                repo = payload.get("repository", {}).get("full_name")
+                repo_name = payload.get("repository", {}).get("full_name")
                 logger.info(
                     "GitHub PR event received: %s #%s on %s",
                     action,
                     pr_number,
-                    repo,
+                    repo_name,
                 )
+
+                mirrored = False
+                if repo_name and pr_number:
+                    try:
+                        sys_ctx = SystemContext(reason="github_webhook_pr_ingest")
+                        repo_binding = await self.repo.get_repository_by_full_name(sys_ctx, repo_name)
+                        if repo_binding is not None:
+                            title = pr.get("title", f"Pull Request #{pr_number}")
+                            author = pr.get("user", {}).get("login", "unknown")
+                            state = pr.get("state", "open")
+                            head_sha = pr.get("head", {}).get("sha", "")
+                            base_sha = pr.get("base", {}).get("sha", "")
+                            head_ref = pr.get("head", {}).get("ref")
+                            base_ref = pr.get("base", {}).get("ref")
+                            diff_url = pr.get("diff_url") or pr.get("html_url")
+
+                            merged_at = None
+                            closed_at = None
+                            if pr.get("merged_at"):
+                                try:
+                                    merged_at = datetime.fromisoformat(
+                                        pr["merged_at"].replace("Z", "+00:00")
+                                    )
+                                except Exception:
+                                    pass
+                            if pr.get("closed_at"):
+                                try:
+                                    closed_at = datetime.fromisoformat(
+                                        pr["closed_at"].replace("Z", "+00:00")
+                                    )
+                                except Exception:
+                                    pass
+
+                            await self.repo.upsert_pull_request(
+                                ctx=sys_ctx,
+                                repository_id=repo_binding.id,
+                                number=int(pr_number),
+                                title=title,
+                                author_login=author,
+                                head_sha=head_sha,
+                                base_sha=base_sha,
+                                state=state,
+                                head_ref=head_ref,
+                                base_ref=base_ref,
+                                diff_url=diff_url,
+                                merged_at=merged_at,
+                                closed_at=closed_at,
+                            )
+                            mirrored = True
+                    except Exception as exc:
+                        logger.warning("Could not mirror PR from webhook to database: %s", exc)
+
                 return {
-                    "status": "received",
+                    "status": "processed" if mirrored else "received",
                     "event": "pull_request",
                     "action": action,
                     "number": pr_number,
-                    "repo": repo,
+                    "repo": repo_name,
+                    "mirrored": mirrored,
                 }
 
             case "push":

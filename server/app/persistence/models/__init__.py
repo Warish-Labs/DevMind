@@ -29,7 +29,11 @@ from app.persistence.models.brain import (
 )
 from app.persistence.models.consent import ConsentRecord
 from app.persistence.models.extension import ExtensionRegistration, ExtensionToken
-from app.persistence.models.github import GitHubConnection
+from app.persistence.models.github import (
+    GitHubConnection,
+    GitHubRepositoryBinding,
+    PullRequest,
+)
 from app.persistence.models.project import Project, ProjectMembership
 from app.persistence.models.retention import RetentionPolicy
 from app.persistence.models.usage import UsageRecord
@@ -55,12 +59,14 @@ __all__ = [
     "FindingEvidence",
     "FindingStatusHistory",
     "GitHubConnection",
+    "GitHubRepositoryBinding",
     "JobEvent",
     "LocalWorkspaceRegistration",
     "Project",
     "ProjectFile",
     "ProjectMembership",
     "ProjectSnapshot",
+    "PullRequest",
     "RetentionPolicy",
     "ScanRun",
     "SnapshotFile",
