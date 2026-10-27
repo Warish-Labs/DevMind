@@ -1,7 +1,7 @@
 # AGENTS.md: Operating Rules for AI Coding Agents
 
 DevMind: Next.js website · FastAPI + Celery backend · VS Code extension · shared TypeScript.
-Status: **specification phase**. Full rule detail: [`docs/runbooks/agent-rules-extended.md`](docs/runbooks/agent-rules-extended.md).
+Status: **MVP release readiness (Milestone 13)**. Full rule detail: [`docs/runbooks/agent-rules-extended.md`](docs/runbooks/agent-rules-extended.md).
 
 ---
 

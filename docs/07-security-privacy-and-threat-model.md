@@ -2,7 +2,7 @@
 
 **Purpose.** Defines DevMind's security and privacy requirements across local (extension) and remote (API, workers, providers) processing, and records a structured threat model with mitigations and residual risk. It is authoritative for security controls, consent, redaction, retention and incident response.
 
-**Status.** Specification only; no control here has been implemented or tested. Nothing in this document promises absolute security. Related: [02](02-system-architecture.md) · [03](03-data-model-and-api.md) · [05](05-agents-and-llm-workflows.md) · [06](06-vscode-extension-and-local-scanning.md) · [09](09-testing-and-quality-strategy.md) · [10](10-deployment-and-operations.md). Decisions: ADR-010 to ADR-013, ADR-021 to ADR-026.
+**Status.** Implemented controls for MVP. Tenant isolation, RBAC policy enforcement, token authentication, redaction pipeline, consent gates, and prompt injection defense are implemented and covered by automated test suites. Decisions: ADR-010 to ADR-013, ADR-021 to ADR-026.
 
 ---
 

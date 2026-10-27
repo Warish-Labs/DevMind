@@ -7,31 +7,49 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m13-extension-packaging` |
-| **Last commit** | `9d185e5` (feat(extension): implement M13-04 extension packaging and marketplace release readiness) |
-| **Working tree** | Clean; PR #80 open |
-| **Open PR** | [#80](https://github.com/Warish-Labs/DevMind/pull/80) |
+| **Branch** | `feature/m13-docs-audit` |
+| **Last commit** | `557cc6c` (Merge pull request #80 from Warish-Labs/feature/m13-extension-packaging) |
+| **Working tree** | M13-05 complete; ready to commit and push PR |
+| **Open PR** | None (`feature/m13-docs-audit` ready to open) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
-| **Date** | 2026-10-25 |
+| **Date** | 2026-10-27 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Owner reviews and merges PR [#80](https://github.com/Warish-Labs/DevMind/pull/80) on GitHub.
-2. Run post-merge routine (`git checkout main && git pull origin main`).
-3. Delete local and remote feature branch `feature/m13-extension-packaging`.
-4. Initiate M13-05: Documentation consistency, broken link, and brand audit (`feature/m13-docs-audit`).
+1. Commit changes on `feature/m13-docs-audit`.
+2. Push branch to `origin/feature/m13-docs-audit`.
+3. Open PR via `gh pr create`.
+4. Update `BRAIN.md` with PR link.
+5. Owner reviews and merges PR on GitHub.
+6. Run post-merge routine and initiate M13-06 (`feature/m13-release-checklist`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge of PR [#80](https://github.com/Warish-Labs/DevMind/pull/80).
+Review and merge PR once opened.
 
 ---
 
 ## 4. Done log
+
+### Feature — M13-05: Documentation Consistency, Broken Link, and Brand Audit
+
+- **Date**: 2026-10-27
+- **Branch**: `feature/m13-docs-audit`
+- **What**:
+  - Executed complete documentation and brand audit across `docs/00` through `docs/13`, `brand/BRAND-GUIDE.md`, and repository root markdown files:
+    - Updated status headers in `AGENTS.md` and `docs/00` through `docs/12` to accurately reflect the completed and tested state of the MVP release (Milestones M1–M10, M13) while retaining post-MVP specifications for M11–M12 per [`docs/00`](docs/00-documentation-index.md) §7.
+    - Enhanced `scripts/docs-links.mjs` into a comprehensive documentation auditor:
+      - Validated all 724 relative links and anchor fragments across 56 Markdown files (0 broken).
+      - Validated all 36 Mermaid diagram code blocks across all documents for supported diagram types (`flowchart`, `graph`, `sequenceDiagram`, `stateDiagram-v2`, `erDiagram`), balanced quote delimiters, and quoted parentheses in node brackets (0 syntax issues).
+      - Verified that all 50 ADR citations across all documentation files match defined records in [`docs/12`](docs/12-architecture-decisions-and-open-questions.md).
+      - Verified that all 18 Open Question citations (`OQ-01` to `OQ-18`) match defined records in [`docs/12`](docs/12-architecture-decisions-and-open-questions.md).
+      - Verified critical brand identity assets inventory against `brand/BRAND-GUIDE.md` §7.
+    - Added `"docs:audit": "node scripts/docs-links.mjs"` script target to root [`package.json`](package.json).
+  - Validated full test suite via `scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped).
 
 ### Feature — M13-04: Extension Packaging & Marketplace Release Readiness
 

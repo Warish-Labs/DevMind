@@ -2,7 +2,7 @@
 
 **Purpose.** Specifies the visual identity, design system, motion language, homepage, website screens and the extension's UI so the interface can be built in Next.js without guessing. This is a **design specification only**; no components are implemented by this document.
 
-**Status.** Specification. Direction is confirmed (ADR-035: dark, code-native, green and blue accents, selective glass). Concrete tokens, typefaces and layouts below are **Recommended** and must pass the design review gate in §18 before they are frozen. Terms: [13](13-glossary-and-domain-terminology.md). Requirements served: FR-WEB-01 to FR-WEB-08, NFR-ACC-01 in [01](01-product-requirements.md).
+**Status.** Implemented (Design Review Gate passed). Dark code-native UI, typography tokens, custom cursor, keyboard navigation, a11y focus rings, and public homepage sections are implemented and verified. Decisions: ADR-035, ADR-048.
 
 ---
 

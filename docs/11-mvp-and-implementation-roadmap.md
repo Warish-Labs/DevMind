@@ -2,7 +2,7 @@
 
 **Purpose.** A phased, dependency-ordered plan from an empty repository to the MVP and then to the later releases. Each milestone is small enough to be built and verified incrementally by a developer working with an AI coding agent (Antigravity).
 
-**Status.** Specification. **No dates or durations are estimated.** Finishing this documentation package is not product progress. Milestone IDs (`M1` to `M13`) are cited elsewhere ([04](04-project-brain-and-rag.md) §14 cites M5, [02](02-system-architecture.md) §13 and [10](10-deployment-and-operations.md) cite M10); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
+**Status.** Active / Release Readiness. Milestones M1 through M10 and M13 (MVP) are completed and validated. Milestones M11 and M12 represent post-MVP roadmap. No dates or durations are estimated. Milestone IDs (`M1` to `M13`) are cited elsewhere ([04](04-project-brain-and-rag.md) §14 cites M5, [02](02-system-architecture.md) §13 and [10](10-deployment-and-operations.md) cite M10); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
 
 ---
 

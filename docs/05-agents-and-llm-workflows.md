@@ -2,7 +2,7 @@
 
 **Purpose.** Specifies the Agent Manager, the specialist agents, the LangGraph workflow design, the LLM gateway and provider abstraction, configuration, routing, accounting and evaluation. It is authoritative for agent behavior and LLM configuration.
 
-**Status.** Specification only. LangGraph and provider API names must be checked against the installed versions when implementing (see the verification register in [12](12-architecture-decisions-and-open-questions.md) §5). Related: [02](02-system-architecture.md) · [03](03-data-model-and-api.md) · [04](04-project-brain-and-rag.md) · [07](07-security-privacy-and-threat-model.md) · [09](09-testing-and-quality-strategy.md). Decisions: ADR-006, ADR-016, ADR-017, ADR-024, ADR-027, ADR-028, ADR-037.
+**Status.** Implemented for MVP agents (BrainQA, SecuritySentinel, fake adapter, prompt sanitization, LangGraph workflow state machine, and human approval gates). Post-MVP agents (ReviewBuddy, PRAgent, Mentor, LivingDoc) are specified for M11–M12. Decisions: ADR-006, ADR-016, ADR-017, ADR-024, ADR-027, ADR-028, ADR-037.
 
 ---
 
