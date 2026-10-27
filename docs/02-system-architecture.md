@@ -2,7 +2,7 @@
 
 **Purpose.** Explains how DevMind is built: components, boundaries, data flows, deployment topology, job lifecycle and failure handling. It implements the scope in [01](01-product-requirements.md). Data schemas and endpoints are in [03](03-data-model-and-api.md); the Project Brain in [04](04-project-brain-and-rag.md); agents and LLM routing in [05](05-agents-and-llm-workflows.md).
 
-**Status.** Specification only. Decision IDs refer to [12](12-architecture-decisions-and-open-questions.md).
+**Status.** Implemented for MVP. Modular monolith FastAPI server, Celery worker orchestration, PostgreSQL with pgvector, Next.js client, and VS Code companion extension are implemented and verified. Decision IDs refer to [12](12-architecture-decisions-and-open-questions.md).
 
 ---
 

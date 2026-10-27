@@ -2,7 +2,7 @@
 
 **Purpose.** Defines *what* DevMind must do and for whom, which parts belong to the MVP, and how each requirement is accepted. *How* it is built is in [02](02-system-architecture.md) and later documents. This PRD is authoritative for product scope.
 
-**Status.** Specification only. No requirement below is implemented. Terms follow the [glossary](13-glossary-and-domain-terminology.md). Decision IDs refer to [12](12-architecture-decisions-and-open-questions.md).
+**Status.** Implemented (MVP scope). Core capabilities CAP-01 (Code Intelligence) and CAP-02 (Security Intelligence) are implemented and tested across client, server, and extension packages. Remaining capabilities (CAP-03 to CAP-09) are specified for post-MVP releases per [11](11-mvp-and-implementation-roadmap.md). Terms follow the [glossary](13-glossary-and-domain-terminology.md). Decision IDs refer to [12](12-architecture-decisions-and-open-questions.md).
 
 **Source.** Original vision: `DevMind_Project_Document.md`. Items that go beyond it are marked *(design recommendation)*.
 

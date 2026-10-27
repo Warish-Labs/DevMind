@@ -2,7 +2,7 @@
 
 **Purpose.** Defines the Project Brain: what it contains, how it is built from local scans and cloud ingestion, how it stays current, how information is retrieved and attributed, and how quality is measured. It is authoritative for ingestion, indexing, retrieval, embeddings and staleness rules.
 
-**Status.** Specification only. Related: [02](02-system-architecture.md) · [03](03-data-model-and-api.md) (schemas) · [05](05-agents-and-llm-workflows.md) (consumers) · [06](06-vscode-extension-and-local-scanning.md) (producer) · [07](07-security-privacy-and-threat-model.md). Decisions: ADR-018 to ADR-022.
+**Status.** Implemented for MVP. Snapshot indexing, symbol extraction, AST relationship graphs, RAG hybrid retrieval, and privacy metadata modes (`metadata_only`, `structure_only`, `indexed`) are fully implemented and tested. Decisions: ADR-018 to ADR-022.
 
 ---
 

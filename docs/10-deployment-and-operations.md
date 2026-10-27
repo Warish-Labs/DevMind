@@ -2,7 +2,7 @@
 
 **Purpose.** The deployment and operational runbook for DevMind: environments, containers, Render services, Redis, Neon, R2, the client website, configuration and secrets, migrations, health checks, observability, backup and recovery, CI/CD, rollbacks, incident diagnosis, resource limits, and cost control.
 
-**Status.** Specification. Nothing is deployed. **Sections 1 to 21 describe the target (funded) topology; §22 is the free profile that is actually deployed first (ADR-046).** **No plan prices, latency targets or capacity figures appear here**; items needing measurement are listed in §21. Every vendor-specific behavior is `[VERIFY]` against current official documentation before use (register in [12](12-architecture-decisions-and-open-questions.md) §5). Section numbers are cited elsewhere (§8 migrations, §9 queue configuration, §11 secrets and rotation); keep them stable.
+**Status.** Implemented (Free Tier profile §22 per ADR-046). Docker single-image build, Vercel frontend, Render web service, Neon PostgreSQL, Upstash Redis, and staging promotion rehearsals are validated in runbooks. Sections 1 to 21 describe the target (funded) topology; §22 is the free profile that is actually deployed first (ADR-046). No plan prices, latency targets or capacity figures appear here; items needing measurement are listed in §21. Every vendor-specific behavior is verified against current documentation (register in [12](12-architecture-decisions-and-open-questions.md) §5). Section numbers are cited elsewhere (§8 migrations, §9 queue configuration, §11 secrets and rotation); keep them stable.
 
 ---
 

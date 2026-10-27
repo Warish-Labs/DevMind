@@ -310,7 +310,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M13-02 Motion polish, custom cursor, and keyboard accessibility pass (feature/m13-motion-a11y)
 - [x] M13-03 Authenticated app shell & screen states review (empty, error, loading, citations) (feature/m13-app-shell-polish)
 - [x] M13-04 Extension packaging & marketplace release readiness (vsce package, pre-release) (feature/m13-extension-packaging)
-- [ ] M13-05 Documentation consistency, broken link, and brand audit (docs/00 to 13) (feature/m13-docs-audit)
+- [x] M13-05 Documentation consistency, broken link, and brand audit (docs/00 to 13) (feature/m13-docs-audit)
 - [ ] M13-06 MVP release checklist, release notes, and known limitations ledger (feature/m13-release-checklist)
 
 ### M11 · Release 1.1 (GitHub, PR Intelligence, Review Intelligence)

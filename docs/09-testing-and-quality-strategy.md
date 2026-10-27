@@ -2,7 +2,7 @@
 
 **Purpose.** Defines how DevMind is tested and evaluated: what is tested at each layer, which fixtures must exist, how scanner and AI quality are measured (not asserted), and which quality gates block a release.
 
-**Status.** Specification. No test, fixture or baseline exists yet. Section numbers in this document are cited by other documents (for example §4 migrations, §6 authorization, §8 scanner fixtures, §9 retrieval baselines, §12 prompt injection, §15 gates); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
+**Status.** Implemented. Monorepo quality test runner (`test-all.mjs`), unit test suites (Vitest, pytest), cross-tenant security tests, prompt injection evals, and staging rehearsal runbooks are active and passing. Section numbers in this document are cited by other documents (for example §4 migrations, §6 authorization, §8 scanner fixtures, §9 retrieval baselines, §12 prompt injection, §15 gates); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
 
 ---
 

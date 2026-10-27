@@ -2,7 +2,7 @@
 
 **Purpose.** Specifies the DevMind VS Code extension: what it does, what it never does, how it scans, how it keeps a local manifest, how it synchronizes with the cloud Project Brain, and how consent governs any source transmission. It is authoritative for extension behavior and the local-to-cloud data boundary.
 
-**Status.** Specification only. Related: [01](01-product-requirements.md) (FR-EXT) · [02](02-system-architecture.md) · [03](03-data-model-and-api.md) (extension API) · [04](04-project-brain-and-rag.md) · [07](07-security-privacy-and-threat-model.md). Decisions: ADR-001, ADR-012, ADR-021, ADR-022, ADR-023, ADR-033, ADR-034.
+**Status.** Implemented. Companion extension with local tree-sitter AST and pattern-engine scanning, consent modal, privacy ledger, and packaging targets is implemented and packaged. Decisions: ADR-001, ADR-012, ADR-021, ADR-022, ADR-023, ADR-033, ADR-034.
 
 ---
 

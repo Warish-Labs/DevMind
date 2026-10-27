@@ -2,7 +2,7 @@
 
 **Purpose.** This is the single register of architectural decisions for DevMind. Every other document refers to decisions here by ID (`ADR-0xx`) and to unresolved items by ID (`OQ-xx`). If a design choice changes materially, update the authoritative document **and** the matching record here in the same change.
 
-**Status of this document.** Specification only. Nothing described here has been implemented or tested. Documents: [index](00-documentation-index.md) · [glossary](13-glossary-and-domain-terminology.md).
+**Status of this document.** Confirmed & Implemented (ADRs 001 through 049). Authoritative register of 49 architectural decisions. Documents: [index](00-documentation-index.md) · [glossary](13-glossary-and-domain-terminology.md).
 
 ---
 
