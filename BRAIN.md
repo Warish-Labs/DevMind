@@ -7,10 +7,10 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m13-docs-audit` |
-| **Last commit** | `37b43bb` (feat(docs): implement M13-05 documentation consistency, broken link, and brand audit) |
-| **Working tree** | Clean; PR #81 open |
-| **Open PR** | [#81](https://github.com/Warish-Labs/DevMind/pull/81) |
+| **Branch** | `feature/m13-release-checklist` |
+| **Last commit** | `402e63d` (feat(docs): implement M13-06 MVP release checklist, release notes, and known limitations ledger) |
+| **Working tree** | Clean; PR #82 open |
+| **Open PR** | [#82](https://github.com/Warish-Labs/DevMind/pull/82) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-27 |
 
@@ -18,20 +18,32 @@
 
 ## 2. Next action (exact)
 
-1. Owner reviews and merges PR [#81](https://github.com/Warish-Labs/DevMind/pull/81) on GitHub.
+1. Owner reviews and merges PR [#82](https://github.com/Warish-Labs/DevMind/pull/82) on GitHub.
 2. Run post-merge routine (`git checkout main && git pull origin main`).
-3. Delete local and remote feature branch `feature/m13-docs-audit`.
-4. Initiate M13-06: MVP release checklist, release notes, and known limitations ledger (`feature/m13-release-checklist`).
+3. Delete local and remote feature branch `feature/m13-release-checklist`.
+4. Tag MVP release candidate `v0.1.0`!
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge of PR [#81](https://github.com/Warish-Labs/DevMind/pull/81).
+Review and merge of PR [#82](https://github.com/Warish-Labs/DevMind/pull/82).
 
 ---
 
 ## 4. Done log
+
+### Feature — M13-06: MVP Release Checklist, Release Notes, and Known Limitations Ledger
+
+- **Date**: 2026-10-27
+- **Branch**: `feature/m13-release-checklist`
+- **What**:
+  - Implemented the official MVP Release Checklist, launch protocol, release notes, and known limitations ledger per [`docs/01`](docs/01-product-requirements.md) §17, [`docs/09`](docs/09-testing-and-quality-strategy.md) §15, [`docs/10`](docs/10-deployment-and-operations.md) §17, and [`docs/11`](docs/11-mvp-and-implementation-roadmap.md) §M13:
+    - Authored [`docs/runbooks/release-checklist.md`](docs/runbooks/release-checklist.md) establishing the 7-phase pre-flight, cloud topology, distribution, smoke test, and rollback procedure for v0.1.0.
+    - Updated repository root [`CHANGELOG.md`](CHANGELOG.md) documenting `[0.1.0] - 2026-10-27` release with all core functional pillars (CAP-01 Project Brain, CAP-02 SecuritySentinel, Web application shell, VS Code companion extension, FastAPI/Celery backend, test runners).
+    - Recorded the official **Known Limitations Ledger** (Language Tiers 1 vs 2, zero live DB connections per ADR-034, no in-extension AI chat, evidence grounding tiers E0–E3, and free-tier sleep behavior).
+    - Added automated unit tests in [`client/tests/release-checklist.test.ts`](client/tests/release-checklist.test.ts) (3 tests passing).
+  - Validated full test suite via `scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped).
 
 ### Feature — M13-05: Documentation Consistency, Broken Link, and Brand Audit
 
