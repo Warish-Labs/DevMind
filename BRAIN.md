@@ -11,7 +11,7 @@
 | **Last commit** | `323089c` (Merge pull request #85 from Warish-Labs/feature/m11-webhooks-ingest) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
 | **Working tree** | M11-04 completed; ready for PR |
-| **Open PR** | Pending (`feature/m11-review-rules`) |
+| **Open PR** | [#86](https://github.com/Warish-Labs/DevMind/pull/86) (`feature/m11-review-rules`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-28 |
 
