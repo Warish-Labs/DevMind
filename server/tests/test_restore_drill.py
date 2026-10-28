@@ -93,7 +93,7 @@ def test_schema_inventory_and_alembic_head_integrity() -> None:
     heads = script_dir.get_heads()
 
     assert len(heads) == 1, f"Expected 1 migration head, got: {heads}"
-    assert heads[0] == "0012_review_rules"
+    assert heads[0] == "0013_pr_analyses"
 
 
 # ===========================================================================

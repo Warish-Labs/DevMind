@@ -23,6 +23,7 @@ from app.core.auth_context import AuthContext
 from app.core.errors import NotFoundError, ValidationError
 from app.core.settings import Settings, get_settings
 from app.domain.auth import (
+    PERM_ANALYSIS_CREATE,
     PERM_INTEGRATIONS_MANAGE,
     PERM_PROJECT_READ,
     PERM_PROJECT_UPDATE,
@@ -35,6 +36,8 @@ from app.domain.auth import (
 )
 from app.domain.integrations.github_ingest_service import GitHubIngestService
 from app.domain.integrations.github_oauth_service import GitHubOAuthService
+from app.domain.pr_agent.schemas import PRAnalysisResponse, TriggerPRAnalysisRequest
+from app.domain.pr_agent.service import PRAgentService
 
 logger = logging.getLogger(__name__)
 
@@ -527,3 +530,62 @@ async def get_pull_request_by_id(
         created_at=pr.created_at,
         updated_at=pr.updated_at,
     )
+
+
+@pull_requests_router.post(
+    "/{id}/analyze",
+    response_model=PRAnalysisResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Trigger PRAgent change-impact analysis on a pull request",
+    description="Analyze PR diff, traverse symbol dependencies, evaluate checklist rules, and synthesize summary.",
+)
+@declare_permission(PERM_ANALYSIS_CREATE)
+async def analyze_pull_request_endpoint(
+    id: UUID,
+    body: TriggerPRAnalysisRequest | None = None,
+    ctx: AuthContext = Depends(get_auth_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> PRAnalysisResponse:
+    """Run PRAgent change-impact analysis and generate structured intelligence summary."""
+    service = PRAgentService(session)
+    analysis = await service.analyze_pull_request(ctx=ctx, pull_request_id=id, request_data=body)
+    await session.commit()
+    return analysis
+
+
+@pull_requests_router.get(
+    "/{id}/analyses/latest",
+    response_model=PRAnalysisResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get latest analysis for a pull request",
+    description="Retrieve the most recent PRAgent change-impact analysis and summary.",
+)
+@declare_permission(PERM_PROJECT_READ)
+async def get_latest_pull_request_analysis_endpoint(
+    id: UUID,
+    ctx: AuthContext = Depends(get_auth_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> PRAnalysisResponse:
+    """Retrieve most recent analysis result for pull request."""
+    service = PRAgentService(session)
+    return await service.get_latest_analysis(ctx=ctx, pull_request_id=id)
+
+
+@pull_requests_router.get(
+    "/{id}/analyses",
+    response_model=list[PRAnalysisResponse],
+    status_code=status.HTTP_200_OK,
+    summary="List historical analyses for a pull request",
+    description="Retrieve all past PRAgent analysis reports for a pull request.",
+)
+@declare_permission(PERM_PROJECT_READ)
+async def list_pull_request_analyses_endpoint(
+    id: UUID,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    ctx: AuthContext = Depends(get_auth_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> list[PRAnalysisResponse]:
+    """Retrieve historical analysis runs for pull request."""
+    service = PRAgentService(session)
+    return await service.list_analyses(ctx=ctx, pull_request_id=id, limit=limit, offset=offset)
