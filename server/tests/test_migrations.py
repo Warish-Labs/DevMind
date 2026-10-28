@@ -19,7 +19,7 @@ def test_alembic_config_and_revisions() -> None:
 
     heads = script_dir.get_heads()
     assert len(heads) == 1, f"Expected exactly 1 migration head, got: {heads}"
-    assert heads[0] == "0011_github_repositories_and_prs"
+    assert heads[0] == "0012_review_rules"
 
 
 def test_migration_models_match_metadata() -> None:
@@ -48,6 +48,7 @@ def test_migration_models_match_metadata() -> None:
         "github_connections",
         "github_repositories",
         "pull_requests",
+        "review_rules",
         "agent_runs",
         "analysis_jobs",
         "job_events",

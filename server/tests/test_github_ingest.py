@@ -127,7 +127,9 @@ async def test_link_project_repository_invalid_format_rejected(ingest_settings: 
 
 
 @pytest.mark.asyncio
-async def test_link_project_repository_missing_connection_rejected(ingest_settings: Settings) -> None:
+async def test_link_project_repository_missing_connection_rejected(
+    ingest_settings: Settings,
+) -> None:
     """Linking without an active GitHub connection raises ValidationError."""
     mock_session = AsyncMock()
     service = GitHubIngestService(mock_session, settings=ingest_settings)
@@ -267,7 +269,9 @@ async def test_api_link_and_get_project_repository(
         is_active=True,
     )
 
-    async def mock_link(self: Any, ctx: Any, project_id: Any, full_name: str, default_branch: str = "main") -> GitHubRepositoryBinding:
+    async def mock_link(
+        self: Any, ctx: Any, project_id: Any, full_name: str, default_branch: str = "main"
+    ) -> GitHubRepositoryBinding:
         return mock_binding
 
     async def mock_get(self: Any, ctx: Any, project_id: Any) -> GitHubRepositoryBinding:
@@ -326,7 +330,14 @@ async def test_api_list_project_pull_requests(
         base_ref="main",
     )
 
-    async def mock_list(self: Any, ctx: Any, project_id: Any, state: str | None = None, limit: int = 50, offset: int = 0) -> list[PullRequest]:
+    async def mock_list(
+        self: Any,
+        ctx: Any,
+        project_id: Any,
+        state: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[PullRequest]:
         return [mock_pr]
 
     monkeypatch.setattr(GitHubIngestService, "list_project_pull_requests", mock_list)
@@ -338,7 +349,10 @@ async def test_api_list_project_pull_requests(
         data = res.json()
         assert len(data) == 1
         assert data[0]["number"] == 84
-        assert data[0]["title"] == "feat(server): implement M11-02 GitHub OAuth linking and token management"
+        assert (
+            data[0]["title"]
+            == "feat(server): implement M11-02 GitHub OAuth linking and token management"
+        )
 
 
 @pytest.mark.asyncio

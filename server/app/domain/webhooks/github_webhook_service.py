@@ -99,7 +99,9 @@ class GitHubWebhookService:
                 if repo_name and pr_number:
                     try:
                         sys_ctx = SystemContext(reason="github_webhook_pr_ingest")
-                        repo_binding = await self.repo.get_repository_by_full_name(sys_ctx, repo_name)
+                        repo_binding = await self.repo.get_repository_by_full_name(
+                            sys_ctx, repo_name
+                        )
                         if repo_binding is not None:
                             title = pr.get("title", f"Pull Request #{pr_number}")
                             author = pr.get("user", {}).get("login", "unknown")

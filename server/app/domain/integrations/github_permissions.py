@@ -41,25 +41,29 @@ GITHUB_OAUTH_SCOPES: list[str] = [
 ]
 
 # Forbidden scopes that DevMind must NEVER request or require
-FORBIDDEN_SCOPES: frozenset[str] = frozenset({
-    "delete_repo",
-    "admin:org",
-    "admin:repo_hook",
-    "admin:org_hook",
-    "admin:public_key",
-    "admin:gpg_key",
-    "site_admin",
-})
+FORBIDDEN_SCOPES: frozenset[str] = frozenset(
+    {
+        "delete_repo",
+        "admin:org",
+        "admin:repo_hook",
+        "admin:org_hook",
+        "admin:public_key",
+        "admin:gpg_key",
+        "site_admin",
+    }
+)
 
 # Actions that strictly require human approval (zero unapproved side effects)
-MUTATING_GITHUB_ACTIONS: frozenset[str] = frozenset({
-    "post_pr_comment",
-    "create_review_comment",
-    "merge_pull_request",
-    "close_pull_request",
-    "update_branch",
-    "create_check_run",
-})
+MUTATING_GITHUB_ACTIONS: frozenset[str] = frozenset(
+    {
+        "post_pr_comment",
+        "create_review_comment",
+        "merge_pull_request",
+        "close_pull_request",
+        "update_branch",
+        "create_check_run",
+    }
+)
 
 
 class GitHubPermissionStatus(StrEnum):

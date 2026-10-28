@@ -36,6 +36,7 @@ from app.llm.schemas import AgentPlan
 from app.orchestration.authcheck import run_authcheck_specialist
 from app.orchestration.checkpointer import format_thread_id
 from app.orchestration.codemate import run_codemate_specialist
+from app.orchestration.reviewbuddy import run_reviewbuddy_specialist
 from app.orchestration.state import (
     ApprovalState,
     IntentState,
@@ -48,7 +49,7 @@ from app.orchestration.state import (
 
 logger = logging.getLogger("devmind.orchestration.manager")
 
-RELEASED_SPECIALISTS = frozenset({"codemate", "authcheck"})
+RELEASED_SPECIALISTS = frozenset({"codemate", "authcheck", "reviewbuddy"})
 
 # Deterministic keywords for security / auth intent detection
 _AUTH_KEYWORDS = frozenset(
@@ -117,12 +118,19 @@ def classify_intent_deterministically(request: RequestState) -> IntentState | No
             confidence=1.0,
             requires_specialists=["authcheck"],
         )
+    if job_type in ("code_review", "review_checklist", "reviewbuddy"):
+        return IntentState(
+            category="review",
+            intent_name="code_review",
+            confidence=1.0,
+            requires_specialists=["reviewbuddy"],
+        )
     if job_type in ("comprehensive_review", "full_audit"):
         return IntentState(
             category="security_and_code",
             intent_name="comprehensive_review",
             confidence=1.0,
-            requires_specialists=["codemate", "authcheck"],
+            requires_specialists=["codemate", "authcheck", "reviewbuddy"],
         )
 
     # 2. Strong signal matching on user message
@@ -348,6 +356,8 @@ def route_specialists(state: RunState) -> list[str]:
         destinations.append("codemate")
     if "authcheck" in specialists:
         destinations.append("authcheck")
+    if "reviewbuddy" in specialists:
+        destinations.append("reviewbuddy")
 
     return destinations or ["join"]
 
@@ -390,6 +400,26 @@ def authcheck_node_factory(
         )
 
     return authcheck_node
+
+
+def reviewbuddy_node_factory(
+    router: LLMGatewayRouter | None = None,
+    prompt_loader: PromptLoader | None = None,
+    session: AsyncSession | None = None,
+):
+    """Factory creating the ReviewBuddy specialist node."""
+
+    async def reviewbuddy_node(state: RunState) -> dict[str, Any]:
+        """Execute ReviewBuddy specialist task (docs/05 §6.4, CAP-05)."""
+        logger.info("Executing ReviewBuddy specialist for run %s", state.get("run_id"))
+        return await run_reviewbuddy_specialist(
+            state=state,
+            router=router,
+            prompt_loader=prompt_loader,
+            session=session,
+        )
+
+    return reviewbuddy_node
 
 
 def join_node(state: RunState) -> dict[str, Any]:
@@ -516,6 +546,10 @@ def build_agent_manager_graph(
         "authcheck",
         authcheck_node_factory(router=router, prompt_loader=prompt_loader, session=session),
     )
+    builder.add_node(
+        "reviewbuddy",
+        reviewbuddy_node_factory(router=router, prompt_loader=prompt_loader, session=session),
+    )
     builder.add_node("join", join_node)
     builder.add_node("verify", verify_node)
     builder.add_node("synthesize", synthesize_node)
@@ -532,9 +566,12 @@ def build_agent_manager_graph(
     builder.add_edge("llm_route", "plan")
 
     # Specialist fan-out
-    builder.add_conditional_edges("plan", route_specialists, ["codemate", "authcheck", "join"])
+    builder.add_conditional_edges(
+        "plan", route_specialists, ["codemate", "authcheck", "reviewbuddy", "join"]
+    )
     builder.add_edge("codemate", "join")
     builder.add_edge("authcheck", "join")
+    builder.add_edge("reviewbuddy", "join")
 
     # Verification and Synthesis
     builder.add_edge("join", "verify")
