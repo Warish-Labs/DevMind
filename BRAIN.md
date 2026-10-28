@@ -11,7 +11,7 @@
 | **Last commit** | `3851e83` (Merge pull request #86 from Warish-Labs/feature/m11-review-rules) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
 | **Working tree** | M11-05 completed; ready for PR |
-| **Open PR** | Pending (`feature/m11-pr-agent`) |
+| **Open PR** | [#87](https://github.com/Warish-Labs/DevMind/pull/87) (`feature/m11-pr-agent`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-28 |
 
