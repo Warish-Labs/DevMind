@@ -39,7 +39,7 @@ Review and merge PR for `feature/m11-review-rules`.
 - **Date**: 2026-10-28
 - **Branch**: `feature/m11-review-rules`
 - **What**:
-  - Implemented M11-04 per [`docs/01`](docs/01-product-requirements.md) §9 (CAP-05, CAP-06), [`docs/03`](docs/03-data-model-and-api.md) §3.5 and §11.1, [`docs/05`](docs/05-agent-runtime-and-tools.md) §2.3 and §3, [`docs/07`](docs/07-security-privacy-and-threat-model.md) §6:
+  - Implemented M11-04 per [`docs/01`](docs/01-product-requirements.md) §9 (CAP-05, CAP-06), [`docs/03`](docs/03-data-model-and-api.md) §3.5 and §11.1, [`docs/05`](docs/05-agents-and-llm-workflows.md) §2.3 and §3, [`docs/07`](docs/07-security-privacy-and-threat-model.md) §6:
     - **Database Migration**: Created [`server/alembic/versions/0012_review_rules.py`](server/alembic/versions/0012_review_rules.py) adding `review_rules` table with tenant columns (`workspace_id`, `project_id`), category and severity check constraints, and unique rule index `(project_id, rule_id)`.
     - **Persistence Model**: Authored [`server/app/persistence/models/review_rules.py`](server/app/persistence/models/review_rules.py) and exported in [`server/app/persistence/models/__init__.py`](server/app/persistence/models/__init__.py).
     - **Repository Layer**: Authored [`server/app/persistence/repositories/review_rule_repo.py`](server/app/persistence/repositories/review_rule_repo.py) providing tenant isolation, CRUD operations, default built-in rule seeding (`seed_default_rules`), and deletion restrictions on built-ins.
