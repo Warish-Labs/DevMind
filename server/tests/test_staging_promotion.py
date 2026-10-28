@@ -96,7 +96,7 @@ def test_readiness_probe_staging_contract(
     )
     monkeypatch.setattr(
         "app.domain.auth.check_migrations_readiness",
-        AsyncMock(return_value=(True, "ok", ["0012_review_rules"])),
+        AsyncMock(return_value=(True, "ok", ["0013_pr_analyses"])),
     )
 
     response = client.get("/readyz")

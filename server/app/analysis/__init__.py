@@ -1,5 +1,6 @@
 """DevMind deterministic analysis: scanner adapters, rules, evidence verification."""
 
+from app.analysis.change_impact import ChangeImpactAnalyzer
 from app.analysis.evidence_verifier import (
     ALLOWED_RULE_PREFIXES,
     KNOWN_RULES,
@@ -41,6 +42,7 @@ from app.analysis.review_buddy import (
 
 __all__ = [
     "ALLOWED_RULE_PREFIXES",
+    "ChangeImpactAnalyzer",
     "ChangedFile",
     "CitationBatchVerificationResult",
     "CitationItem",

@@ -30,6 +30,11 @@ from app.orchestration.manager import (
     classify_intent_deterministically,
     codemate_node_factory,
 )
+from app.orchestration.pragent import (
+    PRAgent,
+    PRAgentState,
+    run_pragent_specialist,
+)
 from app.orchestration.reviewbuddy import (
     ReviewBuddyAgent,
     ReviewBuddyState,
@@ -86,6 +91,8 @@ __all__ = [
     "Hypothesis",
     "IntentState",
     "NodeError",
+    "PRAgent",
+    "PRAgentState",
     "Proposal",
     "RELEASED_SPECIALISTS",
     "RequestState",
@@ -115,6 +122,7 @@ __all__ = [
     "parse_thread_id",
     "run_authcheck_specialist",
     "run_codemate_specialist",
+    "run_pragent_specialist",
     "run_reviewbuddy_specialist",
     "search_brain",
     "validate_citations",

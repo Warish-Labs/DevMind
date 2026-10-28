@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m11-review-rules` |
-| **Last commit** | `323089c` (Merge pull request #85 from Warish-Labs/feature/m11-webhooks-ingest) |
+| **Branch** | `feature/m11-pr-agent` |
+| **Last commit** | `3851e83` (Merge pull request #86 from Warish-Labs/feature/m11-review-rules) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | M11-04 completed; ready for PR |
-| **Open PR** | [#86](https://github.com/Warish-Labs/DevMind/pull/86) (`feature/m11-review-rules`) |
+| **Working tree** | M11-05 completed; ready for PR |
+| **Open PR** | [#87](https://github.com/Warish-Labs/DevMind/pull/87) (`feature/m11-pr-agent`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-28 |
 
@@ -19,20 +19,35 @@
 
 ## 2. Next action (exact)
 
-1. Open PR for `feature/m11-review-rules`.
+1. Open PR for `feature/m11-pr-agent`.
 2. Await PR merge by owner.
-3. Switch to `main`, pull merged commit, delete `feature/m11-review-rules` locally and on origin.
-4. Branch `feature/m11-pr-agent` for task M11-05 (PRAgent change-impact analysis, subgraph dependency traversal, and PR summary).
+3. Switch to `main`, pull merged commit, delete `feature/m11-pr-agent` locally and on origin.
+4. Branch `feature/m11-pr-ui` for task M11-06 (Pull Request web screens: list, overview, change-impact graph, checklist triage).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m11-review-rules`.
+Review and merge PR for `feature/m11-pr-agent`.
 
 ---
 
 ## 4. Done log
+
+### Feature — M11-05: PRAgent Change-Impact Analysis, Subgraph Traversal, and PR Intelligence
+
+- **Date**: 2026-10-28
+- **Branch**: `feature/m11-pr-agent`
+- **What**:
+  - Implemented M11-05 per [`docs/01`](docs/01-product-requirements.md) §9 (CAP-06), [`docs/02`](docs/02-system-architecture.md) §10, [`docs/03`](docs/03-data-model-and-api.md) §3.5 and §11.1, [`docs/05`](docs/05-agents-and-llm-workflows.md) §6.5:
+    - **Database Migration**: Created [`server/alembic/versions/0013_pr_analyses.py`](server/alembic/versions/0013_pr_analyses.py) adding `pr_analyses` table with foreign keys to `workspaces`, `projects`, `pull_requests`, and `analysis_jobs`, with unique constraint on `(pull_request_id, head_sha, job_id)`.
+    - **Persistence Model**: Authored [`server/app/persistence/models/pr_analysis.py`](server/app/persistence/models/pr_analysis.py) (`PRAnalysis`) and exported in [`server/app/persistence/models/__init__.py`](server/app/persistence/models/__init__.py).
+    - **Repository Layer**: Authored [`server/app/persistence/repositories/pr_analysis_repo.py`](server/app/persistence/repositories/pr_analysis_repo.py) (`PRAnalysisRepository`) providing tenant isolation, CRUD, latest analysis lookup, and historical listing.
+    - **Change-Impact Analysis Engine**: Authored [`server/app/analysis/change_impact.py`](server/app/analysis/change_impact.py) (`ChangeImpactAnalyzer`) traversing direct symbols, callers, importers, affected routes, affected tests, and building dependency graph nodes/edges with categorical risk assessment (`low`, `medium`, `high`, `critical`). Exported in [`server/app/analysis/__init__.py`](server/app/analysis/__init__.py).
+    - **PRAgent Specialist**: Authored [`server/app/orchestration/pragent.py`](server/app/orchestration/pragent.py) (`PRAgent`, `PRAgentState`, `run_pragent_specialist`) integrating change impact traversal, ReviewBuddy diff evaluation, evidence verification (E1), PR summary synthesis, and gated GitHub comment proposals. Registered `pragent` in `RELEASED_SPECIALISTS`, intent classifier, and graph workflow in [`server/app/orchestration/manager.py`](server/app/orchestration/manager.py).
+    - **Domain Service & Schemas**: Authored [`server/app/domain/pr_agent/schemas.py`](server/app/domain/pr_agent/schemas.py) and [`server/app/domain/pr_agent/service.py`](server/app/domain/pr_agent/service.py).
+    - **REST API Endpoints**: Registered `POST /api/v1/pull-requests/{id}/analyze`, `GET /api/v1/pull-requests/{id}/analyses/latest`, and `GET /api/v1/pull-requests/{id}/analyses` with RBAC permissions (`analysis:create`, `project:read`) in [`server/app/api/integrations.py`](server/app/api/integrations.py).
+    - **Tests & Verification**: Authored [`server/tests/test_pr_agent.py`](server/tests/test_pr_agent.py) with 11 tests; verified 13 passed in `test-all --fast` (0 lint errors, 0 broken import boundaries, 46 targeted tests passing).
 
 ### Feature — M11-04: Review Rules Schema, Migration, and ReviewBuddy Checklist Engine
 

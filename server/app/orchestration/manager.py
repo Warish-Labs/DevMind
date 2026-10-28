@@ -36,6 +36,7 @@ from app.llm.schemas import AgentPlan
 from app.orchestration.authcheck import run_authcheck_specialist
 from app.orchestration.checkpointer import format_thread_id
 from app.orchestration.codemate import run_codemate_specialist
+from app.orchestration.pragent import run_pragent_specialist
 from app.orchestration.reviewbuddy import run_reviewbuddy_specialist
 from app.orchestration.state import (
     ApprovalState,
@@ -49,7 +50,7 @@ from app.orchestration.state import (
 
 logger = logging.getLogger("devmind.orchestration.manager")
 
-RELEASED_SPECIALISTS = frozenset({"codemate", "authcheck", "reviewbuddy"})
+RELEASED_SPECIALISTS = frozenset({"codemate", "authcheck", "reviewbuddy", "pragent"})
 
 # Deterministic keywords for security / auth intent detection
 _AUTH_KEYWORDS = frozenset(
@@ -124,6 +125,13 @@ def classify_intent_deterministically(request: RequestState) -> IntentState | No
             intent_name="code_review",
             confidence=1.0,
             requires_specialists=["reviewbuddy"],
+        )
+    if job_type in ("pr_analysis", "change_impact", "pragent", "pull_request"):
+        return IntentState(
+            category="pr_analysis",
+            intent_name="pr_analysis",
+            confidence=1.0,
+            requires_specialists=["pragent"],
         )
     if job_type in ("comprehensive_review", "full_audit"):
         return IntentState(
@@ -422,6 +430,39 @@ def reviewbuddy_node_factory(
     return reviewbuddy_node
 
 
+def pragent_node_factory(
+    router: LLMGatewayRouter | None = None,
+    prompt_loader: PromptLoader | None = None,
+    session: AsyncSession | None = None,
+):
+    """Factory creating the PRAgent specialist node."""
+
+    async def pragent_node(state: RunState) -> dict[str, Any]:
+        """Execute PRAgent specialist task (docs/01 CAP-06, docs/05 §6.5)."""
+        logger.info("Executing PRAgent specialist for run %s", state.get("run_id"))
+        task = SpecialistTask(
+            specialist="pragent",
+            task_id=f"pragent_{state['run_id'][:8]}",
+            status="running",
+            input_refs=[],
+            params={},
+        )
+        for t in state.get("plan", []):
+            if t.specialist == "pragent":
+                task = t
+                break
+
+        return await run_pragent_specialist(
+            state=state,
+            task=task,
+            router=router,
+            prompt_loader=prompt_loader,
+            session=session,
+        )
+
+    return pragent_node
+
+
 def join_node(state: RunState) -> dict[str, Any]:
     """Barrier joining parallel specialist executions."""
     logger.info("Specialist fan-out completed for run %s", state.get("run_id"))
@@ -550,6 +591,10 @@ def build_agent_manager_graph(
         "reviewbuddy",
         reviewbuddy_node_factory(router=router, prompt_loader=prompt_loader, session=session),
     )
+    builder.add_node(
+        "pragent",
+        pragent_node_factory(router=router, prompt_loader=prompt_loader, session=session),
+    )
     builder.add_node("join", join_node)
     builder.add_node("verify", verify_node)
     builder.add_node("synthesize", synthesize_node)
@@ -567,11 +612,12 @@ def build_agent_manager_graph(
 
     # Specialist fan-out
     builder.add_conditional_edges(
-        "plan", route_specialists, ["codemate", "authcheck", "reviewbuddy", "join"]
+        "plan", route_specialists, ["codemate", "authcheck", "reviewbuddy", "pragent", "join"]
     )
     builder.add_edge("codemate", "join")
     builder.add_edge("authcheck", "join")
     builder.add_edge("reviewbuddy", "join")
+    builder.add_edge("pragent", "join")
 
     # Verification and Synthesis
     builder.add_edge("join", "verify")

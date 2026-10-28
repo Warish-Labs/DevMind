@@ -34,6 +34,7 @@ from app.persistence.models.github import (
     GitHubRepositoryBinding,
     PullRequest,
 )
+from app.persistence.models.pr_analysis import PRAnalysis
 from app.persistence.models.project import Project, ProjectMembership
 from app.persistence.models.retention import RetentionPolicy
 from app.persistence.models.review_rules import ReviewRule
@@ -67,6 +68,7 @@ __all__ = [
     "ProjectFile",
     "ProjectMembership",
     "ProjectSnapshot",
+    "PRAnalysis",
     "PullRequest",
     "RetentionPolicy",
     "ReviewRule",
