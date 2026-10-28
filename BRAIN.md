@@ -7,32 +7,54 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m11-webhooks-ingest` |
-| **Last commit** | `dca5d3c` (feat(server): implement M11-03 GitHub repository ingestion and webhook receiver) |
+| **Branch** | `feature/m11-review-rules` |
+| **Last commit** | `323089c` (Merge pull request #85 from Warish-Labs/feature/m11-webhooks-ingest) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | M11-03 completed; ready for PR |
-| **Open PR** | [#85](https://github.com/Warish-Labs/DevMind/pull/85) (`feature/m11-webhooks-ingest`) |
+| **Working tree** | M11-04 completed; ready for PR |
+| **Open PR** | Pending (`feature/m11-review-rules`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
-| **Date** | 2026-10-27 |
+| **Date** | 2026-10-28 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Open PR for `feature/m11-webhooks-ingest`.
+1. Open PR for `feature/m11-review-rules`.
 2. Await PR merge by owner.
-3. Switch to `main`, pull merged commit, delete `feature/m11-webhooks-ingest` locally and on origin.
-4. Branch `feature/m11-review-rules` for task M11-04 (Review rules schema and ReviewBuddy checklist engine).
+3. Switch to `main`, pull merged commit, delete `feature/m11-review-rules` locally and on origin.
+4. Branch `feature/m11-pr-agent` for task M11-05 (PRAgent change-impact analysis, subgraph dependency traversal, and PR summary).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m11-webhooks-ingest`.
+Review and merge PR for `feature/m11-review-rules`.
 
 ---
 
 ## 4. Done log
+
+### Feature — M11-04: Review Rules Schema, Migration, and ReviewBuddy Checklist Engine
+
+- **Date**: 2026-10-28
+- **Branch**: `feature/m11-review-rules`
+- **What**:
+  - Implemented M11-04 per [`docs/01`](docs/01-product-requirements.md) §9 (CAP-05, CAP-06), [`docs/03`](docs/03-data-model-and-api.md) §3.5 and §11.1, [`docs/05`](docs/05-agent-runtime-and-tools.md) §2.3 and §3, [`docs/07`](docs/07-security-privacy-and-threat-model.md) §6:
+    - **Database Migration**: Created [`server/alembic/versions/0012_review_rules.py`](server/alembic/versions/0012_review_rules.py) adding `review_rules` table with tenant columns (`workspace_id`, `project_id`), category and severity check constraints, and unique rule index `(project_id, rule_id)`.
+    - **Persistence Model**: Authored [`server/app/persistence/models/review_rules.py`](server/app/persistence/models/review_rules.py) and exported in [`server/app/persistence/models/__init__.py`](server/app/persistence/models/__init__.py).
+    - **Repository Layer**: Authored [`server/app/persistence/repositories/review_rule_repo.py`](server/app/persistence/repositories/review_rule_repo.py) providing tenant isolation, CRUD operations, default built-in rule seeding (`seed_default_rules`), and deletion restrictions on built-ins.
+    - **In-Repo Rules Parser**: Authored [`server/app/domain/review/parser.py`](server/app/domain/review/parser.py) supporting `.devmind/rules.yaml` parsing with strict Pydantic validation.
+    - **ReviewBuddy Analyzer Engine**: Authored [`server/app/analysis/review_buddy.py`](server/app/analysis/review_buddy.py) implementing deterministic rule evaluation, unified diff hunk line scoping, and built-in detectors (input validation, bare excepts, mutating route permissions, test coverage, and regex patterns).
+    - **Domain Service & API Endpoints**:
+      - Authored [`server/app/domain/review/service.py`](server/app/domain/review/service.py) coordinating rule persistence and diff evaluation.
+      - Authored [`server/app/api/review_rules.py`](server/app/api/review_rules.py) mounted under `/api/v1/projects/{pid}/review-rules` with RBAC permissions (`project:read`, `project:update`).
+    - **LangGraph Specialist Integration**:
+      - Authored [`server/app/orchestration/reviewbuddy.py`](server/app/orchestration/reviewbuddy.py) integrating ReviewBuddy with evidence verification (E0/E1).
+      - Registered `reviewbuddy` in `RELEASED_SPECIALISTS`, `classify_intent_rule_based`, `route_specialists`, and the state graph in [`server/app/orchestration/manager.py`](server/app/orchestration/manager.py).
+    - **Tests & Verification**:
+      - Authored [`server/tests/test_review_rules.py`](server/tests/test_review_rules.py) with 14 unit and integration tests.
+      - Updated `test_agent_manager.py` fanout assertions.
+      - Verified: 13 passed in `test-all --fast`, 0 lint errors, 0 import boundary breaches.
 
 ### Feature — M11-03: GitHub Repository Ingestion, Webhook Receiver, and PR Mirroring
 

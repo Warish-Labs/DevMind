@@ -85,9 +85,7 @@ class GitHubRepositoryBinding(Base, UUID7PrimaryKeyMixin, TimestampMixin):
     """Linked GitHub repository record bound to a DevMind project (docs/03 §3.5)."""
 
     __tablename__ = "github_repositories"
-    __table_args__ = (
-        UniqueConstraint("project_id", name="uq_github_repositories_project_id"),
-    )
+    __table_args__ = (UniqueConstraint("project_id", name="uq_github_repositories_project_id"),)
 
     connection_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),

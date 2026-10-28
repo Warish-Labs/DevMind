@@ -274,7 +274,9 @@ async def test_api_get_workspace_github_status_endpoint(
     )
     app.dependency_overrides[get_auth_context] = lambda: mock_auth_ctx
 
-    async def mock_get_status(self: Any, ctx: Any, wid: Any, uid: Any, kind: str = "oauth") -> dict[str, Any]:
+    async def mock_get_status(
+        self: Any, ctx: Any, wid: Any, uid: Any, kind: str = "oauth"
+    ) -> dict[str, Any]:
         return {
             "connection_id": uuid.uuid4(),
             "status": "active",
@@ -329,7 +331,9 @@ async def test_api_rotate_workspace_github_connection_endpoint(
         encrypted_credential="v1:0:newNonce:newCiphertext",
     )
 
-    async def mock_rotate(self: Any, ctx: Any, wid: Any, uid: Any, kind: str = "oauth") -> GitHubConnection:
+    async def mock_rotate(
+        self: Any, ctx: Any, wid: Any, uid: Any, kind: str = "oauth"
+    ) -> GitHubConnection:
         return mock_rotated_conn
 
     monkeypatch.setattr(GitHubOAuthService, "rotate_connection_credential", mock_rotate)

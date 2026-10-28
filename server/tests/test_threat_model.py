@@ -43,7 +43,9 @@ def test_threat_model_verification_evidence_files_exist() -> None:
         r"(?:server/tests/test_[a-zA-Z0-9_]+\.py|evals/[a-zA-Z0-9_/]+\.py|docs/runbooks/[a-zA-Z0-9_-]+\.md)"
     )
     referenced_files = set(test_file_pattern.findall(content))
-    assert len(referenced_files) >= 15, f"Expected at least 15 verified file references, found {len(referenced_files)}"
+    assert len(referenced_files) >= 15, (
+        f"Expected at least 15 verified file references, found {len(referenced_files)}"
+    )
 
     for rel_path in referenced_files:
         full_path = REPO_ROOT / rel_path
@@ -79,8 +81,12 @@ def test_playbook_references_resolve() -> None:
 
     playbook_pattern = re.compile(r"docs/runbooks/([a-zA-Z0-9_-]+\.md)")
     playbook_files = set(playbook_pattern.findall(content))
-    assert len(playbook_files) >= 5, f"Expected at least 5 playbook runbook references, found {len(playbook_files)}"
+    assert len(playbook_files) >= 5, (
+        f"Expected at least 5 playbook runbook references, found {len(playbook_files)}"
+    )
 
     runbooks_dir = DOCS_DIR / "runbooks"
     for filename in playbook_files:
-        assert (runbooks_dir / filename).exists(), f"Referenced playbook runbook missing: {filename}"
+        assert (runbooks_dir / filename).exists(), (
+            f"Referenced playbook runbook missing: {filename}"
+        )

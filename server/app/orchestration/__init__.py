@@ -30,6 +30,11 @@ from app.orchestration.manager import (
     classify_intent_deterministically,
     codemate_node_factory,
 )
+from app.orchestration.reviewbuddy import (
+    ReviewBuddyAgent,
+    ReviewBuddyState,
+    run_reviewbuddy_specialist,
+)
 from app.orchestration.state import (
     ApprovalState,
     BudgetState,
@@ -84,6 +89,8 @@ __all__ = [
     "Proposal",
     "RELEASED_SPECIALISTS",
     "RequestState",
+    "ReviewBuddyAgent",
+    "ReviewBuddyState",
     "RunState",
     "SearchBrainInput",
     "SpecialistTask",
@@ -108,6 +115,7 @@ __all__ = [
     "parse_thread_id",
     "run_authcheck_specialist",
     "run_codemate_specialist",
+    "run_reviewbuddy_specialist",
     "search_brain",
     "validate_citations",
 ]

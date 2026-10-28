@@ -84,7 +84,9 @@ def test_subsystem_kill_switches_code_consistency() -> None:
 
     # Verify each switch is documented in incident-response.md
     for env_var in expected_env_switches:
-        assert env_var in content, f"Kill switch {env_var} must be documented in incident-response.md"
+        assert env_var in content, (
+            f"Kill switch {env_var} must be documented in incident-response.md"
+        )
 
     # Verify each switch maps to VALID_KILL_SWITCHES in core/kill_switches.py
     normalized_names = set(expected_env_switches.values())
@@ -119,7 +121,9 @@ def test_disaster_recovery_scenarios_coverage() -> None:
     ]
 
     for scenario in expected_scenarios:
-        assert scenario in content, f"Missing disaster scenario in disaster-recovery.md: '{scenario}'"
+        assert scenario in content, (
+            f"Missing disaster scenario in disaster-recovery.md: '{scenario}'"
+        )
 
     # Cross-references to detailed specialized runbooks
     assert "database-restore.md" in content

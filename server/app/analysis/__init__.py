@@ -31,12 +31,21 @@ from app.analysis.guard_resolution import (
     RouteSensitivity,
     compute_fingerprint,
 )
+from app.analysis.review_buddy import (
+    ChangedFile,
+    DiffHunk,
+    ReviewBuddyAnalyzer,
+    ReviewChecklistFinding,
+    parse_unified_diff,
+)
 
 __all__ = [
     "ALLOWED_RULE_PREFIXES",
+    "ChangedFile",
     "CitationBatchVerificationResult",
     "CitationItem",
     "CitationVerifier",
+    "DiffHunk",
     "DraftFinding",
     "EvidenceItem",
     "EvidenceVerifier",
@@ -46,6 +55,8 @@ __all__ = [
     "KNOWN_RULES",
     "ProjectSecurityConfig",
     "ResolvedGuard",
+    "ReviewBuddyAnalyzer",
+    "ReviewChecklistFinding",
     "RouteAnalysisResult",
     "RouteDefinition",
     "RouteFramework",
@@ -55,6 +66,7 @@ __all__ = [
     "compute_fingerprint",
     "compute_snippet_hash",
     "is_known_rule",
+    "parse_unified_diff",
     "redact_evidence_secrets",
     "register_known_rule",
     "sanitize_exploitability_language",

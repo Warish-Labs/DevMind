@@ -78,12 +78,12 @@ def test_classify_intent_deterministically_job_types() -> None:
     assert intent_sec.requires_specialists == ["authcheck"]
     assert intent_sec.confidence == 1.0
 
-    # 3. Comprehensive review / both
+    # 3. Comprehensive review / specialists fan-out
     req_comp = RequestState(job_type="comprehensive_review")
     intent_comp = classify_intent_deterministically(req_comp)
     assert intent_comp is not None
     assert intent_comp.category == "security_and_code"
-    assert set(intent_comp.requires_specialists) == {"codemate", "authcheck"}
+    assert set(intent_comp.requires_specialists) == {"codemate", "authcheck", "reviewbuddy"}
 
 
 def test_classify_intent_deterministically_keyword_heuristics() -> None:
@@ -147,8 +147,8 @@ async def test_classify_intent_with_llm_success() -> None:
     assert intent.category == "llm_classified"
     assert intent.intent_name == "Audit security guards and explain code flow"
     assert intent.confidence == 0.92
-    # Only AuthCheck is released in MVP; ReviewBuddy and DeployDoctor are filtered out
-    assert intent.requires_specialists == ["authcheck"]
+    # AuthCheck and ReviewBuddy are released; DeployDoctor is unreleased and filtered out
+    assert intent.requires_specialists == ["authcheck", "reviewbuddy"]
 
 
 @pytest.mark.asyncio
@@ -214,16 +214,20 @@ async def test_agent_manager_deterministic_authcheck_route() -> None:
 
 @pytest.mark.asyncio
 async def test_agent_manager_parallel_specialist_fanout() -> None:
-    """Verify comprehensive_review executes both CodeMate and AuthCheck in parallel fan-out."""
+    """Verify comprehensive_review executes CodeMate, AuthCheck, and ReviewBuddy in parallel fan-out."""
     manager = AgentManager(router=None, prompt_loader=None, interrupt_on_approval=False)
     state = _create_test_state(job_type="comprehensive_review")
 
     res = await manager.run(state)
 
     assert res["status"] == "completed"
-    assert len(res["plan"]) == 2
+    assert len(res["plan"]) == 3
     specialist_statuses = {t.specialist: t.status for t in res["plan"]}
-    assert specialist_statuses == {"codemate": "completed", "authcheck": "completed"}
+    assert specialist_statuses == {
+        "codemate": "completed",
+        "authcheck": "completed",
+        "reviewbuddy": "completed",
+    }
 
 
 @pytest.mark.asyncio

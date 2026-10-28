@@ -42,6 +42,11 @@ KNOWN_RULES: dict[str, str] = {
     "devmind.injection.command": "Untrusted input passed to OS shell or subprocess execution",
     "devmind.path_traversal": "Unsanitized path parameter used in file system operations",
     "devmind.crypto.weak_algorithm": "Insecure cryptographic algorithm (e.g. MD5, SHA1 for signatures)",
+    "devmind.review.input_validation": "Missing schema validation on route parameters or request body",
+    "devmind.review.error_handling": "Bare except or unhandled exception in route handler",
+    "devmind.review.authorization": "Missing authorization guard on state-mutating route",
+    "devmind.review.testing": "Missing automated test coverage for newly declared route or service",
+    "devmind.review.documentation": "Missing docstring or OpenAPI summary on public API",
 }
 
 ALLOWED_RULE_PREFIXES: tuple[str, ...] = (
@@ -52,6 +57,9 @@ ALLOWED_RULE_PREFIXES: tuple[str, ...] = (
     "eslint.",
     "ruff.",
     "devmind.",
+    "REV-",
+    "rev.",
+    "review.",
 )
 
 _SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [

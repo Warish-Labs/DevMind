@@ -119,6 +119,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     from app.api.projects import projects_router, workspace_projects_router
     from app.api.public import router as public_router
     from app.api.retention import project_retention_router, workspace_retention_router
+    from app.api.review_rules import review_rules_router
     from app.api.scans import router as scans_router
     from app.api.webhooks import router as webhooks_router
     from app.api.workspaces import router as workspaces_router
@@ -144,6 +145,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_v1_router.include_router(project_github_router)
     api_v1_router.include_router(pull_requests_router)
     api_v1_router.include_router(projects_router)
+    api_v1_router.include_router(review_rules_router)
     api_v1_router.include_router(project_analyses_router)
     api_v1_router.include_router(project_retention_router)
     api_v1_router.include_router(project_audit_router)

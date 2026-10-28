@@ -36,6 +36,7 @@ from app.persistence.models.github import (
 )
 from app.persistence.models.project import Project, ProjectMembership
 from app.persistence.models.retention import RetentionPolicy
+from app.persistence.models.review_rules import ReviewRule
 from app.persistence.models.usage import UsageRecord
 from app.persistence.models.user import User
 from app.persistence.models.workspace import Workspace, WorkspaceMembership
@@ -68,6 +69,7 @@ __all__ = [
     "ProjectSnapshot",
     "PullRequest",
     "RetentionPolicy",
+    "ReviewRule",
     "ScanRun",
     "SnapshotFile",
     "SoftDeleteMixin",

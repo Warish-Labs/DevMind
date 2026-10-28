@@ -228,7 +228,9 @@ class GitHubRepository(BaseRepository):
         """Bind a project to a GitHub repository."""
         self._validate_context(ctx)
 
-        stmt = select(GitHubRepositoryBinding).where(GitHubRepositoryBinding.project_id == project_id)
+        stmt = select(GitHubRepositoryBinding).where(
+            GitHubRepositoryBinding.project_id == project_id
+        )
         result = await self.session.execute(stmt)
         repo = result.scalar_one_or_none()
 

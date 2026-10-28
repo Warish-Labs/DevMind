@@ -193,9 +193,13 @@ class GitHubIngestService:
             kind="oauth",
         )
         if not token:
-            raise ValidationError(detail="GitHub access token expired or revoked. Please re-authenticate.")
+            raise ValidationError(
+                detail="GitHub access token expired or revoked. Please re-authenticate."
+            )
 
-        url = f"{GITHUB_API_BASE_URL}/repos/{repo_binding.full_name}/pulls?state={state}&per_page=30"
+        url = (
+            f"{GITHUB_API_BASE_URL}/repos/{repo_binding.full_name}/pulls?state={state}&per_page=30"
+        )
         headers = {
             "Authorization": f"Bearer {token}",
             "Accept": "application/vnd.github.v3+json",

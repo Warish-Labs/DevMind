@@ -427,7 +427,9 @@ async def list_project_pull_requests(
 ) -> list[PullRequestSummary]:
     """List mirrored PRs for the linked repository."""
     service = GitHubIngestService(session, settings)
-    prs = await service.list_project_pull_requests(ctx, pid, state=state, limit=limit, offset=offset)
+    prs = await service.list_project_pull_requests(
+        ctx, pid, state=state, limit=limit, offset=offset
+    )
     return [
         PullRequestSummary(
             id=pr.id,

@@ -81,7 +81,9 @@ def test_staging_environment_configuration_invariants() -> None:
     assert prod_settings.build_sha == "def5678"
 
 
-def test_readiness_probe_staging_contract(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_readiness_probe_staging_contract(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Verify /readyz endpoint adheres to the staging readiness probe contract."""
     # Mock healthy dependencies
     monkeypatch.setattr(
@@ -94,7 +96,7 @@ def test_readiness_probe_staging_contract(client: TestClient, monkeypatch: pytes
     )
     monkeypatch.setattr(
         "app.domain.auth.check_migrations_readiness",
-        AsyncMock(return_value=(True, "ok", ["0011_github_repositories_and_prs"])),
+        AsyncMock(return_value=(True, "ok", ["0012_review_rules"])),
     )
 
     response = client.get("/readyz")
@@ -105,7 +107,9 @@ def test_readiness_probe_staging_contract(client: TestClient, monkeypatch: pytes
     assert data["redis"] == "ok"
     assert data["migrations"] == "ok"
     assert "kill_switches" in data
-    assert all(k in data["kill_switches"] for k in ["indexing", "llm", "embed", "webhooks", "pause_queues"])
+    assert all(
+        k in data["kill_switches"] for k in ["indexing", "llm", "embed", "webhooks", "pause_queues"]
+    )
 
     # Verify degraded when database is unavailable
     monkeypatch.setattr(
@@ -155,7 +159,9 @@ def test_migration_expand_contract_rollback_invariants() -> None:
     assert ALEMBIC_VERSIONS_DIR.exists(), f"Alembic versions dir missing: {ALEMBIC_VERSIONS_DIR}"
 
     migration_files = list(ALEMBIC_VERSIONS_DIR.glob("*.py"))
-    assert len(migration_files) >= 5, f"Expected at least 5 migration versions, found {len(migration_files)}"
+    assert len(migration_files) >= 5, (
+        f"Expected at least 5 migration versions, found {len(migration_files)}"
+    )
 
     destructive_keywords = [
         "drop_table",
@@ -166,7 +172,11 @@ def test_migration_expand_contract_rollback_invariants() -> None:
     for mig_file in migration_files:
         content = mig_file.read_text(encoding="utf-8")
         # In upgrade() function, no destructive column drops without deprecation
-        upgrade_code = content.split("def upgrade()")[1].split("def downgrade()")[0] if "def upgrade()" in content else ""
+        upgrade_code = (
+            content.split("def upgrade()")[1].split("def downgrade()")[0]
+            if "def upgrade()" in content
+            else ""
+        )
         for kw in destructive_keywords:
             if kw in upgrade_code:
                 # Disallow raw drop_table in normal upgrade paths
