@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from app.persistence.models.project import Project
     from app.persistence.models.usage import UsageRecord
     from app.persistence.models.user import User
+    from app.persistence.models.workspace_invitation import WorkspaceInvitation
 
 
 class Workspace(Base, UUID7PrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
@@ -51,6 +52,11 @@ class Workspace(Base, UUID7PrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     )
     audit_events: Mapped[list[AuditEvent]] = relationship(
         "AuditEvent",
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+    )
+    invitations: Mapped[list[WorkspaceInvitation]] = relationship(
+        "WorkspaceInvitation",
         back_populates="workspace",
         cascade="all, delete-orphan",
     )

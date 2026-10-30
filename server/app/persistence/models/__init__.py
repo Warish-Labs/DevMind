@@ -41,6 +41,7 @@ from app.persistence.models.review_rules import ReviewRule
 from app.persistence.models.usage import UsageRecord
 from app.persistence.models.user import User
 from app.persistence.models.workspace import Workspace, WorkspaceMembership
+from app.persistence.models.workspace_invitation import WorkspaceInvitation
 
 __all__ = [
     "AgentRun",
@@ -80,5 +81,6 @@ __all__ = [
     "UsageRecord",
     "User",
     "Workspace",
+    "WorkspaceInvitation",
     "WorkspaceMembership",
 ]

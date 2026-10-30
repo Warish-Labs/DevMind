@@ -114,6 +114,63 @@ class UpdateWorkspaceMemberRequest(BaseModel):
     role: str = Field(description="owner | admin | member | viewer")
 
 
+class CreateInvitationRequest(BaseModel):
+    """Payload for inviting a user to a workspace."""
+
+    email: str = Field(min_length=3, max_length=255, description="Email address of the invitee")
+    role: str = Field(default="member", description="admin | member | viewer")
+
+
+class WorkspaceInvitationResponse(BaseModel):
+    """Serialized workspace invitation entity."""
+
+    id: UUID
+    workspace_id: UUID
+    email: str
+    role: str
+    invited_by: UUID | None = None
+    expires_at: datetime
+    accepted_at: datetime | None = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class CreateInvitationResponse(BaseModel):
+    """Response returned when an invitation is issued."""
+
+    invitation: WorkspaceInvitationResponse
+    accept_url: str
+
+
+class VerifyInvitationResponse(BaseModel):
+    """Verification metadata for an invitation preview."""
+
+    invitation_id: UUID
+    workspace_id: UUID
+    workspace_name: str
+    email: str
+    role: str
+    inviter_name: str
+    expires_at: datetime
+
+
+class AcceptInvitationRequest(BaseModel):
+    """Payload for accepting a workspace invitation."""
+
+    token: str = Field(min_length=1, description="Raw invitation token")
+
+
+class AcceptInvitationResponse(BaseModel):
+    """Response returned after successfully accepting an invitation."""
+
+    status: str
+    workspace_id: UUID
+    workspace_name: str
+    role: str
+    user_id: UUID
+
+
 class AuditEventItem(BaseModel):
     """Serialized audit event for workspace governance and security logs (docs/03 §3.5 & docs/07 §16)."""
 

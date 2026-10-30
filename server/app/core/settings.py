@@ -89,6 +89,14 @@ class Settings(BaseSettings):
     github_client_secret: str | None = None
     github_webhook_secret: str | None = None
     resend_api_key: str | None = None
+    email_from: str = Field(
+        default="invitations@warishlabs.in",
+        validation_alias=AliasChoices("DEVMIND_EMAIL_FROM", "EMAIL_FROM"),
+    )
+    app_base_url: str = Field(
+        default="http://localhost:3000",
+        validation_alias=AliasChoices("DEVMIND_APP_BASE_URL", "APP_BASE_URL", "NEXT_PUBLIC_APP_URL"),
+    )
 
     # Cloudflare Turnstile bot protection (docs/07 §11, docs/10 §11)
     turnstile_secret_key: str | None = Field(

@@ -7,6 +7,7 @@ import { SyncModeManager } from "./SyncModeManager";
 import { ConsentManager } from "./ConsentManager";
 import { ProjectPurgeManager } from "./ProjectPurgeManager";
 import { RetentionPolicyManager } from "./RetentionPolicyManager";
+import { WorkspaceMembersManager } from "@/components/workspaces/WorkspaceMembersManager";
 import { AuditLogViewer } from "@/components/audit";
 import { Badge } from "@/components/ui/Badge";
 
@@ -15,9 +16,9 @@ interface ProjectSettingsClientProps {
 }
 
 export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps) {
-  const { currentProject } = useApp();
+  const { currentWorkspace, currentProject } = useApp();
   const [activeTab, setActiveTab] = useState<
-    "sync" | "consents" | "retention" | "audit" | "danger"
+    "sync" | "consents" | "retention" | "members" | "audit" | "danger"
   >("sync");
 
   const projectName = currentProject?.name || "Codebase Project";
@@ -110,6 +111,20 @@ export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps)
         <button
           type="button"
           role="tab"
+          aria-selected={activeTab === "members"}
+          onClick={() => setActiveTab("members")}
+          className={`px-4 py-2 border-b-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)] ${
+            activeTab === "members"
+              ? "border-[var(--signal)] text-[var(--fg-0)]"
+              : "border-transparent text-[var(--fg-2)] hover:text-[var(--fg-1)]"
+          }`}
+        >
+          Members &amp; Invites (FR-PLT-05)
+        </button>
+
+        <button
+          type="button"
+          role="tab"
           aria-selected={activeTab === "audit"}
           onClick={() => setActiveTab("audit")}
           className={`px-4 py-2 border-b-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ref)] ${
@@ -172,6 +187,15 @@ export function ProjectSettingsClient({ projectId }: ProjectSettingsClientProps)
           </div>
 
           <RetentionPolicyManager projectId={projectId} />
+        </section>
+      )}
+
+      {activeTab === "members" && (
+        <section aria-labelledby="members-heading" className="space-y-6">
+          <WorkspaceMembersManager
+            workspaceId={currentWorkspace?.id || "default"}
+            isWorkspaceAdmin={true}
+          />
         </section>
       )}
 

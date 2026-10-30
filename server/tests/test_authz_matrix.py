@@ -140,6 +140,7 @@ def test_route_registry_completeness() -> None:
         "/public/contact",
         "/ext/token/refresh",
         "/integrations/github/callback",
+        "/invitations/verify",
     }
     for p in public_routes:
         assert p in allowed_public_paths, f"Unexpected public route: {p}"
