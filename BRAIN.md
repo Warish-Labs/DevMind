@@ -10,8 +10,8 @@
 | **Branch** | `feature/m11-tests-evals` |
 | **Last commit** | `bd826f6` (`feat(server): implement M11-08 PR intelligence integration tests and evals`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | Clean, ready to commit and open PR |
-| **Open PR** | None (`main` up to date) |
+| **Working tree** | Clean, PR #92 opened |
+| **Open PR** | [#92](https://github.com/Warish-Labs/DevMind/pull/92) (`feature/m11-tests-evals`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
