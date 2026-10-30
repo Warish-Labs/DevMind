@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `feature/m11-tests-evals` |
-| **Last commit** | `a82a78a` (`feat(server,client): implement M11-07 workspace invitations and audit logging (#91)`) |
+| **Last commit** | `bd826f6` (`feat(server): implement M11-08 PR intelligence integration tests and evals`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
 | **Working tree** | Clean, ready to commit and open PR |
 | **Open PR** | None (`main` up to date) |
