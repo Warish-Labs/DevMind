@@ -8,7 +8,7 @@
 
 | Field | Value |
 | **Branch** | `feature/m11-invitations-audit` |
-| **Last commit** | `ea71233` (Merge pull request #90 from Warish-Labs/feature/m11-pr-ui) |
+| **Last commit** | `42770a0` (`feat(server,client): implement M11-07 workspace invitations and audit logging`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
 | **Working tree** | Clean, ready to commit and open PR |
 | **Open PR** | None (`main` up to date) |
