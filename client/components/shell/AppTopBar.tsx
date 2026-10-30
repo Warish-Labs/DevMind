@@ -13,6 +13,7 @@ import {
   BrainIcon,
   ChatIcon,
   FindingsIcon,
+  GitPullRequestIcon,
   SettingsIcon,
   FolderIcon,
 } from "./icons";
@@ -37,6 +38,7 @@ export function AppTopBar() {
     if (pathname.includes("/chat")) return "Conversation (S-06)";
     if (pathname.includes("/findings")) return "Findings (S-07)";
     if (pathname.includes("/jobs")) return "Job Center (S-09)";
+    if (pathname.includes("/pull-requests")) return "Pull Requests & Impact (S-14)";
     if (pathname.includes("/settings")) return "Settings (S-10)";
     if (pathname.startsWith("/projects/") && pathname.split("/").length === 3)
       return "Overview (S-04)";
@@ -153,6 +155,11 @@ export function AppTopBar() {
                 label: "Job Center (S-09)",
                 href: `/projects/${pid}/jobs`,
                 icon: <JobsIcon size={16} />,
+              },
+              {
+                label: "Pull Requests (S-14)",
+                href: `/projects/${pid}/pull-requests`,
+                icon: <GitPullRequestIcon size={16} />,
               },
               {
                 label: "Settings (S-10)",
