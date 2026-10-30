@@ -1,0 +1,214 @@
+{
+  "benchmark": "devmind-pr-intelligence-v1",
+  "version": "1.0.0",
+  "description": "Evaluation dataset for Pull Request Intelligence (CAP-06) and ReviewBuddy (CAP-05)",
+  "impact_cases": [
+    {
+      "id": "impact-case-01-auth-refactor",
+      "name": "Authentication Token Verification Refactoring",
+      "changed_files": ["server/app/domain/auth/token_verifier.py"],
+      "diff": "--- a/server/app/domain/auth/token_verifier.py\n+++ b/server/app/domain/auth/token_verifier.py\n@@ -10,3 +10,4 @@\n def verify_jwt_token(token: str) -> dict:\n     pass\n+def revoke_auth_session(user_id: str) -> None:\n+    pass\n",
+      "symbols": [
+        {
+          "name": "revoke_auth_session",
+          "kind": "function",
+          "file_path": "server/app/domain/auth/token_verifier.py",
+          "line_start": 12,
+          "line_end": 14
+        }
+      ],
+      "relationships": [
+        {
+          "source_name": "server/app/api/auth.py",
+          "target_name": "revoke_auth_session",
+          "kind": "calls"
+        }
+      ],
+      "expected_direct_symbols": ["revoke_auth_session"],
+      "expected_impacted": ["server/app/domain/auth"],
+      "expected_risk": "critical"
+    },
+    {
+      "id": "impact-case-02-migration-addition",
+      "name": "Database Migration Adding Webhook Deliveries Table",
+      "changed_files": ["server/alembic/versions/0015_webhook_deliveries.py"],
+      "diff": "--- /dev/null\n+++ b/server/alembic/versions/0015_webhook_deliveries.py\n@@ -0,0 +1,15 @@\n+revision = '0015'\n+def upgrade():\n+    op.create_table('webhook_deliveries')\n",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "kind": "function",
+          "file_path": "server/alembic/versions/0015_webhook_deliveries.py",
+          "line_start": 2,
+          "line_end": 5
+        }
+      ],
+      "relationships": [],
+      "expected_direct_symbols": ["upgrade"],
+      "expected_impacted": ["server/alembic/versions"],
+      "expected_risk": "high"
+    },
+    {
+      "id": "impact-case-03-docs-only",
+      "name": "Documentation Guide Update",
+      "changed_files": ["docs/01-product-requirements.md"],
+      "diff": "--- a/docs/01-product-requirements.md\n+++ b/docs/01-product-requirements.md\n@@ -5,2 +5,3 @@\n Updated product requirement docs.\n+Add release 1.1 clarification.\n",
+      "symbols": [],
+      "relationships": [],
+      "expected_direct_symbols": [],
+      "expected_impacted": ["docs"],
+      "expected_risk": "low"
+    },
+    {
+      "id": "impact-case-04-webhook-router",
+      "name": "GitHub Webhook Receiver Endpoint",
+      "changed_files": ["server/app/api/webhooks.py"],
+      "diff": "--- a/server/app/api/webhooks.py\n+++ b/server/app/api/webhooks.py\n@@ -20,3 +20,5 @@\n @router.post('/github')\n def handle_github_webhook(request: Request):\n     return {'status': 'ok'}\n",
+      "symbols": [
+        {
+          "name": "handle_github_webhook",
+          "kind": "function",
+          "file_path": "server/app/api/webhooks.py",
+          "line_start": 20,
+          "line_end": 24
+        }
+      ],
+      "relationships": [
+        {
+          "source_name": "server/app/domain/webhooks/github_webhook_service.py",
+          "target_name": "handle_github_webhook",
+          "kind": "calls"
+        }
+      ],
+      "expected_direct_symbols": ["handle_github_webhook"],
+      "expected_impacted": ["server/app/api"],
+      "expected_risk": "high"
+    },
+    {
+      "id": "impact-case-05-frontend-formatter",
+      "name": "Frontend Formatting Utility",
+      "changed_files": ["client/lib/formatters.ts"],
+      "diff": "--- a/client/lib/formatters.ts\n+++ b/client/lib/formatters.ts\n@@ -1,3 +1,5 @@\n+export function formatTimeAgo(date: Date): string {\n+  return date.toISOString();\n+}\n",
+      "symbols": [
+        {
+          "name": "formatTimeAgo",
+          "kind": "function",
+          "file_path": "client/lib/formatters.ts",
+          "line_start": 1,
+          "line_end": 3
+        }
+      ],
+      "relationships": [
+        {
+          "source_name": "client/components/feed.tsx",
+          "target_name": "formatTimeAgo",
+          "kind": "calls"
+        }
+      ],
+      "expected_direct_symbols": ["formatTimeAgo"],
+      "expected_impacted": ["client/lib"],
+      "expected_risk": "high"
+    }
+  ],
+  "review_cases": [
+    {
+      "id": "review-case-01-missing-validation",
+      "name": "API Endpoint Without Input Validation Schema",
+      "file_path": "server/app/api/items.py",
+      "diff": "--- a/server/app/api/items.py\n+++ b/server/app/api/items.py\n@@ -1,3 +1,6 @@\n+from fastapi import APIRouter, Request\n+router = APIRouter()\n+@router.post('/items')\n+async def create_item(request: Request):\n+    data = await request.json()\n+    return data\n",
+      "expected_rules": [
+        {
+          "rule_id": "REV-INPUT-01",
+          "category": "input_validation",
+          "severity": "high"
+        },
+        {
+          "rule_id": "REV-AUTH-01",
+          "category": "authorization",
+          "severity": "high"
+        },
+        {
+          "rule_id": "REV-TEST-01",
+          "category": "testing",
+          "severity": "medium"
+        },
+        {
+          "rule_id": "REV-DOC-01",
+          "category": "documentation",
+          "severity": "low"
+        }
+      ]
+    },
+    {
+      "id": "review-case-02-bare-except",
+      "name": "Repository Query With Bare Except",
+      "file_path": "server/app/persistence/repositories/item_repo.py",
+      "diff": "--- a/server/app/persistence/repositories/item_repo.py\n+++ b/server/app/persistence/repositories/item_repo.py\n@@ -10,3 +10,8 @@\n     try:\n         await session.commit()\n+    except:\n+        pass\n",
+      "expected_rules": [
+        {
+          "rule_id": "REV-ERR-01",
+          "category": "error_handling",
+          "severity": "medium"
+        }
+      ]
+    },
+    {
+      "id": "review-case-03-missing-auth",
+      "name": "Admin Management Route Without Auth Guard Decorator",
+      "file_path": "server/app/api/admin_users.py",
+      "diff": "--- a/server/app/api/admin_users.py\n+++ b/server/app/api/admin_users.py\n@@ -1,5 +1,8 @@\n+from fastapi import APIRouter\n+router = APIRouter()\n+@router.delete('/admin/users/{user_id}')\n+async def delete_user_route(user_id: str):\n+    return {'deleted': user_id}\n",
+      "expected_rules": [
+        {
+          "rule_id": "REV-AUTH-01",
+          "category": "authorization",
+          "severity": "high"
+        },
+        {
+          "rule_id": "REV-TEST-01",
+          "category": "testing",
+          "severity": "medium"
+        },
+        {
+          "rule_id": "REV-DOC-01",
+          "category": "documentation",
+          "severity": "low"
+        }
+      ]
+    },
+    {
+      "id": "review-case-04-forbidden-console-log",
+      "name": "Production Code Containing Forbidden Debug Statement",
+      "file_path": "client/components/UserProfile.tsx",
+      "diff": "--- a/client/components/UserProfile.tsx\n+++ b/client/components/UserProfile.tsx\n@@ -10,3 +10,5 @@\n export function UserProfile() {\n+  console.log('Rendering user profile');\n   return <div>User</div>;\n }\n",
+      "custom_rules": [
+        {
+          "rule_id": "no_console_log",
+          "title": "No console.log in UI components",
+          "category": "pattern_forbidden",
+          "check_type": "pattern_forbidden",
+          "severity": "low",
+          "check_config": {
+            "forbidden_patterns": ["console\\.log\\("]
+          },
+          "scope_selector": {
+            "paths": ["**/*.tsx", "**/*.ts"]
+          }
+        }
+      ],
+      "expected_rules": [
+        {
+          "rule_id": "no_console_log",
+          "category": "pattern_forbidden",
+          "severity": "low"
+        }
+      ]
+    },
+    {
+      "id": "review-case-05-compliant-change",
+      "name": "Fully Compliant API Endpoint With Pydantic Schema, Auth Guard, and Exception Handling",
+      "file_path": "server/app/api/compliant.py",
+      "diff": "--- a/server/app/api/compliant.py\n+++ b/server/app/api/compliant.py\n@@ -1,5 +1,25 @@\n+from fastapi import APIRouter, Depends\n+from pydantic import BaseModel\n+from app.domain.auth import declare_permission, PERMISSION_WORKSPACE_READ\n+from app.core.errors import NotFoundError\n+\n+class ItemCreateSchema(BaseModel):\n+    title: str\n+\n+router = APIRouter()\n+\n+@router.post(\"/items\", summary=\"Create item\")\n+@declare_permission(PERMISSION_WORKSPACE_READ)\n+async def create_item(payload: ItemCreateSchema):\n+    \"\"\"Create item with schema validation.\"\"\"\n+    try:\n+        return {\"title\": payload.title}\n+    except NotFoundError:\n+        raise\n",
+      "known_test_files": ["server/tests/test_compliant.py"],
+      "expected_rules": []
+    }
+  ]
+}

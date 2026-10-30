@@ -7,8 +7,8 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m11-invitations-audit` |
-| **Last commit** | `42770a0` (`feat(server,client): implement M11-07 workspace invitations and audit logging`) |
+| **Branch** | `feature/m11-tests-evals` |
+| **Last commit** | `a82a78a` (`feat(server,client): implement M11-07 workspace invitations and audit logging (#91)`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
 | **Working tree** | Clean, ready to commit and open PR |
 | **Open PR** | None (`main` up to date) |
@@ -19,21 +19,56 @@
 
 ## 2. Next action (exact)
 
-1. Commit changes and push `feature/m11-invitations-audit` to GitHub.
-2. Open Pull Request for M11-07 (`feature/m11-invitations-audit` → `main`).
-3. Owner reviews and merges PR for M11-07.
-4. Run after-merge routine, pull `main`, delete `feature/m11-invitations-audit`.
-5. Initiate **M11-08**: End-to-end integration tests, webhook replay fixtures, and evaluation suites (`feature/m11-tests-evals`).
+1. Commit changes and push `feature/m11-tests-evals` to GitHub.
+2. Open Pull Request for M11-08 (`feature/m11-tests-evals` → `main`).
+3. Owner reviews and merges PR for M11-08.
+4. Run after-merge routine, pull `main`, delete `feature/m11-tests-evals`.
+5. Initiate **M11-09**: Milestone 11 documentation update and operational runbook (`feature/m11-docs`).
 
 ---
 
 ## 3. Waiting on owner
 
-Owner review and merge of M11-07 PR.
+Owner review and merge of M11-08 PR.
 
 ---
 
 ## 4. Done log
+
+### Feature — M11-08: End-to-End Integration Tests, Webhook Replay Fixtures, and Evaluation Suites
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m11-tests-evals`
+- **What**:
+  - Implemented M11-08 per [`docs/01`](docs/01-product-requirements.md) CAP-05, CAP-06, [`docs/09`](docs/09-testing-and-quality-strategy.md) §9, §14 (E2E-9), and [`docs/11`](docs/11-mvp-and-implementation-roadmap.md) M11-08:
+    - **Webhook Replay Fixtures & Delivery Idempotency**:
+      - Authored [`server/tests/test_webhook_replay.py`](server/tests/test_webhook_replay.py) (6 tests) covering full GitHub event lifecycle:
+        - `ping` event deduplication and `pong` response.
+        - PR lifecycle state transitions (`opened` -> `synchronize` updating head SHA -> `closed` with timestamps).
+        - `push` commit counting and ref tracking.
+        - `installation` and `installation_repositories` additions/removals.
+        - Security tampering rejection (tampered payload HMAC mismatch returning 401).
+        - Malformed JSON body validation rejection (400/422).
+    - **E2E Integration Testing (E2E-9)**:
+      - Authored [`server/tests/test_e2e_pr_intelligence.py`](server/tests/test_e2e_pr_intelligence.py) (4 tests) covering:
+        - Full multi-agent PR intelligence flow: Webhook PR ingest -> PR mirroring -> PRAgent change-impact analysis -> ReviewBuddy checklist engine -> PRSummary and ChangeImpactReport synthesis -> persistence.
+        - Cross-tenant isolation rejection (Tenant B actor querying Tenant A PR rejected with `NotFoundError`).
+        - Human-in-the-loop approval gate enforcement (PR comment posting gated behind explicit human approval per ADR-015 and docs/01 §15).
+        - GitHub OAuth token revocation/outage resilience (graceful handling without server crash).
+    - **Evaluation Benchmark Suite**:
+      - Created `evals/pr_intelligence/` suite with:
+        - [`evals/pr_intelligence/dataset.json`](evals/pr_intelligence/dataset.json): 5 change-impact cases (critical auth, migration addition, docs-only, webhook router, formatter utility) and 5 ReviewBuddy cases (unvalidated inputs, bare excepts, missing auth, custom forbidden patterns, 100% compliant route).
+        - [`evals/pr_intelligence/metrics.py`](evals/pr_intelligence/metrics.py): quantitative precision, recall, F1, risk accuracy, false positive rate, and composite scoring.
+        - [`evals/pr_intelligence/harness.py`](evals/pr_intelligence/harness.py): benchmark runner and results persistence to [`evals/results/pr_intelligence/latest.json`](evals/results/pr_intelligence/latest.json).
+        - [`server/tests/test_pr_eval.py`](server/tests/test_pr_eval.py) (5 tests): benchmark schema integrity, case execution, and baseline quality gates (Change-Impact: 100%, ReviewBuddy: 100% precision/recall, 0.00% FP rate, 100% composite score).
+    - **Engine Bug Fixes & Refinements**:
+      - Fixed `PRAgentService.analyze_pull_request` diff fetch accessing non-existent `repo_binding.workspace_id` (corrected to `project.workspace_id`).
+      - Enhanced `parse_unified_diff` in `server/app/analysis/review_buddy.py` to parse patch diffs formatted with standard `--- / +++` headers without requiring leading `diff --git`.
+    - **Verification**:
+      - 15/15 M11-08 tests passed in pytest.
+      - 812/812 total server tests passed.
+      - `node scripts/test-all.mjs --fast`: 13 passed, 0 failed, 1 skipped.
+      - `npm run docs:audit`: 849 links, 37 Mermaid diagrams valid.
 
 ### Feature — M11-07: Workspace Invitations via Resend, Token Verification, Acceptance, and Audit Logging
 

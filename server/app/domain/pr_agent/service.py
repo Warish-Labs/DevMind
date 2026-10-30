@@ -58,7 +58,7 @@ class PRAgentService:
         if request_data and request_data.diff_override:
             diff_text = request_data.diff_override
         elif pr.diff_url:
-            diff_text = await self._fetch_diff_from_github(ctx, repo_binding.workspace_id, pr)
+            diff_text = await self._fetch_diff_from_github(ctx, project.workspace_id, pr)
 
         # 4. Execute PRAgent orchestration
         pr_agent = PRAgent(session=self.session)
