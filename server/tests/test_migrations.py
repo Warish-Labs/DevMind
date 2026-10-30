@@ -19,7 +19,7 @@ def test_alembic_config_and_revisions() -> None:
 
     heads = script_dir.get_heads()
     assert len(heads) == 1, f"Expected exactly 1 migration head, got: {heads}"
-    assert heads[0] == "0013_pr_analyses"
+    assert heads[0] == "0014_workspace_invitations"
 
 
 def test_migration_models_match_metadata() -> None:
@@ -28,6 +28,7 @@ def test_migration_models_match_metadata() -> None:
         "users",
         "workspaces",
         "workspace_memberships",
+        "workspace_invitations",
         "projects",
         "project_memberships",
         "audit_events",

@@ -353,6 +353,49 @@ export interface ReviewRuleResponse {
   updated_at?: string;
 }
 
+export interface WorkspaceInvitationItem {
+  id: string;
+  workspace_id: string;
+  email: string;
+  role: "admin" | "member" | "viewer" | string;
+  invited_by?: string | null;
+  expires_at: string;
+  accepted_at?: string | null;
+  created_at: string;
+}
+
+export interface CreateInvitationRequest {
+  email: string;
+  role?: "admin" | "member" | "viewer" | string;
+}
+
+export interface CreateInvitationResponse {
+  invitation: WorkspaceInvitationItem;
+  accept_url: string;
+}
+
+export interface VerifyInvitationResponse {
+  invitation_id: string;
+  workspace_id: string;
+  workspace_name: string;
+  email: string;
+  role: string;
+  inviter_name: string;
+  expires_at: string;
+}
+
+export interface AcceptInvitationRequest {
+  token: string;
+}
+
+export interface AcceptInvitationResponse {
+  status: string;
+  workspace_id: string;
+  workspace_name: string;
+  role: string;
+  user_id: string;
+}
+
 export class ApiError extends Error {
   public readonly status: number;
   public readonly code: string;
@@ -532,6 +575,47 @@ export class DevMindApiClient {
   public async removeWorkspaceMember(workspaceId: string, userId: string): Promise<void> {
     return this.fetchInternal<void>(`/api/v1/workspaces/${workspaceId}/members/${userId}`, {
       method: "DELETE",
+    });
+  }
+
+  public async listWorkspaceInvitations(workspaceId: string): Promise<WorkspaceInvitationItem[]> {
+    return this.fetchInternal<WorkspaceInvitationItem[]>(
+      `/api/v1/workspaces/${workspaceId}/invitations`
+    );
+  }
+
+  public async createWorkspaceInvitation(
+    workspaceId: string,
+    data: CreateInvitationRequest
+  ): Promise<CreateInvitationResponse> {
+    return this.fetchInternal<CreateInvitationResponse>(
+      `/api/v1/workspaces/${workspaceId}/invitations`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  public async revokeWorkspaceInvitation(workspaceId: string, invitationId: string): Promise<void> {
+    return this.fetchInternal<void>(
+      `/api/v1/workspaces/${workspaceId}/invitations/${invitationId}`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  public async verifyInvitationToken(token: string): Promise<VerifyInvitationResponse> {
+    return this.fetchInternal<VerifyInvitationResponse>(
+      `/api/v1/invitations/verify?token=${encodeURIComponent(token)}`
+    );
+  }
+
+  public async acceptInvitation(data: AcceptInvitationRequest): Promise<AcceptInvitationResponse> {
+    return this.fetchInternal<AcceptInvitationResponse>(`/api/v1/invitations/accept`, {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   }
 

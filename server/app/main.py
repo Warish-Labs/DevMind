@@ -114,6 +114,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         pull_requests_router,
         workspace_integrations_router,
     )
+    from app.api.invitations import router as invitations_router
     from app.api.jobs import jobs_router, project_analyses_router
     from app.api.me import router as me_router
     from app.api.projects import projects_router, workspace_projects_router
@@ -136,6 +137,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         }
 
     api_v1_router.include_router(public_router)
+    api_v1_router.include_router(invitations_router)
     api_v1_router.include_router(workspaces_router)
     api_v1_router.include_router(workspace_projects_router)
     api_v1_router.include_router(workspace_integrations_router)

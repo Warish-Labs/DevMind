@@ -305,7 +305,8 @@ See the state diagram in [02](02-system-architecture.md) §10.1. The API exposes
 | Family | Endpoints | Permission |
 |---|---|---|
 | Auth context | `GET /me` · `GET /me/permissions?project_id=` | authenticated |
-| Workspaces | `GET /workspaces` · `POST /workspaces` · `GET/PATCH /workspaces/{id}` · `GET/POST /workspaces/{id}/members` · `PATCH/DELETE /workspaces/{id}/members/{user_id}` | member read; admin manage |
+| Workspaces | `GET /workspaces` · `POST /workspaces` · `GET/PATCH /workspaces/{id}` · `GET/POST /workspaces/{id}/members` · `PATCH/DELETE /workspaces/{id}/members/{user_id}` · `GET/POST /workspaces/{id}/invitations` · `DELETE /workspaces/{id}/invitations/{invitation_id}` | member read; admin manage |
+| Invitations | `GET /invitations/verify` (preview) · `POST /invitations/accept` (join workspace) | public verify; authenticated accept |
 | Projects | `GET/POST /workspaces/{wid}/projects` · `GET/PATCH/DELETE /projects/{pid}` · `GET/POST /projects/{pid}/members` | by permission |
 | Extension management | `GET /me/extensions` · `DELETE /me/extensions/{registration_id}` · `POST /extension/authorize` (creates one-time code for the sign-in flow) | authenticated |
 | Scans | `GET /projects/{pid}/scans` · `GET /scans/{id}` | `project:read` |

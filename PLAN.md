@@ -321,7 +321,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M11-04 Review rules schema, migration, and ReviewBuddy checklist engine (feature/m11-review-rules)
 - [x] M11-05 PRAgent change-impact analysis, subgraph dependency traversal, and PR summary (feature/m11-pr-agent)
 - [x] M11-06 Pull Request web screens (list, overview, change-impact graph, checklist triage) (feature/m11-pr-ui)
-- [ ] M11-07 Workspace invitations via Resend and audit event viewer (feature/m11-invitations-audit)
+- [x] M11-07 Workspace invitations via Resend and audit event viewer (feature/m11-invitations-audit)
 - [ ] M11-08 End-to-end integration tests, webhook replay fixtures, and evaluation suites (feature/m11-tests-evals)
 - [ ] M11-09 Milestone 11 documentation update and operational runbook (feature/m11-docs)
 

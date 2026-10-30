@@ -7,32 +7,63 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m11-pr-ui` |
-| **Last commit** | `0a5c797` (Merge pull request #87 from Warish-Labs/feature/m11-pr-agent) |
+| **Branch** | `feature/m11-invitations-audit` |
+| **Last commit** | `42770a0` (`feat(server,client): implement M11-07 workspace invitations and audit logging`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | Clean; PR #90 open |
-| **Open PR** | [#90](https://github.com/Warish-Labs/DevMind/pull/90) (`feature/m11-pr-ui`) |
+| **Working tree** | Clean, ready to commit and open PR |
+| **Open PR** | None (`main` up to date) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
-| **Date** | 2026-10-30 |
+| **Date** | 2026-10-31 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Open PR for `feature/m11-pr-ui`.
-2. Await PR merge by owner.
-3. Switch to `main`, pull merged commit, delete `feature/m11-pr-ui` locally and on origin.
-4. Branch `feature/m11-invitations-audit` for task M11-07 (Workspace invitations via Resend and audit event viewer).
+1. Commit changes and push `feature/m11-invitations-audit` to GitHub.
+2. Open Pull Request for M11-07 (`feature/m11-invitations-audit` → `main`).
+3. Owner reviews and merges PR for M11-07.
+4. Run after-merge routine, pull `main`, delete `feature/m11-invitations-audit`.
+5. Initiate **M11-08**: End-to-end integration tests, webhook replay fixtures, and evaluation suites (`feature/m11-tests-evals`).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m11-pr-ui`.
+Owner review and merge of M11-07 PR.
 
 ---
 
 ## 4. Done log
+
+### Feature — M11-07: Workspace Invitations via Resend, Token Verification, Acceptance, and Audit Logging
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m11-invitations-audit`
+- **What**:
+  - Implemented M11-07 per [`docs/01`](docs/01-product-requirements.md) FR-PLT-05, [`docs/03`](docs/03-data-model-and-api.md) §3.1, §3.5, §11.1, [`docs/07`](docs/07-security-privacy-and-threat-model.md) §6, [`docs/10`](docs/10-deployment-and-operations.md) §11, and [`docs/12`](docs/12-architecture-decisions-and-open-questions.md) ADR-014:
+    - **Confirmed ADR-014**: Documented adoption of Resend transactional email (free tier, 3,000/mo) on `warishlabs.in` with SHA-256 token hashing and immutable audit logging.
+    - **Database Migration**: Created [`server/alembic/versions/0014_workspace_invitations.py`](server/alembic/versions/0014_workspace_invitations.py) introducing `workspace_invitations` table with role check constraint (`admin`, `member`, `viewer`), unique `token_hash`, and cascade constraints.
+    - **Persistence Model**: Authored [`server/app/persistence/models/workspace_invitation.py`](server/app/persistence/models/workspace_invitation.py) (`WorkspaceInvitation`) and exported in [`server/app/persistence/models/__init__.py`](server/app/persistence/models/__init__.py).
+    - **Repository Layer**: Authored [`server/app/persistence/repositories/workspace_invitation_repo.py`](server/app/persistence/repositories/workspace_invitation_repo.py) (`WorkspaceInvitationRepository`) providing tenant isolation, active invitation lookup by email, token hash lookup, acceptance marking, and deletion.
+    - **Resend Client**: Authored [`server/app/domain/email/resend_client.py`](server/app/domain/email/resend_client.py) (`ResendEmailClient`) implementing async email dispatch with clean HTML/text invitation templates and simulated offline mock fallback.
+    - **Domain Service**: Authored [`server/app/domain/workspaces/invitation_service.py`](server/app/domain/workspaces/invitation_service.py) (`WorkspaceInvitationService`) implementing cryptographically secure 32-byte URL-safe token generation, SHA-256 hashing, 7-day expiration, conflict detection, public token verification preview, authenticated acceptance with `WorkspaceMembership` creation, and audit logging (`workspace.invitation.created`, `workspace.invitation.revoked`, `workspace.invitation.accepted`).
+    - **REST API Endpoints**:
+      - `GET /api/v1/workspaces/{id}/invitations` (`PERM_WORKSPACE_READ`)
+      - `POST /api/v1/workspaces/{id}/invitations` (`PERM_MEMBERS_MANAGE_WORKSPACE`)
+      - `DELETE /api/v1/workspaces/{id}/invitations/{invitation_id}` (`PERM_MEMBERS_MANAGE_WORKSPACE`)
+      - `GET /api/v1/invitations/verify` (`PERMISSION_PUBLIC`)
+      - `POST /api/v1/invitations/accept` (`PERMISSION_AUTHENTICATED`)
+    - **API Client Extensions**: Authored [`common/src/api/index.ts`](common/src/api/index.ts) models (`WorkspaceInvitationItem`, `CreateInvitationRequest`, `CreateInvitationResponse`, `VerifyInvitationResponse`, `AcceptInvitationRequest`, `AcceptInvitationResponse`) and methods on `DevMindApiClient`.
+    - **Web UI**:
+      - Authored [`client/components/workspaces/WorkspaceMembersManager.tsx`](client/components/workspaces/WorkspaceMembersManager.tsx) for managing workspace members, viewing pending invitations, copying links, revoking invites, and opening the "Invite Member" dialog.
+      - Integrated "Members & Invites" tab into [`client/components/settings/ProjectSettingsClient.tsx`](client/components/settings/ProjectSettingsClient.tsx).
+      - Authored dedicated page [`client/app/workspaces/[workspaceId]/settings/page.tsx`](client/app/workspaces/[workspaceId]/settings/page.tsx).
+      - Authored accept page [`client/app/invitations/accept/page.tsx`](client/app/invitations/accept/page.tsx) and [`client/components/invitations/AcceptInvitationClient.tsx`](client/components/invitations/AcceptInvitationClient.tsx).
+    - **Tests & Verification**:
+      - Authored [`server/tests/test_workspace_invitations.py`](server/tests/test_workspace_invitations.py) (9 tests covering mock dispatch, lifecycle, conflicts, expired tokens, RBAC, API endpoints).
+      - Authored [`client/tests/workspace-invitations-ui.test.tsx`](client/tests/workspace-invitations-ui.test.tsx) (3 tests covering members manager, pending invites, and accept invitation client).
+      - Verified `test-all --fast`: 13 passed, 0 failed, 1 skipped.
+      - Verified `npm run docs:audit`: 0 broken links.
 
 ### Feature — M11-06: Pull Request Web Screens (List, Overview, Change-Impact Graph, Checklist Triage)
 

@@ -34,7 +34,7 @@ Source of each decision is stated as **Source: prompt** (confirmed by the owner)
 | ADR-011 | DevMind-owned workspaces and memberships rather than Clerk Organizations | Recommended |
 | ADR-012 | Extension authentication through DevMind-issued, scoped, revocable tokens | Recommended |
 | ADR-013 | Cloudflare R2 for suitable artifacts only | Confirmed |
-| ADR-014 | Resend for transactional email, introduced only when a feature needs it | Deferred |
+| ADR-014 | Resend for transactional email, introduced only when a feature needs it | Confirmed |
 | ADR-015 | GitHub integration: Hybrid OAuth (user identity) and GitHub App (fine-grained repo permissions & webhooks) | Confirmed |
 | ADR-016 | Provider-adapter LLM layer with configuration-driven routing | Confirmed |
 | ADR-017 | Choice of generation provider(s) and exact models | **Open** |
@@ -166,8 +166,15 @@ Source of each decision is stated as **Source: prompt** (confirmed by the owner)
 - **Consequences:** Objects are untrusted on upload and are served only as attachments through short-lived signed URLs ([07](07-security-privacy-and-threat-model.md) §13).
 
 ### ADR-014 · Resend
-- **Status:** Deferred. **Source:** prompt.
-- **Decision:** Not part of the MVP. Introduce for workspace invitations and notifications when a feature requires it.
+- **Status:** Confirmed. **Source:** prompt / design (M11-07).
+- **Decision:** Adopt Resend for transactional email (workspace invitations, access verification, and security notifications) on the verified `warishlabs.in` domain using the free tier (3,000 emails/month, 100/day).
+- **Security & Privacy:**
+  - Emails are dispatched from verified sender `invitations@warishlabs.in` via `DEVMIND_RESEND_API_KEY`.
+  - Secret invitation tokens are never logged or stored in plaintext; only cryptographically secure SHA-256 token hashes are persisted in `workspace_invitations.token_hash`.
+  - Invitations carry a default expiration of 7 days.
+  - Every invitation issuance, revocation, and acceptance creates an immutable `audit_events` record (`workspace.invitation.created`, `workspace.invitation.revoked`, `workspace.invitation.accepted`).
+  - In development, staging, or test environments without an active API key, the email adapter operates in safe mock/fallback mode without throwing runtime errors.
+- **Trade-offs:** Relies on third-party transactional email API within free tier limits.
 
 ### ADR-015 · GitHub integration path
 - **Status:** Confirmed. **Source:** prompt / design (M11-01). Resolves OQ-11.

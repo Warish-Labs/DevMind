@@ -9,9 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas import (
     AddWorkspaceMemberRequest,
+    CreateInvitationRequest,
+    CreateInvitationResponse,
     CreateWorkspaceRequest,
     UpdateWorkspaceMemberRequest,
     UpdateWorkspaceRequest,
+    WorkspaceInvitationResponse,
     WorkspaceMemberResponse,
     WorkspaceResponse,
 )
@@ -26,6 +29,7 @@ from app.domain.auth import (
     get_db_session,
     require_permission,
 )
+from app.domain.workspaces.invitation_service import WorkspaceInvitationService
 from app.domain.workspaces.service import WorkspaceService
 
 router = APIRouter(
@@ -195,3 +199,71 @@ async def remove_workspace_member(
 ) -> None:
     service = WorkspaceService(session)
     await service.remove_member(ctx, workspace_id=workspace_id, user_id=user_id)
+
+
+# Workspace Invitations (FR-PLT-05, ADR-014)
+
+
+@router.get(
+    "/{workspace_id}/invitations",
+    response_model=list[WorkspaceInvitationResponse],
+    summary="List workspace invitations",
+    description="List active/pending invitations for the specified workspace.",
+)
+@declare_permission(PERM_WORKSPACE_READ)
+async def list_workspace_invitations(
+    workspace_id: UUID,
+    ctx: AuthContext = Depends(require_permission(PERM_WORKSPACE_READ)),
+    session: AsyncSession = Depends(get_db_session),
+) -> list[WorkspaceInvitationResponse]:
+    service = WorkspaceInvitationService(session)
+    invitations = await service.list_invitations(ctx, workspace_id)
+    return [WorkspaceInvitationResponse.model_validate(inv) for inv in invitations]
+
+
+@router.post(
+    "/{workspace_id}/invitations",
+    response_model=CreateInvitationResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create workspace invitation",
+    description="Issue an invitation to join the workspace and send email notification via Resend.",
+)
+@declare_permission(PERM_MEMBERS_MANAGE_WORKSPACE)
+async def create_workspace_invitation(
+    workspace_id: UUID,
+    payload: CreateInvitationRequest,
+    ctx: AuthContext = Depends(require_permission(PERM_MEMBERS_MANAGE_WORKSPACE)),
+    session: AsyncSession = Depends(get_db_session),
+) -> CreateInvitationResponse:
+    service = WorkspaceInvitationService(session)
+    invitation, _raw_token, accept_url = await service.create_invitation(
+        ctx,
+        workspace_id=workspace_id,
+        email=payload.email,
+        role=payload.role,
+    )
+    return CreateInvitationResponse(
+        invitation=WorkspaceInvitationResponse.model_validate(invitation),
+        accept_url=accept_url,
+    )
+
+
+@router.delete(
+    "/{workspace_id}/invitations/{invitation_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Revoke workspace invitation",
+    description="Revoke a pending workspace invitation.",
+)
+@declare_permission(PERM_MEMBERS_MANAGE_WORKSPACE)
+async def revoke_workspace_invitation(
+    workspace_id: UUID,
+    invitation_id: UUID,
+    ctx: AuthContext = Depends(require_permission(PERM_MEMBERS_MANAGE_WORKSPACE)),
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    service = WorkspaceInvitationService(session)
+    await service.revoke_invitation(
+        ctx,
+        workspace_id=workspace_id,
+        invitation_id=invitation_id,
+    )

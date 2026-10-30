@@ -48,6 +48,7 @@ def test_schema_inventory_and_alembic_head_integrity() -> None:
         "users",
         "workspaces",
         "workspace_memberships",
+        "workspace_invitations",
         "projects",
         "project_memberships",
         "audit_events",
@@ -93,7 +94,7 @@ def test_schema_inventory_and_alembic_head_integrity() -> None:
     heads = script_dir.get_heads()
 
     assert len(heads) == 1, f"Expected 1 migration head, got: {heads}"
-    assert heads[0] == "0013_pr_analyses"
+    assert heads[0] == "0014_workspace_invitations"
 
 
 # ===========================================================================
