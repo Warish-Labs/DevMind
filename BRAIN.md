@@ -7,32 +7,60 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m11-pr-agent` |
-| **Last commit** | `3851e83` (Merge pull request #86 from Warish-Labs/feature/m11-review-rules) |
+| **Branch** | `feature/m11-pr-ui` |
+| **Last commit** | `0a5c797` (Merge pull request #87 from Warish-Labs/feature/m11-pr-agent) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | M11-05 completed; ready for PR |
-| **Open PR** | [#87](https://github.com/Warish-Labs/DevMind/pull/87) (`feature/m11-pr-agent`) |
+| **Working tree** | Clean; PR #90 open |
+| **Open PR** | [#90](https://github.com/Warish-Labs/DevMind/pull/90) (`feature/m11-pr-ui`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
-| **Date** | 2026-10-28 |
+| **Date** | 2026-10-30 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Open PR for `feature/m11-pr-agent`.
+1. Open PR for `feature/m11-pr-ui`.
 2. Await PR merge by owner.
-3. Switch to `main`, pull merged commit, delete `feature/m11-pr-agent` locally and on origin.
-4. Branch `feature/m11-pr-ui` for task M11-06 (Pull Request web screens: list, overview, change-impact graph, checklist triage).
+3. Switch to `main`, pull merged commit, delete `feature/m11-pr-ui` locally and on origin.
+4. Branch `feature/m11-invitations-audit` for task M11-07 (Workspace invitations via Resend and audit event viewer).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m11-pr-agent`.
+Review and merge PR for `feature/m11-pr-ui`.
 
 ---
 
 ## 4. Done log
+
+### Feature — M11-06: Pull Request Web Screens (List, Overview, Change-Impact Graph, Checklist Triage)
+
+- **Date**: 2026-10-30
+- **Branch**: `feature/m11-pr-ui`
+- **What**:
+  - Implemented M11-06 per [`docs/01`](docs/01-product-requirements.md) §9 (CAP-06), [`docs/02`](docs/02-system-architecture.md) §10, [`docs/03`](docs/03-data-model-and-api.md) §3.5 and §11.1, [`docs/08`](docs/08-ui-ux-design-specification.md) (Screen S-14):
+    - **API Client Extensions**: Authored Pull Request and PR Analysis methods and models in [`common/src/api/index.ts`](common/src/api/index.ts) (`listProjectPullRequests`, `syncProjectPullRequests`, `getPullRequest`, `analyzePullRequest`, `getLatestPullRequestAnalysis`, `listPullRequestAnalyses`, `listProjectReviewRules`, `PullRequestSummary`, `ChangeImpactReport`, `PRAnalysisResponse`, `ReviewRuleResponse`). Built and verified with `pnpm --filter common test` (8/8 passed).
+    - **App Shell & Navigation**:
+      - Added `GitPullRequestIcon` in [`client/components/shell/icons.tsx`](client/components/shell/icons.tsx).
+      - Added "Pull Requests & Impact (S-14)" navigation item in [`client/components/shell/AppGutterRail.tsx`](client/components/shell/AppGutterRail.tsx).
+      - Added section breadcrumbs and mobile menu entry in [`client/components/shell/AppTopBar.tsx`](client/components/shell/AppTopBar.tsx).
+      - Added quick navigation entry in [`client/components/shell/CommandPalette.tsx`](client/components/shell/CommandPalette.tsx).
+    - **Pull Request List Views**:
+      - Authored [`client/components/pull-requests/PullRequestsTable.tsx`](client/components/pull-requests/PullRequestsTable.tsx) showing PR number, title, branches, status badge, author avatar/initials, head commit SHA, and inspect action.
+      - Authored [`client/components/pull-requests/PullRequestsPageClient.tsx`](client/components/pull-requests/PullRequestsPageClient.tsx) with live GitHub sync button, state filtering (All, Open, Merged, Closed), text query search, and error banners.
+      - Authored route [`client/app/projects/[projectId]/pull-requests/page.tsx`](client/app/projects/[projectId]/pull-requests/page.tsx).
+    - **Pull Request Detail & Intelligence Views**:
+      - Authored [`client/components/pull-requests/PRSummaryPanel.tsx`](client/components/pull-requests/PRSummaryPanel.tsx) rendering PRAgent executive summary, risk badge, security assessment, testing concerns, affected areas, and changed files.
+      - Authored [`client/components/pull-requests/ChangeImpactGraph.tsx`](client/components/pull-requests/ChangeImpactGraph.tsx) displaying blast radius metrics, node filtering (symbols, routes, tests, modules), and graph relationship inspection.
+      - Authored [`client/components/pull-requests/ChecklistTriageTab.tsx`](client/components/pull-requests/ChecklistTriageTab.tsx) displaying ReviewBuddy checklist findings grouped by category, evidence levels (E1), and inline verify/dismiss triage actions.
+      - Authored [`client/components/pull-requests/PullRequestDetailClient.tsx`](client/components/pull-requests/PullRequestDetailClient.tsx) coordinating PR overview, change impact, review checklist tabs, and the "Trigger PRAgent" action.
+      - Authored route [`client/app/projects/[projectId]/pull-requests/[prId]/page.tsx`](client/app/projects/[projectId]/pull-requests/[prId]/page.tsx).
+    - **Tests & Verification**:
+      - Authored [`client/tests/pull-requests-ui.test.tsx`](client/tests/pull-requests-ui.test.tsx) with 8 component and integration tests.
+      - Verified `pnpm --filter client test`: 26 test files passed, 175 tests passed.
+      - Verified `node scripts/test-all.mjs --fast`: 13 passed, 0 failed, 1 skipped.
+      - Verified `npm run docs:audit`: 0 broken links.
 
 ### Feature — M11-05: PRAgent Change-Impact Analysis, Subgraph Traversal, and PR Intelligence
 

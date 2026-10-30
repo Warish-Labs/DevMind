@@ -10,6 +10,7 @@ import {
   ChatIcon,
   FindingsIcon,
   JobsIcon,
+  GitPullRequestIcon,
   SettingsIcon,
   FolderIcon,
   ExternalLinkIcon,
@@ -99,6 +100,15 @@ export function CommandPalette() {
         subtitle: "Queue, worker status, and audit logs (S-09)",
         icon: <JobsIcon size={16} className="text-[var(--warn)]" />,
         onSelect: () => router.push(`/projects/${pid}/jobs`),
+      },
+      {
+        id: "nav-pull-requests",
+        category: "Navigation",
+        title: "Pull Requests & Impact",
+        subtitle: "Mirrored PRs, change-impact graph, and ReviewBuddy checklist (S-14)",
+        icon: <GitPullRequestIcon size={16} className="text-[var(--signal)]" />,
+        onSelect: () => router.push(`/projects/${pid}/pull-requests`),
+        badge: "PRAgent",
       },
       {
         id: "nav-settings",

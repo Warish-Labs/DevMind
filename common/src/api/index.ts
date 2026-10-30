@@ -243,6 +243,116 @@ export interface ListAuditEventsParams {
   offset?: number;
 }
 
+// ---------------------------------------------------------------------------
+// Pull Requests & PRAgent Intelligence (CAP-06, M11-03, M11-05, M11-06)
+// ---------------------------------------------------------------------------
+
+export interface PullRequestSummary {
+  id: string;
+  repository_id: string;
+  number: number;
+  title: string;
+  author_login: string;
+  state: "open" | "closed" | "merged" | string;
+  head_sha: string;
+  base_sha: string;
+  head_ref?: string | null;
+  base_ref?: string | null;
+  diff_url?: string | null;
+  merged_at?: string | null;
+  closed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DirectSymbolItem {
+  name: string;
+  kind: string;
+  file_path: string;
+  symbol_key?: string | null;
+}
+
+export interface AffectedRouteItem {
+  path: string;
+  method: string;
+  handler: string;
+  file_path: string;
+}
+
+export interface GraphNodeItem {
+  id: string;
+  label: string;
+  type: "file" | "symbol" | "route" | "test" | "module" | string;
+  file_path?: string | null;
+}
+
+export interface GraphEdgeItem {
+  from_node: string;
+  to_node: string;
+  kind: string;
+}
+
+export interface ChangeImpactReport {
+  changed_files: string[];
+  direct_symbols: DirectSymbolItem[];
+  affected_modules: string[];
+  affected_routes: AffectedRouteItem[];
+  affected_tests: string[];
+  dependency_graph_nodes: GraphNodeItem[];
+  dependency_graph_edges: GraphEdgeItem[];
+  risk_level: "low" | "medium" | "high" | "critical" | string;
+  risk_reasons: string[];
+}
+
+export interface PRSummary {
+  purpose: string;
+  files_changed: string[];
+  affected_areas: string[];
+  risks: string[];
+  security_summary: string;
+  testing_concerns: string[];
+  documentation_impact: string;
+  risk_level: string;
+}
+
+export interface PRAnalysisResponse {
+  id: string;
+  workspace_id: string;
+  project_id: string;
+  pull_request_id: string;
+  head_sha: string;
+  job_id?: string | null;
+  risk_level: "low" | "medium" | "high" | "critical" | string;
+  summary: PRSummary | Record<string, unknown>;
+  impact: ChangeImpactReport | Record<string, unknown>;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TriggerPRAnalysisRequest {
+  diff_override?: string | null;
+  post_comment?: boolean;
+}
+
+export interface ReviewRuleResponse {
+  id: string;
+  workspace_id: string;
+  project_id: string;
+  rule_id: string;
+  title: string;
+  category: string;
+  severity: string;
+  scope_selector: Record<string, unknown>;
+  check_type: string;
+  check_config: Record<string, unknown>;
+  message: string;
+  suggested_fix_template?: string | null;
+  is_enabled: boolean;
+  is_builtin: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export class ApiError extends Error {
   public readonly status: number;
   public readonly code: string;
@@ -814,5 +924,83 @@ export class DevMindApiClient {
     const qs = searchParams.toString();
     const endpoint = `/api/v1/projects/${projectId}/audit-events${qs ? `?${qs}` : ""}`;
     return this.fetchInternal<AuditEventItem[]>(endpoint);
+  }
+
+  // -------------------------------------------------------------------------
+  // Pull Requests & PR Intelligence (CAP-06, M11-03, M11-05, M11-06)
+  // -------------------------------------------------------------------------
+
+  public async listProjectPullRequests(
+    projectId: string,
+    params?: { state?: string; limit?: number; offset?: number }
+  ): Promise<PullRequestSummary[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.state) searchParams.set("state", params.state);
+    if (params?.limit !== undefined) searchParams.set("limit", String(params.limit));
+    if (params?.offset !== undefined) searchParams.set("offset", String(params.offset));
+
+    const qs = searchParams.toString();
+    const endpoint = `/api/v1/projects/${projectId}/pull-requests${qs ? `?${qs}` : ""}`;
+    return this.fetchInternal<PullRequestSummary[]>(endpoint);
+  }
+
+  public async syncProjectPullRequests(
+    projectId: string,
+    state: string = "open"
+  ): Promise<PullRequestSummary[]> {
+    return this.fetchInternal<PullRequestSummary[]>(
+      `/api/v1/projects/${projectId}/pull-requests/sync?state=${encodeURIComponent(state)}`,
+      { method: "POST" }
+    );
+  }
+
+  public async getPullRequest(pullRequestId: string): Promise<PullRequestSummary> {
+    return this.fetchInternal<PullRequestSummary>(`/api/v1/pull-requests/${pullRequestId}`);
+  }
+
+  public async analyzePullRequest(
+    pullRequestId: string,
+    body?: TriggerPRAnalysisRequest
+  ): Promise<PRAnalysisResponse> {
+    return this.fetchInternal<PRAnalysisResponse>(
+      `/api/v1/pull-requests/${pullRequestId}/analyze`,
+      {
+        method: "POST",
+        body: JSON.stringify(body || {}),
+      }
+    );
+  }
+
+  public async getLatestPullRequestAnalysis(pullRequestId: string): Promise<PRAnalysisResponse> {
+    return this.fetchInternal<PRAnalysisResponse>(
+      `/api/v1/pull-requests/${pullRequestId}/analyses/latest`
+    );
+  }
+
+  public async listPullRequestAnalyses(
+    pullRequestId: string,
+    params?: { limit?: number; offset?: number }
+  ): Promise<PRAnalysisResponse[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.limit !== undefined) searchParams.set("limit", String(params.limit));
+    if (params?.offset !== undefined) searchParams.set("offset", String(params.offset));
+
+    const qs = searchParams.toString();
+    const endpoint = `/api/v1/pull-requests/${pullRequestId}/analyses${qs ? `?${qs}` : ""}`;
+    return this.fetchInternal<PRAnalysisResponse[]>(endpoint);
+  }
+
+  public async listProjectReviewRules(
+    projectId: string,
+    params?: { enabled_only?: boolean; category?: string }
+  ): Promise<ReviewRuleResponse[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.enabled_only !== undefined)
+      searchParams.set("enabled_only", String(params.enabled_only));
+    if (params?.category) searchParams.set("category", params.category);
+
+    const qs = searchParams.toString();
+    const endpoint = `/api/v1/projects/${projectId}/review-rules${qs ? `?${qs}` : ""}`;
+    return this.fetchInternal<ReviewRuleResponse[]>(endpoint);
   }
 }
