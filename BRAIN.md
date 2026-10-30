@@ -10,8 +10,8 @@
 | **Branch** | `feature/m11-pr-ui` |
 | **Last commit** | `0a5c797` (Merge pull request #87 from Warish-Labs/feature/m11-pr-agent) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | M11-06 completed; ready for PR |
-| **Open PR** | None |
+| **Working tree** | Clean; PR #90 open |
+| **Open PR** | [#90](https://github.com/Warish-Labs/DevMind/pull/90) (`feature/m11-pr-ui`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-30 |
 
