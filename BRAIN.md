@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-mentor-core` |
-| **Last commit** | `a9521b0` (`feat(server): implement M12-08 project mentor and evaluation core models, migrations, and dag sorter`) |
+| **Branch** | `feature/m12-eval-scoring` |
+| **Last commit** | `feat(server): implement M12-09 evaluation scoring engine and release blockers synthesis` |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete |
 | **Working tree** | Clean |
-| **Open PR** | [#101](https://github.com/Warish-Labs/DevMind/pull/101) (`feature/m12-mentor-core` → `main`) |
+| **Open PR** | Open (to be filled after `gh pr create`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,21 +19,42 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #101 to pass and owner merge into `main`.
-2. After PR #101 is merged:
+1. Wait for CI checks on PR for `feature/m12-eval-scoring` to pass and owner merge into `main`.
+2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-mentor-core` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-core`).
-   - Create feature branch `feature/m12-eval-scoring` for task **M12-09**: Deterministic scoring engine for health dimensions (Quality, Security, Architecture, Velocity, Documentation), blockers synthesis, and release-readiness verdict.
+   - Delete branch `feature/m12-eval-scoring` locally and remotely on GitHub (`git push origin --delete feature/m12-eval-scoring`).
+   - Create feature branch `feature/m12-mentor-agent` for task **M12-10**: ProjectMentor specialist agent, LangGraph routing, and REST endpoints for tasks and evaluations.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR [#101](https://github.com/Warish-Labs/DevMind/pull/101) (`feature/m12-mentor-core` → `main`) after CI passes.
+Review and merge PR for `feature/m12-eval-scoring` (`feature/m12-eval-scoring` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-09: Evaluation Scoring Engine and Release Blockers Synthesis
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m12-eval-scoring`
+- **PR**: Open (created via gh CLI)
+- **What**:
+  - Implemented M12-09 per [`docs/01`](docs/01-product-requirements.md) §8 (CAP-09), [`docs/03`](docs/03-data-model-and-api.md) §3.7, and [`docs/12`](docs/12-architecture-decisions-and-open-questions.md) (OQ-18):
+    - **Deterministic Scoring Engine (`server/app/analysis/eval_scoring.py`)**:
+      - `ProjectEvaluationScorer`: Computes normalized rubric scores (0.0 to 100.0) across 6 weighted dimensions: Security (0.25), Code Quality (0.20), Testing (0.20), Documentation (0.15), Functionality (0.10), Architecture (0.10).
+      - **Security Dimension**: Penalizes open/confirmed vulnerabilities (-35 for CRITICAL, -20 for HIGH, -10 for MEDIUM, -3 for LOW). Dismissed and fixed findings do not degrade score.
+      - **Code Quality Dimension**: Evaluates review violations and recurring unresolved errors from Bug Memory (severe bugs >= 10 occurrences penalize quality and block release).
+      - **Testing Dimension**: Evaluates CI pass rate, penalizing failed test suites (-25 per failed test) and flagging blockers for any failing test.
+      - **Documentation Dimension**: Evaluates Living Docs drift status, penalizing active undocumented routes (-12) and ghost routes (-8).
+      - **Functionality Dimension (OQ-18)**: Evaluates user-declared feature checklists; defaults with labeled `"low"` confidence when no declared checklist is available, and `"high"` confidence when declared, with incomplete critical features triggering blockers.
+      - **Architecture Dimension**: Evaluates task dependency DAG health, detecting circular dependencies (-35 and blocker) and blocked backlog tasks.
+      - **Release Readiness Verdict**: Deterministically classifies projects into `ready` (>= 85.0 with zero blockers), `ready_with_warnings` (70.0 - 85.0 or open warnings), or `not_ready` (< 70.0 or any critical blocker).
+      - **Blockers & Indicators Synthesis**: Generates structured blocker diagnostics (`id`, `dimension`, `title`, `severity`, `detail`), warning notices, and positive health indicators.
+    - **Unit Tests (`server/tests/test_eval_scoring.py`)**:
+      - 9 comprehensive unit tests verifying clean project readiness, critical security blockers, dismissed/fixed finding immunity, severe recurring bug penalties, test failure blocking, documentation drift warnings, OQ-18 functionality confidence states, cyclic architecture blocker, and composite weighted score precision.
+- **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). Linting clean (`ruff check`). Formatting clean (`ruff format`). Import boundaries clean (7/7 contracts maintained). Pytest: 9/9 evaluation scoring tests passed (0 warnings).
 
 ### Feature — M12-08: Project Mentor & Evaluation Data Models, Migrations, Repositories, and DAG Sorter
 
