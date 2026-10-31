@@ -162,7 +162,9 @@ async def test_invitation_service_conflict_existing_member() -> None:
     existing_user = MagicMock(id=generate_uuid7())
     service.user_repo.get_by_email = AsyncMock(return_value=existing_user)
     service.workspace_repo.get_membership = AsyncMock(
-        return_value=WorkspaceMembership(workspace_id=ws_id, user_id=existing_user.id, role="member")
+        return_value=WorkspaceMembership(
+            workspace_id=ws_id, user_id=existing_user.id, role="member"
+        )
     )
 
     with pytest.raises(ConflictError, match="already a member"):
@@ -186,7 +188,9 @@ async def test_invitation_service_conflict_active_invite() -> None:
     service.workspace_repo.get_by_id = AsyncMock(return_value=mock_workspace)
     service.user_repo.get_by_email = AsyncMock(return_value=None)
     service.invitation_repo.get_active_by_email = AsyncMock(
-        return_value=WorkspaceInvitation(id=generate_uuid7(), workspace_id=ws_id, email="pending@example.com")
+        return_value=WorkspaceInvitation(
+            id=generate_uuid7(), workspace_id=ws_id, email="pending@example.com"
+        )
     )
 
     with pytest.raises(ConflictError, match="active invitation"):
@@ -249,11 +253,14 @@ def test_api_list_and_create_workspace_invitations() -> None:
         updated_at=now,
     )
 
-    with patch.object(
-        WorkspaceInvitationService, "list_invitations", new_callable=AsyncMock
-    ) as mock_list, patch.object(
-        WorkspaceInvitationService, "create_invitation", new_callable=AsyncMock
-    ) as mock_create:
+    with (
+        patch.object(
+            WorkspaceInvitationService, "list_invitations", new_callable=AsyncMock
+        ) as mock_list,
+        patch.object(
+            WorkspaceInvitationService, "create_invitation", new_callable=AsyncMock
+        ) as mock_create,
+    ):
         mock_list.return_value = [mock_invitation]
         mock_create.return_value = (
             mock_invitation,
@@ -340,11 +347,14 @@ def test_api_invitations_verify_and_accept() -> None:
     ws_id = generate_uuid7()
     user_id = generate_uuid7()
 
-    with patch.object(
-        WorkspaceInvitationService, "verify_invitation_token", new_callable=AsyncMock
-    ) as mock_verify, patch.object(
-        WorkspaceInvitationService, "accept_invitation", new_callable=AsyncMock
-    ) as mock_accept:
+    with (
+        patch.object(
+            WorkspaceInvitationService, "verify_invitation_token", new_callable=AsyncMock
+        ) as mock_verify,
+        patch.object(
+            WorkspaceInvitationService, "accept_invitation", new_callable=AsyncMock
+        ) as mock_accept,
+    ):
         mock_verify.return_value = {
             "invitation_id": str(generate_uuid7()),
             "workspace_id": str(ws_id),

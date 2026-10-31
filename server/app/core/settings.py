@@ -95,7 +95,9 @@ class Settings(BaseSettings):
     )
     app_base_url: str = Field(
         default="http://localhost:3000",
-        validation_alias=AliasChoices("DEVMIND_APP_BASE_URL", "APP_BASE_URL", "NEXT_PUBLIC_APP_URL"),
+        validation_alias=AliasChoices(
+            "DEVMIND_APP_BASE_URL", "APP_BASE_URL", "NEXT_PUBLIC_APP_URL"
+        ),
     )
 
     # Cloudflare Turnstile bot protection (docs/07 §11, docs/10 §11)

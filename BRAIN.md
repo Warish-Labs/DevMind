@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m11-docs` |
-| **Last commit** | `a050617` (`docs(repo): implement M11-09 documentation updates and operational runbook`) |
-| **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | Clean, PR #93 opened |
-| **Open PR** | [#93](https://github.com/Warish-Labs/DevMind/pull/93) (`feature/m11-docs`) |
+| **Branch** | `feature/m12-bug-memory-core` |
+| **Last commit** | `4c580d1` (`Merge pull request #93 from Warish-Labs/feature/m11-docs`) |
+| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
+| **Working tree** | M12-01 in progress |
+| **Open PR** | None |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,19 +19,16 @@
 
 ## 2. Next action (exact)
 
-1. Run verification suite (`node scripts/test-all.mjs --fast`).
-2. Commit changes with `docs(repo): implement M11-09 documentation updates and operational runbook`.
-3. Push branch `feature/m11-docs` to GitHub with `HTTPS_PROXY=http://127.0.0.1:8989`.
-4. Open Pull Request for M11-09 (`feature/m11-docs` → `main`).
-5. Owner reviews and merges PR for M11-09.
-6. Run after-merge routine, pull `main`, delete `feature/m11-docs`.
-7. Mark Milestone 11 fully delivered and prepare Milestone 12 roadmap slices.
+1. Implement task **M12-01**: Bug Memory schema, Alembic migration (`bug_records`, `bug_resolutions`), persistence models, repositories, and deterministic error signature normalizer per docs/01 CAP-03, docs/03 §3.4, and docs/05 §6.6.
+2. Author unit test suite covering stack trace normalization, fingerprint hashing, and CRUD repositories (`server/tests/test_bug_memory.py`).
+3. Run verification suite (`node scripts/test-all.mjs --fast`).
+4. Commit with `feat(server): implement M12-01 bug memory schema, repositories, and error normalizer` and open PR.
 
 ---
 
 ## 3. Waiting on owner
 
-Owner review and merge of M11-09 PR.
+None (proceeding with M12-01 implementation).
 
 ---
 

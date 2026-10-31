@@ -71,7 +71,9 @@ def test_evaluate_single_review_case() -> None:
     with open(DATASET_PATH, encoding="utf-8") as f:
         data = json.load(f)
 
-    compliant_case = [c for c in data["review_cases"] if c["id"] == "review-case-05-compliant-change"][0]
+    compliant_case = [
+        c for c in data["review_cases"] if c["id"] == "review-case-05-compliant-change"
+    ][0]
     result = evaluate_review_case(compliant_case)
 
     assert result["id"] == compliant_case["id"]

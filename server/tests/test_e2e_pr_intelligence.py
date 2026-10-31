@@ -177,7 +177,9 @@ async def test_e2e_pr_intelligence_lifecycle_flow(e2e_settings: Settings) -> Non
         mock_brain.get_graph_data = AsyncMock(return_value=([], []))
 
         req = TriggerPRAnalysisRequest(diff_override=diff_override, post_comment=False)
-        analysis_resp = await pr_service.analyze_pull_request(ctx=ctx, pull_request_id=pr_id, request_data=req)
+        analysis_resp = await pr_service.analyze_pull_request(
+            ctx=ctx, pull_request_id=pr_id, request_data=req
+        )
 
     assert analysis_resp.id == mock_analysis_id
     assert analysis_resp.risk_level == "critical"
@@ -234,6 +236,7 @@ async def test_e2e_human_approval_gate_for_pr_comments() -> None:
     assert req.post_comment is True
 
     from app.orchestration.pragent import PRAgent
+
     agent = PRAgent()
     assert hasattr(agent, "execute")
     assert "Optional comment posting to GitHub gated by human approval" in pragent_module.__doc__
@@ -281,16 +284,18 @@ async def test_e2e_github_token_outage_resilience(e2e_settings: Settings) -> Non
     service.project_repo.get_by_id = AsyncMock(return_value=mock_project)
 
     service._fetch_diff_from_github = AsyncMock(return_value="")
-    service.repo.create_analysis = AsyncMock(return_value=PRAnalysis(
-        id=uuid4(),
-        workspace_id=workspace_id,
-        project_id=mock_project.id,
-        pull_request_id=pr_id,
-        head_sha=mock_pr.head_sha,
-        risk_level="low",
-        summary={},
-        impact={},
-    ))
+    service.repo.create_analysis = AsyncMock(
+        return_value=PRAnalysis(
+            id=uuid4(),
+            workspace_id=workspace_id,
+            project_id=mock_project.id,
+            pull_request_id=pr_id,
+            head_sha=mock_pr.head_sha,
+            risk_level="low",
+            summary={},
+            impact={},
+        )
+    )
 
     ctx = AuthContext(
         user_id=uuid4(),

@@ -327,7 +327,23 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 ### M12 · Releases 1.2–1.4 (Bug Memory, Living Docs, Mentor, Evaluation, Deployment Diagnosis)
 
-Expand each M-item into task lines (from docs/11) when its phase starts; keep branch-per-slice.
+#### M12.1 · Release 1.2: Bug Memory & Living Documentation (CAP-03, CAP-04)
+
+- [ ] M12-01 Bug Memory schema, Alembic migration (`bug_records`, `bug_resolutions`), repositories, and error signature normalizer (feature/m12-bug-memory-core)
+- [ ] M12-02 Bug Memory hybrid similarity search (keyword + vector), BugMemory specialist agent, and REST endpoints (feature/m12-bug-memory-agent)
+- [ ] M12-03 Living Documentation schema, migration (`documentation_records`, `doc_drift_items`), doc parser, and symbol drift detector (feature/m12-living-docs-core)
+- [ ] M12-04 DocsAlive specialist agent, patch proposal generator, and human approval gates (feature/m12-docs-alive-agent)
+- [ ] M12-05 Web screens for Bug Memory and Living Docs (error search, resolution viewer, drift review, patch approval modal) (feature/m12-bug-docs-ui)
+- [ ] M12-06 Integration tests, evaluation benchmark datasets, and recorded baselines for Bug Memory and Living Docs (feature/m12-bug-docs-evals)
+- [ ] M12-07 Milestone 12.1 documentation update and operational runbook (feature/m12-docs)
+
+#### M12.2 · Release 1.3: Project Mentor & Project Evaluation (CAP-08, CAP-09)
+
+(To be expanded upon M12.1 completion)
+
+#### M12.3 · Release 1.4: Deployment Diagnosis (CAP-07)
+
+(To be expanded upon M12.2 completion)
 
 ---
 

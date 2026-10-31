@@ -27,6 +27,7 @@ from app.persistence.models.brain import (
     ScanRun,
     SnapshotFile,
 )
+from app.persistence.models.bug_memory import BugRecord, BugResolution
 from app.persistence.models.consent import ConsentRecord
 from app.persistence.models.extension import ExtensionRegistration, ExtensionToken
 from app.persistence.models.github import (
@@ -48,6 +49,8 @@ __all__ = [
     "AnalysisJob",
     "AuditEvent",
     "Base",
+    "BugRecord",
+    "BugResolution",
     "ChunkEmbedding",
     "CodeChunk",
     "CodeRelationship",
