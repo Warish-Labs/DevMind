@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-bug-memory-agent` |
-| **Last commit** | `bef0173` (`Merge pull request #94 from Warish-Labs/feature/m12-bug-memory-core`) |
+| **Last commit** | `3859927` (`feat(server): implement M12-02 bug memory hybrid search, BugMemory agent, and REST endpoints`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
-| **Working tree** | M12-02 implementation ready to commit |
-| **Open PR** | None |
+| **Working tree** | Clean |
+| **Open PR** | [#95](https://github.com/Warish-Labs/DevMind/pull/95) (`feature/m12-bug-memory-agent` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,17 +19,17 @@
 
 ## 2. Next action (exact)
 
-1. Commit M12-02 changes with message: `feat(server): implement M12-02 bug memory hybrid search, BugMemory agent, and REST endpoints`.
-2. Push branch `feature/m12-bug-memory-agent` to GitHub via local IPv6 proxy.
-3. Open Pull Request for M12-02.
-4. Wait for CI checks to pass and owner merge into `main`.
-5. Run after-merge cleanup and initiate task **M12-03** (Living Documentation schema, migration `documentation_records` and `doc_drift_items`, doc parser, and symbol drift detector).
+1. Wait for CI checks on PR #95 to complete and owner merge into `main`.
+2. After PR #95 is merged:
+   - Switch to `main`, pull latest (`git pull --ff-only origin main`).
+   - Delete branch `feature/m12-bug-memory-agent` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-memory-agent`).
+   - Create feature branch `feature/m12-living-docs-core` for task **M12-03**: Living Documentation schema, migration (`documentation_records`, `doc_drift_items`), doc parser, and symbol drift detector.
 
 ---
 
 ## 3. Waiting on owner
 
-None (proceeding with commit, push, and PR creation for M12-02).
+Merge PR [#95](https://github.com/Warish-Labs/DevMind/pull/95) into `main` after CI passes.
 
 ---
 
@@ -39,6 +39,7 @@ None (proceeding with commit, push, and PR creation for M12-02).
 
 - **Date**: 2026-10-31
 - **Branch**: `feature/m12-bug-memory-agent`
+- **PR**: [#95](https://github.com/Warish-Labs/DevMind/pull/95)
 - **What**:
   - Implemented M12-02 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-03), [`docs/03`](docs/03-data-model-and-api.md) §3.4, §11.1, and [`docs/05`](docs/05-agents-and-llm-workflows.md) §6.6:
     - **Hybrid Similarity Search**: Added `search_similar_bugs` in `BugRecordRepository` combining exact SHA-256 fingerprint matching (score 1.0), token Jaccard overlap on error signatures, titles, and summaries, and module hint priority scoring.
