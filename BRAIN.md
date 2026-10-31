@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-eval-scoring` |
-| **Last commit** | `feat(server): implement M12-09 evaluation scoring engine and release blockers synthesis` |
+| **Last commit** | `52cd1bb` (`feat(server): implement M12-09 evaluation scoring engine and release blockers synthesis`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete |
 | **Working tree** | Clean |
-| **Open PR** | Open (to be filled after `gh pr create`) |
+| **Open PR** | [#102](https://github.com/Warish-Labs/DevMind/pull/102) (`feature/m12-eval-scoring` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,8 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR for `feature/m12-eval-scoring` to pass and owner merge into `main`.
-2. After PR is merged:
+1. Wait for CI checks on PR #102 to pass and owner merge into `main`.
+2. After PR #102 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-eval-scoring` locally and remotely on GitHub (`git push origin --delete feature/m12-eval-scoring`).
    - Create feature branch `feature/m12-mentor-agent` for task **M12-10**: ProjectMentor specialist agent, LangGraph routing, and REST endpoints for tasks and evaluations.
@@ -29,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-eval-scoring` (`feature/m12-eval-scoring` → `main`) after CI passes.
+Review and merge PR [#102](https://github.com/Warish-Labs/DevMind/pull/102) (`feature/m12-eval-scoring` → `main`) after CI passes.
 
 ---
 
@@ -39,7 +39,7 @@ Review and merge PR for `feature/m12-eval-scoring` (`feature/m12-eval-scoring` �
 
 - **Date**: 2026-10-31
 - **Branch**: `feature/m12-eval-scoring`
-- **PR**: Open (created via gh CLI)
+- **PR**: [#102](https://github.com/Warish-Labs/DevMind/pull/102)
 - **What**:
   - Implemented M12-09 per [`docs/01`](docs/01-product-requirements.md) §8 (CAP-09), [`docs/03`](docs/03-data-model-and-api.md) §3.7, and [`docs/12`](docs/12-architecture-decisions-and-open-questions.md) (OQ-18):
     - **Deterministic Scoring Engine (`server/app/analysis/eval_scoring.py`)**:
