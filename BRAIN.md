@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-bug-docs-ui` |
-| **Last commit** | `feat(client): implement M12-05 web screens for Bug Memory and Living Docs` |
+| **Last commit** | `f08113f` (`feat(client): implement M12-05 web screens for Bug Memory and Living Docs`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
 | **Working tree** | Clean |
-| **Open PR** | Pending |
+| **Open PR** | [#98](https://github.com/Warish-Labs/DevMind/pull/98) (`feature/m12-bug-docs-ui` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,9 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m12-bug-docs-ui` and open PR to `main`.
-2. Wait for CI checks on PR to pass and owner merge into `main`.
-3. After PR is merged:
+1. Wait for CI checks on PR #98 to pass and owner merge into `main`.
+2. After PR #98 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-bug-docs-ui` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-docs-ui`).
    - Create feature branch `feature/m12-bug-docs-evals` for task **M12-06**: Integration tests, evaluation benchmark datasets, and recorded baselines for Bug Memory and Living Docs.
@@ -30,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-bug-docs-ui` (`feature/m12-bug-docs-ui` → `main`) after CI passes.
+Review and merge PR [#98](https://github.com/Warish-Labs/DevMind/pull/98) (`feature/m12-bug-docs-ui` → `main`) after CI passes.
 
 ---
 
@@ -40,7 +39,7 @@ Review and merge PR for `feature/m12-bug-docs-ui` (`feature/m12-bug-docs-ui` →
 
 - **Date**: 2026-10-31
 - **Branch**: `feature/m12-bug-docs-ui`
-- **PR**: Pending
+- **PR**: [#98](https://github.com/Warish-Labs/DevMind/pull/98)
 - **What**:
   - Implemented M12-05 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-03, CAP-04), [`docs/03`](docs/03-data-model-and-api.md) §3.4, §3.5, §11, and [`docs/08`](docs/08-ui-ux-design-specification.md) (Screen S-15 Bug Memory & Screen S-16 Living Docs):
     - **API Client Extensions**: Added typed methods in `common/src/api/index.ts` for Bug Memory (`listProjectBugs`, `createBug`, `matchSimilarBugs`, `getBugDetail`, `addBugResolution`) and Living Documentation (`listProjectDocs`, `registerProjectDoc`, `getProjectDoc`, `detectDocDrift`, `listProjectDriftItems`, `getDriftItem`, `approveDriftProposal`, `rejectDriftProposal`, `applyDriftPatch`).
