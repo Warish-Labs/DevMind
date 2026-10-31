@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-docs-alive-agent` |
-| **Last commit** | Pending commit (`feat(server): implement M12-04 DocsAlive agent, patch proposals, and approval gates`) |
+| **Last commit** | `f9af785` (`feat(server): implement M12-04 DocsAlive agent, patch proposals, and approval gates`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
 | **Working tree** | Clean |
-| **Open PR** | Pending |
+| **Open PR** | [#97](https://github.com/Warish-Labs/DevMind/pull/97) (`feature/m12-docs-alive-agent` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,10 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Commit and push `feature/m12-docs-alive-agent` to GitHub.
-2. Open PR for task **M12-04**: `DocsAlive` specialist agent, patch proposal generator, and human approval gates.
-3. Wait for CI checks on PR to pass and owner merge into `main`.
-4. After PR is merged:
+1. Wait for CI checks on PR #97 to pass and owner merge into `main`.
+2. After PR #97 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-docs-alive-agent` locally and remotely on GitHub (`git push origin --delete feature/m12-docs-alive-agent`).
    - Create feature branch `feature/m12-bug-docs-ui` for task **M12-05**: Web screens for Bug Memory and Living Docs (error search, resolution viewer, drift review, patch approval modal).
@@ -31,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for task **M12-04** (`feature/m12-docs-alive-agent` → `main`) after CI passes.
+Review and merge PR [#97](https://github.com/Warish-Labs/DevMind/pull/97) (`feature/m12-docs-alive-agent` → `main`) after CI passes.
 
 ---
 
@@ -41,6 +39,7 @@ Review and merge PR for task **M12-04** (`feature/m12-docs-alive-agent` → `mai
 
 - **Date**: 2026-10-31
 - **Branch**: `feature/m12-docs-alive-agent`
+- **PR**: [#97](https://github.com/Warish-Labs/DevMind/pull/97)
 - **What**:
   - Implemented M12-04 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-04), [`docs/03`](docs/03-data-model-and-api.md) §3.5, §11.2, and [`docs/05`](docs/05-agents-and-llm-workflows.md) §6.7:
     - **LLM Configuration & Prompts**: Registered `doc_patch_proposal` task in `server/configs/llm/tasks.yaml`, registered `DocPatchProposal` Pydantic model in `server/app/llm/schemas.py`, and authored prompt template in `server/app/llm/prompts/doc_patch_proposal/v1.md`.
