@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-mentor-core` |
-| **Last commit** | `feat(server): implement M12-08 project mentor and evaluation core models, migrations, and dag sorter` |
+| **Last commit** | `a9521b0` (`feat(server): implement M12-08 project mentor and evaluation core models, migrations, and dag sorter`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete |
 | **Working tree** | Clean |
-| **Open PR** | Open (to be filled after `gh pr create`) |
+| **Open PR** | [#101](https://github.com/Warish-Labs/DevMind/pull/101) (`feature/m12-mentor-core` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,8 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR for `feature/m12-mentor-core` to pass and owner merge into `main`.
-2. After PR is merged:
+1. Wait for CI checks on PR #101 to pass and owner merge into `main`.
+2. After PR #101 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-mentor-core` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-core`).
    - Create feature branch `feature/m12-eval-scoring` for task **M12-09**: Deterministic scoring engine for health dimensions (Quality, Security, Architecture, Velocity, Documentation), blockers synthesis, and release-readiness verdict.
@@ -29,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-mentor-core` (`feature/m12-mentor-core` → `main`) after CI passes.
+Review and merge PR [#101](https://github.com/Warish-Labs/DevMind/pull/101) (`feature/m12-mentor-core` → `main`) after CI passes.
 
 ---
 
@@ -39,7 +39,7 @@ Review and merge PR for `feature/m12-mentor-core` (`feature/m12-mentor-core` →
 
 - **Date**: 2026-10-31
 - **Branch**: `feature/m12-mentor-core`
-- **PR**: Open (created via gh CLI)
+- **PR**: [#101](https://github.com/Warish-Labs/DevMind/pull/101)
 - **What**:
   - Implemented M12-08 per [`docs/01`](docs/01-product-requirements.md) §8 (CAP-08, CAP-09), [`docs/03`](docs/03-data-model-and-api.md) §3.6, §3.7, and [`docs/11`](docs/11-mvp-and-implementation-roadmap.md) §6 (M12.2):
     - **Persistence Models (`server/app/persistence/models/mentor.py`)**:
