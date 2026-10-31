@@ -70,6 +70,7 @@ from app.llm.repair import (
 from app.llm.router import LLMGatewayRouter
 from app.llm.schemas import (
     AgentPlan,
+    BugSimilarityExplanation,
     FindingExplanation,
     RewrittenQuery,
     SchemaRegistry,
@@ -111,6 +112,7 @@ __all__ = [
     "SchemaRegistry",
     "default_schema_registry",
     "AgentPlan",
+    "BugSimilarityExplanation",
     "FindingExplanation",
     "SynthesizedAnswer",
     "RewrittenQuery",

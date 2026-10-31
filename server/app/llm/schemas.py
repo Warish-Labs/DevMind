@@ -104,6 +104,41 @@ class RewrittenQuery(BaseModel):
     intent: str = Field(description="Classified search intent")
 
 
+class BugSimilarityExplanation(BaseModel):
+    """Comparison and explanation of similarity between an error and a candidate bug record (docs/05 §6.6)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    summary: str = Field(
+        description="Summary of comparison between the observed error and historical bug"
+    )
+    is_similar: bool = Field(
+        description="Whether the candidate is assessed as the same or closely related bug"
+    )
+    confidence: float = Field(
+        default=0.8,
+        ge=0.0,
+        le=1.0,
+        description="Confidence score between 0.0 and 1.0",
+    )
+    confidence_label: str = Field(
+        default="medium",
+        description="Confidence category: high, medium, or low",
+    )
+    shared_characteristics: list[str] = Field(
+        default_factory=list,
+        description="Key similarities such as exception type, module, failing operation",
+    )
+    differences: list[str] = Field(
+        default_factory=list,
+        description="Differences in call path, parameters, or environment",
+    )
+    recommended_action: str = Field(
+        default="",
+        description="Remediation or investigation recommendation based on past resolution",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Schema Registry
 # ---------------------------------------------------------------------------
@@ -119,6 +154,7 @@ class SchemaRegistry:
         self.register("FindingExplanation", FindingExplanation)
         self.register("SynthesizedAnswer", SynthesizedAnswer)
         self.register("RewrittenQuery", RewrittenQuery)
+        self.register("BugSimilarityExplanation", BugSimilarityExplanation)
 
     def register(self, name: str, schema_cls: type[BaseModel]) -> None:
         """Register a Pydantic model under a schema name."""
