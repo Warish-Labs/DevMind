@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-bug-memory-core` |
-| **Last commit** | `f684270` (`feat(server): implement M12-01 bug memory schema, repositories, and error normalizer`) |
+| **Branch** | `feature/m12-bug-memory-agent` |
+| **Last commit** | `bef0173` (`Merge pull request #94 from Warish-Labs/feature/m12-bug-memory-core`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
-| **Working tree** | Clean |
-| **Open PR** | [#94](https://github.com/Warish-Labs/DevMind/pull/94) (`feature/m12-bug-memory-core` → `main`) |
+| **Working tree** | M12-02 implementation ready to commit |
+| **Open PR** | None |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,21 +19,41 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #94 to finish and owner merge into `main`.
-2. After PR #94 is merged:
-   - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-bug-memory-core` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-memory-core`).
-   - Create feature branch `feature/m12-bug-memory-agent` for task **M12-02**: Bug Memory hybrid similarity search (keyword + vector), BugMemory specialist agent, and REST endpoints.
+1. Commit M12-02 changes with message: `feat(server): implement M12-02 bug memory hybrid search, BugMemory agent, and REST endpoints`.
+2. Push branch `feature/m12-bug-memory-agent` to GitHub via local IPv6 proxy.
+3. Open Pull Request for M12-02.
+4. Wait for CI checks to pass and owner merge into `main`.
+5. Run after-merge cleanup and initiate task **M12-03** (Living Documentation schema, migration `documentation_records` and `doc_drift_items`, doc parser, and symbol drift detector).
 
 ---
 
 ## 3. Waiting on owner
 
-Merge PR [#94](https://github.com/Warish-Labs/DevMind/pull/94) into `main` after CI passes.
+None (proceeding with commit, push, and PR creation for M12-02).
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-02: Bug Memory Hybrid Similarity Search, Specialist Agent, and REST Endpoints
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m12-bug-memory-agent`
+- **What**:
+  - Implemented M12-02 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-03), [`docs/03`](docs/03-data-model-and-api.md) §3.4, §11.1, and [`docs/05`](docs/05-agents-and-llm-workflows.md) §6.6:
+    - **Hybrid Similarity Search**: Added `search_similar_bugs` in `BugRecordRepository` combining exact SHA-256 fingerprint matching (score 1.0), token Jaccard overlap on error signatures, titles, and summaries, and module hint priority scoring.
+    - **LLM Task & Prompt**: Added `bug_similarity_explanation` task in `server/configs/llm/tasks.yaml`, registered `BugSimilarityExplanation` schema in `server/app/llm/schemas.py`, and authored prompt template in `server/app/llm/prompts/bug_similarity_explanation/v1.md`.
+    - **Specialist Agent**: Authored `BugMemoryAgent` in `server/app/orchestration/bug_memory.py` coordinating normalization, candidate search, AI similarity comparison, historical resolution derivation, and resolution proposal formulation. Added `bugmemory` to `RELEASED_SPECIALISTS` in Agent Manager.
+    - **Domain Service & Schemas**: Authored `BugMemoryService` in `server/app/domain/bug_memory/service.py` with full CRUD, occurrence incrementing, resolution management, and tenant scoping. Authored request/response schemas in `server/app/domain/bug_memory/schemas.py`.
+    - **REST API Endpoints**: Created `server/app/api/bug_memory.py` exposing:
+      - `GET /api/v1/projects/{project_id}/bugs`
+      - `POST /api/v1/projects/{project_id}/bugs`
+      - `POST /api/v1/projects/{project_id}/bugs/match`
+      - `GET /api/v1/bugs/{bug_id}`
+      - `POST /api/v1/bugs/{bug_id}/resolutions`
+        Included router in `server/app/main.py`. Exported updated OpenAPI schema to `common/openapi.json`.
+    - **Test Coverage**: Added `server/tests/test_bug_memory_agent.py` (5 tests) and `server/tests/test_bug_memory_api.py` (5 tests) verifying exact matching, fuzzy fallback, LLM comparison synthesis, zero-match behavior, resolution proposals, API endpoints, and cross-workspace multi-tenant isolation.
+- **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). Linting 100% clean (`ruff check`). Formatting 100% clean (`ruff format`). Import boundaries clean (7/7 contracts maintained).
 
 ### Feature — M12-01: Bug Memory Foundation, Schema, Migration, and Error Normalizer
 

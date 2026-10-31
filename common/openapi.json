@@ -10,7 +10,7 @@
       "get": {
         "tags": ["Operations"],
         "summary": "Liveness probe",
-        "description": "Returns 200 OK if the application process is running. Does not check downstream dependencies.",
+        "description": "Returns 200 OK and build SHA if the application process is running. Does not check downstream dependencies.",
         "operationId": "healthz_healthz_get",
         "responses": {
           "200": {
@@ -30,7 +30,7 @@
       "get": {
         "tags": ["Operations"],
         "summary": "Liveness probe",
-        "description": "Returns 200 OK if the application process is running. Does not check downstream dependencies.",
+        "description": "Returns 200 OK and build SHA if the application process is running. Does not check downstream dependencies.",
         "operationId": "healthz_health_get",
         "responses": {
           "200": {
@@ -50,7 +50,7 @@
       "get": {
         "tags": ["Operations"],
         "summary": "Readiness probe",
-        "description": "Returns 200 OK if all required downstream dependencies are healthy and accepting traffic.",
+        "description": "Returns 200 OK if all required downstream dependencies (PostgreSQL, Redis, Alembic migration head) are healthy.",
         "operationId": "readyz_readyz_get",
         "responses": {
           "200": {
@@ -59,6 +59,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/readyz/alerts": {
+      "get": {
+        "tags": ["Operations"],
+        "summary": "Operational alerts overview",
+        "description": "Returns evaluated system alerts against operational thresholds (docs/10 \u00a714, \u00a715, \u00a718).",
+        "operationId": "readyz_alerts_readyz_alerts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemAlertsResponse"
                 }
               }
             }
@@ -150,6 +170,90 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ContactSubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invitations/verify": {
+      "get": {
+        "tags": ["Invitations"],
+        "summary": "Verify invitation token",
+        "description": "Verify an invitation token and return preview metadata without consuming the token.",
+        "operationId": "verify_invitation_api_v1_invitations_verify_get",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Raw invitation token",
+              "title": "Token"
+            },
+            "description": "Raw invitation token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyInvitationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invitations/accept": {
+      "post": {
+        "tags": ["Invitations"],
+        "summary": "Accept workspace invitation",
+        "description": "Accept an invitation token with authenticated caller and join the workspace.",
+        "operationId": "accept_invitation_api_v1_invitations_accept_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptInvitationResponse"
                 }
               }
             }
@@ -522,6 +626,147 @@
         }
       }
     },
+    "/api/v1/workspaces/{workspace_id}/invitations": {
+      "get": {
+        "tags": ["Workspaces"],
+        "summary": "List workspace invitations",
+        "description": "List active/pending invitations for the specified workspace.",
+        "operationId": "list_workspace_invitations_api_v1_workspaces__workspace_id__invitations_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceInvitationResponse"
+                  },
+                  "title": "Response List Workspace Invitations Api V1 Workspaces  Workspace Id  Invitations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Workspaces"],
+        "summary": "Create workspace invitation",
+        "description": "Issue an invitation to join the workspace and send email notification via Resend.",
+        "operationId": "create_workspace_invitation_api_v1_workspaces__workspace_id__invitations_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvitationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateInvitationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/invitations/{invitation_id}": {
+      "delete": {
+        "tags": ["Workspaces"],
+        "summary": "Revoke workspace invitation",
+        "description": "Revoke a pending workspace invitation.",
+        "operationId": "revoke_workspace_invitation_api_v1_workspaces__workspace_id__invitations__invitation_id__delete",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/workspaces/{wid}/projects": {
       "get": {
         "tags": ["Projects"],
@@ -683,6 +928,339 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{wid}/integrations/github/status": {
+      "get": {
+        "tags": ["Integrations"],
+        "summary": "Get GitHub connection lifecycle and permission health status",
+        "description": "Evaluate whether the user's GitHub credential is active, degraded, expired, or unlinked.",
+        "operationId": "get_workspace_github_connection_status_api_v1_workspaces__wid__integrations_github_status_get",
+        "parameters": [
+          {
+            "name": "wid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Wid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubConnectionStatusSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{wid}/integrations/github/rotate": {
+      "post": {
+        "tags": ["Integrations"],
+        "summary": "Rotate GitHub connection credential envelope encryption",
+        "description": "Re-encrypt the user's stored GitHub credential under the latest primary encryption key.",
+        "operationId": "rotate_workspace_github_connection_api_v1_workspaces__wid__integrations_github_rotate_post",
+        "parameters": [
+          {
+            "name": "wid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Wid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubConnectionSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{wid}/retention": {
+      "get": {
+        "tags": ["Retention"],
+        "summary": "Get Workspace Retention",
+        "description": "Retrieve workspace retention windows and defaults.",
+        "operationId": "get_workspace_retention_api_v1_workspaces__wid__retention_get",
+        "parameters": [
+          {
+            "name": "wid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Wid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EffectiveRetentionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{wid}/retention/{kind}": {
+      "put": {
+        "tags": ["Retention"],
+        "summary": "Update Workspace Retention",
+        "description": "Configure retention window for a specific category at workspace level.",
+        "operationId": "update_workspace_retention_api_v1_workspaces__wid__retention__kind__put",
+        "parameters": [
+          {
+            "name": "wid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Wid"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Kind"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRetentionPolicyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionPolicyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/audit-events": {
+      "get": {
+        "tags": ["Audit"],
+        "summary": "List workspace audit events",
+        "description": "Retrieve append-only audit event log for the workspace. Requires workspace admin or owner.",
+        "operationId": "list_workspace_audit_events_api_v1_workspaces__workspace_id__audit_events_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by event action (e.g. consent.revoked)",
+              "title": "Action"
+            },
+            "description": "Filter by event action (e.g. consent.revoked)"
+          },
+          {
+            "name": "target_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by target kind (e.g. project, consent)",
+              "title": "Target Kind"
+            },
+            "description": "Filter by target kind (e.g. project, consent)"
+          },
+          {
+            "name": "target_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by target identifier",
+              "title": "Target Id"
+            },
+            "description": "Filter by target identifier"
+          },
+          {
+            "name": "actor_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by actor user ID",
+              "title": "Actor Id"
+            },
+            "description": "Filter by actor user ID"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Maximum number of events to return",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of events to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEventItem"
+                  },
+                  "title": "Response List Workspace Audit Events Api V1 Workspaces  Workspace Id  Audit Events Get"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -859,6 +1437,492 @@
         }
       }
     },
+    "/api/v1/projects/{pid}/github/link": {
+      "post": {
+        "tags": ["GitHub"],
+        "summary": "Link project to a GitHub repository",
+        "description": "Link project to a GitHub repository using the active connection.",
+        "operationId": "link_project_github_repository_api_v1_projects__pid__github_link_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitHubLinkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubRepositorySummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/github/unlink": {
+      "delete": {
+        "tags": ["GitHub"],
+        "summary": "Unlink project from GitHub repository",
+        "description": "Unlink repository binding from project.",
+        "operationId": "unlink_project_github_repository_api_v1_projects__pid__github_unlink_delete",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/github/repository": {
+      "get": {
+        "tags": ["GitHub"],
+        "summary": "Get linked GitHub repository for project",
+        "description": "Retrieve linked repository details for project.",
+        "operationId": "get_project_github_repository_api_v1_projects__pid__github_repository_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubRepositorySummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/pull-requests": {
+      "get": {
+        "tags": ["GitHub"],
+        "summary": "List mirrored pull requests for project",
+        "description": "List mirrored PRs for the linked repository.",
+        "operationId": "list_project_pull_requests_api_v1_projects__pid__pull_requests_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by state (open, closed, merged)",
+              "title": "State"
+            },
+            "description": "Filter by state (open, closed, merged)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PullRequestSummary"
+                  },
+                  "title": "Response List Project Pull Requests Api V1 Projects  Pid  Pull Requests Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/pull-requests/sync": {
+      "post": {
+        "tags": ["GitHub"],
+        "summary": "Sync pull requests from GitHub REST API",
+        "description": "Fetch recent PRs from GitHub and mirror them locally.",
+        "operationId": "sync_project_pull_requests_api_v1_projects__pid__pull_requests_sync_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "PR state to sync (open, closed, all)",
+              "default": "open",
+              "title": "State"
+            },
+            "description": "PR state to sync (open, closed, all)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PullRequestSummary"
+                  },
+                  "title": "Response Sync Project Pull Requests Api V1 Projects  Pid  Pull Requests Sync Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pull-requests/{id}": {
+      "get": {
+        "tags": ["Pull Requests"],
+        "summary": "Get mirrored pull request by ID",
+        "description": "Retrieve PR mirror record by ID.",
+        "operationId": "get_pull_request_by_id_api_v1_pull_requests__id__get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullRequestSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pull-requests/{id}/analyze": {
+      "post": {
+        "tags": ["Pull Requests"],
+        "summary": "Trigger PRAgent change-impact analysis on a pull request",
+        "description": "Analyze PR diff, traverse symbol dependencies, evaluate checklist rules, and synthesize summary.",
+        "operationId": "analyze_pull_request_endpoint_api_v1_pull_requests__id__analyze_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/TriggerPRAnalysisRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PRAnalysisResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pull-requests/{id}/analyses/latest": {
+      "get": {
+        "tags": ["Pull Requests"],
+        "summary": "Get latest analysis for a pull request",
+        "description": "Retrieve the most recent PRAgent change-impact analysis and summary.",
+        "operationId": "get_latest_pull_request_analysis_endpoint_api_v1_pull_requests__id__analyses_latest_get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PRAnalysisResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pull-requests/{id}/analyses": {
+      "get": {
+        "tags": ["Pull Requests"],
+        "summary": "List historical analyses for a pull request",
+        "description": "Retrieve all past PRAgent analysis reports for a pull request.",
+        "operationId": "list_pull_request_analyses_endpoint_api_v1_pull_requests__id__analyses_get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PRAnalysisResponse"
+                  },
+                  "title": "Response List Pull Request Analyses Endpoint Api V1 Pull Requests  Id  Analyses Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{pid}": {
       "get": {
         "tags": ["Projects"],
@@ -970,6 +2034,117 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/sync-mode": {
+      "patch": {
+        "tags": ["Projects"],
+        "summary": "Update project synchronization mode",
+        "description": "Transition project sync mode between metadata_only and indexed with purge consequences (ADR-022).",
+        "operationId": "update_project_sync_mode_api_v1_projects__pid__sync_mode_patch",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSyncModeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncModeTransitionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/purge": {
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Purge project data",
+        "description": "Purge project data across PostgreSQL, Redis, and LangGraph checkpoints with cryptographic verification report (M9-03, docs/11).",
+        "operationId": "purge_project_data_api_v1_projects__pid__purge_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/PurgeProjectDataRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionVerificationReport"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -1125,6 +2300,622 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/review-rules": {
+      "get": {
+        "tags": ["Review Rules"],
+        "summary": "List project review rules",
+        "description": "List all active or configured ReviewBuddy checklist and custom review rules for a project.",
+        "operationId": "list_project_review_rules_api_v1_projects__project_id__review_rules_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "enabled_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Filter for enabled rules only",
+              "default": false,
+              "title": "Enabled Only"
+            },
+            "description": "Filter for enabled rules only"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional filter by rule category",
+              "title": "Category"
+            },
+            "description": "Optional filter by rule category"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewRuleResponse"
+                  },
+                  "title": "Response List Project Review Rules Api V1 Projects  Project Id  Review Rules Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Review Rules"],
+        "summary": "Create custom review rule",
+        "description": "Create a new custom checklist rule for the project.",
+        "operationId": "create_project_review_rule_api_v1_projects__project_id__review_rules_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRuleCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewRuleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/review-rules/{rule_id}": {
+      "get": {
+        "tags": ["Review Rules"],
+        "summary": "Get review rule by ID",
+        "description": "Retrieve details of a single review rule by primary key.",
+        "operationId": "get_project_review_rule_api_v1_projects__project_id__review_rules__rule_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "rule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Rule Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewRuleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Review Rules"],
+        "summary": "Update review rule",
+        "description": "Modify parameters or toggle enabled state of an existing review rule.",
+        "operationId": "update_project_review_rule_api_v1_projects__project_id__review_rules__rule_id__patch",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "rule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Rule Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRuleUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewRuleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Review Rules"],
+        "summary": "Delete custom review rule",
+        "description": "Permanently delete a custom review rule from the project.",
+        "operationId": "delete_project_review_rule_api_v1_projects__project_id__review_rules__rule_id__delete",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "rule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Rule Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/review-rules/evaluate": {
+      "post": {
+        "tags": ["Review Rules"],
+        "summary": "Evaluate ReviewBuddy checklist",
+        "description": "Evaluate project review rules against submitted code diff or files.",
+        "operationId": "evaluate_review_checklist_api_v1_projects__project_id__review_rules_evaluate_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChecklistEvaluationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChecklistEvaluationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/bugs": {
+      "get": {
+        "tags": ["Bug Memory"],
+        "summary": "List project bug records",
+        "description": "Retrieve paginated bug records tracked for a project, optionally filtered by module hint.",
+        "operationId": "list_project_bugs_api_v1_projects__project_id__bugs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "module_hint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional module or subsystem hint filter",
+              "title": "Module Hint"
+            },
+            "description": "Optional module or subsystem hint filter"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BugRecordResponse"
+                  },
+                  "title": "Response List Project Bugs Api V1 Projects  Project Id  Bugs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Bug Memory"],
+        "summary": "Log or upsert a project bug record",
+        "description": "Normalize an error trace, deduplicate by signature fingerprint, and record occurrence count.",
+        "operationId": "create_project_bug_api_v1_projects__project_id__bugs_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BugRecordCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BugRecordDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/bugs/match": {
+      "post": {
+        "tags": ["Bug Memory"],
+        "summary": "Match error trace against Bug Memory",
+        "description": "Find similar historical bugs using hybrid fingerprint, token, and module similarity, with AI synthesis.",
+        "operationId": "match_project_bugs_api_v1_projects__project_id__bugs_match_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BugMatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BugMatchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bugs/{bug_id}": {
+      "get": {
+        "tags": ["Bug Memory"],
+        "summary": "Get bug record detail with resolutions",
+        "description": "Retrieve a single bug record by ID, including its full resolution history.",
+        "operationId": "get_bug_record_api_v1_bugs__bug_id__get",
+        "parameters": [
+          {
+            "name": "bug_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bug Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BugRecordDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bugs/{bug_id}/resolutions": {
+      "post": {
+        "tags": ["Bug Memory"],
+        "summary": "Add resolution to a bug record",
+        "description": "Document root cause, code fix, and affected files for a resolved bug record.",
+        "operationId": "add_bug_resolution_api_v1_bugs__bug_id__resolutions_post",
+        "parameters": [
+          {
+            "name": "bug_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bug Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BugResolutionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BugResolutionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{pid}/analyses": {
       "post": {
         "tags": ["Analysis"],
@@ -1263,6 +3054,284 @@
                     "$ref": "#/components/schemas/AnalysisJobResponse"
                   },
                   "title": "Response List Jobs Api V1 Projects  Pid  Jobs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/retention": {
+      "get": {
+        "tags": ["Retention"],
+        "summary": "Get Project Retention",
+        "description": "Retrieve effective retention windows for a project (including project overrides).",
+        "operationId": "get_project_retention_api_v1_projects__pid__retention_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EffectiveRetentionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/retention/{kind}": {
+      "put": {
+        "tags": ["Retention"],
+        "summary": "Update Project Retention",
+        "description": "Set a project-level retention override for a category.",
+        "operationId": "update_project_retention_api_v1_projects__pid__retention__kind__put",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Kind"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRetentionPolicyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionPolicyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Retention"],
+        "summary": "Reset Project Retention",
+        "description": "Reset a project-level retention override back to workspace default.",
+        "operationId": "reset_project_retention_api_v1_projects__pid__retention__kind__delete",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Kind"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/retention/sweep": {
+      "post": {
+        "tags": ["Retention"],
+        "summary": "Trigger Project Retention Sweep",
+        "description": "Trigger an on-demand retention cleanup sweep for this project.",
+        "operationId": "trigger_project_retention_sweep_api_v1_projects__pid__retention_sweep_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionSweepResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{pid}/audit-events": {
+      "get": {
+        "tags": ["Audit"],
+        "summary": "List project audit events",
+        "description": "Retrieve append-only audit events scoped to a specific project. Requires project read permission.",
+        "operationId": "list_project_audit_events_api_v1_projects__pid__audit_events_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by event action",
+              "title": "Action"
+            },
+            "description": "Filter by event action"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Maximum number of events to return",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of events to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEventItem"
+                  },
+                  "title": "Response List Project Audit Events Api V1 Projects  Pid  Audit Events Get"
                 }
               }
             }
@@ -2487,6 +4556,58 @@
         }
       }
     },
+    "/api/v1/projects/{pid}/consents/{cid}/revoke": {
+      "post": {
+        "tags": ["Consent"],
+        "summary": "Revoke Project Consent",
+        "description": "Revoke a previously granted consent record immediately.",
+        "operationId": "revoke_project_consent_api_v1_projects__pid__consents__cid__revoke_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "cid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{pid}/consents/{cid}": {
       "delete": {
         "tags": ["Consent"],
@@ -3285,6 +5406,50 @@
   },
   "components": {
     "schemas": {
+      "AcceptInvitationRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Token",
+            "description": "Raw invitation token"
+          }
+        },
+        "type": "object",
+        "required": ["token"],
+        "title": "AcceptInvitationRequest",
+        "description": "Payload for accepting a workspace invitation."
+      },
+      "AcceptInvitationResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "workspace_name": {
+            "type": "string",
+            "title": "Workspace Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          }
+        },
+        "type": "object",
+        "required": ["status", "workspace_id", "workspace_name", "role", "user_id"],
+        "title": "AcceptInvitationResponse",
+        "description": "Response returned after successfully accepting an invitation."
+      },
       "AddProjectMemberRequest": {
         "properties": {
           "user_id": {
@@ -3322,6 +5487,11 @@
         "required": ["user_id"],
         "title": "AddWorkspaceMemberRequest",
         "description": "Payload for adding a member to a workspace."
+      },
+      "AlertSeverity": {
+        "type": "string",
+        "enum": ["INFO", "WARNING", "CRITICAL"],
+        "title": "AlertSeverity"
       },
       "AnalysisJobCreatedResponse": {
         "properties": {
@@ -3466,6 +5636,80 @@
         "required": ["id", "project_id", "type", "status", "created_at"],
         "title": "AnalysisJobResponse",
         "description": "Analysis job model representing asynchronous work (docs/03 \u00a73.3)."
+      },
+      "AuditEventItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id"
+          },
+          "actor_kind": {
+            "type": "string",
+            "title": "Actor Kind"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "target_kind": {
+            "type": "string",
+            "title": "Target Kind"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "ip_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip Hash"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "workspace_id", "actor_kind", "action", "target_kind", "created_at"],
+        "title": "AuditEventItem",
+        "description": "Serialized audit event for workspace governance and security logs (docs/03 \u00a73.5 & docs/07 \u00a716)."
       },
       "BatchFindingsRequest": {
         "properties": {
@@ -4090,6 +6334,689 @@
         "title": "BrainSummaryResponse",
         "description": "Aggregated metrics and health overview for Project Brain."
       },
+      "BugMatchCandidateResponse": {
+        "properties": {
+          "bug": {
+            "$ref": "#/components/schemas/BugRecordDetailResponse"
+          },
+          "score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "description": "Similarity score between 0.0 and 1.0"
+          },
+          "match_type": {
+            "type": "string",
+            "title": "Match Type",
+            "description": "Classification: exact_fingerprint, fuzzy_signature, or module_match"
+          }
+        },
+        "type": "object",
+        "required": ["bug", "score", "match_type"],
+        "title": "BugMatchCandidateResponse",
+        "description": "Candidate match with similarity score and matching classification."
+      },
+      "BugMatchRequest": {
+        "properties": {
+          "raw_error": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Raw Error",
+            "description": "Failing error text, stack trace, or incident log snippet"
+          },
+          "module_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Hint",
+            "description": "Optional module hint to prioritize candidates"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "description": "Maximum candidate matches to retrieve",
+            "default": 5
+          }
+        },
+        "type": "object",
+        "required": ["raw_error"],
+        "title": "BugMatchRequest",
+        "description": "Request payload to search project Bug Memory for similar past issues."
+      },
+      "BugMatchResponse": {
+        "properties": {
+          "matched": {
+            "type": "boolean",
+            "title": "Matched",
+            "description": "Whether similar historical bugs were found"
+          },
+          "normalized_error": {
+            "$ref": "#/components/schemas/NormalizedErrorSummary"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/BugMatchCandidateResponse"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation",
+            "description": "Synthesized comparison or explanation of similar past incidents and fixes"
+          },
+          "confidence_label": {
+            "type": "string",
+            "title": "Confidence Label",
+            "description": "Overall confidence category: high, medium, low, or none"
+          },
+          "recommended_fix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Fix",
+            "description": "Remediation or fix recommendation derived from previous resolutions"
+          }
+        },
+        "type": "object",
+        "required": ["matched", "normalized_error", "explanation", "confidence_label"],
+        "title": "BugMatchResponse",
+        "description": "Response payload returned by BugMemory matching and specialist explanation."
+      },
+      "BugRecordCreate": {
+        "properties": {
+          "raw_error": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Raw Error",
+            "description": "Raw error log, exception message, or stack trace snippet"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Optional human-readable title; auto-generated if omitted"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary",
+            "description": "Optional description or context about the occurrence"
+          },
+          "module_hint": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Hint",
+            "description": "Optional module or subsystem hint"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BugResolutionCreate"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional initial resolution if logging an already-resolved bug"
+          }
+        },
+        "type": "object",
+        "required": ["raw_error"],
+        "title": "BugRecordCreate",
+        "description": "Request payload to log a new or recurring error trace."
+      },
+      "BugRecordDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "error_signature": {
+            "type": "string",
+            "title": "Error Signature"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "module_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Hint"
+          },
+          "occurrence_count": {
+            "type": "integer",
+            "title": "Occurrence Count"
+          },
+          "resolutions_count": {
+            "type": "integer",
+            "title": "Resolutions Count",
+            "default": 0
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "raw_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Error"
+          },
+          "resolutions": {
+            "items": {
+              "$ref": "#/components/schemas/BugResolutionResponse"
+            },
+            "type": "array",
+            "title": "Resolutions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "project_id",
+          "fingerprint",
+          "error_signature",
+          "title",
+          "occurrence_count",
+          "first_seen_at",
+          "last_seen_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BugRecordDetailResponse",
+        "description": "Detailed response schema for a single bug record with historical resolutions."
+      },
+      "BugRecordResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "error_signature": {
+            "type": "string",
+            "title": "Error Signature"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "module_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Hint"
+          },
+          "occurrence_count": {
+            "type": "integer",
+            "title": "Occurrence Count"
+          },
+          "resolutions_count": {
+            "type": "integer",
+            "title": "Resolutions Count",
+            "default": 0
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "project_id",
+          "fingerprint",
+          "error_signature",
+          "title",
+          "occurrence_count",
+          "first_seen_at",
+          "last_seen_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BugRecordResponse",
+        "description": "Response schema for a bug record item in list views."
+      },
+      "BugResolutionCreate": {
+        "properties": {
+          "cause": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Cause",
+            "description": "Root cause analysis of the bug"
+          },
+          "fix_summary": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Fix Summary",
+            "description": "Summary of the code modification or architectural fix applied"
+          },
+          "files": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Files",
+            "description": "List of changed file paths, symbols, and line citations"
+          },
+          "finding_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finding Id",
+            "description": "Optional ID of associated security or review finding"
+          }
+        },
+        "type": "object",
+        "required": ["cause", "fix_summary"],
+        "title": "BugResolutionCreate",
+        "description": "Request payload to add a resolution to a bug record."
+      },
+      "BugResolutionResponse": {
+        "properties": {
+          "cause": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Cause",
+            "description": "Root cause analysis of the bug"
+          },
+          "fix_summary": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Fix Summary",
+            "description": "Summary of the code modification or architectural fix applied"
+          },
+          "files": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Files",
+            "description": "List of changed file paths, symbols, and line citations"
+          },
+          "finding_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finding Id",
+            "description": "Optional ID of associated security or review finding"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "bug_record_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Bug Record Id"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": ["cause", "fix_summary", "id", "bug_record_id", "created_at", "updated_at"],
+        "title": "BugResolutionResponse",
+        "description": "Response schema for documented bug resolution."
+      },
+      "ChecklistEvaluationRequest": {
+        "properties": {
+          "diff": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diff",
+            "description": "Unified diff content to evaluate against review rules."
+          },
+          "files": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Files",
+            "description": "List of file dicts with 'path' and 'content' keys."
+          }
+        },
+        "type": "object",
+        "title": "ChecklistEvaluationRequest",
+        "description": "Request payload to evaluate ReviewBuddy checklist against files or unified diff."
+      },
+      "ChecklistEvaluationResponse": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ChecklistEvaluationSummary"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/ChecklistFinding"
+            },
+            "type": "array",
+            "title": "Findings"
+          }
+        },
+        "type": "object",
+        "required": ["project_id", "summary", "findings"],
+        "title": "ChecklistEvaluationResponse",
+        "description": "Full response for a ReviewBuddy checklist evaluation."
+      },
+      "ChecklistEvaluationSummary": {
+        "properties": {
+          "total_rules_evaluated": {
+            "type": "integer",
+            "title": "Total Rules Evaluated"
+          },
+          "total_findings": {
+            "type": "integer",
+            "title": "Total Findings"
+          },
+          "critical_count": {
+            "type": "integer",
+            "title": "Critical Count"
+          },
+          "high_count": {
+            "type": "integer",
+            "title": "High Count"
+          },
+          "medium_count": {
+            "type": "integer",
+            "title": "Medium Count"
+          },
+          "low_count": {
+            "type": "integer",
+            "title": "Low Count"
+          },
+          "info_count": {
+            "type": "integer",
+            "title": "Info Count"
+          },
+          "passed_checklist": {
+            "type": "boolean",
+            "title": "Passed Checklist"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_rules_evaluated",
+          "total_findings",
+          "critical_count",
+          "high_count",
+          "medium_count",
+          "low_count",
+          "info_count",
+          "passed_checklist"
+        ],
+        "title": "ChecklistEvaluationSummary",
+        "description": "Summary metrics of a review evaluation."
+      },
+      "ChecklistFinding": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "file_path": {
+            "type": "string",
+            "title": "File Path"
+          },
+          "start_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Line"
+          },
+          "end_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Line"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "suggested_fix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Fix"
+          },
+          "evidence_level": {
+            "type": "string",
+            "title": "Evidence Level",
+            "default": "E1"
+          },
+          "snippet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snippet"
+          }
+        },
+        "type": "object",
+        "required": ["rule_id", "title", "category", "severity", "file_path", "message"],
+        "title": "ChecklistFinding",
+        "description": "An individual checklist finding identified by ReviewBuddy."
+      },
       "CodeRelationshipItem": {
         "properties": {
           "id": {
@@ -4495,6 +7422,36 @@
           "is_active": {
             "type": "boolean",
             "title": "Is Active"
+          },
+          "purged_counts": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purged Counts"
+          },
+          "sync_mode_updated": {
+            "type": "boolean",
+            "title": "Sync Mode Updated",
+            "default": false
+          },
+          "new_sync_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Sync Mode"
           }
         },
         "type": "object",
@@ -4723,6 +7680,42 @@
         "title": "CreateConsentRequest",
         "description": "Payload for granting source-transmission or indexing consent."
       },
+      "CreateInvitationRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 3,
+            "title": "Email",
+            "description": "Email address of the invitee"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "admin | member | viewer",
+            "default": "member"
+          }
+        },
+        "type": "object",
+        "required": ["email"],
+        "title": "CreateInvitationRequest",
+        "description": "Payload for inviting a user to a workspace."
+      },
+      "CreateInvitationResponse": {
+        "properties": {
+          "invitation": {
+            "$ref": "#/components/schemas/WorkspaceInvitationResponse"
+          },
+          "accept_url": {
+            "type": "string",
+            "title": "Accept Url"
+          }
+        },
+        "type": "object",
+        "required": ["invitation", "accept_url"],
+        "title": "CreateInvitationResponse",
+        "description": "Response returned when an invitation is issued."
+      },
       "CreateProjectRequest": {
         "properties": {
           "name": {
@@ -4841,6 +7834,132 @@
         "required": ["name", "slug"],
         "title": "CreateWorkspaceRequest",
         "description": "Payload for creating a new workspace."
+      },
+      "DeletionVerificationReport": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "requested_by": {
+            "type": "string",
+            "title": "Requested By"
+          },
+          "purged_at": {
+            "type": "string",
+            "title": "Purged At"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "stores": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Stores"
+          },
+          "verification_hash": {
+            "type": "string",
+            "title": "Verification Hash"
+          },
+          "sync_mode": {
+            "type": "string",
+            "title": "Sync Mode"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "workspace_id",
+          "requested_by",
+          "purged_at",
+          "scope",
+          "stores",
+          "verification_hash",
+          "sync_mode",
+          "status"
+        ],
+        "title": "DeletionVerificationReport",
+        "description": "Cryptographically signed deletion verification report (docs/11, Screen S-10)."
+      },
+      "EffectiveRetentionCategory": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "default_days": {
+            "type": "integer",
+            "title": "Default Days"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "is_custom": {
+            "type": "boolean",
+            "title": "Is Custom"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": ["kind", "days", "default_days", "description", "is_custom", "source"],
+        "title": "EffectiveRetentionCategory",
+        "description": "Effective retention category status."
+      },
+      "EffectiveRetentionResponse": {
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "backup_retention_notice": {
+            "type": "string",
+            "title": "Backup Retention Notice"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/EffectiveRetentionCategory"
+            },
+            "type": "array",
+            "title": "Categories"
+          }
+        },
+        "type": "object",
+        "required": ["workspace_id", "backup_retention_notice", "categories"],
+        "title": "EffectiveRetentionResponse",
+        "description": "Effective retention window settings for workspace or project."
       },
       "ExtensionHeartbeatResponse": {
         "properties": {
@@ -5734,6 +8853,90 @@
         "required": ["to_status"],
         "title": "FindingStatusTransitionRequest"
       },
+      "GitHubConnectionStatusSummary": {
+        "properties": {
+          "connection_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "external_account": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Account"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scopes",
+            "default": []
+          },
+          "can_perform_analysis": {
+            "type": "boolean",
+            "title": "Can Perform Analysis",
+            "default": false
+          },
+          "missing_permissions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Permissions",
+            "default": []
+          },
+          "resolution_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Hint"
+          },
+          "revoked_at": {
+            "title": "Revoked At"
+          },
+          "updated_at": {
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": ["status"],
+        "title": "GitHubConnectionStatusSummary",
+        "description": "Lifecycle status, granted scopes, and analysis capability of a GitHub connection."
+      },
       "GitHubConnectionSummary": {
         "properties": {
           "id": {
@@ -5782,6 +8985,72 @@
         ],
         "title": "GitHubConnectionSummary",
         "description": "Safe public representation of a GitHub connection without credentials."
+      },
+      "GitHubLinkRequest": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "default_branch": {
+            "type": "string",
+            "title": "Default Branch",
+            "default": "main"
+          }
+        },
+        "type": "object",
+        "required": ["full_name"],
+        "title": "GitHubLinkRequest",
+        "description": "Payload to bind a project to a GitHub repository."
+      },
+      "GitHubRepositorySummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "connection_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connection Id"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "default_branch": {
+            "type": "string",
+            "title": "Default Branch"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "last_synced_at": {
+            "title": "Last Synced At"
+          },
+          "created_at": {
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "connection_id",
+          "full_name",
+          "default_branch",
+          "is_active",
+          "created_at"
+        ],
+        "title": "GitHubRepositorySummary",
+        "description": "Summary of a linked GitHub repository."
       },
       "GraphEdge": {
         "properties": {
@@ -5911,10 +9180,16 @@
             "type": "string",
             "title": "Status",
             "default": "ok"
+          },
+          "build_sha": {
+            "type": "string",
+            "title": "Build Sha",
+            "default": "dev"
           }
         },
         "type": "object",
-        "title": "HealthResponse"
+        "title": "HealthResponse",
+        "description": "Liveness probe response model."
       },
       "ManifestDiffRequest": {
         "properties": {
@@ -6019,6 +9294,132 @@
         "required": ["path", "content_hash"],
         "title": "MissingFileEntry",
         "description": "File item requiring full metadata/symbol extraction upload."
+      },
+      "NormalizedErrorSummary": {
+        "properties": {
+          "exception_type": {
+            "type": "string",
+            "title": "Exception Type"
+          },
+          "clean_message": {
+            "type": "string",
+            "title": "Clean Message"
+          },
+          "module_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Hint"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "normalized_signature": {
+            "type": "string",
+            "title": "Normalized Signature"
+          }
+        },
+        "type": "object",
+        "required": ["exception_type", "clean_message", "fingerprint", "normalized_signature"],
+        "title": "NormalizedErrorSummary",
+        "description": "Normalized signature and canonical characteristics of an input error."
+      },
+      "PRAnalysisResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "pull_request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Pull Request Id"
+          },
+          "head_sha": {
+            "type": "string",
+            "title": "Head Sha"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "risk_level": {
+            "type": "string",
+            "title": "Risk Level"
+          },
+          "summary": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Summary"
+          },
+          "impact": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Impact"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "project_id",
+          "pull_request_id",
+          "head_sha",
+          "risk_level",
+          "summary",
+          "impact"
+        ],
+        "title": "PRAnalysisResponse",
+        "description": "API response model for a PR analysis result."
       },
       "ProjectMemberResponse": {
         "properties": {
@@ -6133,6 +9534,129 @@
         "title": "ProjectResponse",
         "description": "Serialized codebase project entity."
       },
+      "PullRequestSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "repository_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Repository Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "author_login": {
+            "type": "string",
+            "title": "Author Login"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "head_sha": {
+            "type": "string",
+            "title": "Head Sha"
+          },
+          "base_sha": {
+            "type": "string",
+            "title": "Base Sha"
+          },
+          "head_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Ref"
+          },
+          "base_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Ref"
+          },
+          "diff_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diff Url"
+          },
+          "merged_at": {
+            "title": "Merged At"
+          },
+          "closed_at": {
+            "title": "Closed At"
+          },
+          "created_at": {
+            "title": "Created At"
+          },
+          "updated_at": {
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "repository_id",
+          "number",
+          "title",
+          "author_login",
+          "state",
+          "head_sha",
+          "base_sha",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PullRequestSummary",
+        "description": "Mirrored pull request summary model."
+      },
+      "PurgeProjectDataRequest": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Purge scope: all | chunks_and_embeddings",
+            "default": "all"
+          },
+          "confirmation_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Slug",
+            "description": "Typed confirmation slug matching the target project"
+          }
+        },
+        "type": "object",
+        "title": "PurgeProjectDataRequest",
+        "description": "Payload for executing a project data purge (M9-03)."
+      },
       "PutManifestRequest": {
         "properties": {
           "scan_run_id": {
@@ -6241,6 +9765,23 @@
             "title": "Redis",
             "default": "skipped"
           },
+          "migrations": {
+            "type": "string",
+            "title": "Migrations",
+            "default": "skipped"
+          },
+          "kill_switches": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Kill Switches"
+          },
+          "active_alerts_count": {
+            "type": "integer",
+            "title": "Active Alerts Count",
+            "default": 0
+          },
           "details": {
             "anyOf": [
               {
@@ -6256,7 +9797,382 @@
         },
         "type": "object",
         "required": ["status"],
-        "title": "ReadinessResponse"
+        "title": "ReadinessResponse",
+        "description": "Readiness probe response model."
+      },
+      "RetentionPolicyResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "is_override": {
+            "type": "boolean",
+            "title": "Is Override",
+            "default": false
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "workspace_id", "kind", "days", "created_at", "updated_at"],
+        "title": "RetentionPolicyResponse",
+        "description": "Configured retention policy record."
+      },
+      "RetentionSweepResponse": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "swept_at": {
+            "type": "string",
+            "title": "Swept At"
+          },
+          "purged_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Purged Counts"
+          },
+          "effective_windows": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Effective Windows"
+          }
+        },
+        "type": "object",
+        "required": ["project_id", "swept_at", "purged_counts", "effective_windows"],
+        "title": "RetentionSweepResponse",
+        "description": "Summary of executed retention cleanup sweep."
+      },
+      "ReviewRuleCreate": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 3,
+            "title": "Rule Id",
+            "description": "Unique rule code within the project, e.g. 'RULE-001' or 'REV-INPUT-02'."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 3,
+            "title": "Title",
+            "description": "Human-readable rule title."
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "Rule category: input_validation, error_handling, authorization, testing, documentation, quality, security, other.",
+            "default": "quality"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity",
+            "description": "Severity level: critical, high, medium, low, info.",
+            "default": "medium"
+          },
+          "scope_selector": {
+            "$ref": "#/components/schemas/ScopeSelector",
+            "description": "Scope selector defining which files this rule checks."
+          },
+          "check_type": {
+            "type": "string",
+            "title": "Check Type",
+            "description": "Check type: require_validation, require_error_handling, require_auth, require_test, require_docs, pattern_forbidden, pattern_required, custom_regex."
+          },
+          "check_config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Check Config",
+            "description": "Configuration parameters specific to check_type."
+          },
+          "message": {
+            "type": "string",
+            "minLength": 5,
+            "title": "Message",
+            "description": "Explanation message emitted when this rule triggers."
+          },
+          "suggested_fix_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Fix Template",
+            "description": "Optional suggested remediation instruction."
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "title": "Is Enabled",
+            "description": "Whether the rule is active during reviews.",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": ["rule_id", "title", "check_type", "message"],
+        "title": "ReviewRuleCreate",
+        "description": "Payload for creating a custom review rule."
+      },
+      "ReviewRuleResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "scope_selector": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Scope Selector"
+          },
+          "check_type": {
+            "type": "string",
+            "title": "Check Type"
+          },
+          "check_config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Check Config"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "suggested_fix_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Fix Template"
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "title": "Is Enabled"
+          },
+          "is_builtin": {
+            "type": "boolean",
+            "title": "Is Builtin"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "project_id",
+          "rule_id",
+          "title",
+          "category",
+          "severity",
+          "scope_selector",
+          "check_type",
+          "check_config",
+          "message",
+          "is_enabled",
+          "is_builtin"
+        ],
+        "title": "ReviewRuleResponse",
+        "description": "API response model for review rules."
+      },
+      "ReviewRuleUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity"
+          },
+          "scope_selector": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScopeSelector"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "check_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Type"
+          },
+          "check_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Config"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "suggested_fix_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Fix Template"
+          },
+          "is_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Enabled"
+          }
+        },
+        "type": "object",
+        "title": "ReviewRuleUpdate",
+        "description": "Payload for updating an existing review rule."
       },
       "ScanRunItem": {
         "properties": {
@@ -6345,6 +10261,51 @@
         "required": ["id", "project_id", "origin", "status", "created_at", "updated_at"],
         "title": "ScanRunItem",
         "description": "Serialized summary of a scan run."
+      },
+      "ScopeSelector": {
+        "properties": {
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Paths",
+            "description": "Glob patterns of file paths this rule applies to."
+          },
+          "languages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Languages",
+            "description": "Language identifiers, e.g. ['python', 'typescript']."
+          },
+          "ignore": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ignore",
+            "description": "Glob patterns to ignore."
+          }
+        },
+        "type": "object",
+        "title": "ScopeSelector",
+        "description": "File and language matching selector for review rules."
       },
       "SnapshotDetail": {
         "properties": {
@@ -6763,6 +10724,164 @@
         "required": ["description"],
         "title": "SuggestedFixPayload"
       },
+      "SyncModeTransitionResponse": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "previous_sync_mode": {
+            "type": "string",
+            "title": "Previous Sync Mode"
+          },
+          "new_sync_mode": {
+            "type": "string",
+            "title": "New Sync Mode"
+          },
+          "purged_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Purged Counts"
+          },
+          "transitioned_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Transitioned At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "workspace_id",
+          "previous_sync_mode",
+          "new_sync_mode",
+          "purged_counts",
+          "transitioned_at"
+        ],
+        "title": "SyncModeTransitionResponse",
+        "description": "Result of transitioning project synchronization mode with purge metrics."
+      },
+      "SystemAlert": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/AlertSeverity"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "current_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "title": "Current Value"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": ["name", "severity", "message", "metric", "current_value"],
+        "title": "SystemAlert",
+        "description": "Normalized operational alert item for monitoring and probes."
+      },
+      "SystemAlertsResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "alerts_count": {
+            "type": "integer",
+            "title": "Alerts Count"
+          },
+          "alerts": {
+            "items": {
+              "$ref": "#/components/schemas/SystemAlert"
+            },
+            "type": "array",
+            "title": "Alerts"
+          },
+          "evaluated_at": {
+            "type": "string",
+            "title": "Evaluated At"
+          }
+        },
+        "type": "object",
+        "required": ["status", "alerts_count", "evaluated_at"],
+        "title": "SystemAlertsResponse",
+        "description": "Operational alerts query response model."
+      },
+      "TriggerPRAnalysisRequest": {
+        "properties": {
+          "diff_override": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diff Override",
+            "description": "Optional unified diff to evaluate instead of remote GitHub diff"
+          },
+          "post_comment": {
+            "type": "boolean",
+            "title": "Post Comment",
+            "description": "Whether to request posting summary comment to GitHub (requires human approval)",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "TriggerPRAnalysisRequest",
+        "description": "Request payload to initiate or re-run a pull request analysis."
+      },
       "UpdateProjectRequest": {
         "properties": {
           "name": {
@@ -6839,6 +10958,34 @@
         "type": "object",
         "title": "UpdateProjectRequest",
         "description": "Payload for updating mutable project attributes."
+      },
+      "UpdateRetentionPolicyRequest": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "maximum": 3650.0,
+            "minimum": 1.0,
+            "title": "Days",
+            "description": "Retention period in days (minimum 1 day)"
+          }
+        },
+        "type": "object",
+        "required": ["days"],
+        "title": "UpdateRetentionPolicyRequest",
+        "description": "Payload to update retention period for a category."
+      },
+      "UpdateSyncModeRequest": {
+        "properties": {
+          "sync_mode": {
+            "type": "string",
+            "title": "Sync Mode",
+            "description": "Target sync mode: metadata_only | indexed"
+          }
+        },
+        "type": "object",
+        "required": ["sync_mode"],
+        "title": "UpdateSyncModeRequest",
+        "description": "Payload for transitioning project synchronization mode (ADR-022)."
       },
       "UpdateWorkspaceMemberRequest": {
         "properties": {
@@ -7036,6 +11183,53 @@
         "required": ["loc", "msg", "type"],
         "title": "ValidationError"
       },
+      "VerifyInvitationResponse": {
+        "properties": {
+          "invitation_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Invitation Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "workspace_name": {
+            "type": "string",
+            "title": "Workspace Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "inviter_name": {
+            "type": "string",
+            "title": "Inviter Name"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invitation_id",
+          "workspace_id",
+          "workspace_name",
+          "email",
+          "role",
+          "inviter_name",
+          "expires_at"
+        ],
+        "title": "VerifyInvitationResponse",
+        "description": "Verification metadata for an invitation preview."
+      },
       "WaitlistSubmissionRequest": {
         "properties": {
           "email": {
@@ -7080,6 +11274,66 @@
         "required": ["email"],
         "title": "WaitlistSubmissionResponse",
         "description": "Response returned upon waitlist registration."
+      },
+      "WorkspaceInvitationResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "invited_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invited By"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "accepted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "workspace_id", "email", "role", "expires_at", "created_at"],
+        "title": "WorkspaceInvitationResponse",
+        "description": "Serialized workspace invitation entity."
       },
       "WorkspaceMemberResponse": {
         "properties": {

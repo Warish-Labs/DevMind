@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
@@ -12,6 +13,7 @@ from sqlalchemy.orm import selectinload
 
 from app.analysis.error_normalizer import ErrorNormalizer, NormalizedError
 from app.core.auth_context import AuthContext, SystemContext
+from app.core.ids import generate_uuid7
 from app.persistence.models.bug_memory import BugRecord, BugResolution
 from app.persistence.repositories.base import BaseRepository
 
@@ -76,6 +78,7 @@ class BugRecordRepository(BaseRepository):
             return existing, False
 
         new_record = BugRecord(
+            id=generate_uuid7(),
             workspace_id=workspace_id,
             project_id=project_id,
             fingerprint=norm.fingerprint,
@@ -145,6 +148,80 @@ class BugRecordRepository(BaseRepository):
         )
         return list((await self.session.execute(stmt)).scalars().all())
 
+    async def search_similar_bugs(
+        self,
+        ctx: AuthContext | SystemContext,
+        project_id: UUID,
+        *,
+        fingerprint: str | None = None,
+        normalized_signature: str | None = None,
+        module_hint: str | None = None,
+        query_text: str | None = None,
+        limit: int = 5,
+    ) -> list[tuple[BugRecord, float, str]]:
+        """Search and rank candidate bug records by hybrid similarity (fingerprint, keyword, module).
+
+        Returns:
+            List of tuples (BugRecord, similarity_score, match_type) ordered by score descending.
+        """
+        self._validate_context(ctx)
+        stmt = select(BugRecord).where(BugRecord.project_id == project_id)
+        stmt = self._scope_workspace_query(stmt, BugRecord.workspace_id, ctx)
+        stmt = stmt.options(selectinload(BugRecord.resolutions))
+
+        candidates = list((await self.session.execute(stmt)).scalars().all())
+        if not candidates:
+            return []
+
+        # Prepare tokens for query text / normalized signature
+        query_tokens: set[str] = set()
+        if normalized_signature:
+            query_tokens.update(re.findall(r"[a-zA-Z0-9_]{3,}", normalized_signature.lower()))
+        if query_text:
+            query_tokens.update(re.findall(r"[a-zA-Z0-9_]{3,}", query_text.lower()))
+
+        scored: list[tuple[BugRecord, float, str]] = []
+        for cand in candidates:
+            # 1. Exact fingerprint match
+            if fingerprint and cand.fingerprint == fingerprint:
+                scored.append((cand, 1.0, "exact_fingerprint"))
+                continue
+
+            # 2. Token Jaccard overlap on signature, title, and summary
+            cand_tokens = set(
+                re.findall(
+                    r"[a-zA-Z0-9_]{3,}",
+                    (cand.error_signature + " " + cand.title + " " + (cand.summary or "")).lower(),
+                )
+            )
+            token_sim = 0.0
+            if query_tokens and cand_tokens:
+                intersection = query_tokens & cand_tokens
+                union = query_tokens | cand_tokens
+                token_sim = len(intersection) / len(union) if union else 0.0
+
+            # 3. Module hint match boost
+            module_boost = 0.0
+            if module_hint and cand.module_hint and module_hint.lower() == cand.module_hint.lower():
+                module_boost = 0.25
+
+            # Combined score capped at 0.95 (reserving 1.0 for exact fingerprint)
+            score = round(min(0.95, (token_sim * 0.7) + module_boost), 3)
+
+            match_type = "fuzzy_signature"
+            if module_boost > 0 and token_sim < 0.2:
+                match_type = "module_match"
+
+            if score >= 0.15:
+                scored.append((cand, score, match_type))
+
+        # Sort descending by score, then occurrence_count, then last_seen_at
+        scored.sort(
+            key=lambda item: (item[1], item[0].occurrence_count, item[0].last_seen_at),
+            reverse=True,
+        )
+        return scored[:limit]
+
     async def add_resolution(
         self,
         ctx: AuthContext | SystemContext,
@@ -164,6 +241,7 @@ class BugRecordRepository(BaseRepository):
             raise ValueError(f"BugRecord {bug_record_id} not found or inaccessible")
 
         resolution = BugResolution(
+            id=generate_uuid7(),
             bug_record_id=bug_record_id,
             cause=cause.strip(),
             fix_summary=fix_summary.strip(),

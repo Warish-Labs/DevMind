@@ -8,6 +8,7 @@ from app.orchestration.authcheck import (
     create_initial_authcheck_state,
     run_authcheck_specialist,
 )
+from app.orchestration.bug_memory import BugMemoryAgent
 from app.orchestration.checkpointer import (
     CheckpointerFactory,
     format_thread_id,
@@ -78,6 +79,7 @@ __all__ = [
     "AuthCheckAgent",
     "AuthCheckResult",
     "AuthCheckState",
+    "BugMemoryAgent",
     "BudgetState",
     "CheckpointerFactory",
     "CitationRef",

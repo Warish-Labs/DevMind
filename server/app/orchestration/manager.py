@@ -50,7 +50,7 @@ from app.orchestration.state import (
 
 logger = logging.getLogger("devmind.orchestration.manager")
 
-RELEASED_SPECIALISTS = frozenset({"codemate", "authcheck", "reviewbuddy", "pragent"})
+RELEASED_SPECIALISTS = frozenset({"codemate", "authcheck", "reviewbuddy", "pragent", "bugmemory"})
 
 # Deterministic keywords for security / auth intent detection
 _AUTH_KEYWORDS = frozenset(
@@ -132,6 +132,13 @@ def classify_intent_deterministically(request: RequestState) -> IntentState | No
             intent_name="pr_analysis",
             confidence=1.0,
             requires_specialists=["pragent"],
+        )
+    if job_type in ("bug_match", "bug_memory", "similar_bug"):
+        return IntentState(
+            category="bug_memory",
+            intent_name="match_bug",
+            confidence=1.0,
+            requires_specialists=["bugmemory"],
         )
     if job_type in ("comprehensive_review", "full_audit"):
         return IntentState(

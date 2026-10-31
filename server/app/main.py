@@ -105,6 +105,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     from app.api.audit import project_audit_router, workspace_audit_router
     from app.api.brain import router as brain_router
+    from app.api.bug_memory import bug_memory_router
     from app.api.consents import router as consents_router
     from app.api.extension import router as extension_router
     from app.api.findings import router as findings_router
@@ -148,6 +149,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_v1_router.include_router(pull_requests_router)
     api_v1_router.include_router(projects_router)
     api_v1_router.include_router(review_rules_router)
+    api_v1_router.include_router(bug_memory_router)
     api_v1_router.include_router(project_analyses_router)
     api_v1_router.include_router(project_retention_router)
     api_v1_router.include_router(project_audit_router)
