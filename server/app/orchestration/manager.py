@@ -36,6 +36,7 @@ from app.llm.schemas import AgentPlan
 from app.orchestration.authcheck import run_authcheck_specialist
 from app.orchestration.checkpointer import format_thread_id
 from app.orchestration.codemate import run_codemate_specialist
+from app.orchestration.docsalive import run_docsalive_specialist
 from app.orchestration.pragent import run_pragent_specialist
 from app.orchestration.reviewbuddy import run_reviewbuddy_specialist
 from app.orchestration.state import (
@@ -50,7 +51,9 @@ from app.orchestration.state import (
 
 logger = logging.getLogger("devmind.orchestration.manager")
 
-RELEASED_SPECIALISTS = frozenset({"codemate", "authcheck", "reviewbuddy", "pragent", "bugmemory"})
+RELEASED_SPECIALISTS = frozenset(
+    {"codemate", "authcheck", "reviewbuddy", "pragent", "bugmemory", "docsalive"}
+)
 
 # Deterministic keywords for security / auth intent detection
 _AUTH_KEYWORDS = frozenset(
@@ -139,6 +142,13 @@ def classify_intent_deterministically(request: RequestState) -> IntentState | No
             intent_name="match_bug",
             confidence=1.0,
             requires_specialists=["bugmemory"],
+        )
+    if job_type in ("doc_check", "living_doc", "docsalive", "documentation_check", "doc_drift"):
+        return IntentState(
+            category="documentation",
+            intent_name="documentation_drift_check",
+            confidence=1.0,
+            requires_specialists=["docsalive"],
         )
     if job_type in ("comprehensive_review", "full_audit"):
         return IntentState(
@@ -373,6 +383,10 @@ def route_specialists(state: RunState) -> list[str]:
         destinations.append("authcheck")
     if "reviewbuddy" in specialists:
         destinations.append("reviewbuddy")
+    if "pragent" in specialists:
+        destinations.append("pragent")
+    if "docsalive" in specialists:
+        destinations.append("docsalive")
 
     return destinations or ["join"]
 
@@ -468,6 +482,39 @@ def pragent_node_factory(
         )
 
     return pragent_node
+
+
+def docsalive_node_factory(
+    router: LLMGatewayRouter | None = None,
+    prompt_loader: PromptLoader | None = None,
+    session: AsyncSession | None = None,
+):
+    """Factory creating the DocsAlive specialist node."""
+
+    async def docsalive_node(state: RunState) -> dict[str, Any]:
+        """Execute DocsAlive specialist task (docs/01 CAP-04, docs/05 §6.7)."""
+        logger.info("Executing DocsAlive specialist for run %s", state.get("run_id"))
+        task = SpecialistTask(
+            specialist="docsalive",
+            task_id=f"docsalive_{state['run_id'][:8]}",
+            status="running",
+            input_refs=[],
+            params={},
+        )
+        for t in state.get("plan", []):
+            if t.specialist == "docsalive":
+                task = t
+                break
+
+        return await run_docsalive_specialist(
+            state=state,
+            task=task,
+            router=router,
+            prompt_loader=prompt_loader,
+            session=session,
+        )
+
+    return docsalive_node
 
 
 def join_node(state: RunState) -> dict[str, Any]:
@@ -602,6 +649,10 @@ def build_agent_manager_graph(
         "pragent",
         pragent_node_factory(router=router, prompt_loader=prompt_loader, session=session),
     )
+    builder.add_node(
+        "docsalive",
+        docsalive_node_factory(router=router, prompt_loader=prompt_loader, session=session),
+    )
     builder.add_node("join", join_node)
     builder.add_node("verify", verify_node)
     builder.add_node("synthesize", synthesize_node)
@@ -619,12 +670,15 @@ def build_agent_manager_graph(
 
     # Specialist fan-out
     builder.add_conditional_edges(
-        "plan", route_specialists, ["codemate", "authcheck", "reviewbuddy", "pragent", "join"]
+        "plan",
+        route_specialists,
+        ["codemate", "authcheck", "reviewbuddy", "pragent", "docsalive", "join"],
     )
     builder.add_edge("codemate", "join")
     builder.add_edge("authcheck", "join")
     builder.add_edge("reviewbuddy", "join")
     builder.add_edge("pragent", "join")
+    builder.add_edge("docsalive", "join")
 
     # Verification and Synthesis
     builder.add_edge("join", "verify")

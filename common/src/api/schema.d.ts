@@ -13,7 +13,7 @@ export interface paths {
     };
     /**
      * Liveness probe
-     * @description Returns 200 OK if the application process is running. Does not check downstream dependencies.
+     * @description Returns 200 OK and build SHA if the application process is running. Does not check downstream dependencies.
      */
     get: operations["healthz_healthz_get"];
     put?: never;
@@ -33,7 +33,7 @@ export interface paths {
     };
     /**
      * Liveness probe
-     * @description Returns 200 OK if the application process is running. Does not check downstream dependencies.
+     * @description Returns 200 OK and build SHA if the application process is running. Does not check downstream dependencies.
      */
     get: operations["healthz_health_get"];
     put?: never;
@@ -53,9 +53,29 @@ export interface paths {
     };
     /**
      * Readiness probe
-     * @description Returns 200 OK if all required downstream dependencies are healthy and accepting traffic.
+     * @description Returns 200 OK if all required downstream dependencies (PostgreSQL, Redis, Alembic migration head) are healthy.
      */
     get: operations["readyz_readyz_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/readyz/alerts": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Operational alerts overview
+     * @description Returns evaluated system alerts against operational thresholds (docs/10 §14, §15, §18).
+     */
+    get: operations["readyz_alerts_readyz_alerts_get"];
     put?: never;
     post?: never;
     delete?: never;
@@ -119,6 +139,46 @@ export interface paths {
      *     Protected against bot spam and abuse via Cloudflare Turnstile and IP rate limiting.
      */
     post: operations["submit_contact_api_v1_public_contact_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/invitations/verify": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Verify invitation token
+     * @description Verify an invitation token and return preview metadata without consuming the token.
+     */
+    get: operations["verify_invitation_api_v1_invitations_verify_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/invitations/accept": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Accept workspace invitation
+     * @description Accept an invitation token with authenticated caller and join the workspace.
+     */
+    post: operations["accept_invitation_api_v1_invitations_accept_post"];
     delete?: never;
     options?: never;
     head?: never;
@@ -221,6 +281,50 @@ export interface paths {
     patch: operations["update_workspace_member_api_v1_workspaces__workspace_id__members__user_id__patch"];
     trace?: never;
   };
+  "/api/v1/workspaces/{workspace_id}/invitations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List workspace invitations
+     * @description List active/pending invitations for the specified workspace.
+     */
+    get: operations["list_workspace_invitations_api_v1_workspaces__workspace_id__invitations_get"];
+    put?: never;
+    /**
+     * Create workspace invitation
+     * @description Issue an invitation to join the workspace and send email notification via Resend.
+     */
+    post: operations["create_workspace_invitation_api_v1_workspaces__workspace_id__invitations_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/workspaces/{workspace_id}/invitations/{invitation_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Revoke workspace invitation
+     * @description Revoke a pending workspace invitation.
+     */
+    delete: operations["revoke_workspace_invitation_api_v1_workspaces__workspace_id__invitations__invitation_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/workspaces/{wid}/projects": {
     parameters: {
       query?: never;
@@ -264,6 +368,106 @@ export interface paths {
      * @description Revoke GitHub connection for the current user in this workspace.
      */
     delete: operations["delete_workspace_github_connection_api_v1_workspaces__wid__integrations_github_delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/workspaces/{wid}/integrations/github/status": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get GitHub connection lifecycle and permission health status
+     * @description Evaluate whether the user's GitHub credential is active, degraded, expired, or unlinked.
+     */
+    get: operations["get_workspace_github_connection_status_api_v1_workspaces__wid__integrations_github_status_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/workspaces/{wid}/integrations/github/rotate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Rotate GitHub connection credential envelope encryption
+     * @description Re-encrypt the user's stored GitHub credential under the latest primary encryption key.
+     */
+    post: operations["rotate_workspace_github_connection_api_v1_workspaces__wid__integrations_github_rotate_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/workspaces/{wid}/retention": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Workspace Retention
+     * @description Retrieve workspace retention windows and defaults.
+     */
+    get: operations["get_workspace_retention_api_v1_workspaces__wid__retention_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/workspaces/{wid}/retention/{kind}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Update Workspace Retention
+     * @description Configure retention window for a specific category at workspace level.
+     */
+    put: operations["update_workspace_retention_api_v1_workspaces__wid__retention__kind__put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/workspaces/{workspace_id}/audit-events": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List workspace audit events
+     * @description Retrieve append-only audit event log for the workspace. Requires workspace admin or owner.
+     */
+    get: operations["list_workspace_audit_events_api_v1_workspaces__workspace_id__audit_events_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -316,6 +520,186 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{pid}/github/link": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Link project to a GitHub repository
+     * @description Link project to a GitHub repository using the active connection.
+     */
+    post: operations["link_project_github_repository_api_v1_projects__pid__github_link_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/github/unlink": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Unlink project from GitHub repository
+     * @description Unlink repository binding from project.
+     */
+    delete: operations["unlink_project_github_repository_api_v1_projects__pid__github_unlink_delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/github/repository": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get linked GitHub repository for project
+     * @description Retrieve linked repository details for project.
+     */
+    get: operations["get_project_github_repository_api_v1_projects__pid__github_repository_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/pull-requests": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List mirrored pull requests for project
+     * @description List mirrored PRs for the linked repository.
+     */
+    get: operations["list_project_pull_requests_api_v1_projects__pid__pull_requests_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/pull-requests/sync": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Sync pull requests from GitHub REST API
+     * @description Fetch recent PRs from GitHub and mirror them locally.
+     */
+    post: operations["sync_project_pull_requests_api_v1_projects__pid__pull_requests_sync_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pull-requests/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get mirrored pull request by ID
+     * @description Retrieve PR mirror record by ID.
+     */
+    get: operations["get_pull_request_by_id_api_v1_pull_requests__id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pull-requests/{id}/analyze": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Trigger PRAgent change-impact analysis on a pull request
+     * @description Analyze PR diff, traverse symbol dependencies, evaluate checklist rules, and synthesize summary.
+     */
+    post: operations["analyze_pull_request_endpoint_api_v1_pull_requests__id__analyze_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pull-requests/{id}/analyses/latest": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get latest analysis for a pull request
+     * @description Retrieve the most recent PRAgent change-impact analysis and summary.
+     */
+    get: operations["get_latest_pull_request_analysis_endpoint_api_v1_pull_requests__id__analyses_latest_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pull-requests/{id}/analyses": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List historical analyses for a pull request
+     * @description Retrieve all past PRAgent analysis reports for a pull request.
+     */
+    get: operations["list_pull_request_analyses_endpoint_api_v1_pull_requests__id__analyses_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{pid}": {
     parameters: {
       query?: never;
@@ -342,6 +726,46 @@ export interface paths {
      * @description Update mutable project configuration (name, slug, visibility, sync_mode).
      */
     patch: operations["update_project_api_v1_projects__pid__patch"];
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/sync-mode": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Update project synchronization mode
+     * @description Transition project sync mode between metadata_only and indexed with purge consequences (ADR-022).
+     */
+    patch: operations["update_project_sync_mode_api_v1_projects__pid__sync_mode_patch"];
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/purge": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Purge project data
+     * @description Purge project data across PostgreSQL, Redis, and LangGraph checkpoints with cryptographic verification report (M9-03, docs/11).
+     */
+    post: operations["purge_project_data_api_v1_projects__pid__purge_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/api/v1/projects/{pid}/members": {
@@ -388,6 +812,326 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{project_id}/review-rules": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List project review rules
+     * @description List all active or configured ReviewBuddy checklist and custom review rules for a project.
+     */
+    get: operations["list_project_review_rules_api_v1_projects__project_id__review_rules_get"];
+    put?: never;
+    /**
+     * Create custom review rule
+     * @description Create a new custom checklist rule for the project.
+     */
+    post: operations["create_project_review_rule_api_v1_projects__project_id__review_rules_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/review-rules/{rule_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get review rule by ID
+     * @description Retrieve details of a single review rule by primary key.
+     */
+    get: operations["get_project_review_rule_api_v1_projects__project_id__review_rules__rule_id__get"];
+    put?: never;
+    post?: never;
+    /**
+     * Delete custom review rule
+     * @description Permanently delete a custom review rule from the project.
+     */
+    delete: operations["delete_project_review_rule_api_v1_projects__project_id__review_rules__rule_id__delete"];
+    options?: never;
+    head?: never;
+    /**
+     * Update review rule
+     * @description Modify parameters or toggle enabled state of an existing review rule.
+     */
+    patch: operations["update_project_review_rule_api_v1_projects__project_id__review_rules__rule_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/review-rules/evaluate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Evaluate ReviewBuddy checklist
+     * @description Evaluate project review rules against submitted code diff or files.
+     */
+    post: operations["evaluate_review_checklist_api_v1_projects__project_id__review_rules_evaluate_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/bugs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List project bug records
+     * @description Retrieve paginated bug records tracked for a project, optionally filtered by module hint.
+     */
+    get: operations["list_project_bugs_api_v1_projects__project_id__bugs_get"];
+    put?: never;
+    /**
+     * Log or upsert a project bug record
+     * @description Normalize an error trace, deduplicate by signature fingerprint, and record occurrence count.
+     */
+    post: operations["create_project_bug_api_v1_projects__project_id__bugs_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/bugs/match": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Match error trace against Bug Memory
+     * @description Find similar historical bugs using hybrid fingerprint, token, and module similarity, with AI synthesis.
+     */
+    post: operations["match_project_bugs_api_v1_projects__project_id__bugs_match_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/bugs/{bug_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get bug record detail with resolutions
+     * @description Retrieve a single bug record by ID, including its full resolution history.
+     */
+    get: operations["get_bug_record_api_v1_bugs__bug_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/bugs/{bug_id}/resolutions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Add resolution to a bug record
+     * @description Document root cause, code fix, and affected files for a resolved bug record.
+     */
+    post: operations["add_bug_resolution_api_v1_bugs__bug_id__resolutions_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/docs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List project documentation records
+     * @description Retrieve tracked documentation files for a project, optionally filtered by kind.
+     */
+    get: operations["list_project_docs_api_v1_projects__project_id__docs_get"];
+    put?: never;
+    /**
+     * Register or update project documentation
+     * @description Register or update a documentation file, parse sections and code mentions.
+     */
+    post: operations["register_project_doc_api_v1_projects__project_id__docs_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/docs/detect-drift": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Detect documentation drift and synthesize patch proposals
+     * @description Runs DocsAlive drift detection against ground-truth code symbols and routes.
+     */
+    post: operations["detect_doc_drift_api_v1_projects__project_id__docs_detect_drift_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/docs/drift": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List documentation drift items
+     * @description Retrieve tracked documentation drift items, filtered by status or kind.
+     */
+    get: operations["list_project_drift_items_api_v1_projects__project_id__docs_drift_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/docs/{doc_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get documentation record detail
+     * @description Retrieve a documentation record with cached snapshot and extracted symbol metadata.
+     */
+    get: operations["get_project_doc_api_v1_projects__project_id__docs__doc_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/docs/drift/{drift_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get drift item and patch proposal
+     * @description Retrieve a single drift item with its proposed unified diff patch.
+     */
+    get: operations["get_drift_item_api_v1_docs_drift__drift_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/docs/drift/{drift_id}/approve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Approve documentation patch proposal
+     * @description Human approval gate: maintainer marks patch proposal as approved for application.
+     */
+    post: operations["approve_drift_proposal_api_v1_docs_drift__drift_id__approve_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/docs/drift/{drift_id}/reject": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Reject documentation patch proposal
+     * @description Maintainer rejects a proposed documentation patch.
+     */
+    post: operations["reject_drift_proposal_api_v1_docs_drift__drift_id__reject_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/docs/drift/{drift_id}/apply": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Apply approved documentation patch
+     * @description Apply approved patch to documentation record. Fails with 409 if not approved.
+     */
+    post: operations["apply_drift_patch_api_v1_docs_drift__drift_id__apply_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{pid}/analyses": {
     parameters: {
       query?: never;
@@ -420,6 +1164,90 @@ export interface paths {
      * @description List all background analysis jobs for the specified project.
      */
     get: operations["list_jobs_api_v1_projects__pid__jobs_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/retention": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Project Retention
+     * @description Retrieve effective retention windows for a project (including project overrides).
+     */
+    get: operations["get_project_retention_api_v1_projects__pid__retention_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/retention/{kind}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Update Project Retention
+     * @description Set a project-level retention override for a category.
+     */
+    put: operations["update_project_retention_api_v1_projects__pid__retention__kind__put"];
+    post?: never;
+    /**
+     * Reset Project Retention
+     * @description Reset a project-level retention override back to workspace default.
+     */
+    delete: operations["reset_project_retention_api_v1_projects__pid__retention__kind__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/retention/sweep": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Trigger Project Retention Sweep
+     * @description Trigger an on-demand retention cleanup sweep for this project.
+     */
+    post: operations["trigger_project_retention_sweep_api_v1_projects__pid__retention_sweep_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{pid}/audit-events": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List project audit events
+     * @description Retrieve append-only audit events scoped to a specific project. Requires project read permission.
+     */
+    get: operations["list_project_audit_events_api_v1_projects__pid__audit_events_get"];
     put?: never;
     post?: never;
     delete?: never;
@@ -800,6 +1628,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{pid}/consents/{cid}/revoke": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Revoke Project Consent
+     * @description Revoke a previously granted consent record immediately.
+     */
+    post: operations["revoke_project_consent_api_v1_projects__pid__consents__cid__revoke_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{pid}/consents/{cid}": {
     parameters: {
       query?: never;
@@ -1144,6 +1992,39 @@ export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
     /**
+     * AcceptInvitationRequest
+     * @description Payload for accepting a workspace invitation.
+     */
+    AcceptInvitationRequest: {
+      /**
+       * Token
+       * @description Raw invitation token
+       */
+      token: string;
+    };
+    /**
+     * AcceptInvitationResponse
+     * @description Response returned after successfully accepting an invitation.
+     */
+    AcceptInvitationResponse: {
+      /** Status */
+      status: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /** Workspace Name */
+      workspace_name: string;
+      /** Role */
+      role: string;
+      /**
+       * User Id
+       * Format: uuid
+       */
+      user_id: string;
+    };
+    /**
      * AddProjectMemberRequest
      * @description Payload for adding an explicit member to a project.
      */
@@ -1177,6 +2058,11 @@ export interface components {
        */
       role: string;
     };
+    /**
+     * AlertSeverity
+     * @enum {string}
+     */
+    AlertSeverity: "INFO" | "WARNING" | "CRITICAL";
     /**
      * AnalysisJobCreatedResponse
      * @description 202 Accepted response containing created job and streaming links (docs/03 §12.2).
@@ -1237,6 +2123,43 @@ export interface components {
       result_ref?: {
         [key: string]: unknown;
       } | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /**
+     * AuditEventItem
+     * @description Serialized audit event for workspace governance and security logs (docs/03 §3.5 & docs/07 §16).
+     */
+    AuditEventItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /** Actor Id */
+      actor_id?: string | null;
+      /** Actor Kind */
+      actor_kind: string;
+      /** Action */
+      action: string;
+      /** Target Kind */
+      target_kind: string;
+      /** Target Id */
+      target_id?: string | null;
+      /** Ip Hash */
+      ip_hash?: string | null;
+      /** Metadata */
+      metadata?: {
+        [key: string]: unknown;
+      };
       /**
        * Created At
        * Format: date-time
@@ -1564,6 +2487,387 @@ export interface components {
       latest_scan?: components["schemas"]["ScanRunItem"] | null;
     };
     /**
+     * BugMatchCandidateResponse
+     * @description Candidate match with similarity score and matching classification.
+     */
+    BugMatchCandidateResponse: {
+      bug: components["schemas"]["BugRecordDetailResponse"];
+      /**
+       * Score
+       * @description Similarity score between 0.0 and 1.0
+       */
+      score: number;
+      /**
+       * Match Type
+       * @description Classification: exact_fingerprint, fuzzy_signature, or module_match
+       */
+      match_type: string;
+    };
+    /**
+     * BugMatchRequest
+     * @description Request payload to search project Bug Memory for similar past issues.
+     */
+    BugMatchRequest: {
+      /**
+       * Raw Error
+       * @description Failing error text, stack trace, or incident log snippet
+       */
+      raw_error: string;
+      /**
+       * Module Hint
+       * @description Optional module hint to prioritize candidates
+       */
+      module_hint?: string | null;
+      /**
+       * Limit
+       * @description Maximum candidate matches to retrieve
+       * @default 5
+       */
+      limit: number;
+    };
+    /**
+     * BugMatchResponse
+     * @description Response payload returned by BugMemory matching and specialist explanation.
+     */
+    BugMatchResponse: {
+      /**
+       * Matched
+       * @description Whether similar historical bugs were found
+       */
+      matched: boolean;
+      normalized_error: components["schemas"]["NormalizedErrorSummary"];
+      /** Candidates */
+      candidates?: components["schemas"]["BugMatchCandidateResponse"][];
+      /**
+       * Explanation
+       * @description Synthesized comparison or explanation of similar past incidents and fixes
+       */
+      explanation: string;
+      /**
+       * Confidence Label
+       * @description Overall confidence category: high, medium, low, or none
+       */
+      confidence_label: string;
+      /**
+       * Recommended Fix
+       * @description Remediation or fix recommendation derived from previous resolutions
+       */
+      recommended_fix?: string | null;
+    };
+    /**
+     * BugRecordCreate
+     * @description Request payload to log a new or recurring error trace.
+     */
+    BugRecordCreate: {
+      /**
+       * Raw Error
+       * @description Raw error log, exception message, or stack trace snippet
+       */
+      raw_error: string;
+      /**
+       * Title
+       * @description Optional human-readable title; auto-generated if omitted
+       */
+      title?: string | null;
+      /**
+       * Summary
+       * @description Optional description or context about the occurrence
+       */
+      summary?: string | null;
+      /**
+       * Module Hint
+       * @description Optional module or subsystem hint
+       */
+      module_hint?: string | null;
+      /** @description Optional initial resolution if logging an already-resolved bug */
+      resolution?: components["schemas"]["BugResolutionCreate"] | null;
+    };
+    /**
+     * BugRecordDetailResponse
+     * @description Detailed response schema for a single bug record with historical resolutions.
+     */
+    BugRecordDetailResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Fingerprint */
+      fingerprint: string;
+      /** Error Signature */
+      error_signature: string;
+      /** Title */
+      title: string;
+      /** Summary */
+      summary?: string | null;
+      /** Module Hint */
+      module_hint?: string | null;
+      /** Occurrence Count */
+      occurrence_count: number;
+      /**
+       * Resolutions Count
+       * @default 0
+       */
+      resolutions_count: number;
+      /**
+       * First Seen At
+       * Format: date-time
+       */
+      first_seen_at: string;
+      /**
+       * Last Seen At
+       * Format: date-time
+       */
+      last_seen_at: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Raw Error */
+      raw_error?: string | null;
+      /** Resolutions */
+      resolutions?: components["schemas"]["BugResolutionResponse"][];
+    };
+    /**
+     * BugRecordResponse
+     * @description Response schema for a bug record item in list views.
+     */
+    BugRecordResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Fingerprint */
+      fingerprint: string;
+      /** Error Signature */
+      error_signature: string;
+      /** Title */
+      title: string;
+      /** Summary */
+      summary?: string | null;
+      /** Module Hint */
+      module_hint?: string | null;
+      /** Occurrence Count */
+      occurrence_count: number;
+      /**
+       * Resolutions Count
+       * @default 0
+       */
+      resolutions_count: number;
+      /**
+       * First Seen At
+       * Format: date-time
+       */
+      first_seen_at: string;
+      /**
+       * Last Seen At
+       * Format: date-time
+       */
+      last_seen_at: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /**
+     * BugResolutionCreate
+     * @description Request payload to add a resolution to a bug record.
+     */
+    BugResolutionCreate: {
+      /**
+       * Cause
+       * @description Root cause analysis of the bug
+       */
+      cause: string;
+      /**
+       * Fix Summary
+       * @description Summary of the code modification or architectural fix applied
+       */
+      fix_summary: string;
+      /**
+       * Files
+       * @description List of changed file paths, symbols, and line citations
+       */
+      files?: {
+        [key: string]: unknown;
+      }[];
+      /**
+       * Finding Id
+       * @description Optional ID of associated security or review finding
+       */
+      finding_id?: string | null;
+    };
+    /**
+     * BugResolutionResponse
+     * @description Response schema for documented bug resolution.
+     */
+    BugResolutionResponse: {
+      /**
+       * Cause
+       * @description Root cause analysis of the bug
+       */
+      cause: string;
+      /**
+       * Fix Summary
+       * @description Summary of the code modification or architectural fix applied
+       */
+      fix_summary: string;
+      /**
+       * Files
+       * @description List of changed file paths, symbols, and line citations
+       */
+      files?: {
+        [key: string]: unknown;
+      }[];
+      /**
+       * Finding Id
+       * @description Optional ID of associated security or review finding
+       */
+      finding_id?: string | null;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Bug Record Id
+       * Format: uuid
+       */
+      bug_record_id: string;
+      /** Resolved By */
+      resolved_by?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /**
+     * ChecklistEvaluationRequest
+     * @description Request payload to evaluate ReviewBuddy checklist against files or unified diff.
+     */
+    ChecklistEvaluationRequest: {
+      /**
+       * Diff
+       * @description Unified diff content to evaluate against review rules.
+       */
+      diff?: string | null;
+      /**
+       * Files
+       * @description List of file dicts with 'path' and 'content' keys.
+       */
+      files?:
+        | {
+            [key: string]: unknown;
+          }[]
+        | null;
+    };
+    /**
+     * ChecklistEvaluationResponse
+     * @description Full response for a ReviewBuddy checklist evaluation.
+     */
+    ChecklistEvaluationResponse: {
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      summary: components["schemas"]["ChecklistEvaluationSummary"];
+      /** Findings */
+      findings: components["schemas"]["ChecklistFinding"][];
+    };
+    /**
+     * ChecklistEvaluationSummary
+     * @description Summary metrics of a review evaluation.
+     */
+    ChecklistEvaluationSummary: {
+      /** Total Rules Evaluated */
+      total_rules_evaluated: number;
+      /** Total Findings */
+      total_findings: number;
+      /** Critical Count */
+      critical_count: number;
+      /** High Count */
+      high_count: number;
+      /** Medium Count */
+      medium_count: number;
+      /** Low Count */
+      low_count: number;
+      /** Info Count */
+      info_count: number;
+      /** Passed Checklist */
+      passed_checklist: boolean;
+    };
+    /**
+     * ChecklistFinding
+     * @description An individual checklist finding identified by ReviewBuddy.
+     */
+    ChecklistFinding: {
+      /** Rule Id */
+      rule_id: string;
+      /** Title */
+      title: string;
+      /** Category */
+      category: string;
+      /** Severity */
+      severity: string;
+      /** File Path */
+      file_path: string;
+      /** Start Line */
+      start_line?: number | null;
+      /** End Line */
+      end_line?: number | null;
+      /** Message */
+      message: string;
+      /** Suggested Fix */
+      suggested_fix?: string | null;
+      /**
+       * Evidence Level
+       * @default E1
+       */
+      evidence_level: string;
+      /** Snippet */
+      snippet?: string | null;
+    };
+    /**
      * CodeRelationshipItem
      * @description Serialized structural relationship edge.
      */
@@ -1747,6 +3051,17 @@ export interface components {
       revoked_at: string | null;
       /** Is Active */
       is_active: boolean;
+      /** Purged Counts */
+      purged_counts?: {
+        [key: string]: number;
+      } | null;
+      /**
+       * Sync Mode Updated
+       * @default false
+       */
+      sync_mode_updated: boolean;
+      /** New Sync Mode */
+      new_sync_mode?: string | null;
     };
     /**
      * ConsentListResponse
@@ -1888,6 +3203,32 @@ export interface components {
       expires_at?: string | null;
     };
     /**
+     * CreateInvitationRequest
+     * @description Payload for inviting a user to a workspace.
+     */
+    CreateInvitationRequest: {
+      /**
+       * Email
+       * @description Email address of the invitee
+       */
+      email: string;
+      /**
+       * Role
+       * @description admin | member | viewer
+       * @default member
+       */
+      role: string;
+    };
+    /**
+     * CreateInvitationResponse
+     * @description Response returned when an invitation is issued.
+     */
+    CreateInvitationResponse: {
+      invitation: components["schemas"]["WorkspaceInvitationResponse"];
+      /** Accept Url */
+      accept_url: string;
+    };
+    /**
      * CreateProjectRequest
      * @description Payload for creating a new codebase project.
      */
@@ -1972,6 +3313,315 @@ export interface components {
        * @default personal
        */
       kind: string;
+    };
+    /**
+     * DeletionVerificationReport
+     * @description Cryptographically signed deletion verification report (docs/11, Screen S-10).
+     */
+    DeletionVerificationReport: {
+      /** Project Id */
+      project_id: string;
+      /** Workspace Id */
+      workspace_id: string;
+      /** Requested By */
+      requested_by: string;
+      /** Purged At */
+      purged_at: string;
+      /** Scope */
+      scope: string;
+      /** Stores */
+      stores: {
+        [key: string]: {
+          [key: string]: number;
+        };
+      };
+      /** Verification Hash */
+      verification_hash: string;
+      /** Sync Mode */
+      sync_mode: string;
+      /** Status */
+      status: string;
+    };
+    /**
+     * DocDriftDetectRequest
+     * @description Request payload to trigger DocsAlive drift detection for a project.
+     */
+    DocDriftDetectRequest: {
+      /**
+       * Known Routes
+       * @description Active HTTP route paths in codebase e.g. ['GET /api/v1/projects', 'POST /api/v1/bugs']
+       */
+      known_routes?: string[];
+      /**
+       * Known Symbols
+       * @description Exported function, class, or interface symbol names e.g. ['BugMemoryService', 'DocParser']
+       */
+      known_symbols?: string[];
+      /**
+       * Known Files
+       * @description List of active file paths in project repository
+       */
+      known_files?: string[];
+      /**
+       * Known Configs
+       * @description Configuration environment variable names e.g. ['DATABASE_URL', 'REDIS_URL']
+       */
+      known_configs?: string[];
+    };
+    /**
+     * DocDriftDetectResponse
+     * @description Result of running DocsAlive drift detection.
+     */
+    DocDriftDetectResponse: {
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Total Docs Analyzed */
+      total_docs_analyzed: number;
+      /** Drift Count */
+      drift_count: number;
+      /** Drift Items */
+      drift_items: components["schemas"]["DocDriftItemResponse"][];
+      /** Summary */
+      summary: string;
+    };
+    /**
+     * DocDriftItemResponse
+     * @description An identified discrepancy between project code and a documentation record.
+     */
+    DocDriftItemResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /**
+       * Documentation Record Id
+       * Format: uuid
+       */
+      documentation_record_id: string;
+      /** Kind */
+      kind: string;
+      /** Target Symbol Key */
+      target_symbol_key: string | null;
+      /** Target Route Path */
+      target_route_path: string | null;
+      /** Explanation */
+      explanation: string;
+      /** Status */
+      status: string;
+      proposal?: components["schemas"]["PatchProposalResponse"] | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /**
+     * DocRecordCreate
+     * @description Payload to register or update a tracked documentation file.
+     */
+    DocRecordCreate: {
+      /**
+       * Path
+       * @description Relative file path e.g. README.md
+       */
+      path: string;
+      /**
+       * Title
+       * @description Document display title
+       */
+      title: string;
+      /**
+       * Kind
+       * @description Classification: readme, api, architecture, tutorial, changelog, other
+       * @default other
+       */
+      kind: string;
+      /**
+       * Content
+       * @description Raw Markdown content
+       */
+      content: string;
+      /**
+       * File Id
+       * @description Optional Brain ProjectFile reference ID
+       */
+      file_id?: string | null;
+    };
+    /**
+     * DocRecordDetailResponse
+     * @description Detailed view of a tracked documentation record including parsed symbols and drift count.
+     */
+    DocRecordDetailResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** File Id */
+      file_id: string | null;
+      /** Path */
+      path: string;
+      /** Title */
+      title: string;
+      /** Kind */
+      kind: string;
+      /** Current Version Hash */
+      current_version_hash: string;
+      /** Last Parsed At */
+      last_parsed_at?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Content Snapshot */
+      content_snapshot: string | null;
+      /** Extracted Symbols */
+      extracted_symbols: {
+        [key: string]: unknown;
+      }[];
+      /**
+       * Drift Item Count
+       * @default 0
+       */
+      drift_item_count: number;
+    };
+    /**
+     * DocRecordResponse
+     * @description Summary of a tracked documentation record.
+     */
+    DocRecordResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** File Id */
+      file_id: string | null;
+      /** Path */
+      path: string;
+      /** Title */
+      title: string;
+      /** Kind */
+      kind: string;
+      /** Current Version Hash */
+      current_version_hash: string;
+      /** Last Parsed At */
+      last_parsed_at?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /**
+     * DriftActionResponse
+     * @description Outcome of an approval, rejection, or application action on a drift item.
+     */
+    DriftActionResponse: {
+      /**
+       * Drift Id
+       * Format: uuid
+       */
+      drift_id: string;
+      /** Status */
+      status: string;
+      /** Message */
+      message: string;
+      /** Applied Patch Preview */
+      applied_patch_preview?: string | null;
+    };
+    /**
+     * DriftApprovalRequest
+     * @description Request body for human maintainer approval or rejection of a patch proposal.
+     */
+    DriftApprovalRequest: {
+      /**
+       * Reason
+       * @description Optional note or rationale for the decision
+       */
+      reason?: string | null;
+    };
+    /**
+     * EffectiveRetentionCategory
+     * @description Effective retention category status.
+     */
+    EffectiveRetentionCategory: {
+      /** Kind */
+      kind: string;
+      /** Days */
+      days: number;
+      /** Default Days */
+      default_days: number;
+      /** Description */
+      description: string;
+      /** Is Custom */
+      is_custom: boolean;
+      /** Source */
+      source: string;
+    };
+    /**
+     * EffectiveRetentionResponse
+     * @description Effective retention window settings for workspace or project.
+     */
+    EffectiveRetentionResponse: {
+      /** Workspace Id */
+      workspace_id: string;
+      /** Project Id */
+      project_id?: string | null;
+      /** Backup Retention Notice */
+      backup_retention_notice: string;
+      /** Categories */
+      categories: components["schemas"]["EffectiveRetentionCategory"][];
     };
     /**
      * ExtensionHeartbeatResponse
@@ -2382,6 +4032,41 @@ export interface components {
       reason?: string | null;
     };
     /**
+     * GitHubConnectionStatusSummary
+     * @description Lifecycle status, granted scopes, and analysis capability of a GitHub connection.
+     */
+    GitHubConnectionStatusSummary: {
+      /** Connection Id */
+      connection_id?: string | null;
+      /** Status */
+      status: string;
+      /** Kind */
+      kind?: string | null;
+      /** External Account */
+      external_account?: string | null;
+      /**
+       * Scopes
+       * @default []
+       */
+      scopes: string[];
+      /**
+       * Can Perform Analysis
+       * @default false
+       */
+      can_perform_analysis: boolean;
+      /**
+       * Missing Permissions
+       * @default []
+       */
+      missing_permissions: string[];
+      /** Resolution Hint */
+      resolution_hint?: string | null;
+      /** Revoked At */
+      revoked_at?: unknown;
+      /** Updated At */
+      updated_at?: unknown;
+    };
+    /**
      * GitHubConnectionSummary
      * @description Safe public representation of a GitHub connection without credentials.
      */
@@ -2407,6 +4092,50 @@ export interface components {
       external_account: string;
       /** Scopes */
       scopes: string[];
+      /** Created At */
+      created_at: unknown;
+    };
+    /**
+     * GitHubLinkRequest
+     * @description Payload to bind a project to a GitHub repository.
+     */
+    GitHubLinkRequest: {
+      /** Full Name */
+      full_name: string;
+      /**
+       * Default Branch
+       * @default main
+       */
+      default_branch: string;
+    };
+    /**
+     * GitHubRepositorySummary
+     * @description Summary of a linked GitHub repository.
+     */
+    GitHubRepositorySummary: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /**
+       * Connection Id
+       * Format: uuid
+       */
+      connection_id: string;
+      /** Full Name */
+      full_name: string;
+      /** Default Branch */
+      default_branch: string;
+      /** Is Active */
+      is_active: boolean;
+      /** Last Synced At */
+      last_synced_at?: unknown;
       /** Created At */
       created_at: unknown;
     };
@@ -2475,13 +4204,21 @@ export interface components {
       /** Detail */
       detail?: components["schemas"]["ValidationError"][];
     };
-    /** HealthResponse */
+    /**
+     * HealthResponse
+     * @description Liveness probe response model.
+     */
     HealthResponse: {
       /**
        * Status
        * @default ok
        */
       status: string;
+      /**
+       * Build Sha
+       * @default dev
+       */
+      build_sha: string;
     };
     /**
      * ManifestDiffRequest
@@ -2527,6 +4264,102 @@ export interface components {
       path: string;
       /** Content Hash */
       content_hash: string;
+    };
+    /**
+     * NormalizedErrorSummary
+     * @description Normalized signature and canonical characteristics of an input error.
+     */
+    NormalizedErrorSummary: {
+      /** Exception Type */
+      exception_type: string;
+      /** Clean Message */
+      clean_message: string;
+      /** Module Hint */
+      module_hint?: string | null;
+      /** Fingerprint */
+      fingerprint: string;
+      /** Normalized Signature */
+      normalized_signature: string;
+    };
+    /**
+     * PRAnalysisResponse
+     * @description API response model for a PR analysis result.
+     */
+    PRAnalysisResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /**
+       * Pull Request Id
+       * Format: uuid
+       */
+      pull_request_id: string;
+      /** Head Sha */
+      head_sha: string;
+      /** Job Id */
+      job_id?: string | null;
+      /** Risk Level */
+      risk_level: string;
+      /** Summary */
+      summary: {
+        [key: string]: unknown;
+      };
+      /** Impact */
+      impact: {
+        [key: string]: unknown;
+      };
+      /** Created At */
+      created_at?: string | null;
+      /** Updated At */
+      updated_at?: string | null;
+    };
+    /**
+     * PatchProposalResponse
+     * @description Proposed documentation patch generated by DocsAlive.
+     */
+    PatchProposalResponse: {
+      /** Summary */
+      summary: string;
+      /** Drift Kind */
+      drift_kind: string;
+      /** Target Section */
+      target_section?: string | null;
+      /** Proposed Content */
+      proposed_content: string;
+      /** Diff Content */
+      diff_content?: string | null;
+      /**
+       * Gated
+       * @default true
+       */
+      gated: boolean;
+      /**
+       * Confidence
+       * @default 0.85
+       */
+      confidence: number;
+      /** Notes */
+      notes?: string[];
+      /** Decided By */
+      decided_by?: string | null;
+      /** Decided At */
+      decided_at?: string | null;
+      /** Rejection Reason */
+      rejection_reason?: string | null;
+      /** Applied At */
+      applied_at?: string | null;
     };
     /**
      * ProjectMemberResponse
@@ -2594,6 +4427,65 @@ export interface components {
       archived_at?: string | null;
     };
     /**
+     * PullRequestSummary
+     * @description Mirrored pull request summary model.
+     */
+    PullRequestSummary: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Repository Id
+       * Format: uuid
+       */
+      repository_id: string;
+      /** Number */
+      number: number;
+      /** Title */
+      title: string;
+      /** Author Login */
+      author_login: string;
+      /** State */
+      state: string;
+      /** Head Sha */
+      head_sha: string;
+      /** Base Sha */
+      base_sha: string;
+      /** Head Ref */
+      head_ref?: string | null;
+      /** Base Ref */
+      base_ref?: string | null;
+      /** Diff Url */
+      diff_url?: string | null;
+      /** Merged At */
+      merged_at?: unknown;
+      /** Closed At */
+      closed_at?: unknown;
+      /** Created At */
+      created_at: unknown;
+      /** Updated At */
+      updated_at: unknown;
+    };
+    /**
+     * PurgeProjectDataRequest
+     * @description Payload for executing a project data purge (M9-03).
+     */
+    PurgeProjectDataRequest: {
+      /**
+       * Scope
+       * @description Purge scope: all | chunks_and_embeddings
+       * @default all
+       */
+      scope: string;
+      /**
+       * Confirmation Slug
+       * @description Typed confirmation slug matching the target project
+       */
+      confirmation_slug?: string | null;
+    };
+    /**
      * PutManifestRequest
      * @description Payload for registering synced files and versions in Project Brain.
      */
@@ -2636,7 +4528,10 @@ export interface components {
        */
       stale_findings_count: number;
     };
-    /** ReadinessResponse */
+    /**
+     * ReadinessResponse
+     * @description Readiness probe response model.
+     */
     ReadinessResponse: {
       /** Status */
       status: string;
@@ -2650,10 +4545,201 @@ export interface components {
        * @default skipped
        */
       redis: string;
+      /**
+       * Migrations
+       * @default skipped
+       */
+      migrations: string;
+      /** Kill Switches */
+      kill_switches?: {
+        [key: string]: boolean;
+      };
+      /**
+       * Active Alerts Count
+       * @default 0
+       */
+      active_alerts_count: number;
       /** Details */
       details?: {
         [key: string]: unknown;
       } | null;
+    };
+    /**
+     * RetentionPolicyResponse
+     * @description Configured retention policy record.
+     */
+    RetentionPolicyResponse: {
+      /** Id */
+      id: string;
+      /** Workspace Id */
+      workspace_id: string;
+      /** Project Id */
+      project_id?: string | null;
+      /** Kind */
+      kind: string;
+      /** Days */
+      days: number;
+      /**
+       * Is Override
+       * @default false
+       */
+      is_override: boolean;
+      /** Created At */
+      created_at: string;
+      /** Updated At */
+      updated_at: string;
+    };
+    /**
+     * RetentionSweepResponse
+     * @description Summary of executed retention cleanup sweep.
+     */
+    RetentionSweepResponse: {
+      /** Project Id */
+      project_id: string;
+      /** Swept At */
+      swept_at: string;
+      /** Purged Counts */
+      purged_counts: {
+        [key: string]: number;
+      };
+      /** Effective Windows */
+      effective_windows: {
+        [key: string]: number;
+      };
+    };
+    /**
+     * ReviewRuleCreate
+     * @description Payload for creating a custom review rule.
+     */
+    ReviewRuleCreate: {
+      /**
+       * Rule Id
+       * @description Unique rule code within the project, e.g. 'RULE-001' or 'REV-INPUT-02'.
+       */
+      rule_id: string;
+      /**
+       * Title
+       * @description Human-readable rule title.
+       */
+      title: string;
+      /**
+       * Category
+       * @description Rule category: input_validation, error_handling, authorization, testing, documentation, quality, security, other.
+       * @default quality
+       */
+      category: string;
+      /**
+       * Severity
+       * @description Severity level: critical, high, medium, low, info.
+       * @default medium
+       */
+      severity: string;
+      /** @description Scope selector defining which files this rule checks. */
+      scope_selector?: components["schemas"]["ScopeSelector"];
+      /**
+       * Check Type
+       * @description Check type: require_validation, require_error_handling, require_auth, require_test, require_docs, pattern_forbidden, pattern_required, custom_regex.
+       */
+      check_type: string;
+      /**
+       * Check Config
+       * @description Configuration parameters specific to check_type.
+       */
+      check_config?: {
+        [key: string]: unknown;
+      };
+      /**
+       * Message
+       * @description Explanation message emitted when this rule triggers.
+       */
+      message: string;
+      /**
+       * Suggested Fix Template
+       * @description Optional suggested remediation instruction.
+       */
+      suggested_fix_template?: string | null;
+      /**
+       * Is Enabled
+       * @description Whether the rule is active during reviews.
+       * @default true
+       */
+      is_enabled: boolean;
+    };
+    /**
+     * ReviewRuleResponse
+     * @description API response model for review rules.
+     */
+    ReviewRuleResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Rule Id */
+      rule_id: string;
+      /** Title */
+      title: string;
+      /** Category */
+      category: string;
+      /** Severity */
+      severity: string;
+      /** Scope Selector */
+      scope_selector: {
+        [key: string]: unknown;
+      };
+      /** Check Type */
+      check_type: string;
+      /** Check Config */
+      check_config: {
+        [key: string]: unknown;
+      };
+      /** Message */
+      message: string;
+      /** Suggested Fix Template */
+      suggested_fix_template?: string | null;
+      /** Is Enabled */
+      is_enabled: boolean;
+      /** Is Builtin */
+      is_builtin: boolean;
+      /** Created At */
+      created_at?: string | null;
+      /** Updated At */
+      updated_at?: string | null;
+    };
+    /**
+     * ReviewRuleUpdate
+     * @description Payload for updating an existing review rule.
+     */
+    ReviewRuleUpdate: {
+      /** Title */
+      title?: string | null;
+      /** Category */
+      category?: string | null;
+      /** Severity */
+      severity?: string | null;
+      scope_selector?: components["schemas"]["ScopeSelector"] | null;
+      /** Check Type */
+      check_type?: string | null;
+      /** Check Config */
+      check_config?: {
+        [key: string]: unknown;
+      } | null;
+      /** Message */
+      message?: string | null;
+      /** Suggested Fix Template */
+      suggested_fix_template?: string | null;
+      /** Is Enabled */
+      is_enabled?: boolean | null;
     };
     /**
      * ScanRunItem
@@ -2696,6 +4782,27 @@ export interface components {
        * Format: date-time
        */
       updated_at: string;
+    };
+    /**
+     * ScopeSelector
+     * @description File and language matching selector for review rules.
+     */
+    ScopeSelector: {
+      /**
+       * Paths
+       * @description Glob patterns of file paths this rule applies to.
+       */
+      paths?: string[];
+      /**
+       * Languages
+       * @description Language identifiers, e.g. ['python', 'typescript'].
+       */
+      languages?: string[] | null;
+      /**
+       * Ignore
+       * @description Glob patterns to ignore.
+       */
+      ignore?: string[] | null;
     };
     /**
      * SnapshotDetail
@@ -2932,6 +5039,85 @@ export interface components {
       diff?: string | null;
     };
     /**
+     * SyncModeTransitionResponse
+     * @description Result of transitioning project synchronization mode with purge metrics.
+     */
+    SyncModeTransitionResponse: {
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /** Previous Sync Mode */
+      previous_sync_mode: string;
+      /** New Sync Mode */
+      new_sync_mode: string;
+      /** Purged Counts */
+      purged_counts: {
+        [key: string]: number;
+      };
+      /**
+       * Transitioned At
+       * Format: date-time
+       */
+      transitioned_at: string;
+    };
+    /**
+     * SystemAlert
+     * @description Normalized operational alert item for monitoring and probes.
+     */
+    SystemAlert: {
+      /** Name */
+      name: string;
+      severity: components["schemas"]["AlertSeverity"];
+      /** Message */
+      message: string;
+      /** Metric */
+      metric: string;
+      /** Current Value */
+      current_value: number | string | boolean;
+      /** Threshold */
+      threshold?: number | string | null;
+      /** Timestamp */
+      timestamp?: string;
+    };
+    /**
+     * SystemAlertsResponse
+     * @description Operational alerts query response model.
+     */
+    SystemAlertsResponse: {
+      /** Status */
+      status: string;
+      /** Alerts Count */
+      alerts_count: number;
+      /** Alerts */
+      alerts?: components["schemas"]["SystemAlert"][];
+      /** Evaluated At */
+      evaluated_at: string;
+    };
+    /**
+     * TriggerPRAnalysisRequest
+     * @description Request payload to initiate or re-run a pull request analysis.
+     */
+    TriggerPRAnalysisRequest: {
+      /**
+       * Diff Override
+       * @description Optional unified diff to evaluate instead of remote GitHub diff
+       */
+      diff_override?: string | null;
+      /**
+       * Post Comment
+       * @description Whether to request posting summary comment to GitHub (requires human approval)
+       * @default false
+       */
+      post_comment: boolean;
+    };
+    /**
      * UpdateProjectRequest
      * @description Payload for updating mutable project attributes.
      */
@@ -2948,6 +5134,28 @@ export interface components {
       primary_language?: string | null;
       /** Default Branch */
       default_branch?: string | null;
+    };
+    /**
+     * UpdateRetentionPolicyRequest
+     * @description Payload to update retention period for a category.
+     */
+    UpdateRetentionPolicyRequest: {
+      /**
+       * Days
+       * @description Retention period in days (minimum 1 day)
+       */
+      days: number;
+    };
+    /**
+     * UpdateSyncModeRequest
+     * @description Payload for transitioning project synchronization mode (ADR-022).
+     */
+    UpdateSyncModeRequest: {
+      /**
+       * Sync Mode
+       * @description Target sync mode: metadata_only | indexed
+       */
+      sync_mode: string;
     };
     /**
      * UpdateWorkspaceMemberRequest
@@ -3029,6 +5237,35 @@ export interface components {
       ctx?: Record<string, never>;
     };
     /**
+     * VerifyInvitationResponse
+     * @description Verification metadata for an invitation preview.
+     */
+    VerifyInvitationResponse: {
+      /**
+       * Invitation Id
+       * Format: uuid
+       */
+      invitation_id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /** Workspace Name */
+      workspace_name: string;
+      /** Email */
+      email: string;
+      /** Role */
+      role: string;
+      /** Inviter Name */
+      inviter_name: string;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+    };
+    /**
      * WaitlistSubmissionRequest
      * @description Payload for registering on the early access waitlist.
      */
@@ -3062,6 +5299,40 @@ export interface components {
       message: string;
       /** Email */
       email: string;
+    };
+    /**
+     * WorkspaceInvitationResponse
+     * @description Serialized workspace invitation entity.
+     */
+    WorkspaceInvitationResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /** Email */
+      email: string;
+      /** Role */
+      role: string;
+      /** Invited By */
+      invited_by?: string | null;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+      /** Accepted At */
+      accepted_at?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
     };
     /**
      * WorkspaceMemberResponse
@@ -3184,6 +5455,26 @@ export interface operations {
       };
     };
   };
+  readyz_alerts_readyz_alerts_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SystemAlertsResponse"];
+        };
+      };
+    };
+  };
   v1_root_api_v1_get: {
     parameters: {
       query?: never;
@@ -3259,6 +5550,71 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ContactSubmissionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  verify_invitation_api_v1_invitations_verify_get: {
+    parameters: {
+      query: {
+        /** @description Raw invitation token */
+        token: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["VerifyInvitationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  accept_invitation_api_v1_invitations_accept_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AcceptInvitationRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AcceptInvitationResponse"];
         };
       };
       /** @description Validation Error */
@@ -3523,6 +5879,102 @@ export interface operations {
       };
     };
   };
+  list_workspace_invitations_api_v1_workspaces__workspace_id__invitations_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspace_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceInvitationResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_workspace_invitation_api_v1_workspaces__workspace_id__invitations_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspace_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateInvitationRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreateInvitationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  revoke_workspace_invitation_api_v1_workspaces__workspace_id__invitations__invitation_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspace_id: string;
+        invitation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   list_projects_api_v1_workspaces__wid__projects_get: {
     parameters: {
       query?: never;
@@ -3649,6 +6101,179 @@ export interface operations {
       };
     };
   };
+  get_workspace_github_connection_status_api_v1_workspaces__wid__integrations_github_status_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        wid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GitHubConnectionStatusSummary"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  rotate_workspace_github_connection_api_v1_workspaces__wid__integrations_github_rotate_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        wid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GitHubConnectionSummary"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_workspace_retention_api_v1_workspaces__wid__retention_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        wid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EffectiveRetentionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_workspace_retention_api_v1_workspaces__wid__retention__kind__put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        wid: string;
+        kind: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateRetentionPolicyRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RetentionPolicyResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_workspace_audit_events_api_v1_workspaces__workspace_id__audit_events_get: {
+    parameters: {
+      query?: {
+        /** @description Filter by event action (e.g. consent.revoked) */
+        action?: string | null;
+        /** @description Filter by target kind (e.g. project, consent) */
+        target_kind?: string | null;
+        /** @description Filter by target identifier */
+        target_id?: string | null;
+        /** @description Filter by actor user ID */
+        actor_id?: string | null;
+        /** @description Maximum number of events to return */
+        limit?: number;
+        /** @description Offset for pagination */
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        workspace_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuditEventItem"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   github_authorize_api_v1_integrations_github_authorize_get: {
     parameters: {
       query: {
@@ -3708,6 +6333,302 @@ export interface operations {
         };
         content: {
           "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  link_project_github_repository_api_v1_projects__pid__github_link_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["GitHubLinkRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GitHubRepositorySummary"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  unlink_project_github_repository_api_v1_projects__pid__github_unlink_delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_project_github_repository_api_v1_projects__pid__github_repository_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["GitHubRepositorySummary"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_project_pull_requests_api_v1_projects__pid__pull_requests_get: {
+    parameters: {
+      query?: {
+        /** @description Filter by state (open, closed, merged) */
+        state?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PullRequestSummary"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  sync_project_pull_requests_api_v1_projects__pid__pull_requests_sync_post: {
+    parameters: {
+      query?: {
+        /** @description PR state to sync (open, closed, all) */
+        state?: string;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PullRequestSummary"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_pull_request_by_id_api_v1_pull_requests__id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PullRequestSummary"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  analyze_pull_request_endpoint_api_v1_pull_requests__id__analyze_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["TriggerPRAnalysisRequest"] | null;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PRAnalysisResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_latest_pull_request_analysis_endpoint_api_v1_pull_requests__id__analyses_latest_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PRAnalysisResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_pull_request_analyses_endpoint_api_v1_pull_requests__id__analyses_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PRAnalysisResponse"][];
         };
       };
       /** @description Validation Error */
@@ -3803,6 +6724,76 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ProjectResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_project_sync_mode_api_v1_projects__pid__sync_mode_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateSyncModeRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SyncModeTransitionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  purge_project_data_api_v1_projects__pid__purge_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["PurgeProjectDataRequest"] | null;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeletionVerificationReport"];
         };
       };
       /** @description Validation Error */
@@ -3912,6 +6903,690 @@ export interface operations {
       };
     };
   };
+  list_project_review_rules_api_v1_projects__project_id__review_rules_get: {
+    parameters: {
+      query?: {
+        /** @description Filter for enabled rules only */
+        enabled_only?: boolean;
+        /** @description Optional filter by rule category */
+        category?: string | null;
+      };
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReviewRuleResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_project_review_rule_api_v1_projects__project_id__review_rules_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReviewRuleCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReviewRuleResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_project_review_rule_api_v1_projects__project_id__review_rules__rule_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        rule_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReviewRuleResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_project_review_rule_api_v1_projects__project_id__review_rules__rule_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        rule_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_project_review_rule_api_v1_projects__project_id__review_rules__rule_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        rule_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReviewRuleUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReviewRuleResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  evaluate_review_checklist_api_v1_projects__project_id__review_rules_evaluate_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ChecklistEvaluationRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ChecklistEvaluationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_project_bugs_api_v1_projects__project_id__bugs_get: {
+    parameters: {
+      query?: {
+        /** @description Optional module or subsystem hint filter */
+        module_hint?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BugRecordResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_project_bug_api_v1_projects__project_id__bugs_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BugRecordCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BugRecordDetailResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  match_project_bugs_api_v1_projects__project_id__bugs_match_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BugMatchRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BugMatchResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_bug_record_api_v1_bugs__bug_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        bug_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BugRecordDetailResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  add_bug_resolution_api_v1_bugs__bug_id__resolutions_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        bug_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BugResolutionCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BugResolutionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_project_docs_api_v1_projects__project_id__docs_get: {
+    parameters: {
+      query?: {
+        /** @description Optional kind filter (readme, api, architecture) */
+        kind?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DocRecordResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  register_project_doc_api_v1_projects__project_id__docs_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DocRecordCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DocRecordDetailResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  detect_doc_drift_api_v1_projects__project_id__docs_detect_drift_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DocDriftDetectRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DocDriftDetectResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_project_drift_items_api_v1_projects__project_id__docs_drift_get: {
+    parameters: {
+      query?: {
+        /** @description Optional status filter (detected, approved, rejected, applied) */
+        status?: string | null;
+        /** @description Optional drift kind filter (undocumented_route, removed_route, missing_symbol) */
+        kind?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DocDriftItemResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_project_doc_api_v1_projects__project_id__docs__doc_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        doc_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DocRecordDetailResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_drift_item_api_v1_docs_drift__drift_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        drift_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DocDriftItemResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  approve_drift_proposal_api_v1_docs_drift__drift_id__approve_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        drift_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DriftApprovalRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DriftActionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  reject_drift_proposal_api_v1_docs_drift__drift_id__reject_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        drift_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DriftApprovalRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DriftActionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  apply_drift_patch_api_v1_docs_drift__drift_id__apply_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        drift_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DriftActionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   create_analysis_api_v1_projects__pid__analyses_post: {
     parameters: {
       query?: never;
@@ -3972,6 +7647,172 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["AnalysisJobResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_project_retention_api_v1_projects__pid__retention_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EffectiveRetentionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_project_retention_api_v1_projects__pid__retention__kind__put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+        kind: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateRetentionPolicyRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RetentionPolicyResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  reset_project_retention_api_v1_projects__pid__retention__kind__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+        kind: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  trigger_project_retention_sweep_api_v1_projects__pid__retention_sweep_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RetentionSweepResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_project_audit_events_api_v1_projects__pid__audit_events_get: {
+    parameters: {
+      query?: {
+        /** @description Filter by event action */
+        action?: string | null;
+        /** @description Maximum number of events to return */
+        limit?: number;
+        /** @description Offset for pagination */
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        pid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuditEventItem"][];
         };
       };
       /** @description Validation Error */
@@ -4640,6 +8481,38 @@ export interface operations {
     responses: {
       /** @description Successful Response */
       201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConsentItem"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  revoke_project_consent_api_v1_projects__pid__consents__cid__revoke_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pid: string;
+        cid: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
         headers: {
           [name: string]: unknown;
         };
