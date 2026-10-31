@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m11-docs` |
-| **Last commit** | `70522a1` (`feat(server): implement M11-08 PR intelligence integration tests and evals (#92)`) |
+| **Last commit** | `a050617` (`docs(repo): implement M11-09 documentation updates and operational runbook`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | Modified, ready for M11-09 commit and PR |
-| **Open PR** | Pending (`feature/m11-docs`) |
+| **Working tree** | Clean, PR #93 opened |
+| **Open PR** | [#93](https://github.com/Warish-Labs/DevMind/pull/93) (`feature/m11-docs`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
