@@ -17,6 +17,7 @@ import {
   CloseIcon,
   BugIcon,
   BookOpenIcon,
+  MentorIcon,
 } from "./icons";
 import { Badge } from "@/components/ui/Badge";
 
@@ -129,6 +130,15 @@ export function CommandPalette() {
         icon: <BookOpenIcon size={16} className="text-[var(--signal)]" />,
         onSelect: () => router.push(`/projects/${pid}/docs`),
         badge: "DocsAlive",
+      },
+      {
+        id: "nav-tasks",
+        category: "Navigation",
+        title: "Project Mentor & Health",
+        subtitle: "Backlog DAG, AI next-task guidance, and release readiness scorecards (S-17)",
+        icon: <MentorIcon size={16} className="text-[var(--accent)]" />,
+        onSelect: () => router.push(`/projects/${pid}/tasks`),
+        badge: "ProjectMentor",
       },
       {
         id: "nav-settings",

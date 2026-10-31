@@ -7,8 +7,8 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-mentor-agent` |
-| **Last commit** | `52592e4` (`feat(server): implement M12-10 project mentor agent, routing, and rest api`) |
+| **Branch** | `feature/m12-mentor-ui` |
+| **Last commit** | `3c7fccd` (`feat(client): implement M12-11 project mentor and health evaluation web screens`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete |
 | **Working tree** | Clean |
 | **Open PR** | Pending |
@@ -19,21 +19,51 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR for `feature/m12-mentor-agent` to pass and owner merge into `main`.
+1. Wait for CI checks on PR for `feature/m12-mentor-ui` to pass and owner merge into `main`.
 2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-mentor-agent` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-agent`).
-   - Create feature branch `feature/m12-mentor-ui` for task **M12-11**: Web screens for Project Mentor & Project Evaluation (task backlog, dependency graph visualizer, multidimensional radar/health scorecards, release blockers).
+   - Delete branch `feature/m12-mentor-ui` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-ui`).
+   - Create feature branch `feature/m12-mentor-evals` for task **M12-12**: Benchmark datasets, evaluation runner, recorded baselines, and E2E integration tests for Mentor & Evaluation.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-mentor-agent` (`feature/m12-mentor-agent` → `main`) after CI passes.
+Review and merge PR for `feature/m12-mentor-ui` (`feature/m12-mentor-ui` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-11: Web Screens for Project Mentor & Project Evaluation
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m12-mentor-ui`
+- **What**:
+  - Implemented Screen S-17 (Project Mentor & Health Evaluation) per [`docs/01`](docs/01-product-requirements.md) §8 (CAP-08, CAP-09), [`docs/08`](docs/08-ui-ux-design-specification.md), and [`docs/03`](docs/03-data-model-and-api.md) §3.6, §3.7:
+    - **API Client Layer (`common/src/api/index.ts`)**:
+      - Exported types `ProjectTaskResponse`, `ProjectTaskCreate`, `ProjectTaskUpdate`, `TaskDependencyCreate`, `TaskDependencyResponse`, `TaskRecommendationResponse`, `ProjectEvaluationResponse`, `ProjectEvaluationRunRequest`.
+      - Added 12 typed methods to `DevMindApiClient` for task backlog CRUD, dependency graph manipulation, next-task recommendation queries, and evaluation triggers/lookups.
+    - **Navigation & Command Palette**:
+      - Added `MentorIcon` to `client/components/shell/icons.tsx`.
+      - Added "Project Mentor & Health (S-17)" navigation link to `AppGutterRail.tsx` and quick jump to `CommandPalette.tsx`.
+    - **Page Route (`client/app/projects/[projectId]/tasks/page.tsx`)**:
+      - Implemented project tasks & evaluation route with clean async server loading and metadata.
+    - **Mentor Components (`client/components/mentor/`)**:
+      - `MentorPageClient.tsx`: Tabbed view (`Backlog & Recommendation`, `Dependency Graph (DAG)`, `Health Scorecard & Radar`, `Release Blockers`), quick action toolbar, stats counters, state management with API error resilience.
+      - `MentorRecommendationSpotlight.tsx`: Hero card highlighting next unblocked priority task, mentor narrative, rank, impact count, and quick status actions.
+      - `TaskBacklogTable.tsx`: Full backlog table with text search, status and priority filters, inline status toggles, link prerequisite modals, and deletion.
+      - `TaskDAGViewer.tsx`: Topological graph visualizer rendering tasks grouped by execution tier/level, cycle detection status badges, and prerequisite relationship tags.
+      - `HealthScorecardView.tsx`: Health audit view with overall score meter (/100), release-readiness verdict badge, mentor narrative box, and 6 dimension scorecards with progress bars and weights.
+      - `BlockersAndWarningsList.tsx`: Dedicated tab for active release blockers, quality/documentation warnings, and positive health strengths.
+      - `CreateTaskModal.tsx`: Accessible dialog for adding new backlog tasks with priority and optional prerequisite dependencies.
+      - `LinkDependencyModal.tsx`: Modal for managing incoming prerequisite dependencies on tasks.
+      - `TaskDetailModal.tsx`: Detailed drawer/dialog for editing title, description, priority, and viewing dependency lists.
+    - **Tests & Verification**:
+      - Authored `client/tests/mentor-ui.test.tsx` (7 Vitest tests covering rendering of recommendation spotlight, backlog table, DAG viewer, health scorecard, blockers list, and create modal).
+      - Verified `pnpm --filter client build` (Turbopack static optimization + typecheck) passed cleanly.
+      - Verified `pnpm --filter client test` (30 test files, 198 tests passed).
+      - Verified `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped).
 
 ### Feature — M12-10: Project Mentor Specialist Agent, Routing, and REST Endpoints
 
