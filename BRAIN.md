@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-bug-docs-ui` |
-| **Last commit** | `f08113f` (`feat(client): implement M12-05 web screens for Bug Memory and Living Docs`) |
+| **Branch** | `feature/m12-bug-docs-evals` |
+| **Last commit** | `feat(evals): implement M12-06 bug memory and living docs evals and integration tests` |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
 | **Working tree** | Clean |
-| **Open PR** | [#98](https://github.com/Warish-Labs/DevMind/pull/98) (`feature/m12-bug-docs-ui` → `main`) |
+| **Open PR** | Open (to be filled after `gh pr create`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,21 +19,42 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #98 to pass and owner merge into `main`.
-2. After PR #98 is merged:
+1. Wait for CI checks on M12-06 PR to pass and owner merge into `main`.
+2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-bug-docs-ui` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-docs-ui`).
-   - Create feature branch `feature/m12-bug-docs-evals` for task **M12-06**: Integration tests, evaluation benchmark datasets, and recorded baselines for Bug Memory and Living Docs.
+   - Delete branch `feature/m12-bug-docs-evals` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-docs-evals`).
+   - Create feature branch `feature/m12-docs` for task **M12-07**: Milestone 12.1 documentation update and operational runbook.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR [#98](https://github.com/Warish-Labs/DevMind/pull/98) (`feature/m12-bug-docs-ui` → `main`) after CI passes.
+Review and merge PR for `feature/m12-bug-docs-evals` into `main` after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-06: Integration Tests, Evaluation Benchmark Datasets, and Recorded Baselines for Bug Memory and Living Docs
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m12-bug-docs-evals`
+- **PR**: Open (created via gh CLI)
+- **What**:
+  - Implemented M12-06 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-03, CAP-04), [`docs/03`](docs/03-data-model-and-api.md) §3.4, §3.5, and [`docs/09`](docs/09-testing-and-quality-strategy.md) §9:
+    - **Benchmark Dataset (`evals/bug_docs/dataset.json`)**: Curated 12 comprehensive benchmark cases:
+      - 6 Bug Memory cases covering exact fingerprint deduplication, timeout trace normalization, TypeError with variable hex memory pointers, network connection trace extraction, validation error matching, and zero-match negative rejection.
+      - 6 Living Documentation drift cases covering missing symbol detection, removed route detection, undocumented active route drift, stale document section drift, compound multi-drift extraction, and zero-drift negative baseline.
+    - **Evaluation Metrics Module (`evals/bug_docs/metrics.py`)**: Authored metric calculations for Bug Memory (Top-1 accuracy, Recall@3, MRR, fingerprint deduplication accuracy, negative rejection rate) and Living Docs (drift candidate precision, recall, F1-score, patch diff validity).
+    - **Benchmark Runner (`evals/bug_docs/harness.py`)**: Created end-to-end evaluation harness verifying normalization, retrieval, drift detection, and deterministic patch generation with baseline recording in `evals/results/bug_docs/latest.json`.
+    - **Monorepo Package Scripts**: Added `"eval:bug-docs"` and `"eval:pr"` to `package.json`.
+    - **Unit & Regression Tests (`server/tests/test_bug_docs_eval.py`)**: 5 unit tests validating dataset schema, bug case evaluation, drift evaluation, metric aggregations, and result serialization.
+    - **E2E Integration Tests (`server/tests/test_e2e_bug_memory.py` & `server/tests/test_e2e_living_docs.py`)**:
+      - `test_e2e_bug_memory_lifecycle`: full lifecycle from raw error trace -> normalization -> duplicate occurrence increment -> hybrid matching -> resolution attachment.
+      - `test_e2e_bug_memory_multi_tenant_isolation`: verifies cross-workspace tenant boundaries return 404 NotFoundError.
+      - `test_e2e_living_docs_lifecycle_and_approval_gate`: full lifecycle from document registration -> drift detection -> approval gate enforcement (409 Conflict when unapproved) -> rejection -> approval -> patch application.
+      - `test_e2e_living_docs_multi_tenant_isolation`: verifies multi-tenant isolation returns 404 NotFoundError.
+- **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). `eval:bug-docs` (Composite 1.0, 100% Top-1, 100% Recall, 100% Patch Diff Validity). Linting clean (`ruff check`). Formatting clean (`ruff format`). Import boundaries clean (7/7 contracts maintained).
 
 ### Feature — M12-05: Web Screens for Bug Memory and Living Docs
 

@@ -1,0 +1,22 @@
+{
+  "benchmark": "devmind-bug-docs-v1",
+  "git_commit": "45f2e79",
+  "timestamp": "2026-10-31T12:52:17.469295+00:00",
+  "bug_memory_metrics": {
+    "total_cases": 6,
+    "fingerprint_accuracy": 1.0,
+    "top_1_accuracy": 1.0,
+    "recall_at_3": 1.0,
+    "mean_reciprocal_rank": 1.0,
+    "negative_rejection_rate": 1.0
+  },
+  "living_docs_metrics": {
+    "total_cases": 6,
+    "drift_precision": 1.0,
+    "drift_recall": 1.0,
+    "drift_f1_score": 1.0,
+    "patch_diff_validity": 1.0
+  },
+  "composite_score": 1.0,
+  "status": "passed"
+}

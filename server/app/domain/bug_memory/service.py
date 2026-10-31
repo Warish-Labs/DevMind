@@ -22,7 +22,6 @@ from app.domain.bug_memory.schemas import (
     ResolutionProposal,
 )
 from app.llm.router import LLMGatewayRouter
-from app.orchestration.bug_memory import BugMemoryAgent
 from app.persistence.models.bug_memory import BugRecord, BugResolution
 from app.persistence.repositories.bug_record_repo import BugRecordRepository
 from app.persistence.repositories.project_repo import ProjectRepository
@@ -38,6 +37,8 @@ class BugMemoryService:
         session: AsyncSession,
         router: LLMGatewayRouter | None = None,
     ) -> None:
+        from app.orchestration.bug_memory import BugMemoryAgent
+
         self.session = session
         self.repo = BugRecordRepository(session)
         self.project_repo = ProjectRepository(session)
