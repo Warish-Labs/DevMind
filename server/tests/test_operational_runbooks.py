@@ -173,7 +173,9 @@ def test_github_integration_and_pr_intelligence_runbook_coverage() -> None:
         "5. Audit and compliance verification",
     ]
     for section in required_sections:
-        assert section in content, f"Missing section '{section}' in github-integration-and-pr-intelligence.md"
+        assert section in content, (
+            f"Missing section '{section}' in github-integration-and-pr-intelligence.md"
+        )
 
     # Crucial security invariants
     assert "DEVMIND_GITHUB_WEBHOOK_SECRET" in content
@@ -181,4 +183,3 @@ def test_github_integration_and_pr_intelligence_runbook_coverage() -> None:
     assert "DEVMIND_KILL_WEBHOOKS" in content
     assert "DEVMIND_RESEND_API_KEY" in content
     assert "Never log user source code or decrypted access tokens" in content
-

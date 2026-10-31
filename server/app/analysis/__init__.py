@@ -1,6 +1,7 @@
 """DevMind deterministic analysis: scanner adapters, rules, evidence verification."""
 
 from app.analysis.change_impact import ChangeImpactAnalyzer
+from app.analysis.error_normalizer import ErrorNormalizer, NormalizedError
 from app.analysis.evidence_verifier import (
     ALLOWED_RULE_PREFIXES,
     KNOWN_RULES,
@@ -49,12 +50,14 @@ __all__ = [
     "CitationVerifier",
     "DiffHunk",
     "DraftFinding",
+    "ErrorNormalizer",
     "EvidenceItem",
     "EvidenceVerifier",
     "FindingVerificationResult",
     "GuardResolutionChain",
     "GuardType",
     "KNOWN_RULES",
+    "NormalizedError",
     "ProjectSecurityConfig",
     "ResolvedGuard",
     "ReviewBuddyAnalyzer",

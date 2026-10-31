@@ -56,7 +56,9 @@ def test_app(webhook_settings: Settings, mock_db_session: AsyncMock) -> Any:
 
 
 @pytest.mark.asyncio
-async def test_webhook_replay_ping_event_idempotency(test_app: Any, webhook_settings: Settings) -> None:
+async def test_webhook_replay_ping_event_idempotency(
+    test_app: Any, webhook_settings: Settings
+) -> None:
     """Repeated delivery of a ping event with the same X-GitHub-Delivery must be ignored on second attempt."""
     payload = {"zen": "Mind your turns.", "hook_id": 12345}
     body = json.dumps(payload).encode("utf-8")
@@ -89,7 +91,9 @@ async def test_webhook_replay_ping_event_idempotency(test_app: Any, webhook_sett
 
 
 @pytest.mark.asyncio
-async def test_webhook_replay_pull_request_lifecycle_transitions(webhook_settings: Settings) -> None:
+async def test_webhook_replay_pull_request_lifecycle_transitions(
+    webhook_settings: Settings,
+) -> None:
     """Simulate realistic PR lifecycle transitions: opened -> synchronize -> closed."""
     session = AsyncMock()
     service = GitHubWebhookService(session=session, settings=webhook_settings)
@@ -244,13 +248,17 @@ async def test_webhook_replay_installation_events(webhook_settings: Settings) ->
         "repositories_added": [{"full_name": "Warish-Labs/DevMind"}],
         "repositories_removed": [],
     }
-    res_repos = await service.handle_event("installation_repositories", f"repo-{uuid4()}", repo_payload)
+    res_repos = await service.handle_event(
+        "installation_repositories", f"repo-{uuid4()}", repo_payload
+    )
     assert res_repos["status"] == "received"
     assert res_repos["repositories_added"] == ["Warish-Labs/DevMind"]
 
 
 @pytest.mark.asyncio
-async def test_webhook_signature_tampered_payload_rejected(test_app: Any, webhook_settings: Settings) -> None:
+async def test_webhook_signature_tampered_payload_rejected(
+    test_app: Any, webhook_settings: Settings
+) -> None:
     """Signature computed on payload A must fail when received with tampered payload B."""
     original_body = b'{"action": "opened", "number": 1}'
     tampered_body = b'{"action": "opened", "number": 99999}'
@@ -275,7 +283,9 @@ async def test_webhook_signature_tampered_payload_rejected(test_app: Any, webhoo
 
 
 @pytest.mark.asyncio
-async def test_webhook_malformed_json_body_rejected(test_app: Any, webhook_settings: Settings) -> None:
+async def test_webhook_malformed_json_body_rejected(
+    test_app: Any, webhook_settings: Settings
+) -> None:
     """Malformed non-JSON payload returns 400/422 validation error."""
     malformed_body = b"NOT_VALID_JSON{abc"
     sig = sign_payload(webhook_settings.github_webhook_secret, malformed_body)

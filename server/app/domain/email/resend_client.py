@@ -52,7 +52,11 @@ class ResendEmailClient:
                 email_hash,
                 subject,
                 mock_id,
-                extra={"recipient_hash": email_hash, "subject": subject, "mock_message_id": mock_id},
+                extra={
+                    "recipient_hash": email_hash,
+                    "subject": subject,
+                    "mock_message_id": mock_id,
+                },
             )
             return {"id": mock_id, "status": "simulated"}
 

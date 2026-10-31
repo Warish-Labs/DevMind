@@ -81,14 +81,11 @@ class WorkspaceInvitationRepository(BaseRepository):
         """Find pending, non-expired invitation for an email in a workspace."""
         self._validate_context(ctx)
         now = datetime.now(UTC)
-        stmt = (
-            select(WorkspaceInvitation)
-            .where(
-                WorkspaceInvitation.workspace_id == workspace_id,
-                WorkspaceInvitation.email == email.strip().lower(),
-                WorkspaceInvitation.accepted_at.is_(None),
-                WorkspaceInvitation.expires_at > now,
-            )
+        stmt = select(WorkspaceInvitation).where(
+            WorkspaceInvitation.workspace_id == workspace_id,
+            WorkspaceInvitation.email == email.strip().lower(),
+            WorkspaceInvitation.accepted_at.is_(None),
+            WorkspaceInvitation.expires_at > now,
         )
         stmt = self._scope_workspace_query(
             stmt, WorkspaceInvitation.workspace_id, ctx, target_workspace_id=workspace_id
