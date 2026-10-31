@@ -36,6 +36,11 @@ from app.persistence.models.github import (
     PullRequest,
 )
 from app.persistence.models.living_documentation import DocDriftItem, DocumentationRecord
+from app.persistence.models.mentor import (
+    ProjectEvaluation,
+    ProjectTask,
+    TaskDependency,
+)
 from app.persistence.models.pr_analysis import PRAnalysis
 from app.persistence.models.project import Project, ProjectMembership
 from app.persistence.models.retention import RetentionPolicy
@@ -72,9 +77,11 @@ __all__ = [
     "JobEvent",
     "LocalWorkspaceRegistration",
     "Project",
+    "ProjectEvaluation",
     "ProjectFile",
     "ProjectMembership",
     "ProjectSnapshot",
+    "ProjectTask",
     "PRAnalysis",
     "PullRequest",
     "RetentionPolicy",
@@ -82,6 +89,7 @@ __all__ = [
     "ScanRun",
     "SnapshotFile",
     "SoftDeleteMixin",
+    "TaskDependency",
     "TimestampMixin",
     "UUID7PrimaryKeyMixin",
     "UsageRecord",
