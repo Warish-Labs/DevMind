@@ -76,6 +76,26 @@ tasks:
       max_output_tokens: 1500
     data:
       may_contain_source: true
+  mentor_recommendation:
+    model: primary_reasoning
+    fallbacks: [fallback_reasoning]
+    required_capabilities: [structured_output]
+    output_schema: MentorRecommendationOutput
+    params:
+      temperature: 0.1
+      max_output_tokens: 1000
+    data:
+      may_contain_source: false
+  project_evaluation_narrative:
+    model: primary_reasoning
+    fallbacks: [fallback_reasoning]
+    required_capabilities: [structured_output]
+    output_schema: ProjectEvaluationNarrativeOutput
+    params:
+      temperature: 0.1
+      max_output_tokens: 1200
+    data:
+      may_contain_source: false
   embedding_code:
     kind: embedding
     model: embed_code

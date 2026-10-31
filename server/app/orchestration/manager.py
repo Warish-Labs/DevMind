@@ -37,6 +37,7 @@ from app.orchestration.authcheck import run_authcheck_specialist
 from app.orchestration.checkpointer import format_thread_id
 from app.orchestration.codemate import run_codemate_specialist
 from app.orchestration.docsalive import run_docsalive_specialist
+from app.orchestration.mentor import run_mentor_specialist
 from app.orchestration.pragent import run_pragent_specialist
 from app.orchestration.reviewbuddy import run_reviewbuddy_specialist
 from app.orchestration.state import (
@@ -52,7 +53,7 @@ from app.orchestration.state import (
 logger = logging.getLogger("devmind.orchestration.manager")
 
 RELEASED_SPECIALISTS = frozenset(
-    {"codemate", "authcheck", "reviewbuddy", "pragent", "bugmemory", "docsalive"}
+    {"codemate", "authcheck", "reviewbuddy", "pragent", "bugmemory", "docsalive", "mentor"}
 )
 
 # Deterministic keywords for security / auth intent detection
@@ -150,6 +151,20 @@ def classify_intent_deterministically(request: RequestState) -> IntentState | No
             confidence=1.0,
             requires_specialists=["docsalive"],
         )
+    if job_type in ("task_recommendation", "mentor", "project_mentor", "next_task"):
+        return IntentState(
+            category="mentorship",
+            intent_name="recommend_task",
+            confidence=1.0,
+            requires_specialists=["mentor"],
+        )
+    if job_type in ("project_evaluation", "release_readiness", "evaluation_audit"):
+        return IntentState(
+            category="evaluation",
+            intent_name="project_evaluation",
+            confidence=1.0,
+            requires_specialists=["mentor"],
+        )
     if job_type in ("comprehensive_review", "full_audit"):
         return IntentState(
             category="security_and_code",
@@ -167,7 +182,26 @@ def classify_intent_deterministically(request: RequestState) -> IntentState | No
         has_code = bool(tokens & _CODE_QA_KEYWORDS) or any(
             k in user_msg for k in ("how does", "where is")
         )
+        has_mentor = any(
+            phrase in user_msg
+            for phrase in (
+                "next task",
+                "recommend task",
+                "what to work on",
+                "backlog priority",
+                "project health",
+                "release readiness",
+                "project evaluation",
+            )
+        )
 
+        if has_mentor:
+            return IntentState(
+                category="mentorship",
+                intent_name="project_mentorship",
+                confidence=0.9,
+                requires_specialists=["mentor"],
+            )
         if has_auth and has_code:
             return IntentState(
                 category="security_and_code",
@@ -387,6 +421,8 @@ def route_specialists(state: RunState) -> list[str]:
         destinations.append("pragent")
     if "docsalive" in specialists:
         destinations.append("docsalive")
+    if "mentor" in specialists:
+        destinations.append("mentor")
 
     return destinations or ["join"]
 
@@ -515,6 +551,39 @@ def docsalive_node_factory(
         )
 
     return docsalive_node
+
+
+def mentor_node_factory(
+    router: LLMGatewayRouter | None = None,
+    prompt_loader: PromptLoader | None = None,
+    session: AsyncSession | None = None,
+):
+    """Factory creating the ProjectMentor specialist node."""
+
+    async def mentor_node(state: RunState) -> dict[str, Any]:
+        """Execute ProjectMentor specialist task (docs/01 CAP-08, CAP-09, docs/05 §6.8)."""
+        logger.info("Executing ProjectMentor specialist for run %s", state.get("run_id"))
+        task = SpecialistTask(
+            specialist="mentor",
+            task_id=f"mentor_{state['run_id'][:8]}",
+            status="running",
+            input_refs=[],
+            params={},
+        )
+        for t in state.get("plan", []):
+            if t.specialist == "mentor":
+                task = t
+                break
+
+        return await run_mentor_specialist(
+            state=state,
+            task=task,
+            router=router,
+            prompt_loader=prompt_loader,
+            session=session,
+        )
+
+    return mentor_node
 
 
 def join_node(state: RunState) -> dict[str, Any]:
@@ -653,6 +722,10 @@ def build_agent_manager_graph(
         "docsalive",
         docsalive_node_factory(router=router, prompt_loader=prompt_loader, session=session),
     )
+    builder.add_node(
+        "mentor",
+        mentor_node_factory(router=router, prompt_loader=prompt_loader, session=session),
+    )
     builder.add_node("join", join_node)
     builder.add_node("verify", verify_node)
     builder.add_node("synthesize", synthesize_node)
@@ -672,13 +745,14 @@ def build_agent_manager_graph(
     builder.add_conditional_edges(
         "plan",
         route_specialists,
-        ["codemate", "authcheck", "reviewbuddy", "pragent", "docsalive", "join"],
+        ["codemate", "authcheck", "reviewbuddy", "pragent", "docsalive", "mentor", "join"],
     )
     builder.add_edge("codemate", "join")
     builder.add_edge("authcheck", "join")
     builder.add_edge("reviewbuddy", "join")
     builder.add_edge("pragent", "join")
     builder.add_edge("docsalive", "join")
+    builder.add_edge("mentor", "join")
 
     # Verification and Synthesis
     builder.add_edge("join", "verify")
