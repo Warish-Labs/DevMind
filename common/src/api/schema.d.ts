@@ -1132,6 +1132,198 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{project_id}/tasks": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List project tasks
+     * @description Retrieve paginated backlog tasks for a project, optionally filtered by status and priority.
+     */
+    get: operations["list_project_tasks_api_v1_projects__project_id__tasks_get"];
+    put?: never;
+    /**
+     * Create project task
+     * @description Create a new task in the project backlog with optional prerequisite dependencies.
+     */
+    post: operations["create_project_task_api_v1_projects__project_id__tasks_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/tasks/recommend": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get recommended next task
+     * @description Analyze the project's dependency DAG and recommend the highest-leverage unblocked task.
+     */
+    get: operations["get_task_recommendation_api_v1_projects__project_id__tasks_recommend_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/tasks/{task_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get project task
+     * @description Retrieve details for a single backlog task including dependencies and dependents.
+     */
+    get: operations["get_project_task_api_v1_projects__project_id__tasks__task_id__get"];
+    put?: never;
+    post?: never;
+    /**
+     * Delete project task
+     * @description Delete a backlog task and cascade-remove associated dependency links.
+     */
+    delete: operations["delete_project_task_api_v1_projects__project_id__tasks__task_id__delete"];
+    options?: never;
+    head?: never;
+    /**
+     * Update project task
+     * @description Update mutable fields of a project backlog task.
+     */
+    patch: operations["update_project_task_api_v1_projects__project_id__tasks__task_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/tasks/{task_id}/dependencies": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Add task dependency
+     * @description Declare that task_id depends on depends_on_task_id, preventing cycles.
+     */
+    post: operations["add_task_dependency_api_v1_projects__project_id__tasks__task_id__dependencies_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/tasks/{task_id}/dependencies/{depends_on_task_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Remove task dependency
+     * @description Remove a dependency edge between two tasks.
+     */
+    delete: operations["remove_task_dependency_api_v1_projects__project_id__tasks__task_id__dependencies__depends_on_task_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/evaluations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List project evaluations
+     * @description Retrieve paginated historical multidimensional evaluations for a project.
+     */
+    get: operations["list_project_evaluations_api_v1_projects__project_id__evaluations_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/evaluations/run": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Run project evaluation
+     * @description Execute an on-demand multidimensional health evaluation and store release-readiness verdict.
+     */
+    post: operations["run_project_evaluation_api_v1_projects__project_id__evaluations_run_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/evaluations/latest": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get latest project evaluation
+     * @description Retrieve the most recent health scorecard and release-readiness verdict for a project.
+     */
+    get: operations["get_latest_project_evaluation_api_v1_projects__project_id__evaluations_latest_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/evaluations/{evaluation_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get project evaluation detail
+     * @description Retrieve detailed results for a specific evaluation by ID.
+     */
+    get: operations["get_project_evaluation_api_v1_projects__project_id__evaluations__evaluation_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{pid}/analyses": {
     parameters: {
       query?: never;
@@ -4362,6 +4554,94 @@ export interface components {
       applied_at?: string | null;
     };
     /**
+     * ProjectEvaluationResponse
+     * @description Multidimensional health scorecard and release-readiness verdict.
+     */
+    ProjectEvaluationResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Snapshot Id */
+      snapshot_id?: string | null;
+      /** Overall Score */
+      overall_score: number;
+      /** Dimension Scores */
+      dimension_scores: {
+        [key: string]: number;
+      };
+      /** Verdict */
+      verdict: string;
+      /** Blockers */
+      blockers?: {
+        [key: string]: unknown;
+      }[];
+      /** Warnings */
+      warnings?: {
+        [key: string]: unknown;
+      }[];
+      /** Positive Indicators */
+      positive_indicators?: string[];
+      /** Rubric Version */
+      rubric_version: string;
+      /**
+       * Functionality Confidence
+       * @default high
+       */
+      functionality_confidence: string;
+      /** Narrative */
+      narrative?: string | null;
+      /** Evaluated By */
+      evaluated_by?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /**
+     * ProjectEvaluationRunRequest
+     * @description Request payload to trigger an on-demand project evaluation.
+     */
+    ProjectEvaluationRunRequest: {
+      /**
+       * Snapshot Id
+       * @description Optional snapshot UUID to evaluate
+       */
+      snapshot_id?: string | null;
+      /**
+       * Feature Checklist
+       * @description Optional user-declared feature checklist adhering to OQ-18
+       */
+      feature_checklist?:
+        | {
+            [key: string]: unknown;
+          }[]
+        | null;
+      /**
+       * Rubric Version
+       * @description Evaluation rubric version
+       * @default 1.0
+       */
+      rubric_version: string;
+    };
+    /**
      * ProjectMemberResponse
      * @description Serialized project member record.
      */
@@ -4425,6 +4705,126 @@ export interface components {
       updated_at: string;
       /** Archived At */
       archived_at?: string | null;
+    };
+    /**
+     * ProjectTaskCreate
+     * @description Payload to create a new backlog or finding-derived task.
+     */
+    ProjectTaskCreate: {
+      /**
+       * Title
+       * @description Task title
+       */
+      title: string;
+      /**
+       * Description
+       * @description Detailed instructions or context
+       */
+      description?: string | null;
+      /**
+       * Priority
+       * @description Priority level: critical, high, medium, low
+       * @default medium
+       */
+      priority: string;
+      /**
+       * Source
+       * @description Source of task: user, agent, finding
+       * @default user
+       */
+      source: string;
+      /**
+       * Finding Id
+       * @description Optional finding ID if created from a security/review finding
+       */
+      finding_id?: string | null;
+      /**
+       * Metadata
+       * @description Arbitrary structured task metadata
+       */
+      metadata?: {
+        [key: string]: unknown;
+      };
+      /**
+       * Depends On Ids
+       * @description Task UUIDs that this task depends on (prerequisites)
+       */
+      depends_on_ids?: string[];
+    };
+    /**
+     * ProjectTaskResponse
+     * @description Response representation of a project task.
+     */
+    ProjectTaskResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Title */
+      title: string;
+      /** Description */
+      description?: string | null;
+      /** Status */
+      status: string;
+      /** Priority */
+      priority: string;
+      /** Source */
+      source: string;
+      /** Finding Id */
+      finding_id?: string | null;
+      /** Metadata */
+      metadata?: {
+        [key: string]: unknown;
+      };
+      /** Depends On Ids */
+      depends_on_ids?: string[];
+      /** Dependent Ids */
+      dependent_ids?: string[];
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /**
+     * ProjectTaskUpdate
+     * @description Payload to update an existing task.
+     */
+    ProjectTaskUpdate: {
+      /** Title */
+      title?: string | null;
+      /** Description */
+      description?: string | null;
+      /**
+       * Status
+       * @description open, in_progress, blocked, completed, cancelled
+       */
+      status?: string | null;
+      /**
+       * Priority
+       * @description critical, high, medium, low
+       */
+      priority?: string | null;
+      /** Metadata */
+      metadata?: {
+        [key: string]: unknown;
+      } | null;
     };
     /**
      * PullRequestSummary
@@ -5099,6 +5499,86 @@ export interface components {
       alerts?: components["schemas"]["SystemAlert"][];
       /** Evaluated At */
       evaluated_at: string;
+    };
+    /**
+     * TaskDependencyCreate
+     * @description Payload to add a dependency edge.
+     */
+    TaskDependencyCreate: {
+      /**
+       * Depends On Task Id
+       * Format: uuid
+       * @description UUID of the prerequisite task
+       */
+      depends_on_task_id: string;
+    };
+    /**
+     * TaskDependencyResponse
+     * @description Response schema for a registered dependency edge.
+     */
+    TaskDependencyResponse: {
+      /**
+       * Task Id
+       * Format: uuid
+       */
+      task_id: string;
+      /**
+       * Depends On Task Id
+       * Format: uuid
+       */
+      depends_on_task_id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /**
+     * TaskRecommendationResponse
+     * @description AI and DAG-ranked next recommended task with actionable reasoning.
+     */
+    TaskRecommendationResponse: {
+      recommended_task?: components["schemas"]["ProjectTaskResponse"] | null;
+      /**
+       * Rank
+       * @default 1
+       */
+      rank: number;
+      /**
+       * Score
+       * @default 0
+       */
+      score: number;
+      /**
+       * Is Ready
+       * @default true
+       */
+      is_ready: boolean;
+      /**
+       * Downstream Impact Count
+       * @default 0
+       */
+      downstream_impact_count: number;
+      /**
+       * Reason
+       * @description Deterministic recommendation explanation
+       */
+      reason: string;
+      /**
+       * Narrative
+       * @description LLM synthesized actionable recommendation guidance
+       */
+      narrative: string;
+      /**
+       * Unblocked Count
+       * @default 0
+       */
+      unblocked_count: number;
+      /**
+       * Total Pending Tasks
+       * @default 0
+       */
+      total_pending_tasks: number;
     };
     /**
      * TriggerPRAnalysisRequest
@@ -7574,6 +8054,407 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["DriftActionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_project_tasks_api_v1_projects__project_id__tasks_get: {
+    parameters: {
+      query?: {
+        /** @description Filter by task status (open, in_progress, blocked, completed, cancelled) */
+        status?: string | null;
+        /** @description Filter by task priority (critical, high, medium, low) */
+        priority?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectTaskResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_project_task_api_v1_projects__project_id__tasks_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProjectTaskCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectTaskResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_task_recommendation_api_v1_projects__project_id__tasks_recommend_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TaskRecommendationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_project_task_api_v1_projects__project_id__tasks__task_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        task_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectTaskResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_project_task_api_v1_projects__project_id__tasks__task_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        task_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_project_task_api_v1_projects__project_id__tasks__task_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        task_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProjectTaskUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectTaskResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  add_task_dependency_api_v1_projects__project_id__tasks__task_id__dependencies_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        task_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TaskDependencyCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TaskDependencyResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  remove_task_dependency_api_v1_projects__project_id__tasks__task_id__dependencies__depends_on_task_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        task_id: string;
+        depends_on_task_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_project_evaluations_api_v1_projects__project_id__evaluations_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectEvaluationResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  run_project_evaluation_api_v1_projects__project_id__evaluations_run_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProjectEvaluationRunRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectEvaluationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_latest_project_evaluation_api_v1_projects__project_id__evaluations_latest_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectEvaluationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_project_evaluation_api_v1_projects__project_id__evaluations__evaluation_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        evaluation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectEvaluationResponse"];
         };
       };
       /** @description Validation Error */

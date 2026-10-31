@@ -119,6 +119,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     from app.api.jobs import jobs_router, project_analyses_router
     from app.api.living_docs import living_docs_router
     from app.api.me import router as me_router
+    from app.api.mentor import mentor_router
     from app.api.projects import projects_router, workspace_projects_router
     from app.api.public import router as public_router
     from app.api.retention import project_retention_router, workspace_retention_router
@@ -152,6 +153,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_v1_router.include_router(review_rules_router)
     api_v1_router.include_router(bug_memory_router)
     api_v1_router.include_router(living_docs_router)
+    api_v1_router.include_router(mentor_router)
     api_v1_router.include_router(project_analyses_router)
     api_v1_router.include_router(project_retention_router)
     api_v1_router.include_router(project_audit_router)

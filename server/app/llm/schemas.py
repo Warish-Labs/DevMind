@@ -169,6 +169,33 @@ class DocPatchProposal(BaseModel):
     )
 
 
+class MentorRecommendationOutput(BaseModel):
+    """Structured recommendation narration emitted by ProjectMentor agent (docs/01 CAP-08, docs/05 §6.8)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    summary: str = Field(description="Summary of the recommended next task")
+    recommended_action: str = Field(description="Concrete step to take next")
+    rationale: str = Field(description="Why this task is recommended over others")
+    confidence: float = Field(default=0.95, ge=0.0, le=1.0)
+
+
+class ProjectEvaluationNarrativeOutput(BaseModel):
+    """Structured release-readiness narration emitted by ProjectMentor agent (docs/01 CAP-09, docs/05 §6.8)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    executive_summary: str = Field(description="Executive summary of overall health")
+    verdict_rationale: str = Field(
+        description="Detailed explanation of the release readiness verdict"
+    )
+    key_recommendations: list[str] = Field(
+        default_factory=list,
+        description="Top actionable recommendations to unblock or improve project",
+    )
+    confidence: float = Field(default=0.90, ge=0.0, le=1.0)
+
+
 # ---------------------------------------------------------------------------
 # Schema Registry
 # ---------------------------------------------------------------------------
@@ -186,6 +213,8 @@ class SchemaRegistry:
         self.register("RewrittenQuery", RewrittenQuery)
         self.register("BugSimilarityExplanation", BugSimilarityExplanation)
         self.register("DocPatchProposal", DocPatchProposal)
+        self.register("MentorRecommendationOutput", MentorRecommendationOutput)
+        self.register("ProjectEvaluationNarrativeOutput", ProjectEvaluationNarrativeOutput)
 
     def register(self, name: str, schema_cls: type[BaseModel]) -> None:
         """Register a Pydantic model under a schema name."""

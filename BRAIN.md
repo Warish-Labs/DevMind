@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-eval-scoring` |
-| **Last commit** | `52cd1bb` (`feat(server): implement M12-09 evaluation scoring engine and release blockers synthesis`) |
+| **Branch** | `feature/m12-mentor-agent` |
+| **Last commit** | `52592e4` (`feat(server): implement M12-10 project mentor agent, routing, and rest api`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete |
 | **Working tree** | Clean |
-| **Open PR** | [#102](https://github.com/Warish-Labs/DevMind/pull/102) (`feature/m12-eval-scoring` → `main`) |
+| **Open PR** | Pending |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,21 +19,62 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #102 to pass and owner merge into `main`.
-2. After PR #102 is merged:
+1. Wait for CI checks on PR for `feature/m12-mentor-agent` to pass and owner merge into `main`.
+2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-eval-scoring` locally and remotely on GitHub (`git push origin --delete feature/m12-eval-scoring`).
-   - Create feature branch `feature/m12-mentor-agent` for task **M12-10**: ProjectMentor specialist agent, LangGraph routing, and REST endpoints for tasks and evaluations.
+   - Delete branch `feature/m12-mentor-agent` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-agent`).
+   - Create feature branch `feature/m12-mentor-ui` for task **M12-11**: Web screens for Project Mentor & Project Evaluation (task backlog, dependency graph visualizer, multidimensional radar/health scorecards, release blockers).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR [#102](https://github.com/Warish-Labs/DevMind/pull/102) (`feature/m12-eval-scoring` → `main`) after CI passes.
+Review and merge PR for `feature/m12-mentor-agent` (`feature/m12-mentor-agent` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-10: Project Mentor Specialist Agent, Routing, and REST Endpoints
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m12-mentor-agent`
+- **What**:
+  - Implemented M12-10 per [`docs/01`](docs/01-product-requirements.md) §8 (CAP-08, CAP-09), [`docs/03`](docs/03-data-model-and-api.md) §3.6, §3.7, and [`docs/05`](docs/05-agents-and-llm-workflows.md) §6.8:
+    - **LLM Tasks & Prompts**:
+      - Registered `mentor_recommendation` and `project_evaluation_narrative` in `server/configs/llm/tasks.yaml`.
+      - Authored versioned prompt templates `server/app/llm/prompts/mentor_recommendation/v1.md` and `server/app/llm/prompts/project_evaluation_narrative/v1.md`.
+      - Registered schemas `MentorRecommendationOutput` and `ProjectEvaluationNarrativeOutput` in `server/app/llm/schemas.py`.
+    - **Specialist Agent (`server/app/orchestration/mentor.py`)**:
+      - `ProjectMentorAgent`: Deterministic TaskDAG next-task recommendation unblocking analysis and multidimensional project health evaluations.
+      - Implemented `run_mentor_specialist` node runner supporting `recommend` and `evaluate` actions within LangGraph workflows.
+      - Fallback deterministic narratives when LLM gateway is offline or unavailable.
+    - **Orchestration Integration (`server/app/orchestration/manager.py`)**:
+      - Added `"mentor"` to `RELEASED_SPECIALISTS`.
+      - Deterministic intent classification for job types (`task_recommendation`, `mentor`, `project_mentor`, `next_task`, `project_evaluation`, `release_readiness`) and user prompts.
+      - Integrated `mentor_node_factory`, conditional edges, and join barrier in `build_agent_manager_graph`.
+    - **Domain Service (`server/app/domain/mentor/service.py`)**:
+      - `ProjectMentorService`: Full task CRUD, cycle-checked dependency linking, next task recommendations, on-demand evaluation execution, and scorecard retrieval.
+    - **REST API Endpoints (`server/app/api/mentor.py`)**:
+      - `GET /api/v1/projects/{project_id}/tasks` (`PERM_PROJECT_READ`)
+      - `POST /api/v1/projects/{project_id}/tasks` (`PERM_PROJECT_UPDATE`)
+      - `GET /api/v1/projects/{project_id}/tasks/recommend` (`PERM_PROJECT_READ`)
+      - `GET /api/v1/projects/{project_id}/tasks/{task_id}` (`PERM_PROJECT_READ`)
+      - `PATCH /api/v1/projects/{project_id}/tasks/{task_id}` (`PERM_PROJECT_UPDATE`)
+      - `DELETE /api/v1/projects/{project_id}/tasks/{task_id}` (`PERM_PROJECT_UPDATE`)
+      - `POST /api/v1/projects/{project_id}/tasks/{task_id}/dependencies` (`PERM_PROJECT_UPDATE`, returns 409 on cycle)
+      - `DELETE /api/v1/projects/{project_id}/tasks/{task_id}/dependencies/{depends_on_task_id}` (`PERM_PROJECT_UPDATE`)
+      - `GET /api/v1/projects/{project_id}/evaluations` (`PERM_PROJECT_READ`)
+      - `POST /api/v1/projects/{project_id}/evaluations/run` (`PERM_ANALYSIS_CREATE`)
+      - `GET /api/v1/projects/{project_id}/evaluations/latest` (`PERM_PROJECT_READ`)
+      - `GET /api/v1/projects/{project_id}/evaluations/{evaluation_id}` (`PERM_PROJECT_READ`)
+      - Mounted `mentor_router` on `/api/v1` in `server/app/main.py`.
+    - **OpenAPI Schema & TypeScript Client**:
+      - Exported OpenAPI schema (103 paths) and regenerated `@devmind/common` (`common/src/api/schema.d.ts`).
+    - **Unit & Integration Tests**:
+      - `server/tests/test_mentor_agent.py`: 5 tests covering empty backlog, DAG ranking with dependencies, LLM narrative generation, evaluation health scoring persistence, and specialist node execution.
+      - `server/tests/test_mentor_api.py`: 3 tests covering task CRUD, next task recommendation, dependency cycle prevention (409 Conflict), and project evaluation lifecycle.
+- **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). Linting clean (`ruff check`). Formatting clean (`ruff format`). Import boundaries clean (7/7 contracts maintained). Pytest: 8/8 mentor tests passed, 17/17 DAG & scoring tests passed.
 
 ### Feature — M12-09: Evaluation Scoring Engine and Release Blockers Synthesis
 
