@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-bug-docs-evals` |
-| **Last commit** | `feat(evals): implement M12-06 bug memory and living docs evals and integration tests` |
+| **Last commit** | `d6328f4` (`feat(server): implement M12-06 bug memory and living docs evals and integration tests`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
 | **Working tree** | Clean |
-| **Open PR** | Open (to be filled after `gh pr create`) |
+| **Open PR** | [#99](https://github.com/Warish-Labs/DevMind/pull/99) (`feature/m12-bug-docs-evals` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,8 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on M12-06 PR to pass and owner merge into `main`.
-2. After PR is merged:
+1. Wait for CI checks on PR #99 to pass and owner merge into `main`.
+2. After PR #99 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-bug-docs-evals` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-docs-evals`).
    - Create feature branch `feature/m12-docs` for task **M12-07**: Milestone 12.1 documentation update and operational runbook.
@@ -29,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-bug-docs-evals` into `main` after CI passes.
+Review and merge PR [#99](https://github.com/Warish-Labs/DevMind/pull/99) (`feature/m12-bug-docs-evals` → `main`) after CI passes.
 
 ---
 
@@ -39,7 +39,7 @@ Review and merge PR for `feature/m12-bug-docs-evals` into `main` after CI passes
 
 - **Date**: 2026-10-31
 - **Branch**: `feature/m12-bug-docs-evals`
-- **PR**: Open (created via gh CLI)
+- **PR**: [#99](https://github.com/Warish-Labs/DevMind/pull/99)
 - **What**:
   - Implemented M12-06 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-03, CAP-04), [`docs/03`](docs/03-data-model-and-api.md) §3.4, §3.5, and [`docs/09`](docs/09-testing-and-quality-strategy.md) §9:
     - **Benchmark Dataset (`evals/bug_docs/dataset.json`)**: Curated 12 comprehensive benchmark cases:
