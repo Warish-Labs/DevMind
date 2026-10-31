@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m11-tests-evals` |
-| **Last commit** | `bd826f6` (`feat(server): implement M11-08 PR intelligence integration tests and evals`) |
+| **Branch** | `feature/m11-docs` |
+| **Last commit** | `70522a1` (`feat(server): implement M11-08 PR intelligence integration tests and evals (#92)`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) |
-| **Working tree** | Clean, PR #92 opened |
-| **Open PR** | [#92](https://github.com/Warish-Labs/DevMind/pull/92) (`feature/m11-tests-evals`) |
+| **Working tree** | Modified, ready for M11-09 commit and PR |
+| **Open PR** | Pending (`feature/m11-docs`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,25 +19,55 @@
 
 ## 2. Next action (exact)
 
-1. Commit changes and push `feature/m11-tests-evals` to GitHub.
-2. Open Pull Request for M11-08 (`feature/m11-tests-evals` → `main`).
-3. Owner reviews and merges PR for M11-08.
-4. Run after-merge routine, pull `main`, delete `feature/m11-tests-evals`.
-5. Initiate **M11-09**: Milestone 11 documentation update and operational runbook (`feature/m11-docs`).
+1. Run verification suite (`node scripts/test-all.mjs --fast`).
+2. Commit changes with `docs(repo): implement M11-09 documentation updates and operational runbook`.
+3. Push branch `feature/m11-docs` to GitHub with `HTTPS_PROXY=http://127.0.0.1:8989`.
+4. Open Pull Request for M11-09 (`feature/m11-docs` → `main`).
+5. Owner reviews and merges PR for M11-09.
+6. Run after-merge routine, pull `main`, delete `feature/m11-docs`.
+7. Mark Milestone 11 fully delivered and prepare Milestone 12 roadmap slices.
 
 ---
 
 ## 3. Waiting on owner
 
-Owner review and merge of M11-08 PR.
+Owner review and merge of M11-09 PR.
 
 ---
 
 ## 4. Done log
 
-### Feature — M11-08: End-to-End Integration Tests, Webhook Replay Fixtures, and Evaluation Suites
+### Feature — M11-09: Milestone 11 Documentation Update and Operational Runbook
 
 - **Date**: 2026-10-31
+- **Branch**: `feature/m11-docs`
+- **What**:
+  - Implemented M11-09 per [`docs/01`](docs/01-product-requirements.md) §9 (CAP-05, CAP-06), [`docs/10`](docs/10-deployment-and-operations.md) §11, §18, and [`docs/11`](docs/11-mvp-and-implementation-roadmap.md) M11-09:
+    - **Operational Runbook**: Authored [`docs/runbooks/github-integration-and-pr-intelligence.md`](docs/runbooks/github-integration-and-pr-intelligence.md) covering:
+      - GitHub OAuth App setup & repository binding.
+      - Webhook ingestion architecture (`/api/v1/webhooks/github`) with HMAC-SHA256 signature verification & delivery deduplication.
+      - Webhook secret rotation procedure and zero-downtime rolling restart.
+      - GitHub OAuth client secret rotation procedure.
+      - Webhook delivery failure triage & manual replay (via GitHub UI and CLI/curl).
+      - GitHub API rate limit mitigation and AST caching.
+      - Emergency kill switch activation (`DEVMIND_KILL_WEBHOOKS=true`).
+      - Resend transactional email domain verification (`warishlabs.in`), free tier quota management (3,000/mo, 100/day per ADR-046), and offline mock fallback.
+      - Stale invitation cleanup queries and immutable structured audit log events (`workspace.invitation.*`, `pr.analysis.*`, `pr.comment.approved`).
+    - **Automated Runbook Testing**: Updated [`server/tests/test_operational_runbooks.py`](server/tests/test_operational_runbooks.py) to validate `github-integration-and-pr-intelligence.md` inventory presence, required procedural sections, and security invariants (6/6 tests passing).
+    - **Governing Documentation Updates**:
+      - [`docs/00-documentation-index.md`](docs/00-documentation-index.md): Updated status to reflect Milestone 11 as fully implemented, tested, and validated.
+      - [`docs/01-product-requirements.md`](docs/01-product-requirements.md): Marked CAP-05 (Code Review Intelligence) and CAP-06 (Pull Request Intelligence) as implemented in M11 with test and eval citations; noted human approval gate enforcement for PR comments (ADR-015).
+      - [`docs/03-data-model-and-api.md`](docs/03-data-model-and-api.md): Updated schema tables (`workspace_invitations`, `review_rules`, `github_credentials`, `github_repository_bindings`, `pull_requests`, `pr_analyses`) to M11 implementation status; documented review rules and GitHub/PR API endpoints.
+      - [`docs/05-agents-and-llm-workflows.md`](docs/05-agents-and-llm-workflows.md): Updated status to include M11 agents; expanded §6.4 (ReviewBuddy) and §6.5 (PRAgent) detailing diff parsing, checklist rule engine, change-impact blast radius traversal, and human approval gates.
+      - [`docs/07-security-privacy-and-threat-model.md`](docs/07-security-privacy-and-threat-model.md): Updated status with GitHub envelope encryption, webhook signature verification, Resend token hashing, and test citations.
+      - [`docs/09-testing-and-quality-strategy.md`](docs/09-testing-and-quality-strategy.md): Updated status; added PR Intelligence & ReviewBuddy Evaluation benchmark results (Composite Score: 1.0000); documented E2E-9 multi-agent integration test.
+      - [`docs/10-deployment-and-operations.md`](docs/10-deployment-and-operations.md): Updated status; added `DEVMIND_EMAIL_FROM` and `DEVMIND_APP_BASE_URL` environment variables; linked operational runbook.
+      - [`docs/11-mvp-and-implementation-roadmap.md`](docs/11-mvp-and-implementation-roadmap.md): Updated status to Release 1.1 Complete; marked all 10 M11 tasks as completed with evidence links.
+      - [`server/.env.example`](server/.env.example): Added `DEVMIND_EMAIL_FROM` and `DEVMIND_APP_BASE_URL`.
+      - [`PLAN.md`](PLAN.md): Marked M11-09 as completed `[x]`.
+    - **Verification**:
+      - `npm run docs:audit`: 889 links & anchors, 37 Mermaid diagrams, 50 ADRs, 18 OQ references, 10 brand assets valid.
+      - `pytest server/tests/test_operational_runbooks.py`: 6 passed.
 - **Branch**: `feature/m11-tests-evals`
 - **What**:
   - Implemented M11-08 per [`docs/01`](docs/01-product-requirements.md) CAP-05, CAP-06, [`docs/09`](docs/09-testing-and-quality-strategy.md) §9, §14 (E2E-9), and [`docs/11`](docs/11-mvp-and-implementation-roadmap.md) M11-08:

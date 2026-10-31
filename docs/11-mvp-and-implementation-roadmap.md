@@ -2,7 +2,7 @@
 
 **Purpose.** A phased, dependency-ordered plan from an empty repository to the MVP and then to the later releases. Each milestone is small enough to be built and verified incrementally by a developer working with an AI coding agent (Antigravity).
 
-**Status.** Active / Release Readiness. Milestones M1 through M10 and M13 (MVP) are completed and validated. Milestones M11 and M12 represent post-MVP roadmap. No dates or durations are estimated. Milestone IDs (`M1` to `M13`) are cited elsewhere ([04](04-project-brain-and-rag.md) §14 cites M5, [02](02-system-architecture.md) §13 and [10](10-deployment-and-operations.md) cite M10); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
+**Status.** Active / Release 1.1 Complete. Milestones M1 through M11 and M13 are completed, tested, and validated. Milestone M12 represents post-1.1 roadmap. No dates or durations are estimated. Milestone IDs (`M1` to `M13`) are cited elsewhere ([04](04-project-brain-and-rag.md) §14 cites M5, [02](02-system-architecture.md) §13 and [10](10-deployment-and-operations.md) cite M10); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
 
 ---
 
@@ -255,17 +255,19 @@ M3 (local scanning only) and M6 (gateway) can proceed in parallel after M2 if ca
 
 ### M11 · Release 1.1: GitHub, Pull Request Intelligence, Code Review Intelligence
 
+> **Status:** Completed and validated (Milestone 11 / Release 1.1).
+
 | | |
 |---|---|
 | **Goal** | PRs are summarized with change-impact analysis and reviewed against project rules |
-| **Included** | GitHub OAuth (read-only first, OQ-11) and repository linking; ingestion from a GitHub repository (FR-BRN-07); evaluate and, if approved, add a GitHub App with webhooks (signature verification, delivery dedupe) for PR events; `pull_requests` data; ReviewBuddy (checklist findings with project `review_rules`) and PRAgent (summary, impact set via relationships, subgraph analysis, security/review fan-out); PR screens; invitations with Resend (ADR-014, FR-PLT-05); audit viewer; credentials encrypted with rotation procedure ([10](10-deployment-and-operations.md) §11.1) |
-| **Excluded** | Auto-comment or auto-merge (any PR comment requires approval); CI log ingestion |
+| **Included** | GitHub OAuth (read-only first, OQ-11) and repository linking; ingestion from a GitHub repository (FR-BRN-07); GitHub App with webhooks (HMAC-SHA256 signature verification, delivery dedupe) for PR events; `pull_requests` and `pr_analyses` data; ReviewBuddy (checklist findings with project `review_rules`) and PRAgent (summary, impact set via relationships, subgraph analysis, security/review fan-out); PR screens; invitations with Resend (ADR-014, FR-PLT-05); audit viewer; credentials encrypted with rotation procedure ([10](10-deployment-and-operations.md) §11.1); operational runbook ([`docs/runbooks/github-integration-and-pr-intelligence.md`](runbooks/github-integration-and-pr-intelligence.md)) |
+| **Excluded** | Auto-comment or auto-merge (any PR comment requires approval per ADR-015); CI log ingestion |
 | **Dependencies** | M13 (MVP shipped) |
-| **Tasks** | 1 permission review and decision record, 2 OAuth + token storage, 3 repository ingestion, 4 webhook receiver, 5 review rules + ReviewBuddy, 6 PRAgent + impact, 7 PR UI, 8 invitations, 9 tests and evaluation sets, 10 docs |
-| **Acceptance** | AC for CAP-05/CAP-06 in [01](01-product-requirements.md) §9; missing permissions produce explicit messages; webhook replays are idempotent; PR comments require approval gates |
-| **Required tests** | Webhook signature/replay; permission failure paths; impact analysis fixtures; E2E-9 |
-| **Risks** | GitHub permission model and limits `[VERIFY]`; large diffs; scope creep |
-| **DoD** | Common DoD; ADR-015 updated |
+| **Tasks** | **1** permission review and decision record (M11-01), **2** OAuth + token storage with envelope encryption (M11-02), **3** repository ingestion & background jobs (M11-03), **4** webhook receiver with signature validation & deduplication (M11-03), **5** review rules + ReviewBuddy checklist engine (M11-04), **6** PRAgent + change-impact blast radius (M11-05), **7** PR UI & checklist triage (M11-06), **8** Resend invitations & audit logs (M11-07), **9** webhook replay tests, E2E-9 & evaluation benchmarks (M11-08), **10** documentation & operational runbook (M11-09) |
+| **Acceptance** | AC for CAP-05/CAP-06 in [01](01-product-requirements.md) §9; missing permissions produce explicit messages; webhook replays are idempotent; PR comments strictly require approval gates (ADR-015); composite eval score = 1.0000 |
+| **Required tests** | Webhook signature/replay ([`server/tests/test_webhook_replay.py`](../server/tests/test_webhook_replay.py)); permission failure paths; impact analysis fixtures; E2E-9 multi-agent integration ([`server/tests/test_e2e_pr_intelligence.py`](../server/tests/test_e2e_pr_intelligence.py)); benchmark suite ([`server/tests/test_pr_eval.py`](../server/tests/test_pr_eval.py)) |
+| **Risks** | GitHub permission model and limits; large diffs; scope creep — mitigated with AST diff chunking and caching |
+| **DoD** | Common DoD met; ADR-014 and ADR-015 confirmed; operational runbook authored and tested |
 
 ### M12 · Releases 1.2 to 1.4
 

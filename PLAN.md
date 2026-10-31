@@ -323,7 +323,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M11-06 Pull Request web screens (list, overview, change-impact graph, checklist triage) (feature/m11-pr-ui)
 - [x] M11-07 Workspace invitations via Resend and audit event viewer (feature/m11-invitations-audit)
 - [x] M11-08 End-to-end integration tests, webhook replay fixtures, and evaluation suites (feature/m11-tests-evals)
-- [ ] M11-09 Milestone 11 documentation update and operational runbook (feature/m11-docs)
+- [x] M11-09 Milestone 11 documentation update and operational runbook (feature/m11-docs)
 
 ### M12 · Releases 1.2–1.4 (Bug Memory, Living Docs, Mentor, Evaluation, Deployment Diagnosis)
 

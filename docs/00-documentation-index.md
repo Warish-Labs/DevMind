@@ -2,7 +2,7 @@
 
 **Purpose.** A map of the DevMind documentation package: what each document is for, which one is authoritative for what, how decisions are recorded, and in what order to read them.
 
-**Status.** Implemented (MVP through Milestone 13). Milestones M1 through M10 and M13 are fully implemented, tested, and validated. Milestones M11 and M12 represent post-MVP specifications.
+**Status.** Implemented (Milestones M1 through M11 and M13). Milestones M1 through M11 and M13 are fully implemented, tested, and validated. Milestone M12 represents post-MVP specifications.
 
 ---
 
