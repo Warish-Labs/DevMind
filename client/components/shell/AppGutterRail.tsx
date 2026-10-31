@@ -14,6 +14,8 @@ import {
   UsageIcon,
   SettingsIcon,
   FolderIcon,
+  BugIcon,
+  BookOpenIcon,
 } from "./icons";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { WorkspaceProjectSwitcher } from "./WorkspaceProjectSwitcher";
@@ -69,6 +71,18 @@ export function AppGutterRail() {
       href: `/projects/${pid}/pull-requests`,
       icon: <GitPullRequestIcon size={18} />,
       isActive: pathname.includes("/pull-requests"),
+    },
+    {
+      label: "Bug Memory & Incidents (S-15)",
+      href: `/projects/${pid}/bugs`,
+      icon: <BugIcon size={18} />,
+      isActive: pathname.includes("/bugs"),
+    },
+    {
+      label: "Living Docs & Drift (S-16)",
+      href: `/projects/${pid}/docs`,
+      icon: <BookOpenIcon size={18} />,
+      isActive: pathname.includes("/docs") && !pathname.includes("github.com"),
     },
     {
       label: "Usage & Quotas (S-12)",

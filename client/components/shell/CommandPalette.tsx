@@ -15,6 +15,8 @@ import {
   FolderIcon,
   ExternalLinkIcon,
   CloseIcon,
+  BugIcon,
+  BookOpenIcon,
 } from "./icons";
 import { Badge } from "@/components/ui/Badge";
 
@@ -109,6 +111,24 @@ export function CommandPalette() {
         icon: <GitPullRequestIcon size={16} className="text-[var(--signal)]" />,
         onSelect: () => router.push(`/projects/${pid}/pull-requests`),
         badge: "PRAgent",
+      },
+      {
+        id: "nav-bugs",
+        category: "Navigation",
+        title: "Bug Memory & Incidents",
+        subtitle: "Recurring error matching, historical resolutions, and incident ledger (S-15)",
+        icon: <BugIcon size={16} className="text-[var(--danger)]" />,
+        onSelect: () => router.push(`/projects/${pid}/bugs`),
+        badge: "BugMemory",
+      },
+      {
+        id: "nav-docs",
+        category: "Navigation",
+        title: "Living Documentation",
+        subtitle: "DocsAlive drift detection, Markdown tracking, and gated patch proposals (S-16)",
+        icon: <BookOpenIcon size={16} className="text-[var(--signal)]" />,
+        onSelect: () => router.push(`/projects/${pid}/docs`),
+        badge: "DocsAlive",
       },
       {
         id: "nav-settings",
