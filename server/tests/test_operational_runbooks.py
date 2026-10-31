@@ -29,6 +29,7 @@ def test_operational_runbooks_inventory() -> None:
         "database-restore.md",
         "secrets-rotation.md",
         "deploy-render-vercel.md",
+        "github-integration-and-pr-intelligence.md",
     ]
 
     for filename in required_runbooks:
@@ -153,3 +154,31 @@ def test_free_tier_operations_quotas_alignment() -> None:
     # Render spin-down (15 minutes) and Neon auto-suspend (5 minutes)
     assert "15 minutes" in content
     assert "5 minutes" in content
+
+
+def test_github_integration_and_pr_intelligence_runbook_coverage() -> None:
+    """Verify github-integration-and-pr-intelligence.md covers core M11 operations per ADR-014, ADR-015, and docs/10 §18."""
+    runbook_file = RUNBOOKS_DIR / "github-integration-and-pr-intelligence.md"
+    assert runbook_file.exists()
+    content = runbook_file.read_text(encoding="utf-8")
+
+    # Critical M11 operational procedures
+    required_sections = [
+        "3.1 GitHub Webhook secret rotation",
+        "3.2 GitHub OAuth credentials rotation",
+        "3.3 Webhook delivery failure triage & manual replay",
+        "3.4 GitHub rate limiting mitigation",
+        "3.5 Emergency kill switch activation",
+        "4. Resend email and workspace invitations",
+        "5. Audit and compliance verification",
+    ]
+    for section in required_sections:
+        assert section in content, f"Missing section '{section}' in github-integration-and-pr-intelligence.md"
+
+    # Crucial security invariants
+    assert "DEVMIND_GITHUB_WEBHOOK_SECRET" in content
+    assert "DEVMIND_ENCRYPTION_KEYS" in content
+    assert "DEVMIND_KILL_WEBHOOKS" in content
+    assert "DEVMIND_RESEND_API_KEY" in content
+    assert "Never log user source code or decrypted access tokens" in content
+

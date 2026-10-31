@@ -2,7 +2,7 @@
 
 **Purpose.** The deployment and operational runbook for DevMind: environments, containers, Render services, Redis, Neon, R2, the client website, configuration and secrets, migrations, health checks, observability, backup and recovery, CI/CD, rollbacks, incident diagnosis, resource limits, and cost control.
 
-**Status.** Implemented (Free Tier profile §22 per ADR-046). Docker single-image build, Vercel frontend, Render web service, Neon PostgreSQL, Upstash Redis, and staging promotion rehearsals are validated in runbooks. Sections 1 to 21 describe the target (funded) topology; §22 is the free profile that is actually deployed first (ADR-046). No plan prices, latency targets or capacity figures appear here; items needing measurement are listed in §21. Every vendor-specific behavior is verified against current documentation (register in [12](12-architecture-decisions-and-open-questions.md) §5). Section numbers are cited elsewhere (§8 migrations, §9 queue configuration, §11 secrets and rotation); keep them stable.
+**Status.** Implemented (Free Tier profile §22 per ADR-046, Milestones M1 through M11 and M13). Docker single-image build, Vercel frontend, Render web service, Neon PostgreSQL, Upstash Redis, GitHub integration & webhooks, Resend transactional emails, and operational runbooks are validated and passing. Sections 1 to 21 describe the target (funded) topology; §22 is the free profile that is actually deployed first (ADR-046). No plan prices, latency targets or capacity figures appear here; items needing measurement are listed in §21. Every vendor-specific behavior is verified against current documentation (register in [12](12-architecture-decisions-and-open-questions.md) §5). Section numbers are cited elsewhere (§8 migrations, §9 queue configuration, §11 secrets and rotation); keep them stable.
 
 ---
 
@@ -157,7 +157,9 @@ All variables are listed in `.env.example` with placeholders. Prefix `DEVMIND_` 
 | `DEVMIND_LLM_PRIMARY_API_KEY` | worker (gateway) | **yes** | Named by `providers.yaml` `api_key_env` |
 | `DEVMIND_LLM_ALT_API_KEY` | worker | **yes** | Alternative provider |
 | `DEVMIND_EMBED_API_KEY` | worker | **yes** | Embedding provider |
-| `DEVMIND_RESEND_API_KEY` | api | **yes** | Only when email features ship (ADR-014) |
+| `DEVMIND_RESEND_API_KEY` | api | **yes** | Resend transactional email API key (ADR-014) |
+| `DEVMIND_EMAIL_FROM` | api | no | Sender address for transactional emails (e.g. `DevMind <invitations@warishlabs.in>`) |
+| `DEVMIND_APP_BASE_URL` | api | no | Base URL for invite links and web deep links (`https://devmind.warishlabs.in`) |
 | `DEVMIND_SENTRY_DSN` or equivalent | all | treat as sensitive | Error reporting (vendor open, OQ-15) |
 | `DEVMIND_TURNSTILE_SECRET_KEY` | api | **yes** | Cloudflare Turnstile secret key for public form verification (Render) |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | client | no | Cloudflare Turnstile site key for browser widget (Vercel) |
@@ -262,7 +264,7 @@ The step-by-step staging promotion, smoke check, and rollback rehearsal runbook 
 | Cross-tenant suspicion | Treat as security incident ([07](07-security-privacy-and-threat-model.md) §17): disable affected feature, preserve audit events, scope by workspace/time |
 | Duplicate effects | Claim logic, idempotency keys, visibility timeout versus task duration (§9) |
 
-Use request/job IDs; never request user source to debug. Step-by-step diagnostic and remediation playbooks for each failure mode are defined in [`docs/runbooks/incident-response.md`](runbooks/incident-response.md) ([11](11-mvp-and-implementation-roadmap.md) M10-08).
+Use request/job IDs; never request user source to debug. Step-by-step diagnostic and remediation playbooks for each failure mode are defined in [`docs/runbooks/incident-response.md`](runbooks/incident-response.md) ([11](11-mvp-and-implementation-roadmap.md) M10-08). GitHub integration, PR intelligence, and webhook delivery issues are triaged in [`docs/runbooks/github-integration-and-pr-intelligence.md`](runbooks/github-integration-and-pr-intelligence.md) ([11](11-mvp-and-implementation-roadmap.md) M11-09).
 
 ## 19. Resource limits and graceful shutdown
 

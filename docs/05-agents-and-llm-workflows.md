@@ -2,7 +2,7 @@
 
 **Purpose.** Specifies the Agent Manager, the specialist agents, the LangGraph workflow design, the LLM gateway and provider abstraction, configuration, routing, accounting and evaluation. It is authoritative for agent behavior and LLM configuration.
 
-**Status.** Implemented for MVP agents (BrainQA, SecuritySentinel, fake adapter, prompt sanitization, LangGraph workflow state machine, and human approval gates). Post-MVP agents (ReviewBuddy, PRAgent, Mentor, LivingDoc) are specified for M11–M12. Decisions: ADR-006, ADR-016, ADR-017, ADR-024, ADR-027, ADR-028, ADR-037.
+**Status.** Implemented for MVP and Release 1.1 agents (BrainQA, SecuritySentinel, ReviewBuddy, PRAgent, fake adapter, prompt sanitization, LangGraph workflow state machine, and human approval gates). Post-1.1 agents (Mentor, LivingDoc, BugMemory, DeployDoctor) are specified for M12. Decisions: ADR-006, ADR-014, ADR-015, ADR-016, ADR-017, ADR-024, ADR-027, ADR-028, ADR-037.
 
 ---
 
@@ -238,11 +238,24 @@ flowchart LR
 
 ### 6.4 ReviewBuddy (1.1)
 
-Applies the project's checklist (input validation, error handling, authorization, tests, documentation, plus user-defined rules) to a diff. Detection is structural and rule-based; the LLM writes reasons and fixes. Custom rules are declared in a project rules file with an ID, scope selector, check type and message, validated against a schema.
+> **Status:** Implemented in M11. Implementation: [`server/app/analysis/review_buddy.py`](../server/app/analysis/review_buddy.py), [`server/tests/test_review_rules.py`](../server/tests/test_review_rules.py).
+
+Applies the project's review checklist (input validation, error handling, authorization, test coverage, and documentation, plus tenant-configured custom rules) to pull request diffs. Detection is deterministic and structural:
+- **Diff Parsing:** Unified diff parser (`parse_unified_diff`) extracts added/modified lines, deletions, and line ranges across file hunks.
+- **Rule Engine:** Built-in checks inspect for bare except blocks, unvalidated payload access, missing route authorization guards, and missing test files.
+- **Custom Rules:** Evaluates user-defined declarative `ReviewRule` models persisted in PostgreSQL, supporting regex patterns, forbidden tokens, file pattern filters, and severity levels (`INFO`, `WARNING`, `ERROR`).
+- **Checklist Findings:** Outputs structured checklist items with line citations, actionable explanations, and suggested remediation diffs.
 
 ### 6.5 PRAgent (1.1)
 
-Fetch PR metadata and diff (read-only), map changed files to symbols and affected modules, compute **change impact** through relationships (callers, importers, route/guard chains, tests, docs), invoke AuthCheck, ReviewBuddy and DocsAlive on the changed scope in parallel, assemble the summary (purpose, files, affected areas, risks, security findings, testing concerns, documentation impact). Posting to GitHub requires approval.
+> **Status:** Implemented in M11. Implementation: [`server/app/domain/pr_agent/service.py`](../server/app/domain/pr_agent/service.py), [`server/tests/test_pr_agent.py`](../server/tests/test_pr_agent.py), [`server/tests/test_e2e_pr_intelligence.py`](../server/tests/test_e2e_pr_intelligence.py).
+
+Performs comprehensive pull request change-impact analysis and multi-agent synthesis:
+- **Diff & Metadata Extraction:** Fetches PR metadata and unified diffs via GitHub read adapters (or local git repositories).
+- **Change Impact & Blast Radius:** Identifies direct file changes, resolves affected symbols in the Project Brain, and traverses caller/dependency relationships (`code_relationships`) to compute blast radius, affected API routes, and schema migrations.
+- **Risk Assessment:** Categorizes overall PR risk (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`) based on quantitative blast radius, modification of auth-sensitive files, database migrations, and checklist violations.
+- **ReviewBuddy Synthesis:** Fans out diff evaluation to ReviewBuddy and compiles findings into a unified `PRSummary` and `ChangeImpactReport`.
+- **Human Approval Gate (ADR-015):** PR comments and write actions are strictly gated behind explicit human approval in the UI; PRAgent never posts comments or alters repository code autonomously.
 
 ### 6.6 BugMemory (1.2)
 

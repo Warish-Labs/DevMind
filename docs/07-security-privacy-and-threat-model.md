@@ -2,7 +2,7 @@
 
 **Purpose.** Defines DevMind's security and privacy requirements across local (extension) and remote (API, workers, providers) processing, and records a structured threat model with mitigations and residual risk. It is authoritative for security controls, consent, redaction, retention and incident response.
 
-**Status.** Implemented controls for MVP. Tenant isolation, RBAC policy enforcement, token authentication, redaction pipeline, consent gates, and prompt injection defense are implemented and covered by automated test suites. Decisions: ADR-010 to ADR-013, ADR-021 to ADR-026.
+**Status.** Implemented controls for MVP and Release 1.1 (M11). Tenant isolation, RBAC policy enforcement, token authentication, redaction pipeline, consent gates, GitHub OAuth token envelope encryption (`DEVMIND_ENCRYPTION_KEYS`), webhook HMAC-SHA256 signature validation and delivery deduplication, Resend invitation token hashing, and prompt injection defense are implemented and covered by automated test suites ([`server/tests/test_webhook_replay.py`](../server/tests/test_webhook_replay.py), [`server/tests/test_workspace_invitations.py`](../server/tests/test_workspace_invitations.py)). Decisions: ADR-010 to ADR-015, ADR-021 to ADR-026.
 
 ---
 

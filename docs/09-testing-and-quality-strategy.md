@@ -2,7 +2,7 @@
 
 **Purpose.** Defines how DevMind is tested and evaluated: what is tested at each layer, which fixtures must exist, how scanner and AI quality are measured (not asserted), and which quality gates block a release.
 
-**Status.** Implemented. Monorepo quality test runner (`test-all.mjs`), unit test suites (Vitest, pytest), cross-tenant security tests, prompt injection evals, and staging rehearsal runbooks are active and passing. Section numbers in this document are cited by other documents (for example §4 migrations, §6 authorization, §8 scanner fixtures, §9 retrieval baselines, §12 prompt injection, §15 gates); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
+**Status.** Implemented. Monorepo quality test runner (`test-all.mjs`), unit test suites (Vitest, pytest), cross-tenant security tests, webhook replay suites, PR intelligence evals, prompt injection evals, and staging rehearsal runbooks are active and passing. Section numbers in this document are cited by other documents (for example §4 migrations, §6 authorization, §8 scanner fixtures, §9 retrieval baselines, §12 prompt injection, §15 gates); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
 
 ---
 
@@ -161,6 +161,7 @@ Recorded baselines (to be filled by the owning milestone):
 | Agent Workflows: Answer Quality & Faithfulness (M7) | 2026-10-18 | `2e6021e` | `evals/results/agents/latest.json` | Composite Score: 0.9840. Answer Quality (0.9600): Citation Precision: 1.0, Citation Recall: 1.0, Insufficient Evidence Accuracy: 1.0, Symbol Coverage: 0.7333. Faithfulness & Grounding (1.0000): Grounding Ratio: 1.0, Citation Resolution: 1.0, Hallucination Rate: 0.0, Language Discipline: 1.0, Secret Redaction: 1.0. Regression gate tolerance: min composite score 0.8500. |
 | Graph Prompt-Injection Defense (M7-10) | 2026-10-18 | `96c72bd` | `evals/results/injection/latest.json` | Pass Rate: 1.0000 (25/25 vectors passed). Delimiter Integrity: 1.0000, Tool Containment: 1.0000, Finding Protection: 1.0000, Cross-Tenant Isolation: 1.0000, Schema Conformance: 1.0000. Regression gate tolerance: 100% pass rate on CI injection corpus. |
 | Expanded Injection Corpus & Abuse Defense (M10-07) | 2026-10-25 | `a1defbd` | `evals/results/injection/latest.json` | Pass Rate: 1.0000 (55/55 vectors passed: 45 adversarial injection vectors, 10 benign controls). Delimiter Integrity: 1.0000, Tool Containment: 1.0000, Finding Protection: 1.0000, Cross-Tenant Isolation: 1.0000, Schema Conformance: 1.0000. Defenses against BiDi overrides, special tokens, delimiter collisions, multi-hop poisoning, and tool escalation. |
+| PR Intelligence & ReviewBuddy Evals (M11-08) | 2026-10-31 | `70522a1` | `evals/results/pr_intelligence/latest.json` | Composite Score: 1.0000. Change-Impact Risk Accuracy: 1.0000 (5/5 cases). ReviewBuddy Checklist: Precision: 1.0000, Recall: 1.0000, F1: 1.0000, False Positive Rate: 0.0000 across unvalidated inputs, bare excepts, missing auth, and custom forbidden patterns. Regression gate tolerance: min composite score 0.9000. |
 
 ## 10. LangGraph workflow tests
 
@@ -234,7 +235,7 @@ Assertions: untrusted blocks are delimited and escaped in rendered prompts (snap
 | E2E-6 | Revoke consent and delete project data; verify per-store deletion counts |
 | E2E-7 | Provider outage during a conversation: fallback or clear error, no silent substitution |
 | E2E-8 | Workspace B user cannot see workspace A project through UI or API |
-| E2E-9 | (1.1) PR analysis on fixture repository |
+| E2E-9 | Multi-agent PR intelligence flow, webhook ingest, change-impact blast radius, checklist triage, approval gate enforcement (ADR-015), and token outage resilience ([`server/tests/test_e2e_pr_intelligence.py`](../server/tests/test_e2e_pr_intelligence.py)) |
 
 ### 14.2 Commands (to be created at repository setup; the names below are the contract)
 

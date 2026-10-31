@@ -87,7 +87,7 @@ Unless stated, each table has `id`, `workspace_id` (where tenant-owned), `create
 | `users` (MVP) | Identity mapping to Clerk | `clerk_user_id`, `email`, `display_name`, `last_seen_at`, `deleted_at` | unique `clerk_user_id` |
 | `workspaces` (MVP) | Tenant | `name`, `slug`, `kind` (`personal`,`team`), `created_by`, `deleted_at` | unique `slug` |
 | `workspace_memberships` (MVP) | User role in workspace | `workspace_id`, `user_id`, `role` | unique (`workspace_id`,`user_id`); index `user_id` |
-| `workspace_invitations` (R1.1) | Pending invites | `email`, `role`, `token_hash`, `expires_at`, `accepted_at` | unique `token_hash` |
+| `workspace_invitations` (M11) | Pending invites | `email`, `role`, `token_hash`, `expires_at`, `accepted_at` | unique `token_hash` |
 | `projects` (MVP) | A codebase | `workspace_id`, `name`, `slug`, `visibility` (`workspace`,`private`), `sync_mode` (`metadata_only`,`indexed`), `source_kind` (`local`,`github`), `primary_language`, `default_branch`, `archived_at`, `deleted_at` | unique (`workspace_id`,`slug`); index (`workspace_id`) |
 | `project_memberships` (MVP) | Per-project role | `project_id`, `user_id`, `role` | unique (`project_id`,`user_id`) |
 | `extension_registrations` (MVP) | One per installation per user | `user_id`, `name`, `platform`, `extension_version`, `last_seen_at`, `revoked_at` | index `user_id` |
@@ -129,6 +129,7 @@ LangGraph checkpoint tables live in a separate `langgraph` schema managed by the
 | `findings` (MVP) | Reportable issues | `project_id`, `fingerprint`, `rule_id`, `source` (`scanner`,`devmind_rule`,`llm_verified`), `category`, `title`, `summary`, `explanation`, `severity`, `confidence`, `evidence_level`, `status`, `first_seen_scan_run_id`, `last_seen_scan_run_id`, `primary_file_id`, `primary_start_line`, `primary_end_line`, `suggested_fix jsonb`, `status_reason`, `resolved_at` | unique (`project_id`,`fingerprint`); index (`project_id`,`status`,`severity`) |
 | `finding_evidence` (MVP) | Machine-checkable support | `finding_id`, `file_version_id`, `path`, `start_line`, `end_line`, `snippet_hash`, `snippet_text` (nullable, consented), `role` (`primary`,`supporting`,`missing_check`), `detail jsonb`, `is_current` | index `finding_id` |
 | `finding_status_history` (MVP) | Transition log | `finding_id`, `from_status`, `to_status`, `actor_kind` (`user`,`system`), `actor_id`, `reason` | index `finding_id` |
+| `review_rules` (M11) | Checklist review rules | `project_id`, `rule_id`, `name`, `description`, `category`, `severity`, `check_type`, `file_patterns text[]`, `rule_config jsonb`, `is_active` | unique (`project_id`,`rule_id`); index (`project_id`,`is_active`) |
 | `conversations` (MVP) | Project chat threads | `project_id`, `created_by`, `title` | index (`project_id`,`created_at`) |
 | `conversation_messages` (MVP) | Messages | `conversation_id`, `role`, `content`, `job_id`, `status` | index (`conversation_id`,`created_at`) |
 | `message_citations` (MVP) | Resolvable references | `message_id`, `file_version_id`, `path`, `start_line`, `end_line`, `content_hash`, `symbol_key` | index `message_id` |
@@ -145,10 +146,10 @@ LangGraph checkpoint tables live in a separate `langgraph` schema managed by the
 
 | Table | Purpose | Key columns | Constraints |
 |---|---|---|---|
-| `github_connections` (R1.1) | Credential grant | `workspace_id`, `user_id`, `kind` (`oauth`,`app_installation`), `external_account`, `scopes text[]`, `encrypted_credential`, `revoked_at` | credentials encrypted with an application key; never logged |
-| `github_repositories` (R1.1) | Linked repository | `connection_id`, `project_id`, `full_name`, `default_branch`, `external_id` | unique (`project_id`) |
-| `pull_requests` (R1.1) | PR mirror | `repository_id`, `number`, `title`, `author_login`, `state`, `head_sha`, `base_sha` | unique (`repository_id`,`number`) |
-| `pr_analyses` (R1.1) | PR result | `pull_request_id`, `head_sha`, `job_id`, `summary jsonb`, `impact jsonb` | unique (`pull_request_id`,`head_sha`,`job_id`) |
+| `github_credentials` (M11) | Encrypted OAuth tokens | `workspace_id`, `user_id`, `github_user_id`, `encrypted_token`, `scopes text[]` | credentials encrypted with AES-256-GCM envelope encryption (`DEVMIND_ENCRYPTION_KEYS`); never logged |
+| `github_repository_bindings` (M11) | Project-repo link | `project_id`, `repo_id`, `repo_full_name`, `default_branch`, `installation_id` | unique (`project_id`); unique (`repo_id`) |
+| `pull_requests` (M11) | PR mirror | `project_id`, `github_pr_id`, `number`, `title`, `state`, `head_sha`, `base_sha`, `author_login`, `html_url`, `synced_at` | unique (`project_id`,`number`); index (`project_id`,`state`) |
+| `pr_analyses` (M11) | PR analysis result | `pull_request_id`, `head_sha`, `job_id`, `summary jsonb`, `risk_rating`, `change_impact jsonb`, `checklist_results jsonb` | index (`pull_request_id`,`head_sha`) |
 | `consent_records` (MVP) | Source-transmission consent | `project_id`, `user_id`, `scope` (`snippet_transmission`,`cloud_index`,`llm_processing`), `provider_ids text[]`, `data_categories text[]`, `granted_for` (`single_request`,`project`), `policy_version`, `granted_at`, `expires_at`, `revoked_at` | index (`project_id`,`scope`) |
 | `retention_policies` (MVP) | Retention settings | `workspace_id`, `project_id` (nullable), `kind`, `days` | unique (`workspace_id`,`project_id`,`kind`) |
 | `audit_events` (MVP) | Sensitive-action log | `workspace_id`, `actor_id`, `actor_kind`, `action`, `target_kind`, `target_id`, `ip_hash`, `metadata jsonb` | append-only; index (`workspace_id`,`created_at`) |
@@ -317,7 +318,8 @@ See the state diagram in [02](02-system-architecture.md) §10.1. The API exposes
 | Project Brain | `GET /projects/{pid}/brain/summary` · `/brain/files` · `/brain/files/{file_id}` · `/brain/symbols` · `POST /brain/search` · `GET /brain/graph?symbol_key=&depth=` · `/brain/snapshots` | `brain:read` |
 | Reports | `GET /projects/{pid}/evaluations` · `GET /evaluations/{id}` · `GET /projects/{pid}/release-readiness/latest` · `POST /projects/{pid}/reports` (export) | `project:read` / `analysis:create` |
 | Bug memory | `GET/POST /projects/{pid}/bugs` · `GET /bugs/{id}` | R1.2 |
-| GitHub | `GET /integrations/github/authorize` · `GET /integrations/github/callback` · `GET/DELETE /workspaces/{wid}/integrations/github` · `GET /workspaces/{wid}/integrations/github/status` · `POST /workspaces/{wid}/integrations/github/rotate` · `POST /projects/{pid}/github/link` · `GET /projects/{pid}/pull-requests` · `GET /pull-requests/{id}` · `POST /pull-requests/{id}/analyze` | `integrations:manage` / read |
+| Review rules | `GET/POST /projects/{pid}/review-rules` · `GET/PATCH/DELETE /projects/{pid}/review-rules/{rule_id}` · `POST /projects/{pid}/review-rules/reset` | `project:read` / `project:write` |
+| GitHub & PRs | `GET /github/oauth/authorize` · `GET /github/oauth/callback` · `GET/POST/DELETE /projects/{pid}/github-binding` · `GET /projects/{pid}/pull-requests` · `GET /projects/{pid}/pull-requests/{id}` · `POST /projects/{pid}/pull-requests/{id}/analyze` · `POST /projects/{pid}/pull-requests/{id}/checklist-triage` | `project:read` / `project:write` (comment posting gated by human approval) |
 | Consent and privacy | `GET/POST /projects/{pid}/consents` · `DELETE /consents/{id}` · `PATCH /projects/{pid}/sync-mode` · `POST /projects/{pid}/data-deletion` | `consent:manage` |
 | Usage and audit | `GET /workspaces/{wid}/usage` · `GET /workspaces/{wid}/quotas` · `GET /workspaces/{wid}/audit-events` | workspace admin |
 | Webhooks | `POST /webhooks/github` · `POST /webhooks/clerk` | signature-verified, no user token |

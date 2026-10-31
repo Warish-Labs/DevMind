@@ -225,6 +225,8 @@ Why it matters: any authenticated user can reach an administrative operation.
 
 ### CAP-05 Code Review Intelligence — Release 1.1
 
+> **Status:** Implemented in M11. Validated by [`server/tests/test_review_rules.py`](../server/tests/test_review_rules.py), [`server/tests/test_e2e_pr_intelligence.py`](../server/tests/test_e2e_pr_intelligence.py), and evaluation benchmarks in [`evals/pr_intelligence/`](../evals/pr_intelligence/).
+
 | | |
 |---|---|
 | **Purpose** | Apply one consistent checklist to every change. |
@@ -235,13 +237,15 @@ Why it matters: any authenticated user can reach an administrative operation.
 
 ### CAP-06 Pull Request Intelligence — Release 1.1
 
+> **Status:** Implemented in M11. Validated by [`server/tests/test_pr_agent.py`](../server/tests/test_pr_agent.py), [`server/tests/test_webhook_replay.py`](../server/tests/test_webhook_replay.py), [`server/tests/test_e2e_pr_intelligence.py`](../server/tests/test_e2e_pr_intelligence.py), and evaluation benchmarks in [`evals/pr_intelligence/`](../evals/pr_intelligence/).
+
 | | |
 |---|---|
 | **Purpose** | Show what a PR touches and risks before merge. |
 | **Inputs** | GitHub PR metadata and diff, Brain relationships. |
 | **Outputs** | Purpose, files changed, affected areas, potential risks, security findings, testing concerns, documentation impact, **change-impact analysis**. |
 | **Dependencies** | GitHub integration (ADR-015), CAP-02, CAP-05, CAP-04. |
-| **Acceptance** | For fixture PRs, affected modules match a labeled expectation; the chain in the vision (PRAgent → AuthCheck → ReviewBuddy → DocsAlive → ProjectMentor) runs from one trigger. |
+| **Acceptance** | For fixture PRs, affected modules match a labeled expectation; the chain in the vision (PRAgent → AuthCheck → ReviewBuddy → DocsAlive → ProjectMentor) runs from one trigger. PR comments strictly require human approval (ADR-015). |
 
 ### CAP-07 Deployment Diagnosis — Release 1.4
 
