@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-bug-docs-evals` |
-| **Last commit** | `d6328f4` (`feat(server): implement M12-06 bug memory and living docs evals and integration tests`) |
-| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
+| **Branch** | `feature/m12-docs` |
+| **Last commit** | `docs: implement M12-07 milestone 12.1 documentation update and operational runbook` |
+| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete |
 | **Working tree** | Clean |
-| **Open PR** | [#99](https://github.com/Warish-Labs/DevMind/pull/99) (`feature/m12-bug-docs-evals` → `main`) |
+| **Open PR** | Open (to be filled after `gh pr create`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,21 +19,35 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #99 to pass and owner merge into `main`.
-2. After PR #99 is merged:
+1. Wait for CI checks on PR for `feature/m12-docs` to pass and owner merge into `main`.
+2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-bug-docs-evals` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-docs-evals`).
-   - Create feature branch `feature/m12-docs` for task **M12-07**: Milestone 12.1 documentation update and operational runbook.
+   - Delete branch `feature/m12-docs` locally and remotely on GitHub (`git push origin --delete feature/m12-docs`).
+   - Create feature branch `feature/m12-mentor-core` for task **M12-08**: Project Mentor & Evaluation data models (`project_tasks`, `project_evaluations`), migrations, repositories, and dependency topological DAG sorter.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR [#99](https://github.com/Warish-Labs/DevMind/pull/99) (`feature/m12-bug-docs-evals` → `main`) after CI passes.
+Review and merge PR for `feature/m12-docs` (`feature/m12-docs` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-07: Milestone 12.1 Documentation Update and Operational Runbook
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m12-docs`
+- **PR**: Open (created via gh CLI)
+- **What**:
+  - Implemented M12-07 concluding Milestone 12.1 (Release 1.2: Bug Memory & Living Documentation):
+    - **Operational Runbook**: Authored [`docs/runbooks/bug-memory-and-living-docs.md`](docs/runbooks/bug-memory-and-living-docs.md) covering subsystem architecture, normalization/deduplication data flow, state machine transitions, operational playbooks (high-volume error surges, documentation drift backlog triage, reversing erroneous doc patches, and multi-tenant isolation verification), and regression evaluation gates.
+    - **Deployment & Operations**: Updated [`docs/10-deployment-and-operations.md`](docs/10-deployment-and-operations.md) §18 referencing the new operational runbook for Bug Memory deduplication surges and DocsAlive drift triage.
+    - **Testing & Quality Strategy**: Updated [`docs/09-testing-and-quality-strategy.md`](docs/09-testing-and-quality-strategy.md) §9 with recorded evaluation baselines for Bug Memory and Living Docs (Composite Score: 1.0000, 100% Top-1, 100% Recall@3, MRR: 1.0000, 100% Patch Diff Validity). Added `npm run eval:bug-docs` and `npm run eval:pr` commands in §14.2.
+    - **Roadmap & Milestones**: Updated [`docs/11-mvp-and-implementation-roadmap.md`](docs/11-mvp-and-implementation-roadmap.md) marking Release 1.2 (Milestone 12.1) complete and linking runbook.
+    - **Roadmap Expansion**: Updated [`PLAN.md`](PLAN.md) marking M12.1 complete and expanding Milestone 12.2 (Release 1.3: Project Mentor & Project Evaluation, CAP-08, CAP-09) into tasks M12-08 through M12-13.
+- **Verification**: `node scripts/docs-links.mjs` (All 61 Markdown files, 935 links/anchors, 39 Mermaid diagrams, 50 ADRs, 18 OQ references verified valid).
 
 ### Feature — M12-06: Integration Tests, Evaluation Benchmark Datasets, and Recorded Baselines for Bug Memory and Living Docs
 
