@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-docs` |
-| **Last commit** | `docs: implement M12-07 milestone 12.1 documentation update and operational runbook` |
+| **Last commit** | `c5f3350` (`docs: implement M12-07 milestone 12.1 documentation update and operational runbook`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete |
 | **Working tree** | Clean |
-| **Open PR** | Open (to be filled after `gh pr create`) |
+| **Open PR** | [#100](https://github.com/Warish-Labs/DevMind/pull/100) (`feature/m12-docs` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,8 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR for `feature/m12-docs` to pass and owner merge into `main`.
-2. After PR is merged:
+1. Wait for CI checks on PR #100 to pass and owner merge into `main`.
+2. After PR #100 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-docs` locally and remotely on GitHub (`git push origin --delete feature/m12-docs`).
    - Create feature branch `feature/m12-mentor-core` for task **M12-08**: Project Mentor & Evaluation data models (`project_tasks`, `project_evaluations`), migrations, repositories, and dependency topological DAG sorter.
@@ -29,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-docs` (`feature/m12-docs` → `main`) after CI passes.
+Review and merge PR [#100](https://github.com/Warish-Labs/DevMind/pull/100) (`feature/m12-docs` → `main`) after CI passes.
 
 ---
 
@@ -39,7 +39,7 @@ Review and merge PR for `feature/m12-docs` (`feature/m12-docs` → `main`) after
 
 - **Date**: 2026-10-31
 - **Branch**: `feature/m12-docs`
-- **PR**: Open (created via gh CLI)
+- **PR**: [#100](https://github.com/Warish-Labs/DevMind/pull/100)
 - **What**:
   - Implemented M12-07 concluding Milestone 12.1 (Release 1.2: Bug Memory & Living Documentation):
     - **Operational Runbook**: Authored [`docs/runbooks/bug-memory-and-living-docs.md`](docs/runbooks/bug-memory-and-living-docs.md) covering subsystem architecture, normalization/deduplication data flow, state machine transitions, operational playbooks (high-volume error surges, documentation drift backlog triage, reversing erroneous doc patches, and multi-tenant isolation verification), and regression evaluation gates.
