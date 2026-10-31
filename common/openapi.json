@@ -2916,6 +2916,540 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/docs": {
+      "get": {
+        "tags": ["Living Documentation"],
+        "summary": "List project documentation records",
+        "description": "Retrieve tracked documentation files for a project, optionally filtered by kind.",
+        "operationId": "list_project_docs_api_v1_projects__project_id__docs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional kind filter (readme, api, architecture)",
+              "title": "Kind"
+            },
+            "description": "Optional kind filter (readme, api, architecture)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocRecordResponse"
+                  },
+                  "title": "Response List Project Docs Api V1 Projects  Project Id  Docs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Living Documentation"],
+        "summary": "Register or update project documentation",
+        "description": "Register or update a documentation file, parse sections and code mentions.",
+        "operationId": "register_project_doc_api_v1_projects__project_id__docs_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocRecordCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocRecordDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/docs/detect-drift": {
+      "post": {
+        "tags": ["Living Documentation"],
+        "summary": "Detect documentation drift and synthesize patch proposals",
+        "description": "Runs DocsAlive drift detection against ground-truth code symbols and routes.",
+        "operationId": "detect_doc_drift_api_v1_projects__project_id__docs_detect_drift_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocDriftDetectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocDriftDetectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/docs/drift": {
+      "get": {
+        "tags": ["Living Documentation"],
+        "summary": "List documentation drift items",
+        "description": "Retrieve tracked documentation drift items, filtered by status or kind.",
+        "operationId": "list_project_drift_items_api_v1_projects__project_id__docs_drift_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional status filter (detected, approved, rejected, applied)",
+              "title": "Status"
+            },
+            "description": "Optional status filter (detected, approved, rejected, applied)"
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional drift kind filter (undocumented_route, removed_route, missing_symbol)",
+              "title": "Kind"
+            },
+            "description": "Optional drift kind filter (undocumented_route, removed_route, missing_symbol)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocDriftItemResponse"
+                  },
+                  "title": "Response List Project Drift Items Api V1 Projects  Project Id  Docs Drift Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/docs/{doc_id}": {
+      "get": {
+        "tags": ["Living Documentation"],
+        "summary": "Get documentation record detail",
+        "description": "Retrieve a documentation record with cached snapshot and extracted symbol metadata.",
+        "operationId": "get_project_doc_api_v1_projects__project_id__docs__doc_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocRecordDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/docs/drift/{drift_id}": {
+      "get": {
+        "tags": ["Living Documentation"],
+        "summary": "Get drift item and patch proposal",
+        "description": "Retrieve a single drift item with its proposed unified diff patch.",
+        "operationId": "get_drift_item_api_v1_docs_drift__drift_id__get",
+        "parameters": [
+          {
+            "name": "drift_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Drift Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocDriftItemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/docs/drift/{drift_id}/approve": {
+      "post": {
+        "tags": ["Living Documentation"],
+        "summary": "Approve documentation patch proposal",
+        "description": "Human approval gate: maintainer marks patch proposal as approved for application.",
+        "operationId": "approve_drift_proposal_api_v1_docs_drift__drift_id__approve_post",
+        "parameters": [
+          {
+            "name": "drift_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Drift Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriftApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriftActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/docs/drift/{drift_id}/reject": {
+      "post": {
+        "tags": ["Living Documentation"],
+        "summary": "Reject documentation patch proposal",
+        "description": "Maintainer rejects a proposed documentation patch.",
+        "operationId": "reject_drift_proposal_api_v1_docs_drift__drift_id__reject_post",
+        "parameters": [
+          {
+            "name": "drift_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Drift Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriftApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriftActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/docs/drift/{drift_id}/apply": {
+      "post": {
+        "tags": ["Living Documentation"],
+        "summary": "Apply approved documentation patch",
+        "description": "Apply approved patch to documentation record. Fails with 409 if not approved.",
+        "operationId": "apply_drift_patch_api_v1_docs_drift__drift_id__apply_post",
+        "parameters": [
+          {
+            "name": "drift_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Drift Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriftActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{pid}/analyses": {
       "post": {
         "tags": ["Analysis"],
@@ -7895,6 +8429,466 @@
         "title": "DeletionVerificationReport",
         "description": "Cryptographically signed deletion verification report (docs/11, Screen S-10)."
       },
+      "DocDriftDetectRequest": {
+        "properties": {
+          "known_routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Known Routes",
+            "description": "Active HTTP route paths in codebase e.g. ['GET /api/v1/projects', 'POST /api/v1/bugs']"
+          },
+          "known_symbols": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Known Symbols",
+            "description": "Exported function, class, or interface symbol names e.g. ['BugMemoryService', 'DocParser']"
+          },
+          "known_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Known Files",
+            "description": "List of active file paths in project repository"
+          },
+          "known_configs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Known Configs",
+            "description": "Configuration environment variable names e.g. ['DATABASE_URL', 'REDIS_URL']"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DocDriftDetectRequest",
+        "description": "Request payload to trigger DocsAlive drift detection for a project."
+      },
+      "DocDriftDetectResponse": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "total_docs_analyzed": {
+            "type": "integer",
+            "title": "Total Docs Analyzed"
+          },
+          "drift_count": {
+            "type": "integer",
+            "title": "Drift Count"
+          },
+          "drift_items": {
+            "items": {
+              "$ref": "#/components/schemas/DocDriftItemResponse"
+            },
+            "type": "array",
+            "title": "Drift Items"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": ["project_id", "total_docs_analyzed", "drift_count", "drift_items", "summary"],
+        "title": "DocDriftDetectResponse",
+        "description": "Result of running DocsAlive drift detection."
+      },
+      "DocDriftItemResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "documentation_record_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Documentation Record Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "target_symbol_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Symbol Key"
+          },
+          "target_route_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Route Path"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "proposal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatchProposalResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "project_id",
+          "documentation_record_id",
+          "kind",
+          "target_symbol_key",
+          "target_route_path",
+          "explanation",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DocDriftItemResponse",
+        "description": "An identified discrepancy between project code and a documentation record."
+      },
+      "DocRecordCreate": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Path",
+            "description": "Relative file path e.g. README.md"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Document display title"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "Classification: readme, api, architecture, tutorial, changelog, other",
+            "default": "other"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Content",
+            "description": "Raw Markdown content"
+          },
+          "file_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Id",
+            "description": "Optional Brain ProjectFile reference ID"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["path", "title", "content"],
+        "title": "DocRecordCreate",
+        "description": "Payload to register or update a tracked documentation file."
+      },
+      "DocRecordDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "file_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "current_version_hash": {
+            "type": "string",
+            "title": "Current Version Hash"
+          },
+          "last_parsed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Parsed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "content_snapshot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Snapshot"
+          },
+          "extracted_symbols": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Extracted Symbols"
+          },
+          "drift_item_count": {
+            "type": "integer",
+            "title": "Drift Item Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "project_id",
+          "file_id",
+          "path",
+          "title",
+          "kind",
+          "current_version_hash",
+          "created_at",
+          "updated_at",
+          "content_snapshot",
+          "extracted_symbols"
+        ],
+        "title": "DocRecordDetailResponse",
+        "description": "Detailed view of a tracked documentation record including parsed symbols and drift count."
+      },
+      "DocRecordResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "file_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "current_version_hash": {
+            "type": "string",
+            "title": "Current Version Hash"
+          },
+          "last_parsed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Parsed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "project_id",
+          "file_id",
+          "path",
+          "title",
+          "kind",
+          "current_version_hash",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DocRecordResponse",
+        "description": "Summary of a tracked documentation record."
+      },
+      "DriftActionResponse": {
+        "properties": {
+          "drift_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Drift Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "applied_patch_preview": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied Patch Preview"
+          }
+        },
+        "type": "object",
+        "required": ["drift_id", "status", "message"],
+        "title": "DriftActionResponse",
+        "description": "Outcome of an approval, rejection, or application action on a drift item."
+      },
+      "DriftApprovalRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Optional note or rationale for the decision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DriftApprovalRequest",
+        "description": "Request body for human maintainer approval or rejection of a patch proposal."
+      },
       "EffectiveRetentionCategory": {
         "properties": {
           "kind": {
@@ -9420,6 +10414,109 @@
         ],
         "title": "PRAnalysisResponse",
         "description": "API response model for a PR analysis result."
+      },
+      "PatchProposalResponse": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "drift_kind": {
+            "type": "string",
+            "title": "Drift Kind"
+          },
+          "target_section": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Section"
+          },
+          "proposed_content": {
+            "type": "string",
+            "title": "Proposed Content"
+          },
+          "diff_content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diff Content"
+          },
+          "gated": {
+            "type": "boolean",
+            "title": "Gated",
+            "default": true
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "default": 0.85
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "decided_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided By"
+          },
+          "decided_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided At"
+          },
+          "rejection_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Reason"
+          },
+          "applied_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied At"
+          }
+        },
+        "type": "object",
+        "required": ["summary", "drift_kind", "proposed_content"],
+        "title": "PatchProposalResponse",
+        "description": "Proposed documentation patch generated by DocsAlive."
       },
       "ProjectMemberResponse": {
         "properties": {

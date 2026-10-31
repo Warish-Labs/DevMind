@@ -197,7 +197,10 @@ class DocDriftDetector:
     @staticmethod
     def _normalize_route_pattern(route_path: str) -> str:
         """Normalize path parameters e.g. /projects/{pid}/bugs -> /projects/{}/bugs for robust matching."""
-        # Strip trailing slashes and normalize parameter names
-        normalized = route_path.strip().rstrip("/")
+        # Strip HTTP method prefix if present e.g. 'GET /api/v1/projects'
+        route = re.sub(
+            r"^(GET|POST|PUT|PATCH|DELETE)\s+", "", route_path.strip(), flags=re.IGNORECASE
+        )
+        normalized = route.strip().rstrip("/")
         normalized = re.sub(r"\{[a-zA-Z0-9_]+\}", "{}", normalized)
         return normalized.lower()

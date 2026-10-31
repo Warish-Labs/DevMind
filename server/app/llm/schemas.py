@@ -139,6 +139,36 @@ class BugSimilarityExplanation(BaseModel):
     )
 
 
+class DocPatchProposal(BaseModel):
+    """Proposal for reconciling code and documentation drift (docs/01 CAP-04, docs/05 §6.7)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    summary: str = Field(description="Summary of documentation update proposed")
+    drift_kind: str = Field(
+        description="The drift type addressed, e.g. undocumented_route or missing_symbol"
+    )
+    target_section: str | None = Field(
+        default=None, description="Document section heading or context"
+    )
+    proposed_content: str = Field(
+        description="Proposed documentation Markdown excerpt or replacement text"
+    )
+    diff_content: str = Field(
+        description="Unified diff preview showing the exact documentation patch"
+    )
+    confidence: float = Field(
+        default=0.9,
+        ge=0.0,
+        le=1.0,
+        description="Confidence score between 0.0 and 1.0",
+    )
+    notes: list[str] = Field(
+        default_factory=list,
+        description="Reviewer notes, caveats, or prerequisites for maintainer approval",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Schema Registry
 # ---------------------------------------------------------------------------
@@ -155,6 +185,7 @@ class SchemaRegistry:
         self.register("SynthesizedAnswer", SynthesizedAnswer)
         self.register("RewrittenQuery", RewrittenQuery)
         self.register("BugSimilarityExplanation", BugSimilarityExplanation)
+        self.register("DocPatchProposal", DocPatchProposal)
 
     def register(self, name: str, schema_cls: type[BaseModel]) -> None:
         """Register a Pydantic model under a schema name."""
