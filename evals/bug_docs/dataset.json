@@ -1,0 +1,238 @@
+{
+  "benchmark": "devmind-bug-docs-v1",
+  "version": "1.0.0",
+  "description": "Evaluation benchmark dataset for Bug Memory (CAP-03) and Living Documentation DocsAlive (CAP-04)",
+  "bug_cases": [
+    {
+      "id": "bug-case-01-auth-key-error",
+      "name": "Auth Verifier Workspace Key Error",
+      "raw_error": "Traceback (most recent call last):\n  File \"/app/domain/auth/verifier.py\", line 142, in verify_token\n    workspace_id = claims['workspace_id']\nKeyError: 'workspace_id' at 0x7f9a12c400",
+      "candidate_bugs": [
+        {
+          "id": "cand-bug-01",
+          "title": "KeyError: 'workspace_id' during JWT verification",
+          "exception_type": "KeyError",
+          "fingerprint": "54ce0ae4197dd37826c94c9087ec876694d69b666f4d7ca213e169092a2bfcd9",
+          "signature": "KeyError: 'workspace_id'",
+          "module_hint": "domain.auth.verifier",
+          "summary": "Missing workspace_id in JWT claims payload causes KeyError in token verifier"
+        },
+        {
+          "id": "cand-bug-02",
+          "title": "OperationalError: DB connection timeout",
+          "exception_type": "OperationalError",
+          "fingerprint": "op_err_hash_999",
+          "signature": "OperationalError: timeout",
+          "module_hint": "persistence.database",
+          "summary": "Database pool exhausted"
+        }
+      ],
+      "expected_exception_type": "KeyError",
+      "expected_top_candidate_id": "cand-bug-01",
+      "expected_min_score": 0.85,
+      "is_duplicate": true
+    },
+    {
+      "id": "bug-case-02-db-connection-timeout",
+      "name": "Database Pool Operational Timeout",
+      "raw_error": "psycopg2.OperationalError: could not connect to server: Connection timed out at host 10.0.1.45 port 5432 after 30000ms\n  File \"/server/app/persistence/database.py\", line 88, in get_session",
+      "candidate_bugs": [
+        {
+          "id": "cand-bug-db-01",
+          "title": "psycopg2.OperationalError connection timeout",
+          "exception_type": "OperationalError",
+          "fingerprint": "",
+          "signature": "OperationalError: could not connect to server",
+          "module_hint": "persistence.database",
+          "summary": "Postgres connection pool exhausted or Neon endpoint asleep"
+        },
+        {
+          "id": "cand-bug-auth-02",
+          "title": "Auth token invalid format",
+          "exception_type": "ValueError",
+          "fingerprint": "val_err_hash_111",
+          "signature": "ValueError: malformed token",
+          "module_hint": "domain.auth",
+          "summary": "Malformed token header"
+        }
+      ],
+      "expected_exception_type": "OperationalError",
+      "expected_top_candidate_id": "cand-bug-db-01",
+      "expected_min_score": 0.15,
+      "is_duplicate": true
+    },
+    {
+      "id": "bug-case-03-type-error-undefined-js",
+      "name": "Frontend TypeError Undefined Access",
+      "raw_error": "TypeError: Cannot read properties of undefined (reading 'split')\n    at parseToken (http://localhost:3000/_next/static/chunks/app.js:145:22)\n    at Object.onAuth (http://localhost:3000/_next/static/chunks/main.js:90:10)",
+      "candidate_bugs": [
+        {
+          "id": "cand-bug-js-01",
+          "title": "TypeError: Cannot read properties of undefined (reading 'split')",
+          "exception_type": "TypeError",
+          "fingerprint": "4c95cb19a6e87ce03c76db61c378d1a2d9f3452759f526440419b3c233b5273a",
+          "signature": "TypeError: Cannot read properties of undefined (reading 'split')",
+          "module_hint": "parseToken",
+          "summary": "Missing bearer token string before header split"
+        }
+      ],
+      "expected_exception_type": "TypeError",
+      "expected_top_candidate_id": "cand-bug-js-01",
+      "expected_min_score": 0.85,
+      "is_duplicate": true
+    },
+    {
+      "id": "bug-case-04-redis-connection-refused",
+      "name": "Redis Broker Connection Refused",
+      "raw_error": "redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.\n  File \"/server/app/jobs/queue.py\", line 45, in enqueue_task",
+      "candidate_bugs": [
+        {
+          "id": "cand-bug-redis-01",
+          "title": "redis.exceptions.ConnectionError connection refused",
+          "exception_type": "ConnectionError",
+          "fingerprint": "661177ccdfc7aca37d23269b5d5adff637bb3fe086e6822ded343c8564a8089a",
+          "signature": "ConnectionError: Error 111 connecting to localhost:6379",
+          "module_hint": "jobs.queue",
+          "summary": "Redis service unavailable during task queueing"
+        }
+      ],
+      "expected_exception_type": "ConnectionError",
+      "expected_top_candidate_id": "cand-bug-redis-01",
+      "expected_min_score": 0.75,
+      "is_duplicate": true
+    },
+    {
+      "id": "bug-case-05-pydantic-validation-err",
+      "name": "Pydantic Schema Field Required",
+      "raw_error": "pydantic_core._pydantic_core.ValidationError: 1 validation error for BugRecordCreate\nworkspace_id\n  Field required [type=missing, input_value={}, input_type=dict]",
+      "candidate_bugs": [
+        {
+          "id": "cand-bug-pydantic-01",
+          "title": "ValidationError: missing required field workspace_id",
+          "exception_type": "ValidationError",
+          "fingerprint": "",
+          "signature": "ValidationError: 1 validation error for BugRecordCreate workspace_id",
+          "module_hint": "domain.bug_memory",
+          "summary": "Payload omitted workspace_id required by Pydantic model"
+        }
+      ],
+      "expected_exception_type": "ValidationError",
+      "expected_top_candidate_id": "cand-bug-pydantic-01",
+      "expected_min_score": 0.2,
+      "is_duplicate": true
+    },
+    {
+      "id": "bug-case-06-zero-match-negative",
+      "name": "Negative Control Unrelated Syntax Error",
+      "raw_error": "SyntaxError: invalid syntax (<string>, line 1) in custom css preprocessor",
+      "candidate_bugs": [
+        {
+          "id": "cand-bug-db-01",
+          "title": "OperationalError: DB connection timeout",
+          "exception_type": "OperationalError",
+          "fingerprint": "op_err_hash_999",
+          "signature": "OperationalError: timeout",
+          "module_hint": "persistence.database",
+          "summary": "Database pool exhausted"
+        },
+        {
+          "id": "cand-bug-auth-01",
+          "title": "KeyError: 'workspace_id' in token verifier",
+          "exception_type": "KeyError",
+          "fingerprint": "key_err_hash_444",
+          "signature": "KeyError: 'workspace_id'",
+          "module_hint": "domain.auth",
+          "summary": "Token verifier missing claim"
+        }
+      ],
+      "expected_exception_type": "SyntaxError",
+      "expected_top_candidate_id": null,
+      "expected_min_score": 0.0,
+      "is_duplicate": false
+    }
+  ],
+  "drift_cases": [
+    {
+      "id": "drift-case-01-missing-symbol",
+      "name": "Missing Code Symbol Cited in Docs",
+      "markdown_doc": "# API Reference\n\n## Authentication Service\n\nCalls `verify_token` and obsolete `RevokeSession_Old` helper.\n",
+      "doc_path": "docs/auth.md",
+      "known_symbols": ["verify_token"],
+      "known_routes": [],
+      "known_files": ["server/app/main.py"],
+      "expected_drift_kinds": ["missing_symbol"],
+      "expected_drift_count": 1,
+      "expected_affected_identifiers": ["RevokeSession_Old"]
+    },
+    {
+      "id": "drift-case-02-removed-route",
+      "name": "Removed Stale Route in Documentation",
+      "markdown_doc": "# Authentication Endpoints\n\n`POST /api/v1/auth/old_login`\nAuthenticates user credentials.\n",
+      "doc_path": "docs/endpoints.md",
+      "known_symbols": [],
+      "known_routes": ["/api/v1/auth/token"],
+      "known_files": [],
+      "expected_drift_kinds": ["removed_route", "undocumented_route"],
+      "expected_drift_count": 2,
+      "expected_affected_identifiers": ["/api/v1/auth/old_login", "/api/v1/auth/token"]
+    },
+    {
+      "id": "drift-case-03-undocumented-route",
+      "name": "Undocumented Active Route",
+      "markdown_doc": "# Project Endpoints\n\n`GET /api/v1/projects`\nLists all projects in the workspace.\n",
+      "doc_path": "docs/projects.md",
+      "known_symbols": [],
+      "known_routes": ["/api/v1/projects", "/api/v1/projects/{project_id}/bugs"],
+      "known_files": [],
+      "expected_drift_kinds": ["undocumented_route"],
+      "expected_drift_count": 1,
+      "expected_affected_identifiers": ["/api/v1/projects/{project_id}/bugs"]
+    },
+    {
+      "id": "drift-case-04-stale-file-section",
+      "name": "Section Referencing Deleted File",
+      "markdown_doc": "# Architecture Guide\n\n## Legacy Subsystem\nSee `server/app/deprecated_engine.py` for previous implementation details.\n",
+      "doc_path": "docs/architecture.md",
+      "known_symbols": [],
+      "known_routes": [],
+      "known_files": ["server/app/main.py", "server/app/domain/auth.py"],
+      "expected_drift_kinds": ["stale_section"],
+      "expected_drift_count": 1,
+      "expected_affected_identifiers": ["server/app/deprecated_engine.py"]
+    },
+    {
+      "id": "drift-case-05-multi-drift",
+      "name": "Multiple Compound Drifts in Architecture Doc",
+      "markdown_doc": "# System Overview\n\n## Core Services\nUses `OldRepository_V1` for persistence.\nRefer to `server/app/old_pipeline.py` for extraction.\n\n## Endpoints\n`GET /api/v1/legacy_status`\n",
+      "doc_path": "docs/overview.md",
+      "known_symbols": ["NewRepository"],
+      "known_routes": ["/api/v1/health"],
+      "known_files": ["server/app/main.py"],
+      "expected_drift_kinds": [
+        "missing_symbol",
+        "stale_section",
+        "removed_route",
+        "undocumented_route"
+      ],
+      "expected_drift_count": 4,
+      "expected_affected_identifiers": [
+        "OldRepository_V1",
+        "server/app/old_pipeline.py",
+        "/api/v1/legacy_status",
+        "/api/v1/health"
+      ]
+    },
+    {
+      "id": "drift-case-06-zero-drift",
+      "name": "Zero Drift Up-to-Date Documentation",
+      "markdown_doc": "# Project Endpoints\n\n`GET /api/v1/projects`\nLists all projects.\n\nUses `ProjectService` class.\n",
+      "doc_path": "docs/clean.md",
+      "known_symbols": ["ProjectService"],
+      "known_routes": ["/api/v1/projects"],
+      "known_files": ["server/app/main.py"],
+      "expected_drift_kinds": [],
+      "expected_drift_count": 0,
+      "expected_affected_identifiers": []
+    }
+  ]
+}
