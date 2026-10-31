@@ -1,0 +1,22 @@
+{
+  "benchmark": "devmind-pr-intelligence-v1",
+  "git_commit": "a82a78a",
+  "timestamp": "2026-10-30T19:15:15.120038+00:00",
+  "impact_metrics": {
+    "total_cases": 5,
+    "precision": 0.8,
+    "recall": 1.0,
+    "f1_score": 0.8889,
+    "risk_accuracy": 0.8
+  },
+  "review_metrics": {
+    "total_cases": 5,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "false_positive_rate": 0.0,
+    "category_accuracy": 1.0
+  },
+  "composite_score": 0.9222,
+  "status": "passed"
+}

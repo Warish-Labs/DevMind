@@ -96,6 +96,24 @@ def parse_unified_diff(diff_text: str) -> list[ChangedFile]:
             if current_file:
                 current_file.is_deleted = True
 
+        elif line.startswith("--- ") and not line.startswith("--- /dev/null"):
+            raw_path = line[4:].strip()
+            if raw_path.startswith("a/"):
+                raw_path = raw_path[2:]
+            if not current_file:
+                current_file = ChangedFile(path=raw_path, old_path=raw_path)
+            elif not current_file.old_path or current_file.old_path == "unknown":
+                current_file.old_path = raw_path
+
+        elif line.startswith("+++ ") and not line.startswith("+++ /dev/null"):
+            raw_path = line[4:].strip()
+            if raw_path.startswith("b/"):
+                raw_path = raw_path[2:]
+            if not current_file:
+                current_file = ChangedFile(path=raw_path, old_path=raw_path)
+            elif not current_file.path or current_file.path == "unknown":
+                current_file.path = raw_path
+
         elif line.startswith("@@ ") and current_file:
             if current_hunk:
                 current_file.hunks.append(current_hunk)
