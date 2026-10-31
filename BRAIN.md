@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-mentor-ui` |
-| **Last commit** | `3c7fccd` (`feat(client): implement M12-11 project mentor and health evaluation web screens`) |
+| **Last commit** | `daa6ddd` (`feat(client): implement M12-11 project mentor and health evaluation web screens`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete |
 | **Working tree** | Clean |
-| **Open PR** | Pending |
+| **Open PR** | [#104](https://github.com/Warish-Labs/DevMind/pull/104) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,8 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR for `feature/m12-mentor-ui` to pass and owner merge into `main`.
-2. After PR is merged:
+1. Wait for CI checks on PR #104 (`feature/m12-mentor-ui`) to pass and owner merge into `main`.
+2. After PR #104 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-mentor-ui` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-ui`).
    - Create feature branch `feature/m12-mentor-evals` for task **M12-12**: Benchmark datasets, evaluation runner, recorded baselines, and E2E integration tests for Mentor & Evaluation.
@@ -29,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-mentor-ui` (`feature/m12-mentor-ui` → `main`) after CI passes.
+Review and merge PR #104 (`feature/m12-mentor-ui` → `main`) after CI passes.
 
 ---
 
