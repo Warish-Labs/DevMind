@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-bug-memory-core` |
-| **Last commit** | `4c580d1` (`Merge pull request #93 from Warish-Labs/feature/m11-docs`) |
+| **Last commit** | `f684270` (`feat(server): implement M12-01 bug memory schema, repositories, and error normalizer`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
-| **Working tree** | M12-01 in progress |
-| **Open PR** | None |
+| **Working tree** | Clean |
+| **Open PR** | [#94](https://github.com/Warish-Labs/DevMind/pull/94) (`feature/m12-bug-memory-core` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,20 +19,35 @@
 
 ## 2. Next action (exact)
 
-1. Implement task **M12-01**: Bug Memory schema, Alembic migration (`bug_records`, `bug_resolutions`), persistence models, repositories, and deterministic error signature normalizer per docs/01 CAP-03, docs/03 §3.4, and docs/05 §6.6.
-2. Author unit test suite covering stack trace normalization, fingerprint hashing, and CRUD repositories (`server/tests/test_bug_memory.py`).
-3. Run verification suite (`node scripts/test-all.mjs --fast`).
-4. Commit with `feat(server): implement M12-01 bug memory schema, repositories, and error normalizer` and open PR.
+1. Wait for CI checks on PR #94 to finish and owner merge into `main`.
+2. After PR #94 is merged:
+   - Switch to `main`, pull latest (`git pull --ff-only origin main`).
+   - Delete branch `feature/m12-bug-memory-core` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-memory-core`).
+   - Create feature branch `feature/m12-bug-memory-agent` for task **M12-02**: Bug Memory hybrid similarity search (keyword + vector), BugMemory specialist agent, and REST endpoints.
 
 ---
 
 ## 3. Waiting on owner
 
-None (proceeding with M12-01 implementation).
+Merge PR [#94](https://github.com/Warish-Labs/DevMind/pull/94) into `main` after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-01: Bug Memory Foundation, Schema, Migration, and Error Normalizer
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m12-bug-memory-core`
+- **PR**: [#94](https://github.com/Warish-Labs/DevMind/pull/94)
+- **What**:
+  - Implemented M12-01 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-03), [`docs/03`](docs/03-data-model-and-api.md) §3.4, and [`docs/05`](docs/05-agents-and-llm-workflows.md) §6.6:
+    - **Alembic Migration**: Authored `server/alembic/versions/0015_bug_memory.py` adding `bug_records` and `bug_resolutions` tables with UUIDv7 primary keys, tenant constraints (`workspace_id`, `project_id`), fingerprint indexes, and cascading foreign keys.
+    - **Persistence Models**: Added `BugRecord` and `BugResolution` in `server/app/persistence/models/bug_memory.py`, registered in `models/__init__.py`.
+    - **Deterministic Error Normalizer**: Authored `ErrorNormalizer` in `server/app/analysis/error_normalizer.py` extracting canonical signatures, normalized module hints, and SHA-256 fingerprints while stripping ephemeral memory addresses, timestamps, UUIDs, and absolute paths for Python and JavaScript/TypeScript stack traces.
+    - **Repository Layer**: Authored `BugRecordRepository` in `server/app/persistence/repositories/bug_record_repo.py` supporting `record_bug` with duplicate detection and occurrence counter increment, `add_resolution`, fingerprint lookup, and multi-tenant scoping.
+    - **Testing**: Added `server/tests/test_bug_memory.py` (11 unit/isolation tests), updated `server/tests/test_migrations.py` and `server/tests/test_restore_drill.py` verifying Alembic head `0015_bug_memory` and database table inventory.
+- **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). Linting 100% clean (`ruff check`). Import boundaries clean (7/7 contracts maintained).
 
 ### Feature — M11-09: Milestone 11 Documentation Update and Operational Runbook
 

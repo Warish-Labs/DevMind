@@ -329,7 +329,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 
 #### M12.1 · Release 1.2: Bug Memory & Living Documentation (CAP-03, CAP-04)
 
-- [ ] M12-01 Bug Memory schema, Alembic migration (`bug_records`, `bug_resolutions`), repositories, and error signature normalizer (feature/m12-bug-memory-core)
+- [x] M12-01 Bug Memory schema, Alembic migration (`bug_records`, `bug_resolutions`), repositories, and error signature normalizer (feature/m12-bug-memory-core, PR #94)
 - [ ] M12-02 Bug Memory hybrid similarity search (keyword + vector), BugMemory specialist agent, and REST endpoints (feature/m12-bug-memory-agent)
 - [ ] M12-03 Living Documentation schema, migration (`documentation_records`, `doc_drift_items`), doc parser, and symbol drift detector (feature/m12-living-docs-core)
 - [ ] M12-04 DocsAlive specialist agent, patch proposal generator, and human approval gates (feature/m12-docs-alive-agent)
