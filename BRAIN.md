@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-living-docs-core` |
-| **Last commit** | `ef44ffe` (`Merge pull request #95 from Warish-Labs/feature/m12-bug-memory-agent`) |
+| **Last commit** | `97404b9` (`feat(server): implement M12-03 living docs schema, doc parser, and drift detector`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
-| **Working tree** | Staged for M12-03 commit |
-| **Open PR** | Pending |
+| **Working tree** | Clean |
+| **Open PR** | [#96](https://github.com/Warish-Labs/DevMind/pull/96) (`feature/m12-living-docs-core` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,11 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Commit M12-03 files to `feature/m12-living-docs-core` with message `feat(server): implement M12-03 living docs schema, doc parser, and drift detector`.
-2. Push `feature/m12-living-docs-core` to GitHub via proxy (`HTTPS_PROXY=http://127.0.0.1:8989 git push -u origin feature/m12-living-docs-core`).
-3. Open pull request for M12-03 on GitHub targeting `main`.
-4. Wait for CI checks to complete and owner merge into `main`.
-5. After PR merge:
+1. Wait for CI checks on PR #96 to complete and owner merge into `main`.
+2. After PR #96 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-living-docs-core` locally and remotely on GitHub (`git push origin --delete feature/m12-living-docs-core`).
    - Create feature branch `feature/m12-docs-alive-agent` for task **M12-04**: `DocsAlive` specialist agent, patch proposal generator, and human approval gates.
@@ -32,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for task M12-03 once opened.
+Review and merge PR [#96](https://github.com/Warish-Labs/DevMind/pull/96) into `main` after CI passes.
 
 ---
 
@@ -42,7 +39,7 @@ Review and merge PR for task M12-03 once opened.
 
 - **Date**: 2026-10-31
 - **Branch**: `feature/m12-living-docs-core`
-- **PR**: Pending
+- **PR**: [#96](https://github.com/Warish-Labs/DevMind/pull/96)
 - **What**:
   - Implemented M12-03 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-04), [`docs/03`](docs/03-data-model-and-api.md) §3.5, §11.2, and [`docs/05`](docs/05-agents-and-llm-workflows.md) §6.7:
     - **Alembic Migration**: Authored `server/alembic/versions/0016_living_documentation.py` introducing `documentation_records` and `doc_drift_items` with UUIDv7 primary keys, tenant scoping (`workspace_id`, `project_id`), JSONB payload fields, and foreign key cascades.
