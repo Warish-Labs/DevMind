@@ -35,6 +35,7 @@ from app.persistence.models.github import (
     GitHubRepositoryBinding,
     PullRequest,
 )
+from app.persistence.models.living_documentation import DocDriftItem, DocumentationRecord
 from app.persistence.models.pr_analysis import PRAnalysis
 from app.persistence.models.project import Project, ProjectMembership
 from app.persistence.models.retention import RetentionPolicy
@@ -56,6 +57,8 @@ __all__ = [
     "CodeRelationship",
     "CodeSymbol",
     "ConsentRecord",
+    "DocDriftItem",
+    "DocumentationRecord",
     "EmbeddingSpace",
     "ExtensionRegistration",
     "ExtensionToken",

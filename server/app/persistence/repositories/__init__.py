@@ -7,6 +7,7 @@ from app.persistence.repositories.bug_record_repo import BugRecordRepository
 from app.persistence.repositories.consent_repo import ConsentRepository
 from app.persistence.repositories.extension_repo import ExtensionRepository
 from app.persistence.repositories.github_repo import GitHubRepository
+from app.persistence.repositories.living_doc_repo import LivingDocRepository
 from app.persistence.repositories.project_repo import ProjectRepository
 from app.persistence.repositories.retention_repo import RetentionRepository
 from app.persistence.repositories.usage_repo import (
@@ -24,6 +25,7 @@ __all__ = [
     "ConsentRepository",
     "ExtensionRepository",
     "GitHubRepository",
+    "LivingDocRepository",
     "ProjectRepository",
     "RetentionRepository",
     "UsageRecordRepository",

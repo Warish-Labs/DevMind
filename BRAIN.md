@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-bug-memory-agent` |
-| **Last commit** | `3859927` (`feat(server): implement M12-02 bug memory hybrid search, BugMemory agent, and REST endpoints`) |
+| **Branch** | `feature/m12-living-docs-core` |
+| **Last commit** | `97404b9` (`feat(server): implement M12-03 living docs schema, doc parser, and drift detector`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
 | **Working tree** | Clean |
-| **Open PR** | [#95](https://github.com/Warish-Labs/DevMind/pull/95) (`feature/m12-bug-memory-agent` → `main`) |
+| **Open PR** | [#96](https://github.com/Warish-Labs/DevMind/pull/96) (`feature/m12-living-docs-core` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,21 +19,36 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #95 to complete and owner merge into `main`.
-2. After PR #95 is merged:
+1. Wait for CI checks on PR #96 to complete and owner merge into `main`.
+2. After PR #96 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-bug-memory-agent` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-memory-agent`).
-   - Create feature branch `feature/m12-living-docs-core` for task **M12-03**: Living Documentation schema, migration (`documentation_records`, `doc_drift_items`), doc parser, and symbol drift detector.
+   - Delete branch `feature/m12-living-docs-core` locally and remotely on GitHub (`git push origin --delete feature/m12-living-docs-core`).
+   - Create feature branch `feature/m12-docs-alive-agent` for task **M12-04**: `DocsAlive` specialist agent, patch proposal generator, and human approval gates.
 
 ---
 
 ## 3. Waiting on owner
 
-Merge PR [#95](https://github.com/Warish-Labs/DevMind/pull/95) into `main` after CI passes.
+Review and merge PR [#96](https://github.com/Warish-Labs/DevMind/pull/96) into `main` after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-03: Living Documentation Schema, Migration, Doc Parser, and Symbol Drift Detector
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m12-living-docs-core`
+- **PR**: [#96](https://github.com/Warish-Labs/DevMind/pull/96)
+- **What**:
+  - Implemented M12-03 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-04), [`docs/03`](docs/03-data-model-and-api.md) §3.5, §11.2, and [`docs/05`](docs/05-agents-and-llm-workflows.md) §6.7:
+    - **Alembic Migration**: Authored `server/alembic/versions/0016_living_documentation.py` introducing `documentation_records` and `doc_drift_items` with UUIDv7 primary keys, tenant scoping (`workspace_id`, `project_id`), JSONB payload fields, and foreign key cascades.
+    - **Persistence Models**: Added `DocumentationRecord` and `DocDriftItem` in `server/app/persistence/models/living_documentation.py` exported through `models/__init__.py`.
+    - **Deterministic Doc Parser**: Created `server/app/analysis/doc_parser.py` extracting headings, doc sections, HTTP route specifications (`METHOD /path`), and code symbols (`function`, `class`, `interface`, `def`) with code block awareness.
+    - **Deterministic Drift Detector**: Authored `server/app/analysis/doc_drift_detector.py` analyzing documentation against actual codebase symbols, OpenAPI/REST routes, and config keys to pinpoint missing symbols, removed routes, or signature drift without LLM invocations.
+    - **Repository Layer**: Added `LivingDocRepository` in `server/app/persistence/repositories/living_doc_repo.py` supporting document indexing, drift item tracking, filtering by drift type and status (`detected`, `approved`, `rejected`, `applied`), and status mutations.
+    - **Test Coverage**: Added `server/tests/test_living_docs.py` (5 tests covering Markdown sectioning, route/symbol extraction, drift detection, and repository CRUD). Updated `test_migrations.py` and `test_restore_drill.py` to assert head revision `0016_living_documentation` and tables `documentation_records`, `doc_drift_items`.
+- **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). Linting clean (`ruff check server`). Formatting clean (`ruff format server`). Import boundaries clean (7/7 contracts maintained).
 
 ### Feature — M12-02: Bug Memory Hybrid Similarity Search, Specialist Agent, and REST Endpoints
 
