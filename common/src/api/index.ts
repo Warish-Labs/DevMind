@@ -66,6 +66,15 @@ export type DocDriftItemResponse = components["schemas"]["DocDriftItemResponse"]
 export type DriftApprovalRequest = components["schemas"]["DriftApprovalRequest"];
 export type DriftActionResponse = components["schemas"]["DriftActionResponse"];
 export type PatchProposalResponse = components["schemas"]["PatchProposalResponse"];
+
+export type ProjectTaskResponse = components["schemas"]["ProjectTaskResponse"];
+export type ProjectTaskCreate = components["schemas"]["ProjectTaskCreate"];
+export type ProjectTaskUpdate = components["schemas"]["ProjectTaskUpdate"];
+export type TaskDependencyCreate = components["schemas"]["TaskDependencyCreate"];
+export type TaskDependencyResponse = components["schemas"]["TaskDependencyResponse"];
+export type TaskRecommendationResponse = components["schemas"]["TaskRecommendationResponse"];
+export type ProjectEvaluationResponse = components["schemas"]["ProjectEvaluationResponse"];
+export type ProjectEvaluationRunRequest = components["schemas"]["ProjectEvaluationRunRequest"];
 export interface QuotaItem {
   resource: string;
   used: number;
@@ -1246,5 +1255,126 @@ export class DevMindApiClient {
     return this.fetchInternal<DriftActionResponse>(`/api/v1/docs/drift/${driftId}/apply`, {
       method: "POST",
     });
+  }
+
+  public async listProjectTasks(
+    projectId: string,
+    params?: { status?: string; priority?: string; limit?: number; offset?: number }
+  ): Promise<ProjectTaskResponse[]> {
+    const query = new URLSearchParams();
+    if (params?.status) query.set("status", params.status);
+    if (params?.priority) query.set("priority", params.priority);
+    if (params?.limit) query.set("limit", params.limit.toString());
+    if (params?.offset) query.set("offset", params.offset.toString());
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return this.fetchInternal<ProjectTaskResponse[]>(`/api/v1/projects/${projectId}/tasks${qs}`);
+  }
+
+  public async createProjectTask(
+    projectId: string,
+    data: ProjectTaskCreate
+  ): Promise<ProjectTaskResponse> {
+    return this.fetchInternal<ProjectTaskResponse>(`/api/v1/projects/${projectId}/tasks`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  public async getTaskRecommendation(projectId: string): Promise<TaskRecommendationResponse> {
+    return this.fetchInternal<TaskRecommendationResponse>(
+      `/api/v1/projects/${projectId}/tasks/recommend`
+    );
+  }
+
+  public async getProjectTask(projectId: string, taskId: string): Promise<ProjectTaskResponse> {
+    return this.fetchInternal<ProjectTaskResponse>(`/api/v1/projects/${projectId}/tasks/${taskId}`);
+  }
+
+  public async updateProjectTask(
+    projectId: string,
+    taskId: string,
+    data: ProjectTaskUpdate
+  ): Promise<ProjectTaskResponse> {
+    return this.fetchInternal<ProjectTaskResponse>(
+      `/api/v1/projects/${projectId}/tasks/${taskId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  public async deleteProjectTask(projectId: string, taskId: string): Promise<void> {
+    await this.fetchInternal<void>(`/api/v1/projects/${projectId}/tasks/${taskId}`, {
+      method: "DELETE",
+    });
+  }
+
+  public async addTaskDependency(
+    projectId: string,
+    taskId: string,
+    dependsOnTaskId: string
+  ): Promise<TaskDependencyResponse> {
+    return this.fetchInternal<TaskDependencyResponse>(
+      `/api/v1/projects/${projectId}/tasks/${taskId}/dependencies`,
+      {
+        method: "POST",
+        body: JSON.stringify({ depends_on_task_id: dependsOnTaskId }),
+      }
+    );
+  }
+
+  public async removeTaskDependency(
+    projectId: string,
+    taskId: string,
+    dependsOnTaskId: string
+  ): Promise<void> {
+    await this.fetchInternal<void>(
+      `/api/v1/projects/${projectId}/tasks/${taskId}/dependencies/${dependsOnTaskId}`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  public async listProjectEvaluations(
+    projectId: string,
+    params?: { limit?: number; offset?: number }
+  ): Promise<ProjectEvaluationResponse[]> {
+    const query = new URLSearchParams();
+    if (params?.limit) query.set("limit", params.limit.toString());
+    if (params?.offset) query.set("offset", params.offset.toString());
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return this.fetchInternal<ProjectEvaluationResponse[]>(
+      `/api/v1/projects/${projectId}/evaluations${qs}`
+    );
+  }
+
+  public async runProjectEvaluation(
+    projectId: string,
+    data?: ProjectEvaluationRunRequest
+  ): Promise<ProjectEvaluationResponse> {
+    return this.fetchInternal<ProjectEvaluationResponse>(
+      `/api/v1/projects/${projectId}/evaluations/run`,
+      {
+        method: "POST",
+        body: JSON.stringify(data || {}),
+      }
+    );
+  }
+
+  public async getLatestProjectEvaluation(projectId: string): Promise<ProjectEvaluationResponse> {
+    return this.fetchInternal<ProjectEvaluationResponse>(
+      `/api/v1/projects/${projectId}/evaluations/latest`
+    );
+  }
+
+  public async getProjectEvaluation(
+    projectId: string,
+    evaluationId: string
+  ): Promise<ProjectEvaluationResponse> {
+    return this.fetchInternal<ProjectEvaluationResponse>(
+      `/api/v1/projects/${projectId}/evaluations/${evaluationId}`
+    );
   }
 }

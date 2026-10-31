@@ -16,6 +16,7 @@ import {
   FolderIcon,
   BugIcon,
   BookOpenIcon,
+  MentorIcon,
 } from "./icons";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { WorkspaceProjectSwitcher } from "./WorkspaceProjectSwitcher";
@@ -83,6 +84,12 @@ export function AppGutterRail() {
       href: `/projects/${pid}/docs`,
       icon: <BookOpenIcon size={18} />,
       isActive: pathname.includes("/docs") && !pathname.includes("github.com"),
+    },
+    {
+      label: "Project Mentor & Health (S-17)",
+      href: `/projects/${pid}/tasks`,
+      icon: <MentorIcon size={18} />,
+      isActive: pathname.includes("/tasks"),
     },
     {
       label: "Usage & Quotas (S-12)",
