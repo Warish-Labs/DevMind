@@ -162,6 +162,7 @@ Recorded baselines (to be filled by the owning milestone):
 | Graph Prompt-Injection Defense (M7-10) | 2026-10-18 | `96c72bd` | `evals/results/injection/latest.json` | Pass Rate: 1.0000 (25/25 vectors passed). Delimiter Integrity: 1.0000, Tool Containment: 1.0000, Finding Protection: 1.0000, Cross-Tenant Isolation: 1.0000, Schema Conformance: 1.0000. Regression gate tolerance: 100% pass rate on CI injection corpus. |
 | Expanded Injection Corpus & Abuse Defense (M10-07) | 2026-10-25 | `a1defbd` | `evals/results/injection/latest.json` | Pass Rate: 1.0000 (55/55 vectors passed: 45 adversarial injection vectors, 10 benign controls). Delimiter Integrity: 1.0000, Tool Containment: 1.0000, Finding Protection: 1.0000, Cross-Tenant Isolation: 1.0000, Schema Conformance: 1.0000. Defenses against BiDi overrides, special tokens, delimiter collisions, multi-hop poisoning, and tool escalation. |
 | PR Intelligence & ReviewBuddy Evals (M11-08) | 2026-10-31 | `70522a1` | `evals/results/pr_intelligence/latest.json` | Composite Score: 1.0000. Change-Impact Risk Accuracy: 1.0000 (5/5 cases). ReviewBuddy Checklist: Precision: 1.0000, Recall: 1.0000, F1: 1.0000, False Positive Rate: 0.0000 across unvalidated inputs, bare excepts, missing auth, and custom forbidden patterns. Regression gate tolerance: min composite score 0.9000. |
+| Bug Memory & Living Docs Evals (M12-06) | 2026-10-31 | `d6328f4` | `evals/results/bug_docs/latest.json` | Composite Score: 1.0000. Bug Memory (100% Top-1, 100% Recall@3, MRR: 1.0000, 100% Fingerprint Acc, 100% Neg Rejection) across exact fingerprints, timeouts, TypeError memory pointers, connection errors, and validation errors. Living Docs (Precision: 1.0000, Recall: 1.0000, F1: 1.0000, Patch Diff Validity: 1.0000) across route drift, missing symbols, undocumented endpoints, section drift, and compound changes. Regression gate tolerance: min composite score 0.9000. |
 
 ## 10. LangGraph workflow tests
 
@@ -252,6 +253,8 @@ Assertions: untrusted blocks are delimited and escaped in rendered prompts (snap
 | Extension | `pnpm --filter vscode-extension test` |
 | Scanner eval | `uv run python -m evals.scanner` |
 | Retrieval eval | `uv run python -m evals.retrieval` |
+| PR intelligence eval | `npm run eval:pr` |
+| Bug memory & living docs eval | `npm run eval:bug-docs` |
 | Secret scan, dependency audit | per CI configuration |
 
 Exact commands are confirmed when the repository is created ([11](11-mvp-and-implementation-roadmap.md) M1) and then recorded here and in `AGENTS.md`. AI coding agents report the real output of the commands they ran.
