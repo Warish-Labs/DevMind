@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-docs-alive-agent` |
-| **Last commit** | `f9af785` (`feat(server): implement M12-04 DocsAlive agent, patch proposals, and approval gates`) |
+| **Branch** | `feature/m12-bug-docs-ui` |
+| **Last commit** | `f08113f` (`feat(client): implement M12-05 web screens for Bug Memory and Living Docs`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete |
 | **Working tree** | Clean |
-| **Open PR** | [#97](https://github.com/Warish-Labs/DevMind/pull/97) (`feature/m12-docs-alive-agent` → `main`) |
+| **Open PR** | [#98](https://github.com/Warish-Labs/DevMind/pull/98) (`feature/m12-bug-docs-ui` → `main`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-10-31 |
 
@@ -19,21 +19,49 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #97 to pass and owner merge into `main`.
-2. After PR #97 is merged:
+1. Wait for CI checks on PR #98 to pass and owner merge into `main`.
+2. After PR #98 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-docs-alive-agent` locally and remotely on GitHub (`git push origin --delete feature/m12-docs-alive-agent`).
-   - Create feature branch `feature/m12-bug-docs-ui` for task **M12-05**: Web screens for Bug Memory and Living Docs (error search, resolution viewer, drift review, patch approval modal).
+   - Delete branch `feature/m12-bug-docs-ui` locally and remotely on GitHub (`git push origin --delete feature/m12-bug-docs-ui`).
+   - Create feature branch `feature/m12-bug-docs-evals` for task **M12-06**: Integration tests, evaluation benchmark datasets, and recorded baselines for Bug Memory and Living Docs.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR [#97](https://github.com/Warish-Labs/DevMind/pull/97) (`feature/m12-docs-alive-agent` → `main`) after CI passes.
+Review and merge PR [#98](https://github.com/Warish-Labs/DevMind/pull/98) (`feature/m12-bug-docs-ui` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-05: Web Screens for Bug Memory and Living Docs
+
+- **Date**: 2026-10-31
+- **Branch**: `feature/m12-bug-docs-ui`
+- **PR**: [#98](https://github.com/Warish-Labs/DevMind/pull/98)
+- **What**:
+  - Implemented M12-05 per [`docs/01`](docs/01-product-requirements.md) §7 (CAP-03, CAP-04), [`docs/03`](docs/03-data-model-and-api.md) §3.4, §3.5, §11, and [`docs/08`](docs/08-ui-ux-design-specification.md) (Screen S-15 Bug Memory & Screen S-16 Living Docs):
+    - **API Client Extensions**: Added typed methods in `common/src/api/index.ts` for Bug Memory (`listProjectBugs`, `createBug`, `matchSimilarBugs`, `getBugDetail`, `addBugResolution`) and Living Documentation (`listProjectDocs`, `registerProjectDoc`, `getProjectDoc`, `detectDocDrift`, `listProjectDriftItems`, `getDriftItem`, `approveDriftProposal`, `rejectDriftProposal`, `applyDriftPatch`).
+    - **Navigation & Icons**: Added `BugIcon` and `BookOpenIcon` in `client/components/shell/icons.tsx`. Added S-15 `/projects/[projectId]/bugs` and S-16 `/projects/[projectId]/docs` to `client/components/shell/AppGutterRail.tsx` and quick commands in `client/components/shell/CommandPalette.tsx`.
+    - **Bug Memory Web Screen (S-15)** (`client/app/projects/[projectId]/bugs/page.tsx` & `client/components/bugs/`):
+      - `ErrorMatcherPanel.tsx`: Interactive error input, trace normalization, candidate search, AI explanation, past resolution steps, and files.
+      - `BugsTable.tsx`: List of tracked bug records with filters, occurrence count badge, fingerprint hash, and actions ("Inspect", "+ Resolution").
+      - `BugDetailModal.tsx`: Inspection modal displaying full error signature, fingerprint, raw error snippet, and historical resolutions.
+      - `AddResolutionModal.tsx`: Submission modal for recording root cause, fix summary, and modified files.
+      - `LogBugModal.tsx`: Modal for registering new recurring bug traces.
+      - `BugsPageClient.tsx`: Root client page coordinating state, API fetching, and modals.
+    - **Living Documentation & DocsAlive Web Screen (S-16)** (`client/app/projects/[projectId]/docs/page.tsx` & `client/components/living-docs/`):
+      - `DriftItemsTable.tsx`: Review table with drift kind badges, status pills, and "Review Proposal" triggers.
+      - `TrackedDocsTable.tsx`: Inventory of registered Markdown docs with hashes and "Inspect" triggers.
+      - `PatchApprovalModal.tsx`: Human approval gate modal with color-coded unified diff viewer (`+` green, `-` red, `@@` ref), proposed markdown body preview, and approval gate controls (`status == "detected"` -> Approve/Reject; `status == "approved"` -> Apply Patch to Documentation).
+      - `DocDetailModal.tsx`: Extracted route/code symbols inspection and snapshot viewer.
+      - `RegisterDocModal.tsx`: Modal for registering Markdown files.
+      - `LivingDocsPageClient.tsx`: Root client coordinating tabs ("Drift Review & Patch Proposals" vs "Tracked Documentation Files"), drift detection trigger, and modals.
+    - **Comprehensive Test Coverage**:
+      - `client/tests/bugs-ui.test.tsx` (6 tests).
+      - `client/tests/living-docs-ui.test.tsx` (7 tests).
+- **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). Client Vitest 29/29 files passed, 191/191 tests passed. Root & client TypeScript clean (0 errors).
 
 ### Feature — M12-04: DocsAlive Specialist Agent, Patch Proposal Generator, and Human Approval Gates
 

@@ -47,6 +47,25 @@ export type BrainFileItem = components["schemas"]["BrainFileItem"];
 export type BrainFileDetail = components["schemas"]["BrainFileDetail"];
 export type GraphResponse = components["schemas"]["GraphResponse"];
 export type BrainSummaryResponse = components["schemas"]["BrainSummaryResponse"];
+
+export type BugRecordCreate = components["schemas"]["BugRecordCreate"];
+export type BugRecordResponse = components["schemas"]["BugRecordResponse"];
+export type BugRecordDetailResponse = components["schemas"]["BugRecordDetailResponse"];
+export type BugResolutionCreate = components["schemas"]["BugResolutionCreate"];
+export type BugResolutionResponse = components["schemas"]["BugResolutionResponse"];
+export type BugMatchRequest = components["schemas"]["BugMatchRequest"];
+export type BugMatchResponse = components["schemas"]["BugMatchResponse"];
+export type BugMatchCandidateResponse = components["schemas"]["BugMatchCandidateResponse"];
+
+export type DocRecordCreate = components["schemas"]["DocRecordCreate"];
+export type DocRecordResponse = components["schemas"]["DocRecordResponse"];
+export type DocRecordDetailResponse = components["schemas"]["DocRecordDetailResponse"];
+export type DocDriftDetectRequest = components["schemas"]["DocDriftDetectRequest"];
+export type DocDriftDetectResponse = components["schemas"]["DocDriftDetectResponse"];
+export type DocDriftItemResponse = components["schemas"]["DocDriftItemResponse"];
+export type DriftApprovalRequest = components["schemas"]["DriftApprovalRequest"];
+export type DriftActionResponse = components["schemas"]["DriftActionResponse"];
+export type PatchProposalResponse = components["schemas"]["PatchProposalResponse"];
 export interface QuotaItem {
   resource: string;
   used: number;
@@ -1086,5 +1105,146 @@ export class DevMindApiClient {
     const qs = searchParams.toString();
     const endpoint = `/api/v1/projects/${projectId}/review-rules${qs ? `?${qs}` : ""}`;
     return this.fetchInternal<ReviewRuleResponse[]>(endpoint);
+  }
+
+  // --- Bug Memory Endpoints (CAP-03) ---
+
+  public async listProjectBugs(
+    projectId: string,
+    params?: { query?: string; status?: string; limit?: number; offset?: number }
+  ): Promise<BugRecordResponse[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.query) searchParams.set("query", params.query);
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.limit !== undefined) searchParams.set("limit", String(params.limit));
+    if (params?.offset !== undefined) searchParams.set("offset", String(params.offset));
+
+    const qs = searchParams.toString();
+    const endpoint = `/api/v1/projects/${projectId}/bugs${qs ? `?${qs}` : ""}`;
+    return this.fetchInternal<BugRecordResponse[]>(endpoint);
+  }
+
+  public async createBug(
+    projectId: string,
+    data: BugRecordCreate
+  ): Promise<BugRecordDetailResponse> {
+    return this.fetchInternal<BugRecordDetailResponse>(`/api/v1/projects/${projectId}/bugs`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  public async matchSimilarBugs(
+    projectId: string,
+    data: BugMatchRequest
+  ): Promise<BugMatchResponse> {
+    return this.fetchInternal<BugMatchResponse>(`/api/v1/projects/${projectId}/bugs/match`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  public async getBugDetail(bugId: string): Promise<BugRecordDetailResponse> {
+    return this.fetchInternal<BugRecordDetailResponse>(`/api/v1/bugs/${bugId}`);
+  }
+
+  public async addBugResolution(
+    bugId: string,
+    data: BugResolutionCreate
+  ): Promise<BugResolutionResponse> {
+    return this.fetchInternal<BugResolutionResponse>(`/api/v1/bugs/${bugId}/resolutions`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  // --- Living Documentation & DocsAlive Endpoints (CAP-04) ---
+
+  public async listProjectDocs(
+    projectId: string,
+    params?: { kind?: string; limit?: number; offset?: number }
+  ): Promise<DocRecordResponse[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.kind) searchParams.set("kind", params.kind);
+    if (params?.limit !== undefined) searchParams.set("limit", String(params.limit));
+    if (params?.offset !== undefined) searchParams.set("offset", String(params.offset));
+
+    const qs = searchParams.toString();
+    const endpoint = `/api/v1/projects/${projectId}/docs${qs ? `?${qs}` : ""}`;
+    return this.fetchInternal<DocRecordResponse[]>(endpoint);
+  }
+
+  public async registerProjectDoc(
+    projectId: string,
+    data: DocRecordCreate
+  ): Promise<DocRecordDetailResponse> {
+    return this.fetchInternal<DocRecordDetailResponse>(`/api/v1/projects/${projectId}/docs`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  public async getProjectDoc(projectId: string, docId: string): Promise<DocRecordDetailResponse> {
+    return this.fetchInternal<DocRecordDetailResponse>(
+      `/api/v1/projects/${projectId}/docs/${docId}`
+    );
+  }
+
+  public async detectDocDrift(
+    projectId: string,
+    data: DocDriftDetectRequest
+  ): Promise<DocDriftDetectResponse> {
+    return this.fetchInternal<DocDriftDetectResponse>(
+      `/api/v1/projects/${projectId}/docs/detect-drift`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  public async listProjectDriftItems(
+    projectId: string,
+    params?: { status?: string; kind?: string; limit?: number; offset?: number }
+  ): Promise<DocDriftItemResponse[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.kind) searchParams.set("kind", params.kind);
+    if (params?.limit !== undefined) searchParams.set("limit", String(params.limit));
+    if (params?.offset !== undefined) searchParams.set("offset", String(params.offset));
+
+    const qs = searchParams.toString();
+    const endpoint = `/api/v1/projects/${projectId}/docs/drift${qs ? `?${qs}` : ""}`;
+    return this.fetchInternal<DocDriftItemResponse[]>(endpoint);
+  }
+
+  public async getDriftItem(driftId: string): Promise<DocDriftItemResponse> {
+    return this.fetchInternal<DocDriftItemResponse>(`/api/v1/docs/drift/${driftId}`);
+  }
+
+  public async approveDriftProposal(
+    driftId: string,
+    reason?: string
+  ): Promise<DocDriftItemResponse> {
+    return this.fetchInternal<DocDriftItemResponse>(`/api/v1/docs/drift/${driftId}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ reason: reason || "Approved via web interface" }),
+    });
+  }
+
+  public async rejectDriftProposal(
+    driftId: string,
+    reason?: string
+  ): Promise<DocDriftItemResponse> {
+    return this.fetchInternal<DocDriftItemResponse>(`/api/v1/docs/drift/${driftId}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ reason: reason || "Rejected via web interface" }),
+    });
+  }
+
+  public async applyDriftPatch(driftId: string): Promise<DriftActionResponse> {
+    return this.fetchInternal<DriftActionResponse>(`/api/v1/docs/drift/${driftId}/apply`, {
+      method: "POST",
+    });
   }
 }
