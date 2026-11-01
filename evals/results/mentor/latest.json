@@ -1,0 +1,24 @@
+{
+  "benchmark": "devmind-mentor-eval-v1",
+  "git_commit": "4f19f01",
+  "timestamp": "2026-11-01T09:29:32.075153+00:00",
+  "recommendation_metrics": {
+    "total_cases": 7,
+    "top_1_accuracy": 1.0,
+    "mean_reciprocal_rank": 1.0,
+    "ready_accuracy": 1.0,
+    "cycle_detection_accuracy": 1.0,
+    "downstream_impact_accuracy": 1.0
+  },
+  "evaluation_metrics": {
+    "total_cases": 7,
+    "verdict_accuracy": 1.0,
+    "blocker_precision": 1.0,
+    "blocker_recall": 1.0,
+    "blocker_f1_score": 1.0,
+    "confidence_accuracy": 1.0,
+    "score_mae": 2.7
+  },
+  "composite_score": 1.0,
+  "status": "passed"
+}
