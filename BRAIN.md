@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-mentor-docs` |
-| **Last commit** | `5299de1` (`docs(docs): implement M12-13 milestone 12.2 documentation update and operational runbook`) |
-| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete |
-| **Working tree** | Clean |
-| **Open PR** | [#107](https://github.com/Warish-Labs/DevMind/pull/107) |
+| **Branch** | `feature/m12-deploy-core` |
+| **Last commit** | `bd1718e` (`Merge pull request #107 from Warish-Labs/feature/m12-mentor-docs`) |
+| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 In Progress |
+| **Working tree** | Modified (M12-14 complete) |
+| **Open PR** | None (opening PR for `feature/m12-deploy-core`) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,21 +19,54 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #107 (`feature/m12-mentor-docs`) to pass and owner merge into `main`.
-2. After PR #107 is merged:
+1. Open PR for `feature/m12-deploy-core` (M12-14: Deployment Diagnosis data models, migrations, log parser, and repository).
+2. Wait for CI checks on PR to pass and owner merge into `main`.
+3. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-mentor-docs` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-docs`).
-   - Create feature branch `feature/m12-deploy-core` for task **M12-14**: Deployment Diagnosis data models (`deployment_incidents`), migrations, log parser, and secret redaction pre-filter.
+   - Delete branch `feature/m12-deploy-core` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-core`).
+   - Create feature branch `feature/m12-deploy-agent` for task **M12-15**: DeploymentDiagnosis specialist agent, environment variable name checker, and similarity retrieval against past incidents.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #107 (`feature/m12-mentor-docs` → `main`) after CI passes.
+Review and merge PR for `feature/m12-deploy-core` after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Analysis & Persistence — M12-14: Deployment Diagnosis Data Models, Migration, Log Parser, and Repository
+
+- **Date**: 2026-11-01
+- **Branch**: `feature/m12-deploy-core`
+- **What**:
+  - Implemented core data model, schema migrations, log parsing with deterministic pre-redaction, and persistence repository for Deployment Diagnosis (CAP-07, docs/01 §4, docs/03 §3.4, docs/07 §6):
+    - **Persistence Model (`server/app/persistence/models/deployment.py`)**:
+      - Defined `DeploymentIncident` mapping table `deployment_incidents` with UUIDv7 primary key, tenant scoping (`workspace_id`, `project_id`), deterministic incident `fingerprint`, `summary`, `probable_cause`, `resolution`, `error_signature`, `environment`, `service_name`, `failure_category`, `log_snippet` (sanitized up to 4000 chars), `occurrence_count`, `last_seen_at`, `resolved_at`, `resolved_by`, and extensible JSONB `metadata_`.
+      - Exported `DeploymentIncident` in `server/app/persistence/models/__init__.py`.
+    - **Alembic Migration (`server/alembic/versions/0018_deployment_incidents.py`)**:
+      - Created revision `0018_deployment_incidents` down-revisioned to `0017_project_mentor_and_evaluations`.
+      - Added table `deployment_incidents` with foreign keys on `workspaces` and `projects` (`ondelete="CASCADE"`), unique index on `(project_id, fingerprint)`, composite index on `(workspace_id, project_id)`, and filter index on `(project_id, failure_category)`.
+      - Updated schema inventory and migration head assertions in `server/tests/test_migrations.py` and `server/tests/test_restore_drill.py`.
+    - **Deterministic Log Parser & Redaction Pre-filter (`server/app/analysis/log_parser.py`)**:
+      - Implemented `LogParser` with ANSI terminal escape stripping and deterministic server-side credential redaction (`RedactionService` integration, environment variable assignment masking, and PAT fallback regex).
+      - Multi-category failure classification heuristics for `missing_env_var`, `database_migration_failed`, `dependency_mismatch`, `port_binding_failed`, `build_compilation_failed`, `timeout`, and `unhandled_exception`.
+      - Extraction of referenced environment variable names and code stack trace frames with project code prioritization.
+      - Canonical error signature normalization and SHA-256 fingerprint generation.
+      - Exported `LogParser`, `LogFrame`, `ParsedDeploymentLog` in `server/app/analysis/__init__.py`.
+    - **Persistence Repository (`server/app/persistence/repositories/incident_repo.py`)**:
+      - Implemented `DeploymentIncidentRepository` inheriting `BaseRepository`.
+      - Strict cross-workspace and cross-project isolation checks raising `ForbiddenError` when alien contexts are supplied.
+      - Incident deduplication via fingerprint: recurring failures increment `occurrence_count` and refresh `last_seen_at` without duplication.
+      - Methods: `record_incident()`, `get_incident()`, `get_by_fingerprint()`, `list_incidents()`, `update_resolution()`, `delete_incident()`.
+      - Exported repository in `server/app/persistence/repositories/__init__.py`.
+    - **Documentation (`docs/03-data-model-and-api.md`)**:
+      - Updated Table 3.4 schema and constraint definitions for `deployment_incidents`.
+    - **Test Coverage**:
+      - `server/tests/test_log_parser.py`: 9 unit tests covering credentials redaction, Pydantic settings missing vars, Alembic migration failures, dependency mismatches, port binding conflicts, build compilation errors, timeouts, empty logs, and deterministic fingerprinting.
+      - `server/tests/test_incident_repo.py`: 6 unit and tenant-isolation tests covering new incident upsert, recurring failure deduplication, retrieval by ID and fingerprint, cross-tenant rejection (`ForbiddenError`), filtering, resolution update, and deletion.
+      - All 13 steps in `scripts/test-all.mjs --fast` passed.
 
 ### Documentation — M12-13: Milestone 12.2 Documentation Update & Operational Runbook
 

@@ -82,6 +82,7 @@ def test_schema_inventory_and_alembic_head_integrity() -> None:
         "project_tasks",
         "task_dependencies",
         "project_evaluations",
+        "deployment_incidents",
     }
 
     metadata_tables = set(Base.metadata.tables.keys())
@@ -101,7 +102,7 @@ def test_schema_inventory_and_alembic_head_integrity() -> None:
     heads = script_dir.get_heads()
 
     assert len(heads) == 1, f"Expected 1 migration head, got: {heads}"
-    assert heads[0] == "0017_project_mentor_and_evaluations"
+    assert heads[0] == "0018_deployment_incidents"
 
 
 # ===========================================================================

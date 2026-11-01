@@ -140,7 +140,7 @@ LangGraph checkpoint tables live in a separate `langgraph` schema managed by the
 | `project_tasks` (R1.3) | Work items | `project_id`, `title`, `status`, `priority`, `source` (`user`,`agent`,`finding`), `finding_id` | |
 | `task_dependencies` (R1.3) | Task ordering | `task_id`, `depends_on_task_id` | PK pair; no cycles (validated) |
 | `project_evaluations` (R1.3) | Health and readiness | `project_id`, `snapshot_id`, `scores jsonb`, `verdict`, `reasons jsonb`, `rubric_version` | |
-| `deployment_incidents` (R1.4) | Past failures | `project_id`, `fingerprint`, `summary`, `probable_cause`, `resolution`, `report_object_key` | |
+| `deployment_incidents` (R1.4) | Past deployment failure incidents and diagnoses | `workspace_id`, `project_id`, `fingerprint`, `summary`, `probable_cause`, `resolution`, `error_signature`, `environment`, `service_name`, `failure_category`, `log_snippet`, `occurrence_count`, `last_seen_at`, `resolved_at`, `resolved_by`, `metadata jsonb` | unique (`project_id`,`fingerprint`); index (`workspace_id`,`project_id`); index (`project_id`,`failure_category`) |
 
 ### 3.5 Integrations, governance, accounting
 

@@ -29,6 +29,7 @@ from app.persistence.models.brain import (
 )
 from app.persistence.models.bug_memory import BugRecord, BugResolution
 from app.persistence.models.consent import ConsentRecord
+from app.persistence.models.deployment import DeploymentIncident
 from app.persistence.models.extension import ExtensionRegistration, ExtensionToken
 from app.persistence.models.github import (
     GitHubConnection,
@@ -62,6 +63,7 @@ __all__ = [
     "CodeRelationship",
     "CodeSymbol",
     "ConsentRecord",
+    "DeploymentIncident",
     "DocDriftItem",
     "DocumentationRecord",
     "EmbeddingSpace",
