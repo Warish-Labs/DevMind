@@ -210,11 +210,11 @@
     "package:pre-release": "vsce package --pre-release --no-dependencies --out dist/devmind-vscode-pre-release.vsix"
   },
   "devDependencies": {
-    "@types/node": "26.6.5",
-    "@types/vscode": "^1.90.0",
-    "@vscode/vsce": "^4.0.0",
+    "@types/node": "26.6.6",
+    "@types/vscode": "^1.144.0",
+    "@vscode/vsce": "^4.1.0",
     "esbuild": "^0.28.2",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.5"
   }
 }
