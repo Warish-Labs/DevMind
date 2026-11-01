@@ -38,6 +38,7 @@
     "eval:pr": "server/.venv/bin/python evals/pr_intelligence/harness.py",
     "eval:bug-docs": "server/.venv/bin/python evals/bug_docs/harness.py",
     "eval:mentor": "server/.venv/bin/python evals/mentor/harness.py",
+    "eval:deploy": "server/.venv/bin/python evals/deployment/harness.py",
     "gen:api": "server/.venv/bin/python scripts/export-openapi.py && pnpm --filter @devmind/common exec openapi-typescript openapi.json -o src/api/schema.d.ts && pnpm --filter @devmind/common build",
     "prepare": "husky"
   },

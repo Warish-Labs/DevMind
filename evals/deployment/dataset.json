@@ -1,0 +1,173 @@
+{
+  "benchmark": "devmind-deployment-diagnosis-eval-v1",
+  "description": "Evaluation dataset for Deployment Diagnosis (CAP-07) testing failure classification, secret redaction, log citations, env var checks, and past incident retrieval",
+  "cases": [
+    {
+      "id": "case_01_missing_database_url",
+      "description": "FastAPI boot failure due to missing DATABASE_URL environment variable in Pydantic Settings",
+      "raw_log": "[2026-11-01 10:14:22] INFO: Starting DevMind API Gateway v0.1.0 on port 8000\n[2026-11-01 10:14:23] ERROR: pydantic_core._pydantic_core.ValidationError: 1 validation error for Settings\n[2026-11-01 10:14:23]   DATABASE_URL\n[2026-11-01 10:14:23]     Field required [type=missing, input_value={}, input_type=dict]\n[2026-11-01 10:14:23]   File \"/app/server/app/core/config.py\", line 42, in get_settings\n[2026-11-01 10:14:23]     return Settings()\n[2026-11-01 10:14:24] CRITICAL: Container failed to start. Exiting with code 1.",
+      "environment": "production",
+      "service_name": "devmind-api",
+      "example_env": "DATABASE_URL=postgresql://localhost:5432/db\nREDIS_URL=redis://localhost:6379\nCLERK_SECRET_KEY=dummy_mock_secret_key_12345",
+      "configured_env_vars": ["REDIS_URL", "CLERK_SECRET_KEY"],
+      "expected_category": "missing_env_var",
+      "expected_primary_line_index": 2,
+      "expected_referenced_vars": ["DATABASE_URL"],
+      "expected_missing_vars": ["DATABASE_URL"],
+      "expected_insufficient_log": false,
+      "secret_tokens": []
+    },
+    {
+      "id": "case_02_database_migration_failed",
+      "description": "Alembic migration failed to locate target schema revision",
+      "raw_log": "[2026-11-01 12:00:01] INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.\n[2026-11-01 12:00:01] INFO  [alembic.runtime.migration] Will assume default schema 'public'\n[2026-11-01 12:00:02] ERROR [alembic.util.exc] Can't locate revision identified by '0018'\nFAILED: migration aborted",
+      "environment": "production",
+      "service_name": "migrator",
+      "example_env": "DATABASE_URL=postgresql://localhost:5432/db",
+      "configured_env_vars": ["DATABASE_URL"],
+      "expected_category": "database_migration_failed",
+      "expected_primary_line_index": 3,
+      "expected_referenced_vars": [],
+      "expected_missing_vars": [],
+      "expected_insufficient_log": false,
+      "secret_tokens": []
+    },
+    {
+      "id": "case_03_dependency_mismatch",
+      "description": "Python runtime ModuleNotFoundError for missing package in container",
+      "raw_log": "Traceback (most recent call last):\n  File \"/app/server/app/main.py\", line 12, in <module>\n    import pydantic_settings\nModuleNotFoundError: No module named 'pydantic_settings'\n[process] Container failed with exit status 1",
+      "environment": "staging",
+      "service_name": "devmind-api",
+      "example_env": "PORT=8000",
+      "configured_env_vars": ["PORT"],
+      "expected_category": "dependency_mismatch",
+      "expected_primary_line_index": 4,
+      "expected_referenced_vars": [],
+      "expected_missing_vars": [],
+      "expected_insufficient_log": false,
+      "secret_tokens": []
+    },
+    {
+      "id": "case_04_port_binding_failed",
+      "description": "Socket collision with Errno 98 Address already in use",
+      "raw_log": "[2026-11-01 15:30:10] INFO: Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)\n[2026-11-01 15:30:11] ERROR: [Errno 98] error while attempting to bind on address ('0.0.0.0', 8000): address already in use\nOSError: [Errno 98] Address already in use",
+      "environment": "preview",
+      "service_name": "devmind-api",
+      "example_env": "PORT=8000",
+      "configured_env_vars": ["PORT"],
+      "expected_category": "port_binding_failed",
+      "expected_primary_line_index": 2,
+      "expected_referenced_vars": [],
+      "expected_missing_vars": [],
+      "expected_insufficient_log": false,
+      "secret_tokens": []
+    },
+    {
+      "id": "case_05_build_compilation_failed",
+      "description": "TypeScript compiler error during Next.js production build",
+      "raw_log": "> devmind-client@0.1.0 build\n> next build\n   ▲ Next.js 15.0.1\n   Creating an optimized production build ...\nFailed to compile.\n\n./components/deployment/types.ts:42:15\nType error: Type 'string' is not assignable to type 'number'.\n\nCommand failed with exit code 1",
+      "environment": "production",
+      "service_name": "devmind-client",
+      "example_env": "NEXT_PUBLIC_API_URL=http://localhost:8000",
+      "configured_env_vars": ["NEXT_PUBLIC_API_URL"],
+      "expected_category": "build_compilation_failed",
+      "expected_primary_line_index": 5,
+      "expected_referenced_vars": [],
+      "expected_missing_vars": [],
+      "expected_insufficient_log": false,
+      "secret_tokens": []
+    },
+    {
+      "id": "case_06_startup_timeout",
+      "description": "Render / Kubernetes health check timeout after 60 seconds",
+      "raw_log": "[2026-11-01 08:00:00] INFO: Service starting...\n[2026-11-01 08:00:30] WARN: Health check pending...\n[2026-11-01 08:01:00] ERROR: Health check timed out after 60s waiting for port 8000 to become healthy\nService failed to reach healthy state",
+      "environment": "production",
+      "service_name": "devmind-api",
+      "example_env": "PORT=8000",
+      "configured_env_vars": ["PORT"],
+      "expected_category": "timeout",
+      "expected_primary_line_index": 3,
+      "expected_referenced_vars": [],
+      "expected_missing_vars": [],
+      "expected_insufficient_log": false,
+      "secret_tokens": []
+    },
+    {
+      "id": "case_07_env_var_typos",
+      "description": "Typos in required environment variable names detected against reference template",
+      "raw_log": "[2026-11-01 09:15:00] ERROR: Missing config for DATABSE_URL and CLERK_SECRETS_KEY\nKeyError: 'DATABSE_URL'",
+      "environment": "staging",
+      "service_name": "devmind-api",
+      "example_env": "DATABASE_URL=postgresql://localhost:5432/db\nCLERK_SECRET_KEY=dummy_mock_secret_key_12345\nPORT=8000",
+      "configured_env_vars": ["PORT"],
+      "expected_category": "missing_env_var",
+      "expected_primary_line_index": 2,
+      "expected_referenced_vars": ["DATABSE_URL", "CLERK_SECRETS_KEY"],
+      "expected_missing_vars": ["DATABASE_URL", "CLERK_SECRET_KEY"],
+      "expected_typos": [
+        {
+          "referenced_name": "DATABSE_URL",
+          "expected_template_name": "DATABASE_URL",
+          "min_similarity": 0.85
+        },
+        {
+          "referenced_name": "CLERK_SECRETS_KEY",
+          "expected_template_name": "CLERK_SECRET_KEY",
+          "min_similarity": 0.85
+        }
+      ],
+      "expected_insufficient_log": false,
+      "secret_tokens": []
+    },
+    {
+      "id": "case_08_insufficient_truncated_log",
+      "description": "Truncated log with zero error traceback requiring missing information",
+      "raw_log": "[2026-11-01 16:00:00] INFO: Service starting\n[2026-11-01 16:00:01] INFO: Initializing submodules...",
+      "environment": "production",
+      "service_name": "devmind-api",
+      "example_env": "PORT=8000",
+      "configured_env_vars": ["PORT"],
+      "expected_category": "unknown",
+      "expected_primary_line_index": null,
+      "expected_referenced_vars": [],
+      "expected_missing_vars": [],
+      "expected_insufficient_log": true,
+      "secret_tokens": []
+    },
+    {
+      "id": "case_09_secret_redaction_and_ansi_cleaning",
+      "description": "ANSI escape sequences and credentials in log must be completely redacted and cleaned",
+      "raw_log": "\u001b[31m[2026-11-01 11:00:00] ERROR: Connection failed: postgresql://postgres:SuperSecretDbPassword123@neon.tech:5432/devmind\u001b[0m\n\u001b[33m[2026-11-01 11:00:01] WARN: Failed auth using token=dummy_mock_secret_key_12345\u001b[0m\n[2026-11-01 11:00:02] pydantic_core._pydantic_core.ValidationError: 1 validation error for Settings\n  DATABASE_URL\n    Field required [type=missing, input_value={}, input_type=dict]",
+      "environment": "production",
+      "service_name": "devmind-api",
+      "example_env": "DATABASE_URL=postgresql://localhost:5432/db",
+      "configured_env_vars": [],
+      "expected_category": "missing_env_var",
+      "expected_primary_line_index": 4,
+      "expected_referenced_vars": ["DATABASE_URL"],
+      "expected_missing_vars": ["DATABASE_URL"],
+      "expected_insufficient_log": false,
+      "secret_tokens": ["SuperSecretDbPassword123", "dummy_mock_secret_key_12345"]
+    },
+    {
+      "id": "case_10_similar_incident_retrieval",
+      "description": "Similarity matching against historical database migration failure with proven fix",
+      "raw_log": "[2026-11-01 14:00:00] ERROR [alembic.util.exc] Can't locate revision identified by '0018'\nFAILED: migration aborted",
+      "environment": "production",
+      "service_name": "migrator",
+      "example_env": "DATABASE_URL=postgresql://localhost:5432/db",
+      "configured_env_vars": ["DATABASE_URL"],
+      "expected_category": "database_migration_failed",
+      "expected_primary_line_index": 1,
+      "expected_referenced_vars": [],
+      "expected_missing_vars": [],
+      "expected_insufficient_log": false,
+      "expected_similar_incident": {
+        "summary": "Alembic schema migration failed: revision not found",
+        "failure_category": "database_migration_failed",
+        "expected_resolution_substring": "alembic stamp head"
+      },
+      "secret_tokens": []
+    }
+  ]
+}

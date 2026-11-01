@@ -226,9 +226,31 @@ class DeployDoctorAgent:
             referenced_files=parsed.referenced_files,
             primary_log_line=parsed.primary_log_line,
             similar_past_incidents=similar_matches,
-            is_insufficient_log=llm_output.is_insufficient_log if llm_output else False,
+            is_insufficient_log=(
+                llm_output.is_insufficient_log
+                if llm_output
+                else (
+                    (
+                        parsed.failure_category in ("unknown", "unhandled_exception")
+                        and parsed.confidence <= 0.50
+                    )
+                    or not parsed.redacted_text.strip()
+                )
+            ),
             missing_information_needed=(
-                llm_output.missing_information_needed if llm_output else None
+                llm_output.missing_information_needed
+                if llm_output
+                else (
+                    "Deployment log ends abruptly without error trace or container exit status."
+                    if (
+                        (
+                            parsed.failure_category in ("unknown", "unhandled_exception")
+                            and parsed.confidence <= 0.50
+                        )
+                        or not parsed.redacted_text.strip()
+                    )
+                    else None
+                )
             ),
             redaction_count=parsed.redaction_count,
             created_at=incident.created_at or now,

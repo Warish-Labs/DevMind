@@ -164,6 +164,7 @@ Recorded baselines (to be filled by the owning milestone):
 | PR Intelligence & ReviewBuddy Evals (M11-08) | 2026-10-31 | `70522a1` | `evals/results/pr_intelligence/latest.json` | Composite Score: 1.0000. Change-Impact Risk Accuracy: 1.0000 (5/5 cases). ReviewBuddy Checklist: Precision: 1.0000, Recall: 1.0000, F1: 1.0000, False Positive Rate: 0.0000 across unvalidated inputs, bare excepts, missing auth, and custom forbidden patterns. Regression gate tolerance: min composite score 0.9000. |
 | Bug Memory & Living Docs Evals (M12-06) | 2026-10-31 | `d6328f4` | `evals/results/bug_docs/latest.json` | Composite Score: 1.0000. Bug Memory (100% Top-1, 100% Recall@3, MRR: 1.0000, 100% Fingerprint Acc, 100% Neg Rejection) across exact fingerprints, timeouts, TypeError memory pointers, connection errors, and validation errors. Living Docs (Precision: 1.0000, Recall: 1.0000, F1: 1.0000, Patch Diff Validity: 1.0000) across route drift, missing symbols, undocumented endpoints, section drift, and compound changes. Regression gate tolerance: min composite score 0.9000. |
 | Project Mentor & Health Evaluation Evals (M12-12) | 2026-11-01 | `31737f4` | `evals/results/mentor/latest.json` | Composite Score: 1.0000. Task Recommendation (Top-1 Accuracy: 1.0000, MRR: 1.0000, Ready Accuracy: 1.0000, Cycle Detection: 100%) across linear prerequisite chains, parallel tasks, priority overrides, branching prerequisites, blocked tasks, and cycle attempts. Health Audit Evaluation (Release Verdict Accuracy: 1.0000, Blocker Precision: 1.0000, Blocker Recall: 1.0000, Blocker F1: 1.0000, Health Score MAE: 2.70, Confidence Accuracy: 1.0000) across pristine MVPs, security blockers, velocity stalls, architectural complexity, and checklist penalties. Regression gate tolerance: min composite score 0.9000. |
+| Deployment Diagnosis & Doctor Evals (M12-17) | 2026-11-01 | `97de488` | `evals/results/deployment/latest.json` | Composite Score: 1.0000. Sanitization (Secret Redaction Rate: 1.0, ANSI Strip Rate: 1.0) across Postgres credentials, GitHub PATs, and bearer tokens. Classification (Category Accuracy: 1.0, Primary Line Accuracy: 1.0, Insufficient Log Accuracy: 1.0) across all 10 failure modes. Env Var Checker (Missing F1: 1.0, Typo Accuracy: 1.0). Past Incident Retrieval (Top-1 Accuracy: 1.0, MRR: 1.0, Tenant Isolation: 1.0). Regression gate tolerance: min composite score 0.9000. |
 
 ## 10. LangGraph workflow tests
 
@@ -238,6 +239,7 @@ Assertions: untrusted blocks are delimited and escaped in rendered prompts (snap
 | E2E-7 | Provider outage during a conversation: fallback or clear error, no silent substitution |
 | E2E-8 | Workspace B user cannot see workspace A project through UI or API |
 | E2E-9 | Multi-agent PR intelligence flow, webhook ingest, change-impact blast radius, checklist triage, approval gate enforcement (ADR-015), and token outage resilience ([`server/tests/test_e2e_pr_intelligence.py`](../server/tests/test_e2e_pr_intelligence.py)) |
+| E2E-10 | Deployment crash log diagnosis, secret redaction, env var typo suggestion, deduplication, resolution tracking, and tenant isolation ([`server/tests/test_e2e_deployment.py`](../server/tests/test_e2e_deployment.py)) |
 
 ### 14.2 Commands (to be created at repository setup; the names below are the contract)
 
@@ -257,6 +259,7 @@ Assertions: untrusted blocks are delimited and escaped in rendered prompts (snap
 | PR intelligence eval | `npm run eval:pr` |
 | Bug memory & living docs eval | `npm run eval:bug-docs` |
 | Project mentor & evaluation eval | `npm run eval:mentor` |
+| Deployment diagnosis eval | `npm run eval:deploy` |
 | Secret scan, dependency audit | per CI configuration |
 
 Exact commands are confirmed when the repository is created ([11](11-mvp-and-implementation-roadmap.md) M1) and then recorded here and in `AGENTS.md`. AI coding agents report the real output of the commands they ran.
