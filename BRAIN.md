@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-deploy-core` |
-| **Last commit** | `bd1718e` (`Merge pull request #107 from Warish-Labs/feature/m12-mentor-docs`) |
+| **Last commit** | `c59c7fc` (`feat(server): implement M12-14 deployment diagnosis model, migration, log parser, and repository`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 In Progress |
-| **Working tree** | Modified (M12-14 complete) |
-| **Open PR** | None (opening PR for `feature/m12-deploy-core`) |
+| **Working tree** | Clean |
+| **Open PR** | [#108](https://github.com/Warish-Labs/DevMind/pull/108) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,9 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Open PR for `feature/m12-deploy-core` (M12-14: Deployment Diagnosis data models, migrations, log parser, and repository).
-2. Wait for CI checks on PR to pass and owner merge into `main`.
-3. After PR is merged:
+1. Wait for CI checks on PR #108 (`feature/m12-deploy-core`) to pass and owner merge into `main`.
+2. After PR #108 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-deploy-core` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-core`).
    - Create feature branch `feature/m12-deploy-agent` for task **M12-15**: DeploymentDiagnosis specialist agent, environment variable name checker, and similarity retrieval against past incidents.
@@ -30,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-deploy-core` after CI passes.
+Review and merge PR #108 (`feature/m12-deploy-core` → `main`) after CI passes.
 
 ---
 
