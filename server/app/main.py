@@ -107,6 +107,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     from app.api.brain import router as brain_router
     from app.api.bug_memory import bug_memory_router
     from app.api.consents import router as consents_router
+    from app.api.deployment import deployment_router
     from app.api.extension import router as extension_router
     from app.api.findings import router as findings_router
     from app.api.integrations import (
@@ -154,6 +155,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_v1_router.include_router(bug_memory_router)
     api_v1_router.include_router(living_docs_router)
     api_v1_router.include_router(mentor_router)
+    api_v1_router.include_router(deployment_router)
     api_v1_router.include_router(project_analyses_router)
     api_v1_router.include_router(project_retention_router)
     api_v1_router.include_router(project_audit_router)

@@ -9,6 +9,11 @@ from app.analysis.doc_parser import (
     ExtractedSymbol,
     ParsedDocument,
 )
+from app.analysis.env_checker import (
+    EnvVarChecker,
+    EnvVarCheckResult,
+    EnvVarTypoCandidate,
+)
 from app.analysis.error_normalizer import ErrorNormalizer, NormalizedError
 from app.analysis.evidence_verifier import (
     ALLOWED_RULE_PREFIXES,
@@ -63,6 +68,9 @@ __all__ = [
     "DocSection",
     "DraftFinding",
     "DriftCandidate",
+    "EnvVarCheckResult",
+    "EnvVarChecker",
+    "EnvVarTypoCandidate",
     "ErrorNormalizer",
     "EvidenceItem",
     "EvidenceVerifier",

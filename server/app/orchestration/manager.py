@@ -36,6 +36,7 @@ from app.llm.schemas import AgentPlan
 from app.orchestration.authcheck import run_authcheck_specialist
 from app.orchestration.checkpointer import format_thread_id
 from app.orchestration.codemate import run_codemate_specialist
+from app.orchestration.deploy_doctor import run_deploy_doctor_specialist
 from app.orchestration.docsalive import run_docsalive_specialist
 from app.orchestration.mentor import run_mentor_specialist
 from app.orchestration.pragent import run_pragent_specialist
@@ -53,7 +54,16 @@ from app.orchestration.state import (
 logger = logging.getLogger("devmind.orchestration.manager")
 
 RELEASED_SPECIALISTS = frozenset(
-    {"codemate", "authcheck", "reviewbuddy", "pragent", "bugmemory", "docsalive", "mentor"}
+    {
+        "codemate",
+        "authcheck",
+        "reviewbuddy",
+        "pragent",
+        "bugmemory",
+        "docsalive",
+        "mentor",
+        "deploy_doctor",
+    }
 )
 
 # Deterministic keywords for security / auth intent detection
@@ -165,6 +175,18 @@ def classify_intent_deterministically(request: RequestState) -> IntentState | No
             confidence=1.0,
             requires_specialists=["mentor"],
         )
+    if job_type in (
+        "deployment_diagnosis",
+        "deployment_log",
+        "deploy_doctor",
+        "diagnose_deployment",
+    ):
+        return IntentState(
+            category="deployment",
+            intent_name="deployment_diagnosis",
+            confidence=1.0,
+            requires_specialists=["deploy_doctor"],
+        )
     if job_type in ("comprehensive_review", "full_audit"):
         return IntentState(
             category="security_and_code",
@@ -194,7 +216,26 @@ def classify_intent_deterministically(request: RequestState) -> IntentState | No
                 "project evaluation",
             )
         )
+        has_deploy = any(
+            phrase in user_msg
+            for phrase in (
+                "deployment failed",
+                "deploy error",
+                "deployment log",
+                "startup failed",
+                "container crash",
+                "deploy doctor",
+                "diagnosis",
+            )
+        )
 
+        if has_deploy:
+            return IntentState(
+                category="deployment",
+                intent_name="deployment_diagnosis",
+                confidence=0.9,
+                requires_specialists=["deploy_doctor"],
+            )
         if has_mentor:
             return IntentState(
                 category="mentorship",
@@ -423,6 +464,8 @@ def route_specialists(state: RunState) -> list[str]:
         destinations.append("docsalive")
     if "mentor" in specialists:
         destinations.append("mentor")
+    if "deploy_doctor" in specialists:
+        destinations.append("deploy_doctor")
 
     return destinations or ["join"]
 
@@ -586,6 +629,39 @@ def mentor_node_factory(
     return mentor_node
 
 
+def deploy_doctor_node_factory(
+    router: LLMGatewayRouter | None = None,
+    prompt_loader: PromptLoader | None = None,
+    session: AsyncSession | None = None,
+):
+    """Factory creating the DeployDoctor specialist node."""
+
+    async def deploy_doctor_node(state: RunState) -> dict[str, Any]:
+        """Execute DeployDoctor specialist task (docs/01 CAP-07, docs/05 §6.10)."""
+        logger.info("Executing DeployDoctor specialist for run %s", state.get("run_id"))
+        task = SpecialistTask(
+            specialist="deploy_doctor",
+            task_id=f"deploy_doctor_{state['run_id'][:8]}",
+            status="running",
+            input_refs=[],
+            params={},
+        )
+        for t in state.get("plan", []):
+            if t.specialist == "deploy_doctor":
+                task = t
+                break
+
+        return await run_deploy_doctor_specialist(
+            state=state,
+            task=task,
+            router=router,
+            prompt_loader=prompt_loader,
+            session=session,
+        )
+
+    return deploy_doctor_node
+
+
 def join_node(state: RunState) -> dict[str, Any]:
     """Barrier joining parallel specialist executions."""
     logger.info("Specialist fan-out completed for run %s", state.get("run_id"))
@@ -726,6 +802,10 @@ def build_agent_manager_graph(
         "mentor",
         mentor_node_factory(router=router, prompt_loader=prompt_loader, session=session),
     )
+    builder.add_node(
+        "deploy_doctor",
+        deploy_doctor_node_factory(router=router, prompt_loader=prompt_loader, session=session),
+    )
     builder.add_node("join", join_node)
     builder.add_node("verify", verify_node)
     builder.add_node("synthesize", synthesize_node)
@@ -745,7 +825,16 @@ def build_agent_manager_graph(
     builder.add_conditional_edges(
         "plan",
         route_specialists,
-        ["codemate", "authcheck", "reviewbuddy", "pragent", "docsalive", "mentor", "join"],
+        [
+            "codemate",
+            "authcheck",
+            "reviewbuddy",
+            "pragent",
+            "docsalive",
+            "mentor",
+            "deploy_doctor",
+            "join",
+        ],
     )
     builder.add_edge("codemate", "join")
     builder.add_edge("authcheck", "join")
@@ -753,6 +842,7 @@ def build_agent_manager_graph(
     builder.add_edge("pragent", "join")
     builder.add_edge("docsalive", "join")
     builder.add_edge("mentor", "join")
+    builder.add_edge("deploy_doctor", "join")
 
     # Verification and Synthesis
     builder.add_edge("join", "verify")
