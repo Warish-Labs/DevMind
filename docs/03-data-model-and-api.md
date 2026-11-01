@@ -2,7 +2,7 @@
 
 **Purpose.** Defines the logical PostgreSQL data model, state machines, tenant isolation, and the REST API contracts. It is authoritative for entity names, field names, enumerations, state transitions and endpoint paths. Other documents must use these names.
 
-**Status.** Implemented for MVP schemas and endpoints (Alembic migrations 0001 through 0005, OpenAPI export, and client typed SDK). Post-MVP tables (pull requests, living docs, bug memory, project tasks, and evaluations) are implemented for Milestones 11–12. Related: [02](02-system-architecture.md) · [04](04-project-brain-and-rag.md) · [05](05-agents-and-llm-workflows.md) · [07](07-security-privacy-and-threat-model.md).
+**Status.** Implemented for MVP schemas and endpoints (Alembic migrations 0001 through 0005, OpenAPI export, and client typed SDK). Post-MVP tables (pull requests, living docs, bug memory, project tasks, evaluations, and deployment incidents) are implemented for Milestones 11–12. Related: [02](02-system-architecture.md) · [04](04-project-brain-and-rag.md) · [05](05-agents-and-llm-workflows.md) · [07](07-security-privacy-and-threat-model.md).
 
 ---
 

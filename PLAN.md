@@ -352,7 +352,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M12-15 DeploymentDiagnosis specialist agent, environment variable name checker, and similarity retrieval against past incidents (feature/m12-deploy-agent)
 - [x] M12-16 Web screens for Deployment Diagnosis (log paste/upload with redaction preview, probable root causes, log line citations, incident history) (feature/m12-deploy-ui)
 - [x] M12-17 Benchmark datasets, evaluation runner, recorded baselines, and E2E integration tests for Deployment Diagnosis (feature/m12-deploy-evals)
-- [ ] M12-18 Milestone 12.3 documentation update and operational runbook (feature/m12-deploy-docs)
+- [x] M12-18 Milestone 12.3 documentation update and operational runbook (feature/m12-deploy-docs)
 
 ---
 
