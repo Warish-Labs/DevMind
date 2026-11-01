@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-deploy-ui` |
-| **Last commit** | `pending` (`feat(client): implement M12-16 web screens for deployment diagnosis, redaction preview, and incident ledger`) |
+| **Last commit** | `e0e34a4` (`feat(client): implement M12-16 deployment diagnosis screens and incident ledger`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 In Progress |
 | **Working tree** | Clean |
-| **Open PR** | Pending |
+| **Open PR** | [#110](https://github.com/Warish-Labs/DevMind/pull/110) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -29,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-deploy-ui` into `main` after CI passes.
+Review and merge PR #110 (`feature/m12-deploy-ui` → `main`) after CI passes.
 
 ---
 
