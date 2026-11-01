@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-deploy-ui` |
-| **Last commit** | `e0e34a4` (`feat(client): implement M12-16 deployment diagnosis screens and incident ledger`) |
+| **Branch** | `feature/m12-deploy-evals` |
+| **Last commit** | Pending commit for M12-17 |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 In Progress |
-| **Working tree** | Clean |
-| **Open PR** | [#110](https://github.com/Warish-Labs/DevMind/pull/110) |
+| **Working tree** | Staging M12-17 changes |
+| **Open PR** | Pending PR creation |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,21 +19,61 @@
 
 ## 2. Next action (exact)
 
-1. Review and merge PR for `feature/m12-deploy-ui` into `main`.
-2. After PR is merged:
+1. Commit M12-17 changes, push branch `feature/m12-deploy-evals` to origin via proxy, and open PR on GitHub.
+2. Review and merge PR for `feature/m12-deploy-evals` into `main`.
+3. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-deploy-ui` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-ui`).
-   - Create feature branch `feature/m12-deploy-evals` for task **M12-17**: Benchmark datasets, evaluation runner, recorded baselines, and E2E integration tests for Deployment Diagnosis.
+   - Delete branch `feature/m12-deploy-evals` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-evals`).
+   - Create feature branch `feature/m12-deploy-docs` for task **M12-18**: Milestone 12.3 documentation update and operational runbook.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #110 (`feature/m12-deploy-ui` → `main`) after CI passes.
+Review and merge PR for `feature/m12-deploy-evals` into `main` after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Evaluation & E2E — M12-17: Deployment Diagnosis Benchmark Datasets, Evaluation Harness, Baselines, and E2E Tests
+
+- **Date**: 2026-11-01
+- **Branch**: `feature/m12-deploy-evals`
+- **What**:
+  - Implemented comprehensive evaluation benchmark suite, harness, baselines, and E2E tests for Deployment Diagnosis and DeployDoctor (CAP-07, docs/01 §7, docs/09 §9, §14):
+    - **Benchmark Dataset (`evals/deployment/dataset.json`)**:
+      - 10 comprehensive failure cases covering all 10 deployment failure modes:
+        1. Missing environment variables (`missing_env_var`) with Pydantic ValidationError.
+        2. Database migration failures (`database_migration_failed`) with Alembic revision not found.
+        3. Dependency mismatches (`dependency_mismatch`) with Python ModuleNotFoundError.
+        4. Port binding failures (`port_binding_failed`) with Errno 98 Address already in use.
+        5. Build & compilation failures (`build_compilation_failed`) with Next.js TypeScript type errors.
+        6. Startup/health-check timeouts (`timeout`) with Render/K8s 60s health-check expiration.
+        7. Environment variable typos (`missing_env_var`) with SequenceMatcher typo candidate suggestions.
+        8. Insufficient/truncated logs (`unknown`) with missing information warning.
+        9. Secret redaction and ANSI cleaning (`missing_env_var`) asserting 100% masking of PostgreSQL credentials, bearer tokens, and ANSI color codes.
+        10. Historical incident retrieval (`database_migration_failed`) matching past incidents and suggesting known resolutions.
+    - **Evaluation Metrics (`evals/deployment/metrics.py`)**:
+      - `LogSanitizationMetrics`: secret redaction rate (100%) and ANSI escape sequence stripping rate (100%).
+      - `DiagnosisClassificationMetrics`: category accuracy (100%), 1-based primary log line citation accuracy (100%), and insufficient log detection accuracy (100%).
+      - `EnvVarAnalysisMetrics`: missing variable precision (100%), recall (100%), F1 score (100%), and typo match accuracy (100%).
+      - `IncidentRetrievalMetrics`: Top-1 accuracy (100%), Mean Reciprocal Rank (MRR: 1.0), and cross-tenant isolation enforcement (100%).
+    - **Evaluation Runner & Harness (`evals/deployment/harness.py`, `package.json`)**:
+      - Script executable via `pnpm eval:deploy` or CLI arguments (`--dataset`, `--output`, `--quiet`).
+      - Records results to `evals/results/deployment/latest.json` and timestamped commit snapshot.
+      - Tested and recorded baseline: **Composite Score: 100.00%** (Sanitization: 100%, Classification: 100%, Env Checker: 100%, Past Incidents: 100%).
+    - **E2E Integration Test Suite (`server/tests/test_e2e_deployment.py`)**:
+      - `test_e2e_deployment_diagnosis_lifecycle`: Full end-to-end lifecycle covering raw log ingestion, credential redaction, deterministic analysis, recurring incident deduplication, resolution update, and precedent retrieval.
+      - `test_e2e_deployment_cross_tenant_isolation`: Tenant boundary security asserting `ForbiddenError` when alien workspaces attempt to query or access incidents.
+      - `test_e2e_deployment_benchmark_regression_gate`: Regression gate asserting benchmark passes with composite score >= 0.90.
+    - **Recorded Baselines in Documentation (`docs/09-testing-and-quality-strategy.md`)**:
+      - Added Deployment Diagnosis & Doctor Evals entry to §9 baseline table.
+      - Added E2E-10 scenario to §14.1.
+      - Added `npm run eval:deploy` command to §14.2 contract table.
+    - **Verification**:
+      - `node scripts/test-all.mjs --fast`: 13 passed, 0 failed, 1 skipped.
+      - `pnpm eval:deploy`: PASSED (Composite Score: 100.00%).
 
 ### Web & UI — M12-16: Deployment Diagnosis Web Screens, Redaction Preview & Incident Ledger
 

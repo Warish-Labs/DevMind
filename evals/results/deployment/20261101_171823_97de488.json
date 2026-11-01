@@ -1,0 +1,31 @@
+{
+  "benchmark": "devmind-deployment-diagnosis-eval-v1",
+  "git_commit": "97de488",
+  "timestamp": "2026-11-01T17:18:23.900964+00:00",
+  "sanitization_metrics": {
+    "total_cases": 10,
+    "secret_redaction_rate": 1.0,
+    "ansi_strip_rate": 1.0
+  },
+  "classification_metrics": {
+    "total_cases": 10,
+    "category_accuracy": 0.6,
+    "primary_line_accuracy": 0.1,
+    "insufficient_log_accuracy": 0.8
+  },
+  "env_var_metrics": {
+    "total_cases": 10,
+    "missing_precision": 0.75,
+    "missing_recall": 1.0,
+    "missing_f1_score": 0.8571428571428571,
+    "typo_match_accuracy": 0.9
+  },
+  "retrieval_metrics": {
+    "total_cases": 10,
+    "top_1_accuracy": 1.0,
+    "mean_reciprocal_rank": 1.0,
+    "tenant_isolation_rate": 1.0
+  },
+  "composite_score": 0.7336,
+  "status": "failed"
+}

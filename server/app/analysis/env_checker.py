@@ -190,6 +190,25 @@ class EnvVarChecker:
                                 ),
                             )
                         )
+                    # Check for typos among declared template keys
+                    if declared_keys and ref not in declared_keys:
+                        for tmpl_name, sim in cls.find_close_matches(ref, declared_keys):
+                            if not any(
+                                (t.expected_name == tmpl_name and t.found_name == ref)
+                                or (t.expected_name == ref and t.found_name == tmpl_name)
+                                for t in suspected_typos
+                            ):
+                                suspected_typos.append(
+                                    EnvVarTypoCandidate(
+                                        expected_name=tmpl_name,
+                                        found_name=ref,
+                                        similarity=sim,
+                                        description=(
+                                            f"Crash log referenced '{ref}', which appears to be a typo of "
+                                            f"template variable '{tmpl_name}'."
+                                        ),
+                                    )
+                                )
 
             # Check declared example keys missing from configuration
             for declared in declared_keys:

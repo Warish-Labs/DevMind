@@ -44,6 +44,10 @@ MISSING_ENV_PATTERNS = [
     re.compile(r"([A-Z0-9_]+)\s+Field required"),
     re.compile(r"process\.env\.([A-Z0-9_]+)\s+is (?:undefined|not defined)"),
     re.compile(
+        r"validation error for [A-Za-z0-9_]+[\s\S]*?\b([A-Z][A-Z0-9_]{2,})\b[^\n]*\n[^\n]*Field required",
+        re.IGNORECASE,
+    ),
+    re.compile(
         r"validation error for Settings[\s\S]*?\n\s*([A-Z0-9_]+)\s*\n\s*Field required",
         re.MULTILINE,
     ),
@@ -100,6 +104,11 @@ TIMEOUT_PATTERNS = [
     re.compile(r"Operation timed out", re.IGNORECASE),
     re.compile(r"Worker timeout", re.IGNORECASE),
     re.compile(r"Connection timed out", re.IGNORECASE),
+    re.compile(
+        r"(?:health check|startup|service|connection|request)\s+(?:has\s+)?timed\s*out",
+        re.IGNORECASE,
+    ),
+    re.compile(r"timed\s*out after \d+", re.IGNORECASE),
 ]
 
 # Stack frame location patterns
@@ -601,5 +610,5 @@ class LogParser:
         summary = "Unclassified deployment failure"
         probable_cause = "The log indicates a runtime failure, but no known category pattern could be identified with high confidence."
         recommended_action = "Review raw log frames for errors or enable verbose debugging output in application configuration."
-        confidence = 0.50
+        confidence = 0.30
         return summary, probable_cause, recommended_action, confidence
