@@ -18,6 +18,7 @@ import {
   BugIcon,
   BookOpenIcon,
   MentorIcon,
+  RocketIcon,
 } from "./icons";
 import { Badge } from "@/components/ui/Badge";
 
@@ -141,6 +142,15 @@ export function CommandPalette() {
         badge: "ProjectMentor",
       },
       {
+        id: "nav-deployments",
+        category: "Navigation",
+        title: "Deployment Diagnosis & Doctor",
+        subtitle: "Log sanitization, root cause ranking, and incident ledger (S-18)",
+        icon: <RocketIcon size={16} className="text-[var(--signal)]" />,
+        onSelect: () => router.push(`/projects/${pid}/deployments`),
+        badge: "DeployDoctor",
+      },
+      {
         id: "nav-settings",
         category: "Navigation",
         title: "Project Settings",
@@ -159,6 +169,14 @@ export function CommandPalette() {
           setScanStatus("Scanning 42 files (Tier 1)...");
           setTimeout(() => setScanStatus("Scan complete · 42 files up to date"), 2500);
         },
+      },
+      {
+        id: "act-diagnose-deployment",
+        category: "Actions",
+        title: "Diagnose Deployment Failure Log",
+        subtitle: "Analyze raw logs with secret redaction and hypothesis ranking",
+        icon: <RocketIcon size={16} className="text-[var(--danger)]" />,
+        onSelect: () => router.push(`/projects/${pid}/deployments`),
       },
       {
         id: "act-sync-toggle",

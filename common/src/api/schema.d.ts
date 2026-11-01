@@ -1324,6 +1324,90 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{project_id}/deployment-diagnoses": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Diagnose deployment failure log
+     * @description Sanitizes credentials, extracts failure categories and referenced environment variables, and synthesizes root causes.
+     */
+    post: operations["diagnose_deployment_api_v1_projects__project_id__deployment_diagnoses_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/deployment-incidents": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List deployment incidents
+     * @description Retrieve paginated history of past deployment incidents, filtered by environment or failure category.
+     */
+    get: operations["list_deployment_incidents_api_v1_projects__project_id__deployment_incidents_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/deployment-incidents/{incident_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get deployment incident details
+     * @description Retrieve full details, error signature, and resolution for a specific deployment incident.
+     */
+    get: operations["get_deployment_incident_api_v1_projects__project_id__deployment_incidents__incident_id__get"];
+    put?: never;
+    post?: never;
+    /**
+     * Delete deployment incident
+     * @description Permanently delete a deployment incident record.
+     */
+    delete: operations["delete_deployment_incident_api_v1_projects__project_id__deployment_incidents__incident_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/deployment-incidents/{incident_id}/resolution": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Update incident resolution
+     * @description Document the root cause resolution or remediation fix applied to resolve this incident.
+     */
+    patch: operations["update_incident_resolution_api_v1_projects__project_id__deployment_incidents__incident_id__resolution_patch"];
+    trace?: never;
+  };
   "/api/v1/projects/{pid}/analyses": {
     parameters: {
       query?: never;
@@ -3535,6 +3619,223 @@ export interface components {
       status: string;
     };
     /**
+     * DeploymentDiagnosisRequest
+     * @description Input payload to diagnose a deployment failure log.
+     */
+    DeploymentDiagnosisRequest: {
+      /**
+       * Raw Log
+       * @description Raw deployment log output from Render, Vercel, Docker, etc.
+       */
+      raw_log: string;
+      /**
+       * Environment
+       * @description Deployment target environment, e.g. production, staging, preview
+       * @default production
+       */
+      environment: string;
+      /**
+       * Service Name
+       * @description Name of the failing service or container
+       */
+      service_name?: string | null;
+      /**
+       * Configured Env Vars
+       * @description Optional list of variable names (keys only, NEVER values) configured on platform
+       */
+      configured_env_vars?: string[] | null;
+      /**
+       * Example Env Content
+       * @description Optional content of .env.example for schema comparison
+       */
+      example_env_content?: string | null;
+      /**
+       * Recent Changes
+       * @description Optional summary of recent git commits or PR changes preceding deployment
+       */
+      recent_changes?: string | null;
+    };
+    /**
+     * DeploymentDiagnosisResponse
+     * @description Complete diagnostic report for a deployment failure incident.
+     */
+    DeploymentDiagnosisResponse: {
+      /**
+       * Incident Id
+       * Format: uuid
+       */
+      incident_id: string;
+      /** Is New Incident */
+      is_new_incident: boolean;
+      /** Fingerprint */
+      fingerprint: string;
+      /** Failure Category */
+      failure_category: string;
+      /** Confidence */
+      confidence: number;
+      /** Summary */
+      summary: string;
+      /** Probable Cause */
+      probable_cause: string;
+      /** Recommended Action */
+      recommended_action: string;
+      /** Hypotheses */
+      hypotheses?: components["schemas"]["DiagnosisHypothesis"][];
+      /** Referenced Env Vars */
+      referenced_env_vars?: string[];
+      env_var_check?: components["schemas"]["EnvVarCheckResultSchema"] | null;
+      /** Referenced Files */
+      referenced_files?: {
+        [key: string]: unknown;
+      }[];
+      /** Primary Log Line */
+      primary_log_line?: number | null;
+      /** Similar Past Incidents */
+      similar_past_incidents?: components["schemas"]["SimilarIncidentMatch"][];
+      /**
+       * Is Insufficient Log
+       * @default false
+       */
+      is_insufficient_log: boolean;
+      /** Missing Information Needed */
+      missing_information_needed?: string | null;
+      /**
+       * Redaction Count
+       * @default 0
+       */
+      redaction_count: number;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /**
+     * DeploymentIncidentListResponse
+     * @description Paginated collection of deployment incidents.
+     */
+    DeploymentIncidentListResponse: {
+      /** Items */
+      items: components["schemas"]["DeploymentIncidentResponse"][];
+      /** Total */
+      total: number;
+      /** Limit */
+      limit: number;
+      /** Offset */
+      offset: number;
+    };
+    /**
+     * DeploymentIncidentResponse
+     * @description Persisted deployment incident details.
+     */
+    DeploymentIncidentResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id: string;
+      /** Fingerprint */
+      fingerprint: string;
+      /** Summary */
+      summary: string;
+      /** Probable Cause */
+      probable_cause: string;
+      /** Resolution */
+      resolution?: string | null;
+      /** Error Signature */
+      error_signature: string;
+      /** Environment */
+      environment: string;
+      /** Service Name */
+      service_name?: string | null;
+      /** Failure Category */
+      failure_category: string;
+      /** Log Snippet */
+      log_snippet: string;
+      /** Occurrence Count */
+      occurrence_count: number;
+      /**
+       * Last Seen At
+       * Format: date-time
+       */
+      last_seen_at: string;
+      /** Resolved At */
+      resolved_at?: string | null;
+      /** Resolved By */
+      resolved_by?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Metadata */
+      metadata?: {
+        [key: string]: unknown;
+      };
+    };
+    /**
+     * DeploymentResolutionUpdate
+     * @description Payload to document or update the resolution of an incident.
+     */
+    DeploymentResolutionUpdate: {
+      /**
+       * Resolution
+       * @description Documentation of the root cause fix or remediation applied
+       */
+      resolution: string;
+    };
+    /**
+     * DiagnosisHypothesis
+     * @description Ranked root cause hypothesis generated for a deployment failure incident.
+     */
+    DiagnosisHypothesis: {
+      /**
+       * Title
+       * @description Concise title of the root cause hypothesis
+       */
+      title: string;
+      /**
+       * Probable Cause
+       * @description Detailed explanation of why the failure occurred
+       */
+      probable_cause: string;
+      /**
+       * Confidence
+       * @description Confidence score from 0.0 to 1.0
+       */
+      confidence: number;
+      /**
+       * Recommended Action
+       * @description Actionable fix or remediation step
+       */
+      recommended_action: string;
+      /**
+       * Log Line Citations
+       * @description Citations to 1-based log line numbers
+       */
+      log_line_citations?: number[];
+      /**
+       * File Citations
+       * @description Citations to file paths and lines, e.g. 'server/app/main.py:45'
+       */
+      file_citations?: string[];
+    };
+    /**
      * DocDriftDetectRequest
      * @description Request payload to trigger DocsAlive drift detection for a project.
      */
@@ -3814,6 +4115,29 @@ export interface components {
       backup_retention_notice: string;
       /** Categories */
       categories: components["schemas"]["EffectiveRetentionCategory"][];
+    };
+    /**
+     * EnvVarCheckResultSchema
+     * @description Analysis of referenced vs configured environment variable names.
+     */
+    EnvVarCheckResultSchema: {
+      /** Referenced Names */
+      referenced_names?: string[];
+      /** Missing Required */
+      missing_required?: string[];
+      /** Referenced Missing */
+      referenced_missing?: string[];
+      /** Suspected Typos */
+      suspected_typos?: {
+        [key: string]: unknown;
+      }[];
+      /** Valid Configured */
+      valid_configured?: string[];
+      /**
+       * Has Issues
+       * @default false
+       */
+      has_issues: boolean;
     };
     /**
      * ExtensionHeartbeatResponse
@@ -5203,6 +5527,38 @@ export interface components {
        * @description Glob patterns to ignore.
        */
       ignore?: string[] | null;
+    };
+    /**
+     * SimilarIncidentMatch
+     * @description Historical deployment incident similar to the current failure.
+     */
+    SimilarIncidentMatch: {
+      /**
+       * Incident Id
+       * Format: uuid
+       */
+      incident_id: string;
+      /** Fingerprint */
+      fingerprint: string;
+      /** Summary */
+      summary: string;
+      /** Probable Cause */
+      probable_cause: string;
+      /** Resolution */
+      resolution?: string | null;
+      /** Failure Category */
+      failure_category: string;
+      /** Similarity Score */
+      similarity_score: number;
+      /** Match Type */
+      match_type: string;
+      /**
+       * Last Seen At
+       * Format: date-time
+       */
+      last_seen_at: string;
+      /** Resolved At */
+      resolved_at?: string | null;
     };
     /**
      * SnapshotDetail
@@ -8455,6 +8811,179 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ProjectEvaluationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  diagnose_deployment_api_v1_projects__project_id__deployment_diagnoses_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DeploymentDiagnosisRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeploymentDiagnosisResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_deployment_incidents_api_v1_projects__project_id__deployment_incidents_get: {
+    parameters: {
+      query?: {
+        /** @description Filter by environment (e.g. production, staging) */
+        environment?: string | null;
+        /** @description Filter by failure category */
+        category?: string | null;
+        /** @description Items per page */
+        limit?: number;
+        /** @description Pagination offset */
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        project_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeploymentIncidentListResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_deployment_incident_api_v1_projects__project_id__deployment_incidents__incident_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        incident_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeploymentIncidentResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_deployment_incident_api_v1_projects__project_id__deployment_incidents__incident_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        incident_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_incident_resolution_api_v1_projects__project_id__deployment_incidents__incident_id__resolution_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        project_id: string;
+        incident_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DeploymentResolutionUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeploymentIncidentResponse"];
         };
       };
       /** @description Validation Error */

@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-deploy-agent` |
-| **Last commit** | `8d03a75` (`feat(server): implement M12-15 deployment diagnosis specialist agent, env checker, and REST API`) |
+| **Branch** | `feature/m12-deploy-ui` |
+| **Last commit** | `pending` (`feat(client): implement M12-16 web screens for deployment diagnosis, redaction preview, and incident ledger`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 In Progress |
 | **Working tree** | Clean |
-| **Open PR** | [#109](https://github.com/Warish-Labs/DevMind/pull/109) |
+| **Open PR** | Pending |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,21 +19,60 @@
 
 ## 2. Next action (exact)
 
-1. Review and merge PR for `feature/m12-deploy-agent` into `main`.
+1. Review and merge PR for `feature/m12-deploy-ui` into `main`.
 2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-deploy-agent` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-agent`).
-   - Create feature branch `feature/m12-deploy-ui` for task **M12-16**: Web screens for Deployment Diagnosis (log paste/upload with redaction preview, probable root causes, log line citations, incident history).
+   - Delete branch `feature/m12-deploy-ui` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-ui`).
+   - Create feature branch `feature/m12-deploy-evals` for task **M12-17**: Benchmark datasets, evaluation runner, recorded baselines, and E2E integration tests for Deployment Diagnosis.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #109 (`feature/m12-deploy-agent` → `main`) after CI passes.
+Review and merge PR for `feature/m12-deploy-ui` into `main` after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Web & UI — M12-16: Deployment Diagnosis Web Screens, Redaction Preview & Incident Ledger
+
+- **Date**: 2026-11-01
+- **Branch**: `feature/m12-deploy-ui`
+- **What**:
+  - Implemented Screen S-18 for Deployment Diagnosis and DeployDoctor (CAP-07, docs/01 §4, docs/03 §3.4, docs/08):
+    - **App Router Integration (`client/app/projects/[projectId]/deployments/page.tsx`)**:
+      - Subroute registered under project app shell for Screen S-18.
+      - Integrated with `AppGutterRail` navigation rail (`RocketIcon`) and `CommandPalette` ("Diagnose Deployment Failure Log" action and navigation entry).
+    - **Type-safe API Client & OpenAPI Export (`common/src/api/index.ts`)**:
+      - Exported `DeploymentDiagnosisRequest`, `DeploymentDiagnosisResponse`, `DeploymentIncidentListResponse`, `DeploymentIncidentResponse`, `DeploymentResolutionUpdate`, `DiagnosisHypothesis`, `EnvVarCheckResultSchema`, `SimilarIncidentMatch`.
+      - Added API client methods `diagnoseDeployment()`, `listDeploymentIncidents()`, `getDeploymentIncident()`, `updateDeploymentResolution()`, `deleteDeploymentIncident()`.
+    - **Log Input & Deterministic Redaction Preview (`client/components/deployment/LogDiagnosisForm.tsx`)**:
+      - Paste log textarea with line/character counter and sample log loader.
+      - File upload supporting `.log` and `.txt`.
+      - Real-time client-side redaction preview masking database connection strings (`[REDACTED:db_uri]`), API tokens/PATs (`[REDACTED:token]`), and sensitive environment variable assignments (`[REDACTED:secret]`) before sending.
+      - Redacted secrets badge counter.
+      - Target environment selector (`production`, `staging`, `preview`, `dev`) and service name input.
+      - Expandable advanced configuration for platform variable names and `.env.example` schema comparison.
+    - **Diagnostic Report & Root Cause Hypotheses (`client/components/deployment/DiagnosisReportView.tsx`)**:
+      - Top banner displaying failure category badge, confidence meter, new vs recurring incident indicator, and secrets masked count.
+      - Probable root cause and recommended remediation action cards.
+      - Ranked hypotheses list with likelihood percentages, cited line references, and specific remediation actions.
+      - Similar past incidents spotlight with match score and proven resolutions.
+      - Incomplete/truncated log alert with guidance on missing information.
+    - **Log Citations & Stack Trace Viewer (`client/components/deployment/LogCitationsViewer.tsx`)**:
+      - Tabbed citations viewer:
+        - Tab 1: Numbered log lines with primary failing line focus badge and error highlighting.
+        - Tab 2: Environment variable checker findings showing missing required variables, suggested typo corrections with match similarity percentages, and verified configured variables.
+        - Tab 3: Stack trace frames detailing project file paths, line numbers, and function names.
+    - **Incident History Ledger & Modals (`client/components/deployment/`)**:
+      - `IncidentsHistoryTable.tsx`: Full incident ledger with search query filter, failure category filter, environment filter, and resolution status filter. Columns for fingerprint, summary, environment, occurrence count badge, resolution status, and actions.
+      - `IncidentDetailModal.tsx`: Comprehensive modal displaying error signature, sanitized log snippet, timeline, and documented fix.
+      - `DocumentResolutionModal.tsx`: Form modal allowing engineers to document proven fixes and index them into deployment memory for future diagnoses.
+    - **Verification**:
+      - Created comprehensive test suite `client/tests/deployment-ui.test.tsx` (11/11 tests passing).
+      - `tsc --noEmit` clean on root and client.
+      - All 31 client test suites passing (209/209 tests).
 
 ### Orchestration & API — M12-15: Deployment Diagnosis Specialist Agent, Env Checker & REST API
 
