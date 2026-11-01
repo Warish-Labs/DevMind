@@ -1,0 +1,453 @@
+{
+  "benchmark": "devmind-mentor-eval-v1",
+  "description": "Benchmark evaluation dataset for Project Mentor Task DAG ranking and Project Health Evaluation (CAP-08, CAP-09, M12-12).",
+  "recommendation_cases": [
+    {
+      "id": "rec-case-01-linear-chain",
+      "name": "Linear dependency chain unblocking",
+      "tasks": [
+        {
+          "id": "11111111-1111-1111-1111-111111111111",
+          "title": "Set up database models and migrations",
+          "status": "open",
+          "priority": "medium",
+          "depends_on": []
+        },
+        {
+          "id": "22222222-2222-2222-2222-222222222222",
+          "title": "Implement REST API endpoints",
+          "status": "open",
+          "priority": "medium",
+          "depends_on": ["11111111-1111-1111-1111-111111111111"]
+        },
+        {
+          "id": "33333333-3333-3333-3333-333333333333",
+          "title": "Build UI consumer components",
+          "status": "open",
+          "priority": "medium",
+          "depends_on": ["22222222-2222-2222-2222-222222222222"]
+        }
+      ],
+      "expected_top_task_id": "11111111-1111-1111-1111-111111111111",
+      "expected_is_ready": true,
+      "expected_downstream_impact_count": 2,
+      "has_cycle": false
+    },
+    {
+      "id": "rec-case-02-diamond-dependency",
+      "name": "Diamond branch unblocking with high downstream impact",
+      "tasks": [
+        {
+          "id": "aaaa1111-1111-1111-1111-111111111111",
+          "title": "Design core domain service contracts",
+          "status": "open",
+          "priority": "high",
+          "depends_on": []
+        },
+        {
+          "id": "bbbb2222-2222-2222-2222-222222222222",
+          "title": "Implement synchronous HTTP API layer",
+          "status": "open",
+          "priority": "high",
+          "depends_on": ["aaaa1111-1111-1111-1111-111111111111"]
+        },
+        {
+          "id": "cccc3333-3333-3333-3333-333333333333",
+          "title": "Implement asynchronous Celery background queue",
+          "status": "open",
+          "priority": "high",
+          "depends_on": ["aaaa1111-1111-1111-1111-111111111111"]
+        },
+        {
+          "id": "dddd4444-4444-4444-4444-444444444444",
+          "title": "Integrate end-to-end integration test suite",
+          "status": "open",
+          "priority": "high",
+          "depends_on": [
+            "bbbb2222-2222-2222-2222-222222222222",
+            "cccc3333-3333-3333-3333-333333333333"
+          ]
+        }
+      ],
+      "expected_top_task_id": "aaaa1111-1111-1111-1111-111111111111",
+      "expected_is_ready": true,
+      "expected_downstream_impact_count": 3,
+      "has_cycle": false
+    },
+    {
+      "id": "rec-case-03-critical-blocked-by-prereq",
+      "name": "Critical priority task blocked by low priority prerequisite",
+      "tasks": [
+        {
+          "id": "10000001-1111-1111-1111-111111111111",
+          "title": "Add schema migration column",
+          "status": "open",
+          "priority": "low",
+          "depends_on": []
+        },
+        {
+          "id": "20000002-2222-2222-2222-222222222222",
+          "title": "Ship critical payment gateway webhook",
+          "status": "open",
+          "priority": "critical",
+          "depends_on": ["10000001-1111-1111-1111-111111111111"]
+        }
+      ],
+      "expected_top_task_id": "10000001-1111-1111-1111-111111111111",
+      "expected_is_ready": true,
+      "expected_downstream_impact_count": 1,
+      "has_cycle": false
+    },
+    {
+      "id": "rec-case-04-priority-ranking-among-unblocked",
+      "name": "Strict priority ordering between unblocked tasks",
+      "tasks": [
+        {
+          "id": "00000001-1111-1111-1111-111111111111",
+          "title": "Low priority cosmetic UI tweak",
+          "status": "open",
+          "priority": "low",
+          "depends_on": []
+        },
+        {
+          "id": "00000002-2222-2222-2222-222222222222",
+          "title": "Critical vulnerability patch",
+          "status": "open",
+          "priority": "critical",
+          "depends_on": []
+        },
+        {
+          "id": "00000003-3333-3333-3333-333333333333",
+          "title": "Medium priority docs refinement",
+          "status": "open",
+          "priority": "medium",
+          "depends_on": []
+        }
+      ],
+      "expected_top_task_id": "00000002-2222-2222-2222-222222222222",
+      "expected_is_ready": true,
+      "expected_downstream_impact_count": 0,
+      "has_cycle": false
+    },
+    {
+      "id": "rec-case-05-partial-completion",
+      "name": "Prerequisites partially completed advances recommendation",
+      "tasks": [
+        {
+          "id": "0000000a-1111-1111-1111-111111111111",
+          "title": "Generate OpenAPI schema",
+          "status": "completed",
+          "priority": "high",
+          "depends_on": []
+        },
+        {
+          "id": "0000000b-2222-2222-2222-222222222222",
+          "title": "Set up TypeScript client package",
+          "status": "open",
+          "priority": "high",
+          "depends_on": []
+        },
+        {
+          "id": "0000000c-3333-3333-3333-333333333333",
+          "title": "Integrate API client in Next.js web application",
+          "status": "open",
+          "priority": "high",
+          "depends_on": [
+            "0000000a-1111-1111-1111-111111111111",
+            "0000000b-2222-2222-2222-222222222222"
+          ]
+        }
+      ],
+      "expected_top_task_id": "0000000b-2222-2222-2222-222222222222",
+      "expected_is_ready": true,
+      "expected_downstream_impact_count": 1,
+      "has_cycle": false
+    },
+    {
+      "id": "rec-case-06-security-finding-task-boost",
+      "name": "Task derived from critical security finding outranks general high task",
+      "tasks": [
+        {
+          "id": "0000005e-1111-1111-1111-111111111111",
+          "title": "Remediate SQL injection in workspace query",
+          "status": "open",
+          "priority": "high",
+          "finding_severity": "CRITICAL",
+          "depends_on": []
+        },
+        {
+          "id": "0000009e-2222-2222-2222-222222222222",
+          "title": "Implement user preferences page",
+          "status": "open",
+          "priority": "high",
+          "finding_severity": null,
+          "depends_on": []
+        }
+      ],
+      "expected_top_task_id": "0000005e-1111-1111-1111-111111111111",
+      "expected_is_ready": true,
+      "expected_downstream_impact_count": 0,
+      "has_cycle": false
+    },
+    {
+      "id": "rec-case-07-cyclic-dependency-detection",
+      "name": "Cyclic task dependency detection",
+      "tasks": [
+        {
+          "id": "000000c1-1111-1111-1111-111111111111",
+          "title": "Module A refactoring",
+          "status": "open",
+          "priority": "medium",
+          "depends_on": ["000000c2-2222-2222-2222-222222222222"]
+        },
+        {
+          "id": "000000c2-2222-2222-2222-222222222222",
+          "title": "Module B refactoring",
+          "status": "open",
+          "priority": "medium",
+          "depends_on": ["000000c1-1111-1111-1111-111111111111"]
+        }
+      ],
+      "expected_top_task_id": null,
+      "expected_is_ready": false,
+      "expected_downstream_impact_count": 0,
+      "has_cycle": true
+    }
+  ],
+  "health_evaluation_cases": [
+    {
+      "id": "health-case-01-production-ready",
+      "name": "Production ready green build with all quality gates passed",
+      "inputs": {
+        "findings": [],
+        "bugs": [],
+        "drift_items": [],
+        "test_signals": {
+          "total_tests": 120,
+          "passed_tests": 120,
+          "failed_tests": 0,
+          "skipped_tests": 0,
+          "has_ci_run": true
+        },
+        "feature_checklist": [
+          { "name": "Clerk Auth & RBAC", "completed": true, "is_critical": true },
+          { "name": "Multi-tenant Workspace Scoping", "completed": true, "is_critical": true },
+          { "name": "Living Docs Reconciliation", "completed": true, "is_critical": false }
+        ],
+        "task_summary": {
+          "total_tasks": 10,
+          "completed_tasks": 10,
+          "blocked_tasks": 0,
+          "has_cyclic_dependency": false
+        },
+        "has_tracked_docs": true
+      },
+      "expected_verdict": "ready",
+      "expected_min_score": 90.0,
+      "expected_blockers_count": 0,
+      "expected_warnings_count": 0,
+      "expected_functionality_confidence": "high"
+    },
+    {
+      "id": "health-case-02-critical-security-finding",
+      "name": "Release blocked by open critical security vulnerability",
+      "inputs": {
+        "findings": [
+          {
+            "id": "f-sec-01",
+            "title": "SQL Injection vulnerability in repository raw filter",
+            "severity": "CRITICAL",
+            "status": "open",
+            "category": "security"
+          }
+        ],
+        "bugs": [],
+        "drift_items": [],
+        "test_signals": {
+          "total_tests": 85,
+          "passed_tests": 85,
+          "failed_tests": 0,
+          "skipped_tests": 0,
+          "has_ci_run": true
+        },
+        "feature_checklist": [{ "name": "Core Pipeline", "completed": true, "is_critical": true }],
+        "task_summary": {
+          "total_tasks": 5,
+          "completed_tasks": 4,
+          "blocked_tasks": 0,
+          "has_cyclic_dependency": false
+        },
+        "has_tracked_docs": true
+      },
+      "expected_verdict": "not_ready",
+      "expected_max_score": 75.0,
+      "expected_blockers_count": 1,
+      "expected_blocker_dimension": "security",
+      "expected_functionality_confidence": "high"
+    },
+    {
+      "id": "health-case-03-broken-test-suite",
+      "name": "Release blocked by failing CI test suite",
+      "inputs": {
+        "findings": [],
+        "bugs": [],
+        "drift_items": [],
+        "test_signals": {
+          "total_tests": 100,
+          "passed_tests": 92,
+          "failed_tests": 8,
+          "skipped_tests": 0,
+          "has_ci_run": true
+        },
+        "feature_checklist": [{ "name": "Core Service", "completed": true, "is_critical": true }],
+        "task_summary": {
+          "total_tasks": 6,
+          "completed_tasks": 5,
+          "blocked_tasks": 0,
+          "has_cyclic_dependency": false
+        },
+        "has_tracked_docs": true
+      },
+      "expected_verdict": "not_ready",
+      "expected_max_score": 80.0,
+      "expected_blockers_count": 1,
+      "expected_blocker_dimension": "testing",
+      "expected_functionality_confidence": "high"
+    },
+    {
+      "id": "health-case-04-ready-with-warnings",
+      "name": "Ready with non-blocking documentation drift warnings",
+      "inputs": {
+        "findings": [],
+        "bugs": [],
+        "drift_items": [
+          {
+            "id": "drift-01",
+            "kind": "stale_section",
+            "status": "detected",
+            "explanation": "Outdated section in API README"
+          },
+          {
+            "id": "drift-02",
+            "kind": "undocumented_route",
+            "status": "detected",
+            "explanation": "Endpoint /api/v1/metrics not referenced in docs"
+          }
+        ],
+        "test_signals": {
+          "total_tests": 50,
+          "passed_tests": 50,
+          "failed_tests": 0,
+          "skipped_tests": 0,
+          "has_ci_run": true
+        },
+        "feature_checklist": [
+          { "name": "Core Feature", "completed": true, "is_critical": true },
+          { "name": "Optional Feature", "completed": false, "is_critical": false }
+        ],
+        "task_summary": {
+          "total_tasks": 4,
+          "completed_tasks": 3,
+          "blocked_tasks": 0,
+          "has_cyclic_dependency": false
+        },
+        "has_tracked_docs": true
+      },
+      "expected_verdict": "ready_with_warnings",
+      "expected_min_score": 75.0,
+      "expected_max_score": 89.9,
+      "expected_blockers_count": 0,
+      "expected_min_warnings_count": 1,
+      "expected_functionality_confidence": "high"
+    },
+    {
+      "id": "health-case-05-missing-critical-checklist-feature",
+      "name": "Release blocked by incomplete declared critical MVP feature",
+      "inputs": {
+        "findings": [],
+        "bugs": [],
+        "drift_items": [],
+        "test_signals": {
+          "total_tests": 60,
+          "passed_tests": 60,
+          "failed_tests": 0,
+          "skipped_tests": 0,
+          "has_ci_run": true
+        },
+        "feature_checklist": [
+          { "name": "Clerk Auth & RBAC", "completed": true, "is_critical": true },
+          { "name": "Rate Limiting & Tenant Quotas", "completed": false, "is_critical": true }
+        ],
+        "task_summary": {
+          "total_tasks": 8,
+          "completed_tasks": 7,
+          "blocked_tasks": 0,
+          "has_cyclic_dependency": false
+        },
+        "has_tracked_docs": true
+      },
+      "expected_verdict": "not_ready",
+      "expected_blockers_count": 1,
+      "expected_blocker_dimension": "functionality",
+      "expected_functionality_confidence": "high"
+    },
+    {
+      "id": "health-case-06-cyclic-architecture-backlog",
+      "name": "Release blocked by cyclic dependency in task architecture",
+      "inputs": {
+        "findings": [],
+        "bugs": [],
+        "drift_items": [],
+        "test_signals": {
+          "total_tests": 70,
+          "passed_tests": 70,
+          "failed_tests": 0,
+          "skipped_tests": 0,
+          "has_ci_run": true
+        },
+        "feature_checklist": [
+          { "name": "Core Microservice", "completed": true, "is_critical": true }
+        ],
+        "task_summary": {
+          "total_tasks": 10,
+          "completed_tasks": 5,
+          "blocked_tasks": 4,
+          "has_cyclic_dependency": true
+        },
+        "has_tracked_docs": true
+      },
+      "expected_verdict": "not_ready",
+      "expected_blockers_count": 1,
+      "expected_blocker_dimension": "architecture",
+      "expected_functionality_confidence": "high"
+    },
+    {
+      "id": "health-case-07-undeclared-checklist-low-confidence",
+      "name": "Fallback functionality progress with low confidence per OQ-18",
+      "inputs": {
+        "findings": [],
+        "bugs": [],
+        "drift_items": [],
+        "test_signals": {
+          "total_tests": 40,
+          "passed_tests": 40,
+          "failed_tests": 0,
+          "skipped_tests": 0,
+          "has_ci_run": true
+        },
+        "feature_checklist": [],
+        "task_summary": {
+          "total_tasks": 10,
+          "completed_tasks": 8,
+          "blocked_tasks": 0,
+          "has_cyclic_dependency": false
+        },
+        "has_tracked_docs": true
+      },
+      "expected_verdict": "ready",
+      "expected_min_score": 90.0,
+      "expected_blockers_count": 0,
+      "expected_functionality_confidence": "low"
+    }
+  ]
+}

@@ -7,33 +7,56 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-mentor-ui` |
-| **Last commit** | `daa6ddd` (`feat(client): implement M12-11 project mentor and health evaluation web screens`) |
-| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete |
+| **Branch** | `feature/m12-mentor-evals` |
+| **Last commit** | `31737f4` (`feat(server): implement M12-12 mentor and evaluation benchmark suite and e2e tests`) |
+| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · M12.2 in progress |
 | **Working tree** | Clean |
-| **Open PR** | [#104](https://github.com/Warish-Labs/DevMind/pull/104) |
+| **Open PR** | [#105](https://github.com/Warish-Labs/DevMind/pull/105) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
-| **Date** | 2026-10-31 |
+| **Date** | 2026-11-01 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #104 (`feature/m12-mentor-ui`) to pass and owner merge into `main`.
-2. After PR #104 is merged:
+1. Wait for CI checks on PR #105 (`feature/m12-mentor-evals`) to pass and owner merge into `main`.
+2. After PR #105 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-mentor-ui` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-ui`).
-   - Create feature branch `feature/m12-mentor-evals` for task **M12-12**: Benchmark datasets, evaluation runner, recorded baselines, and E2E integration tests for Mentor & Evaluation.
+   - Delete branch `feature/m12-mentor-evals` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-evals`).
+   - Create feature branch `feature/m12-mentor-docs` for task **M12-13**: Milestone 12.2 documentation update and operational runbook.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #104 (`feature/m12-mentor-ui` → `main`) after CI passes.
+Review and merge PR #105 (`feature/m12-mentor-evals` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Feature — M12-12: Mentor & Evaluation Benchmark Suite, Evaluators & E2E Tests
+
+- **Date**: 2026-11-01
+- **Branch**: `feature/m12-mentor-evals`
+- **What**:
+  - Implemented evaluation suite, benchmarks, and end-to-end integration tests for Project Mentor & Project Evaluation (CAP-08, CAP-09, [`docs/01`](docs/01-product-requirements.md) §8, [`docs/03`](docs/03-data-model-and-api.md) §3.6, §3.7, [`docs/05`](docs/05-agents-and-llm-workflows.md) §6.8):
+    - **Benchmark Dataset (`evals/mentor/dataset.json`)**:
+      - 7 realistic task recommendation benchmark test cases covering linear chains, multiple independent tasks, priority overrides, branching prerequisites, blocked tasks, fully unblocked sets, and cyclic dependency attempts.
+      - 7 health evaluation benchmark test cases covering pristine MVP projects, critical security blockers, moderate velocity drift, multiple architectural blockers, missing checklist items, and low/high confidence levels.
+    - **Benchmark Metrics (`evals/mentor/metrics.py`)**:
+      - `TaskRecommendationMetrics`: Computes top-1 recommendation accuracy, Mean Reciprocal Rank (MRR), and ready-task execution alignment.
+      - `ProjectEvaluationMetrics`: Computes release readiness verdict accuracy, blocker precision/recall/F1 score, and health dimension score MAE (Mean Absolute Error).
+      - `MentorBenchmarkSummary`: Aggregates all recommendation and audit metrics into an overall composite benchmark score.
+    - **Evaluation Harness Runner (`evals/mentor/harness.py`, `evals/mentor/__init__.py`)**:
+      - Self-contained CLI runner evaluating TaskDAG topological ranking, cycle detection, and multidimensional health evaluations.
+      - Recorded baseline in `evals/results/mentor/latest.json` (100.00% composite score: Top-1 Acc=100%, MRR=1.00, Verdict Acc=100%, Blocker F1=100%).
+    - **Unit & E2E Integration Tests**:
+      - `server/tests/test_mentor_eval.py`: 5 unit tests validating dataset loading, recommendation metrics, evaluation metrics, and harness runner execution.
+      - `server/tests/test_mentor_e2e.py`: 3 comprehensive integration tests testing the complete HTTP API lifecycle (`/api/v1/projects/{project_id}/tasks`, `/recommend`, `/dependencies`, `/evaluations/run`, `/evaluations/latest`) and LangGraph specialist agent dispatch (`run_mentor_specialist`).
+    - **Monorepo Integration**:
+      - Added `eval:mentor` command to root `package.json` (`server/.venv/bin/python evals/mentor/harness.py`).
+      - Verified full monorepo fast suite (`node scripts/test-all.mjs --fast` passing 13/13).
 
 ### Feature — M12-11: Web Screens for Project Mentor & Project Evaluation
 

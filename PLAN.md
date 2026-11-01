@@ -343,7 +343,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 - [x] M12-09 Deterministic scoring engine for health dimensions (Quality, Security, Architecture, Velocity, Documentation), blockers synthesis, and release-readiness verdict (feature/m12-eval-scoring)
 - [x] M12-10 ProjectMentor specialist agent, LangGraph routing, and REST endpoints for tasks and evaluations (feature/m12-mentor-agent)
 - [x] M12-11 Web screens for Project Mentor & Project Evaluation (task backlog, dependency graph visualizer, multidimensional radar/health scorecards, release blockers) (feature/m12-mentor-ui)
-- [ ] M12-12 Benchmark datasets, evaluation runner, recorded baselines, and E2E integration tests for Mentor & Evaluation (feature/m12-mentor-evals)
+- [x] M12-12 Benchmark datasets, evaluation runner, recorded baselines, and E2E integration tests for Mentor & Evaluation (feature/m12-mentor-evals)
 - [ ] M12-13 Milestone 12.2 documentation update and operational runbook (feature/m12-mentor-docs)
 
 #### M12.3 · Release 1.4: Deployment Diagnosis (CAP-07)
