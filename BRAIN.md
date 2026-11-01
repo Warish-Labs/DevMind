@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-deploy-evals` |
-| **Last commit** | Pending commit for M12-17 |
+| **Last commit** | `e877af2` (`feat(server): implement M12-17 deployment diagnosis benchmark suite, harness, and E2E tests`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 In Progress |
-| **Working tree** | Staging M12-17 changes |
-| **Open PR** | Pending PR creation |
+| **Working tree** | Clean |
+| **Open PR** | [#111](https://github.com/Warish-Labs/DevMind/pull/111) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,9 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Commit M12-17 changes, push branch `feature/m12-deploy-evals` to origin via proxy, and open PR on GitHub.
-2. Review and merge PR for `feature/m12-deploy-evals` into `main`.
-3. After PR is merged:
+1. Review and merge PR #111 (`feature/m12-deploy-evals` → `main`) after CI passes.
+2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-deploy-evals` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-evals`).
    - Create feature branch `feature/m12-deploy-docs` for task **M12-18**: Milestone 12.3 documentation update and operational runbook.
@@ -30,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-deploy-evals` into `main` after CI passes.
+Review and merge PR #111 (`feature/m12-deploy-evals` → `main`) after CI passes.
 
 ---
 
