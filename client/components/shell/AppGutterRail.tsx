@@ -17,6 +17,7 @@ import {
   BugIcon,
   BookOpenIcon,
   MentorIcon,
+  RocketIcon,
 } from "./icons";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { WorkspaceProjectSwitcher } from "./WorkspaceProjectSwitcher";
@@ -90,6 +91,12 @@ export function AppGutterRail() {
       href: `/projects/${pid}/tasks`,
       icon: <MentorIcon size={18} />,
       isActive: pathname.includes("/tasks"),
+    },
+    {
+      label: "Deployment Diagnosis (S-18)",
+      href: `/projects/${pid}/deployments`,
+      icon: <RocketIcon size={18} />,
+      isActive: pathname.includes("/deployments"),
     },
     {
       label: "Usage & Quotas (S-12)",

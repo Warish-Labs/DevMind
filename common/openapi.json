@@ -4134,6 +4134,320 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/deployment-diagnoses": {
+      "post": {
+        "tags": ["Deployment Diagnosis"],
+        "summary": "Diagnose deployment failure log",
+        "description": "Sanitizes credentials, extracts failure categories and referenced environment variables, and synthesizes root causes.",
+        "operationId": "diagnose_deployment_api_v1_projects__project_id__deployment_diagnoses_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeploymentDiagnosisRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentDiagnosisResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/deployment-incidents": {
+      "get": {
+        "tags": ["Deployment Diagnosis"],
+        "summary": "List deployment incidents",
+        "description": "Retrieve paginated history of past deployment incidents, filtered by environment or failure category.",
+        "operationId": "list_deployment_incidents_api_v1_projects__project_id__deployment_incidents_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by environment (e.g. production, staging)",
+              "title": "Environment"
+            },
+            "description": "Filter by environment (e.g. production, staging)"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by failure category",
+              "title": "Category"
+            },
+            "description": "Filter by failure category"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Items per page",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Items per page"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pagination offset",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Pagination offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentIncidentListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/deployment-incidents/{incident_id}": {
+      "get": {
+        "tags": ["Deployment Diagnosis"],
+        "summary": "Get deployment incident details",
+        "description": "Retrieve full details, error signature, and resolution for a specific deployment incident.",
+        "operationId": "get_deployment_incident_api_v1_projects__project_id__deployment_incidents__incident_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentIncidentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Deployment Diagnosis"],
+        "summary": "Delete deployment incident",
+        "description": "Permanently delete a deployment incident record.",
+        "operationId": "delete_deployment_incident_api_v1_projects__project_id__deployment_incidents__incident_id__delete",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/deployment-incidents/{incident_id}/resolution": {
+      "patch": {
+        "tags": ["Deployment Diagnosis"],
+        "summary": "Update incident resolution",
+        "description": "Document the root cause resolution or remediation fix applied to resolve this incident.",
+        "operationId": "update_incident_resolution_api_v1_projects__project_id__deployment_incidents__incident_id__resolution_patch",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeploymentResolutionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentIncidentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{pid}/analyses": {
       "post": {
         "tags": ["Analysis"],
@@ -9113,6 +9427,435 @@
         "title": "DeletionVerificationReport",
         "description": "Cryptographically signed deletion verification report (docs/11, Screen S-10)."
       },
+      "DeploymentDiagnosisRequest": {
+        "properties": {
+          "raw_log": {
+            "type": "string",
+            "title": "Raw Log",
+            "description": "Raw deployment log output from Render, Vercel, Docker, etc."
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment",
+            "description": "Deployment target environment, e.g. production, staging, preview",
+            "default": "production"
+          },
+          "service_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Name",
+            "description": "Name of the failing service or container"
+          },
+          "configured_env_vars": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Configured Env Vars",
+            "description": "Optional list of variable names (keys only, NEVER values) configured on platform"
+          },
+          "example_env_content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Example Env Content",
+            "description": "Optional content of .env.example for schema comparison"
+          },
+          "recent_changes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recent Changes",
+            "description": "Optional summary of recent git commits or PR changes preceding deployment"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["raw_log"],
+        "title": "DeploymentDiagnosisRequest",
+        "description": "Input payload to diagnose a deployment failure log."
+      },
+      "DeploymentDiagnosisResponse": {
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Incident Id"
+          },
+          "is_new_incident": {
+            "type": "boolean",
+            "title": "Is New Incident"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "failure_category": {
+            "type": "string",
+            "title": "Failure Category"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "probable_cause": {
+            "type": "string",
+            "title": "Probable Cause"
+          },
+          "recommended_action": {
+            "type": "string",
+            "title": "Recommended Action"
+          },
+          "hypotheses": {
+            "items": {
+              "$ref": "#/components/schemas/DiagnosisHypothesis"
+            },
+            "type": "array",
+            "title": "Hypotheses"
+          },
+          "referenced_env_vars": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Referenced Env Vars"
+          },
+          "env_var_check": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnvVarCheckResultSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "referenced_files": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Referenced Files"
+          },
+          "primary_log_line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Log Line"
+          },
+          "similar_past_incidents": {
+            "items": {
+              "$ref": "#/components/schemas/SimilarIncidentMatch"
+            },
+            "type": "array",
+            "title": "Similar Past Incidents"
+          },
+          "is_insufficient_log": {
+            "type": "boolean",
+            "title": "Is Insufficient Log",
+            "default": false
+          },
+          "missing_information_needed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Missing Information Needed"
+          },
+          "redaction_count": {
+            "type": "integer",
+            "title": "Redaction Count",
+            "default": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "incident_id",
+          "is_new_incident",
+          "fingerprint",
+          "failure_category",
+          "confidence",
+          "summary",
+          "probable_cause",
+          "recommended_action",
+          "created_at"
+        ],
+        "title": "DeploymentDiagnosisResponse",
+        "description": "Complete diagnostic report for a deployment failure incident."
+      },
+      "DeploymentIncidentListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DeploymentIncidentResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["items", "total", "limit", "offset"],
+        "title": "DeploymentIncidentListResponse",
+        "description": "Paginated collection of deployment incidents."
+      },
+      "DeploymentIncidentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "probable_cause": {
+            "type": "string",
+            "title": "Probable Cause"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "error_signature": {
+            "type": "string",
+            "title": "Error Signature"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "service_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Name"
+          },
+          "failure_category": {
+            "type": "string",
+            "title": "Failure Category"
+          },
+          "log_snippet": {
+            "type": "string",
+            "title": "Log Snippet"
+          },
+          "occurrence_count": {
+            "type": "integer",
+            "title": "Occurrence Count"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "project_id",
+          "fingerprint",
+          "summary",
+          "probable_cause",
+          "error_signature",
+          "environment",
+          "failure_category",
+          "log_snippet",
+          "occurrence_count",
+          "last_seen_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DeploymentIncidentResponse",
+        "description": "Persisted deployment incident details."
+      },
+      "DeploymentResolutionUpdate": {
+        "properties": {
+          "resolution": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 5,
+            "title": "Resolution",
+            "description": "Documentation of the root cause fix or remediation applied"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["resolution"],
+        "title": "DeploymentResolutionUpdate",
+        "description": "Payload to document or update the resolution of an incident."
+      },
+      "DiagnosisHypothesis": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Concise title of the root cause hypothesis"
+          },
+          "probable_cause": {
+            "type": "string",
+            "title": "Probable Cause",
+            "description": "Detailed explanation of why the failure occurred"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "Confidence score from 0.0 to 1.0"
+          },
+          "recommended_action": {
+            "type": "string",
+            "title": "Recommended Action",
+            "description": "Actionable fix or remediation step"
+          },
+          "log_line_citations": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Log Line Citations",
+            "description": "Citations to 1-based log line numbers"
+          },
+          "file_citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "File Citations",
+            "description": "Citations to file paths and lines, e.g. 'server/app/main.py:45'"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["title", "probable_cause", "confidence", "recommended_action"],
+        "title": "DiagnosisHypothesis",
+        "description": "Ranked root cause hypothesis generated for a deployment failure incident."
+      },
       "DocDriftDetectRequest": {
         "properties": {
           "known_routes": {
@@ -9638,6 +10381,55 @@
         "required": ["workspace_id", "backup_retention_notice", "categories"],
         "title": "EffectiveRetentionResponse",
         "description": "Effective retention window settings for workspace or project."
+      },
+      "EnvVarCheckResultSchema": {
+        "properties": {
+          "referenced_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Referenced Names"
+          },
+          "missing_required": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Required"
+          },
+          "referenced_missing": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Referenced Missing"
+          },
+          "suspected_typos": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Suspected Typos"
+          },
+          "valid_configured": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Valid Configured"
+          },
+          "has_issues": {
+            "type": "boolean",
+            "title": "Has Issues",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EnvVarCheckResultSchema",
+        "description": "Analysis of referenced vs configured environment variable names."
       },
       "ExtensionHeartbeatResponse": {
         "properties": {
@@ -12490,6 +13282,83 @@
         "type": "object",
         "title": "ScopeSelector",
         "description": "File and language matching selector for review rules."
+      },
+      "SimilarIncidentMatch": {
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Incident Id"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "probable_cause": {
+            "type": "string",
+            "title": "Probable Cause"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "failure_category": {
+            "type": "string",
+            "title": "Failure Category"
+          },
+          "similarity_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Similarity Score"
+          },
+          "match_type": {
+            "type": "string",
+            "title": "Match Type"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "incident_id",
+          "fingerprint",
+          "summary",
+          "probable_cause",
+          "failure_category",
+          "similarity_score",
+          "match_type",
+          "last_seen_at"
+        ],
+        "title": "SimilarIncidentMatch",
+        "description": "Historical deployment incident similar to the current failure."
       },
       "SnapshotDetail": {
         "properties": {

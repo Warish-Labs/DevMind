@@ -75,6 +75,16 @@ export type TaskDependencyResponse = components["schemas"]["TaskDependencyRespon
 export type TaskRecommendationResponse = components["schemas"]["TaskRecommendationResponse"];
 export type ProjectEvaluationResponse = components["schemas"]["ProjectEvaluationResponse"];
 export type ProjectEvaluationRunRequest = components["schemas"]["ProjectEvaluationRunRequest"];
+
+export type DeploymentDiagnosisRequest = components["schemas"]["DeploymentDiagnosisRequest"];
+export type DeploymentDiagnosisResponse = components["schemas"]["DeploymentDiagnosisResponse"];
+export type DeploymentIncidentListResponse =
+  components["schemas"]["DeploymentIncidentListResponse"];
+export type DeploymentIncidentResponse = components["schemas"]["DeploymentIncidentResponse"];
+export type DeploymentResolutionUpdate = components["schemas"]["DeploymentResolutionUpdate"];
+export type DiagnosisHypothesis = components["schemas"]["DiagnosisHypothesis"];
+export type EnvVarCheckResultSchema = components["schemas"]["EnvVarCheckResultSchema"];
+export type SimilarIncidentMatch = components["schemas"]["SimilarIncidentMatch"];
 export interface QuotaItem {
   resource: string;
   used: number;
@@ -1375,6 +1385,66 @@ export class DevMindApiClient {
   ): Promise<ProjectEvaluationResponse> {
     return this.fetchInternal<ProjectEvaluationResponse>(
       `/api/v1/projects/${projectId}/evaluations/${evaluationId}`
+    );
+  }
+
+  public async diagnoseDeployment(
+    projectId: string,
+    data: DeploymentDiagnosisRequest
+  ): Promise<DeploymentDiagnosisResponse> {
+    return this.fetchInternal<DeploymentDiagnosisResponse>(
+      `/api/v1/projects/${projectId}/deployment-diagnoses`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  public async listDeploymentIncidents(
+    projectId: string,
+    params?: { environment?: string; category?: string; limit?: number; offset?: number }
+  ): Promise<DeploymentIncidentListResponse> {
+    const query = new URLSearchParams();
+    if (params?.environment) query.set("environment", params.environment);
+    if (params?.category) query.set("category", params.category);
+    if (params?.limit) query.set("limit", params.limit.toString());
+    if (params?.offset) query.set("offset", params.offset.toString());
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return this.fetchInternal<DeploymentIncidentListResponse>(
+      `/api/v1/projects/${projectId}/deployment-incidents${qs}`
+    );
+  }
+
+  public async getDeploymentIncident(
+    projectId: string,
+    incidentId: string
+  ): Promise<DeploymentIncidentResponse> {
+    return this.fetchInternal<DeploymentIncidentResponse>(
+      `/api/v1/projects/${projectId}/deployment-incidents/${incidentId}`
+    );
+  }
+
+  public async updateDeploymentResolution(
+    projectId: string,
+    incidentId: string,
+    data: DeploymentResolutionUpdate
+  ): Promise<DeploymentIncidentResponse> {
+    return this.fetchInternal<DeploymentIncidentResponse>(
+      `/api/v1/projects/${projectId}/deployment-incidents/${incidentId}/resolution`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  public async deleteDeploymentIncident(projectId: string, incidentId: string): Promise<void> {
+    await this.fetchInternal<void>(
+      `/api/v1/projects/${projectId}/deployment-incidents/${incidentId}`,
+      {
+        method: "DELETE",
+      }
     );
   }
 }
