@@ -286,3 +286,66 @@ async def test_incident_repo_update_resolution_and_delete() -> None:
     )
     assert deleted is True
     mock_session.delete.assert_called_once_with(mock_incident)
+
+
+@pytest.mark.asyncio
+async def test_incident_repo_search_similar_incidents() -> None:
+    """Verify hybrid candidate similarity search across historical incidents."""
+    ws_id = uuid4()
+    proj_id = uuid4()
+    ctx = _make_auth_ctx(workspace_id=ws_id)
+
+    inc1 = DeploymentIncident(
+        id=uuid4(),
+        workspace_id=ws_id,
+        project_id=proj_id,
+        fingerprint="exact_target_fp",
+        summary="Missing DATABASE_URL",
+        failure_category="missing_env_var",
+        error_signature="missing_env_var:DATABASE_URL",
+        resolution="Set DATABASE_URL in Render",
+        metadata_={"referenced_env_vars": ["DATABASE_URL"]},
+        last_seen_at=datetime.now(UTC),
+    )
+
+    inc2 = DeploymentIncident(
+        id=uuid4(),
+        workspace_id=ws_id,
+        project_id=proj_id,
+        fingerprint="different_fp",
+        summary="Missing REDIS_URL",
+        failure_category="missing_env_var",
+        error_signature="missing_env_var:REDIS_URL",
+        resolution=None,
+        metadata_={"referenced_env_vars": ["REDIS_URL"]},
+        last_seen_at=datetime.now(UTC),
+    )
+
+    mock_session = AsyncMock()
+    mock_res = MagicMock()
+    mock_res.scalars.return_value.all.return_value = [inc1, inc2]
+    mock_session.execute.return_value = mock_res
+
+    repo = DeploymentIncidentRepository(mock_session)
+
+    # 1. Exact fingerprint match
+    matches = await repo.search_similar_incidents(
+        ctx,
+        workspace_id=ws_id,
+        project_id=proj_id,
+        fingerprint="exact_target_fp",
+    )
+    assert len(matches) >= 1
+    assert matches[0][0].fingerprint == "exact_target_fp"
+    assert matches[0][1] == 1.0
+    assert matches[0][2] == "exact_fingerprint"
+
+    # 2. Category match
+    matches_cat = await repo.search_similar_incidents(
+        ctx,
+        workspace_id=ws_id,
+        project_id=proj_id,
+        failure_category="missing_env_var",
+    )
+    assert len(matches_cat) == 2
+    assert matches_cat[0][1] >= 0.5

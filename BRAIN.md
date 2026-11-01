@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-deploy-core` |
-| **Last commit** | `c59c7fc` (`feat(server): implement M12-14 deployment diagnosis model, migration, log parser, and repository`) |
+| **Branch** | `feature/m12-deploy-agent` |
+| **Last commit** | `8d03a75` (`feat(server): implement M12-15 deployment diagnosis specialist agent, env checker, and REST API`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 In Progress |
 | **Working tree** | Clean |
-| **Open PR** | [#108](https://github.com/Warish-Labs/DevMind/pull/108) |
+| **Open PR** | [#109](https://github.com/Warish-Labs/DevMind/pull/109) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,21 +19,62 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #108 (`feature/m12-deploy-core`) to pass and owner merge into `main`.
-2. After PR #108 is merged:
+1. Review and merge PR for `feature/m12-deploy-agent` into `main`.
+2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-deploy-core` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-core`).
-   - Create feature branch `feature/m12-deploy-agent` for task **M12-15**: DeploymentDiagnosis specialist agent, environment variable name checker, and similarity retrieval against past incidents.
+   - Delete branch `feature/m12-deploy-agent` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-agent`).
+   - Create feature branch `feature/m12-deploy-ui` for task **M12-16**: Web screens for Deployment Diagnosis (log paste/upload with redaction preview, probable root causes, log line citations, incident history).
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #108 (`feature/m12-deploy-core` → `main`) after CI passes.
+Review and merge PR #109 (`feature/m12-deploy-agent` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Orchestration & API — M12-15: Deployment Diagnosis Specialist Agent, Env Checker & REST API
+
+- **Date**: 2026-11-01
+- **Branch**: `feature/m12-deploy-agent`
+- **What**:
+  - Implemented environment variable name checker, past incident similarity search, DeployDoctor specialist agent (`DeployDoctorAgent`), deployment domain service, and REST API endpoints (CAP-07, docs/01 §4, docs/03 §11.1, docs/05 §6.9):
+    - **Environment Variable Name Checker (`server/app/analysis/env_checker.py`)**:
+      - Implemented `EnvVarChecker` with Levenshtein-based similarity scoring (cutoff default 0.70) against reference template variables (e.g. from `.env.example`).
+      - Identifies missing required variables, suggests typo corrections for unrecognized variables, and flags unreferenced template variables.
+      - Integrated regex-based pattern matching for referenced env vars.
+      - Unit tests in `server/tests/test_env_var_checker.py` (5/5 tests passing).
+      - Exported `EnvVarChecker` in `server/app/analysis/__init__.py`.
+    - **Past Incident Similarity Search (`server/app/persistence/repositories/incident_repo.py`)**:
+      - Added `search_similar_incidents()` supporting exact category match, query keyword token overlap scoring in summary/probable_cause, and occurrence weighting.
+      - Preserves tenant isolation raising `ForbiddenError` on workspace mismatch.
+      - Unit tests in `server/tests/test_incident_repo.py` (7/7 tests passing).
+    - **Deployment Diagnosis LLM Task & Structured Schemas (`server/app/llm/`)**:
+      - Added `DiagnosisHypothesis` and `DeploymentDiagnosisOutput` schemas to `server/app/llm/schemas.py` and registered in `SchemaRegistry`.
+      - Added `deployment_diagnosis` task configuration to `server/configs/llm/tasks.yaml` with schema enforcement and temperature 0.1.
+      - Created structured prompt template `server/app/llm/prompts/deployment_diagnosis/v1.md` with instructions on log citations, root cause ranking, and remediation steps.
+    - **DeployDoctor Specialist Agent (`server/app/orchestration/deploy_doctor.py`)**:
+      - Built `DeployDoctorAgent` and `run_deploy_doctor_specialist()` LangGraph-compatible stateful runner.
+      - Performs deterministic pre-analysis: log parsing & redaction, environment variable checking against project template, and similar incident retrieval.
+      - Invokes LLM gateway with structured output, falls back to deterministic rule-based diagnosis when LLM is unavailable or fails.
+      - Persists diagnosed incidents automatically in `DeploymentIncidentRepository`.
+      - Wired `deploy_doctor` specialist into `ManagerAgent` (`server/app/orchestration/manager.py`), including intent classification, node factories, conditional routing, and `RELEASED_SPECIALISTS`.
+      - Unit tests in `server/tests/test_deploy_doctor.py` (5/5 tests passing).
+    - **Deployment Domain Service & REST API (`server/app/domain/deployment/`, `server/app/api/deployment.py`)**:
+      - Domain service `DeploymentService` wrapping incident listing, detail, resolution updates, and on-demand diagnosis execution.
+      - FastAPI router `deployment_router` (`/api/v1/workspaces/{workspace_id}/projects/{project_id}/deployments/...`):
+        - `POST /diagnose`: Diagnose deployment failure log (`analysis:create`).
+        - `GET /incidents`: List deployment incidents with category/resolution filters (`project:read`).
+        - `GET /incidents/{incident_id}`: Retrieve incident details (`project:read`).
+        - `PATCH /incidents/{incident_id}`: Update incident resolution (`project:update`).
+        - `DELETE /incidents/{incident_id}`: Delete incident (`project:delete`).
+      - Registered router in `server/app/main.py`.
+      - Declared permissions on every endpoint via `@declare_permission` and updated Table 11.1 in `docs/03-data-model-and-api.md`.
+      - API unit tests in `server/tests/test_deployment_api.py` (4/4 tests passing).
+    - **Verification**:
+      - All 13 steps in `scripts/test-all.mjs --fast` passed.
 
 ### Analysis & Persistence — M12-14: Deployment Diagnosis Data Models, Migration, Log Parser, and Repository
 

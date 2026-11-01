@@ -349,7 +349,7 @@ Gate: all README links resolve; Mermaid renders; every claim matches PLAN.md sta
 #### M12.3 · Release 1.4: Deployment Diagnosis (CAP-07)
 
 - [x] M12-14 Deployment Diagnosis data models (`deployment_incidents`), migrations, log parser, and secret redaction pre-filter (feature/m12-deploy-core)
-- [ ] M12-15 DeploymentDiagnosis specialist agent, environment variable name checker, and similarity retrieval against past incidents (feature/m12-deploy-agent)
+- [x] M12-15 DeploymentDiagnosis specialist agent, environment variable name checker, and similarity retrieval against past incidents (feature/m12-deploy-agent)
 - [ ] M12-16 Web screens for Deployment Diagnosis (log paste/upload with redaction preview, probable root causes, log line citations, incident history) (feature/m12-deploy-ui)
 - [ ] M12-17 Benchmark datasets, evaluation runner, recorded baselines, and E2E integration tests for Deployment Diagnosis (feature/m12-deploy-evals)
 - [ ] M12-18 Milestone 12.3 documentation update and operational runbook (feature/m12-deploy-docs)

@@ -117,6 +117,8 @@ class DeploymentIncidentRepository(BaseRepository):
             log_snippet=parsed.redacted_text[:4000],
             occurrence_count=1,
             last_seen_at=now,
+            created_at=now,
+            updated_at=now,
             metadata_=metadata,
         )
 
@@ -193,6 +195,85 @@ class DeploymentIncidentRepository(BaseRepository):
         )
         incidents = list((await self.session.execute(stmt)).scalars().all())
         return incidents, total
+
+    async def search_similar_incidents(
+        self,
+        ctx: AuthContext | SystemContext,
+        *,
+        workspace_id: UUID,
+        project_id: UUID,
+        fingerprint: str | None = None,
+        failure_category: str | None = None,
+        error_signature: str | None = None,
+        referenced_env_vars: list[str] | None = None,
+        limit: int = 5,
+    ) -> list[tuple[DeploymentIncident, float, str]]:
+        """Search historical deployment incidents for matches and resolutions (docs/01 CAP-07, docs/05 §6.10).
+
+        Returns:
+            List of (incident, similarity_score, match_type) tuples ordered by highest score.
+        """
+        import re
+
+        self._check_tenant_access(ctx, workspace_id, project_id)
+
+        # Retrieve recent incidents for the project
+        stmt = (
+            select(DeploymentIncident)
+            .where(
+                DeploymentIncident.workspace_id == workspace_id,
+                DeploymentIncident.project_id == project_id,
+            )
+            .order_by(DeploymentIncident.last_seen_at.desc())
+            .limit(50)
+        )
+        candidates = list((await self.session.execute(stmt)).scalars().all())
+
+        scored_results: list[tuple[DeploymentIncident, float, str]] = []
+        ref_vars_set = set(referenced_env_vars or [])
+
+        for inc in candidates:
+            # 1. Exact fingerprint match
+            if fingerprint and inc.fingerprint == fingerprint:
+                scored_results.append((inc, 1.0, "exact_fingerprint"))
+                continue
+
+            score = 0.0
+            match_types: list[str] = []
+
+            # 2. Failure category match
+            if failure_category and inc.failure_category == failure_category:
+                score += 0.5
+                match_types.append("category_match")
+
+            # 3. Referenced environment variables overlap
+            inc_meta = inc.metadata_ or {}
+            inc_vars = set(inc_meta.get("referenced_env_vars", []))
+            if ref_vars_set and inc_vars:
+                common_vars = ref_vars_set.intersection(inc_vars)
+                if common_vars:
+                    score += 0.3
+                    match_types.append(f"env_overlap({','.join(sorted(common_vars))})")
+
+            # 4. Error signature token overlap
+            if error_signature and inc.error_signature:
+                sig1_tokens = set(re.findall(r"\w+", error_signature.lower()))
+                sig2_tokens = set(re.findall(r"\w+", inc.error_signature.lower()))
+                if sig1_tokens and sig2_tokens:
+                    token_overlap = len(sig1_tokens.intersection(sig2_tokens)) / max(
+                        len(sig1_tokens.union(sig2_tokens)), 1
+                    )
+                    if token_overlap > 0.4:
+                        score += 0.2
+                        match_types.append("signature_similarity")
+
+            if score >= 0.5:
+                final_score = min(score, 0.99)
+                scored_results.append((inc, final_score, " + ".join(match_types)))
+
+        # Sort by similarity score descending, then last_seen_at descending
+        scored_results.sort(key=lambda x: (x[1], x[0].last_seen_at), reverse=True)
+        return scored_results[:limit]
 
     async def update_resolution(
         self,

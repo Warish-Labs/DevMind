@@ -23,6 +23,10 @@ from app.orchestration.codemate import (
     run_codemate_specialist,
     validate_citations,
 )
+from app.orchestration.deploy_doctor import (
+    DeployDoctorAgent,
+    run_deploy_doctor_specialist,
+)
 from app.orchestration.manager import (
     RELEASED_SPECIALISTS,
     AgentManager,
@@ -86,6 +90,7 @@ __all__ = [
     "CitationValidationResult",
     "CodeMateAgent",
     "CodeMateState",
+    "DeployDoctorAgent",
     "DraftFinding",
     "GetFileRangeInput",
     "GetRelationshipsInput",
@@ -124,6 +129,7 @@ __all__ = [
     "parse_thread_id",
     "run_authcheck_specialist",
     "run_codemate_specialist",
+    "run_deploy_doctor_specialist",
     "run_pragent_specialist",
     "run_reviewbuddy_specialist",
     "search_brain",

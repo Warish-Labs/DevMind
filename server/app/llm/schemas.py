@@ -196,6 +196,50 @@ class ProjectEvaluationNarrativeOutput(BaseModel):
     confidence: float = Field(default=0.90, ge=0.0, le=1.0)
 
 
+class DiagnosisHypothesis(BaseModel):
+    """Ranked root cause hypothesis generated for a deployment failure incident."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(description="Concise title of the root cause hypothesis")
+    probable_cause: str = Field(description="Detailed explanation of why the failure occurred")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score from 0.0 to 1.0")
+    recommended_action: str = Field(description="Actionable fix or remediation step")
+    log_line_citations: list[int] = Field(
+        default_factory=list, description="Citations to 1-based log line numbers"
+    )
+    file_citations: list[str] = Field(
+        default_factory=list,
+        description="Citations to file paths and lines, e.g. 'server/app/main.py:45'",
+    )
+
+
+class DeploymentDiagnosisOutput(BaseModel):
+    """Structured LLM output for deployment log diagnosis (docs/01 CAP-07, docs/05 §6.10)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    summary: str = Field(description="High-level diagnosis summary")
+    primary_failure_category: str = Field(
+        description="Primary failure category, e.g. missing_env_var, database_migration_failed"
+    )
+    confidence: float = Field(ge=0.0, le=1.0, description="Overall confidence score")
+    hypotheses: list[DiagnosisHypothesis] = Field(
+        default_factory=list, description="Ranked diagnostic hypotheses ordered by likelihood"
+    )
+    recommended_action: str = Field(
+        description="Primary recommended action to resolve the deployment issue"
+    )
+    is_insufficient_log: bool = Field(
+        default=False,
+        description="True if the provided log content is too sparse or empty to diagnose",
+    )
+    missing_information_needed: str | None = Field(
+        default=None,
+        description="Specific missing information requested if log is insufficient",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Schema Registry
 # ---------------------------------------------------------------------------
@@ -215,6 +259,7 @@ class SchemaRegistry:
         self.register("DocPatchProposal", DocPatchProposal)
         self.register("MentorRecommendationOutput", MentorRecommendationOutput)
         self.register("ProjectEvaluationNarrativeOutput", ProjectEvaluationNarrativeOutput)
+        self.register("DeploymentDiagnosisOutput", DeploymentDiagnosisOutput)
 
     def register(self, name: str, schema_cls: type[BaseModel]) -> None:
         """Register a Pydantic model under a schema name."""

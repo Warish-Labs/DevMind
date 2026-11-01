@@ -96,6 +96,16 @@ tasks:
       max_output_tokens: 1200
     data:
       may_contain_source: false
+  deployment_diagnosis:
+    model: primary_reasoning
+    fallbacks: [fallback_reasoning]
+    required_capabilities: [structured_output]
+    output_schema: DeploymentDiagnosisOutput
+    params:
+      temperature: 0.1
+      max_output_tokens: 1500
+    data:
+      may_contain_source: false
   embedding_code:
     kind: embedding
     model: embed_code
