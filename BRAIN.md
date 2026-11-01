@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-mentor-evals` |
-| **Last commit** | `pending` (`feat(server): implement M12-12 mentor and evaluation benchmark suite and e2e tests`) |
+| **Last commit** | `31737f4` (`feat(server): implement M12-12 mentor and evaluation benchmark suite and e2e tests`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · M12.2 in progress |
 | **Working tree** | Clean |
-| **Open PR** | Pending |
+| **Open PR** | [#105](https://github.com/Warish-Labs/DevMind/pull/105) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,8 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR (`feature/m12-mentor-evals`) to pass and owner merge into `main`.
-2. After PR is merged:
+1. Wait for CI checks on PR #105 (`feature/m12-mentor-evals`) to pass and owner merge into `main`.
+2. After PR #105 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-mentor-evals` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-evals`).
    - Create feature branch `feature/m12-mentor-docs` for task **M12-13**: Milestone 12.2 documentation update and operational runbook.
@@ -29,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR (`feature/m12-mentor-evals` → `main`) after CI passes.
+Review and merge PR #105 (`feature/m12-mentor-evals` → `main`) after CI passes.
 
 ---
 
