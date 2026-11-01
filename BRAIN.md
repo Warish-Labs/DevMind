@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-mentor-evals` |
-| **Last commit** | `31737f4` (`feat(server): implement M12-12 mentor and evaluation benchmark suite and e2e tests`) |
-| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · M12.2 in progress |
+| **Branch** | `feature/m12-mentor-docs` |
+| **Last commit** | `5299de1` (`docs(docs): implement M12-13 milestone 12.2 documentation update and operational runbook`) |
+| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete |
 | **Working tree** | Clean |
-| **Open PR** | [#105](https://github.com/Warish-Labs/DevMind/pull/105) |
+| **Open PR** | [#107](https://github.com/Warish-Labs/DevMind/pull/107) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,21 +19,44 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR #105 (`feature/m12-mentor-evals`) to pass and owner merge into `main`.
-2. After PR #105 is merged:
+1. Wait for CI checks on PR #107 (`feature/m12-mentor-docs`) to pass and owner merge into `main`.
+2. After PR #107 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-mentor-evals` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-evals`).
-   - Create feature branch `feature/m12-mentor-docs` for task **M12-13**: Milestone 12.2 documentation update and operational runbook.
+   - Delete branch `feature/m12-mentor-docs` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-docs`).
+   - Create feature branch `feature/m12-deploy-core` for task **M12-14**: Deployment Diagnosis data models (`deployment_incidents`), migrations, log parser, and secret redaction pre-filter.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #105 (`feature/m12-mentor-evals` → `main`) after CI passes.
+Review and merge PR #107 (`feature/m12-mentor-docs` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Documentation — M12-13: Milestone 12.2 Documentation Update & Operational Runbook
+
+- **Date**: 2026-11-01
+- **Branch**: `feature/m12-mentor-docs`
+- **What**:
+  - Implemented comprehensive operational runbook and documentation update for Milestone 12.2 (Project Mentor & Project Evaluation, CAP-08, CAP-09):
+    - **Operational Runbook (`docs/runbooks/project-mentor-and-evaluation.md`)**:
+      - Subsystem architecture overview: TaskDAG topological sorting, priority weighting, Kahn's algorithm, cycle prevention, ProjectMentor specialist agent; multidimensional scoring engine, OQ-18 functionality checklist audit, and release readiness verdicts.
+      - Architecture diagrams in Mermaid for task dependency sorting and multidimensional health evaluation pipelines.
+      - Data model and schema definitions for `project_tasks`, `project_task_dependencies`, and `project_evaluations`.
+      - Operational procedures for dependency cycle triage and resolution, release blocker diagnosis, and triggering evaluations (CLI `eval:mentor`, REST API, and Web UI Screen S-17).
+      - Structured logging, telemetry conventions, RFC 9457 error code troubleshooting table (`conflict.state`, `validation.failed`, `resource.not_found`, `auth.forbidden`, `llm.unavailable`).
+      - Verification benchmarks table reflecting 100.0% composite score recorded baseline.
+    - **Documentation Updates**:
+      - `docs/03-data-model-and-api.md`: Updated Status and §11.1 endpoint families table with task backlog and evaluation REST endpoints.
+      - `docs/09-testing-and-quality-strategy.md`: Registered Project Mentor & Health Evaluation evaluation baseline (M12-12) in §9 recorded baselines table and added `eval:mentor` to §13 commands table.
+      - `docs/10-deployment-and-operations.md`: Added runbook cross-reference in §18 operational playbooks.
+      - `docs/11-mvp-and-implementation-roadmap.md`: Updated roadmap status to Release 1.3 Complete, marked Milestone M12.2 as Complete with runbook link, and set M12.3 dependencies.
+      - `PLAN.md`: Marked M12-13 `[x]` and expanded detailed task breakdown for M12.3 (Release 1.4: Deployment Diagnosis, M12-14 through M12-18).
+    - **Verification**:
+      - `node scripts/docs-links.mjs`: Scanned 64 Markdown files, validated 969 links & anchors, 40 Mermaid diagrams, 50 ADRs, and 18 OQs (clean pass).
+      - Monorepo fast verification suite (`node scripts/test-all.mjs --fast` passing 13/13).
 
 ### Feature — M12-12: Mentor & Evaluation Benchmark Suite, Evaluators & E2E Tests
 

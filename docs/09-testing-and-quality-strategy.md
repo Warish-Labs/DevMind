@@ -163,6 +163,7 @@ Recorded baselines (to be filled by the owning milestone):
 | Expanded Injection Corpus & Abuse Defense (M10-07) | 2026-10-25 | `a1defbd` | `evals/results/injection/latest.json` | Pass Rate: 1.0000 (55/55 vectors passed: 45 adversarial injection vectors, 10 benign controls). Delimiter Integrity: 1.0000, Tool Containment: 1.0000, Finding Protection: 1.0000, Cross-Tenant Isolation: 1.0000, Schema Conformance: 1.0000. Defenses against BiDi overrides, special tokens, delimiter collisions, multi-hop poisoning, and tool escalation. |
 | PR Intelligence & ReviewBuddy Evals (M11-08) | 2026-10-31 | `70522a1` | `evals/results/pr_intelligence/latest.json` | Composite Score: 1.0000. Change-Impact Risk Accuracy: 1.0000 (5/5 cases). ReviewBuddy Checklist: Precision: 1.0000, Recall: 1.0000, F1: 1.0000, False Positive Rate: 0.0000 across unvalidated inputs, bare excepts, missing auth, and custom forbidden patterns. Regression gate tolerance: min composite score 0.9000. |
 | Bug Memory & Living Docs Evals (M12-06) | 2026-10-31 | `d6328f4` | `evals/results/bug_docs/latest.json` | Composite Score: 1.0000. Bug Memory (100% Top-1, 100% Recall@3, MRR: 1.0000, 100% Fingerprint Acc, 100% Neg Rejection) across exact fingerprints, timeouts, TypeError memory pointers, connection errors, and validation errors. Living Docs (Precision: 1.0000, Recall: 1.0000, F1: 1.0000, Patch Diff Validity: 1.0000) across route drift, missing symbols, undocumented endpoints, section drift, and compound changes. Regression gate tolerance: min composite score 0.9000. |
+| Project Mentor & Health Evaluation Evals (M12-12) | 2026-11-01 | `31737f4` | `evals/results/mentor/latest.json` | Composite Score: 1.0000. Task Recommendation (Top-1 Accuracy: 1.0000, MRR: 1.0000, Ready Accuracy: 1.0000, Cycle Detection: 100%) across linear prerequisite chains, parallel tasks, priority overrides, branching prerequisites, blocked tasks, and cycle attempts. Health Audit Evaluation (Release Verdict Accuracy: 1.0000, Blocker Precision: 1.0000, Blocker Recall: 1.0000, Blocker F1: 1.0000, Health Score MAE: 2.70, Confidence Accuracy: 1.0000) across pristine MVPs, security blockers, velocity stalls, architectural complexity, and checklist penalties. Regression gate tolerance: min composite score 0.9000. |
 
 ## 10. LangGraph workflow tests
 
@@ -255,6 +256,7 @@ Assertions: untrusted blocks are delimited and escaped in rendered prompts (snap
 | Retrieval eval | `uv run python -m evals.retrieval` |
 | PR intelligence eval | `npm run eval:pr` |
 | Bug memory & living docs eval | `npm run eval:bug-docs` |
+| Project mentor & evaluation eval | `npm run eval:mentor` |
 | Secret scan, dependency audit | per CI configuration |
 
 Exact commands are confirmed when the repository is created ([11](11-mvp-and-implementation-roadmap.md) M1) and then recorded here and in `AGENTS.md`. AI coding agents report the real output of the commands they ran.

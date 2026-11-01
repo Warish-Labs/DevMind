@@ -2,7 +2,7 @@
 
 **Purpose.** Defines the logical PostgreSQL data model, state machines, tenant isolation, and the REST API contracts. It is authoritative for entity names, field names, enumerations, state transitions and endpoint paths. Other documents must use these names.
 
-**Status.** Implemented for MVP schemas and endpoints (Alembic migrations 0001 through 0005, OpenAPI export, and client typed SDK). Post-MVP tables (pull requests, living docs, bug memory) are specified for Milestones 11–12. Related: [02](02-system-architecture.md) · [04](04-project-brain-and-rag.md) · [05](05-agents-and-llm-workflows.md) · [07](07-security-privacy-and-threat-model.md).
+**Status.** Implemented for MVP schemas and endpoints (Alembic migrations 0001 through 0005, OpenAPI export, and client typed SDK). Post-MVP tables (pull requests, living docs, bug memory, project tasks, and evaluations) are implemented for Milestones 11–12. Related: [02](02-system-architecture.md) · [04](04-project-brain-and-rag.md) · [05](05-agents-and-llm-workflows.md) · [07](07-security-privacy-and-threat-model.md).
 
 ---
 
@@ -316,7 +316,8 @@ See the state diagram in [02](02-system-architecture.md) §10.1. The API exposes
 | Jobs | `GET /jobs/{id}` · `GET /jobs/{id}/events` (SSE) · `POST /jobs/{id}/cancel` · `POST /jobs/{id}/approvals/{approval_id}` | job's project permission |
 | Conversations | `GET/POST /projects/{pid}/conversations` · `GET /conversations/{id}` · `POST /conversations/{id}/messages` | `conversation:*` |
 | Project Brain | `GET /projects/{pid}/brain/summary` · `/brain/files` · `/brain/files/{file_id}` · `/brain/symbols` · `POST /brain/search` · `GET /brain/graph?symbol_key=&depth=` · `/brain/snapshots` | `brain:read` |
-| Reports | `GET /projects/{pid}/evaluations` · `GET /evaluations/{id}` · `GET /projects/{pid}/release-readiness/latest` · `POST /projects/{pid}/reports` (export) | `project:read` / `analysis:create` |
+| Reports & Evaluation | `GET /projects/{pid}/evaluations` · `POST /projects/{pid}/evaluations/run` · `GET /projects/{pid}/evaluations/latest` · `GET /projects/{pid}/evaluations/{id}` · `GET /projects/{pid}/release-readiness/latest` · `POST /projects/{pid}/reports` (export) | `project:read` / `analysis:create` |
+| Project tasks | `GET/POST /projects/{pid}/tasks` · `GET /projects/{pid}/tasks/recommend` · `GET/PATCH/DELETE /projects/{pid}/tasks/{id}` · `POST /projects/{pid}/tasks/{id}/dependencies` · `DELETE /projects/{pid}/tasks/{id}/dependencies/{dep_id}` | `project:read` / `project:write` |
 | Bug memory | `GET/POST /projects/{pid}/bugs` · `GET /bugs/{id}` | R1.2 |
 | Review rules | `GET/POST /projects/{pid}/review-rules` · `GET/PATCH/DELETE /projects/{pid}/review-rules/{rule_id}` · `POST /projects/{pid}/review-rules/reset` | `project:read` / `project:write` |
 | GitHub & PRs | `GET /github/oauth/authorize` · `GET /github/oauth/callback` · `GET/POST/DELETE /projects/{pid}/github-binding` · `GET /projects/{pid}/pull-requests` · `GET /projects/{pid}/pull-requests/{id}` · `POST /projects/{pid}/pull-requests/{id}/analyze` · `POST /projects/{pid}/pull-requests/{id}/checklist-triage` | `project:read` / `project:write` (comment posting gated by human approval) |

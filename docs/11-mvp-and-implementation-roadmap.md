@@ -2,7 +2,7 @@
 
 **Purpose.** A phased, dependency-ordered plan from an empty repository to the MVP and then to the later releases. Each milestone is small enough to be built and verified incrementally by a developer working with an AI coding agent (Antigravity).
 
-**Status.** Active / Release 1.2 Complete. Milestones M1 through M11, M13, and M12.1 (Release 1.2: Bug Memory & Living Docs) are completed, tested, and validated. Milestones M12.2 and M12.3 represent post-1.2 releases. No dates or durations are estimated. Milestone IDs (`M1` to `M13`) are cited elsewhere ([04](04-project-brain-and-rag.md) §14 cites M5, [02](02-system-architecture.md) §13 and [10](10-deployment-and-operations.md) cite M10); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
+**Status.** Active / Release 1.3 Complete. Milestones M1 through M11, M13, M12.1 (Release 1.2: Bug Memory & Living Docs), and M12.2 (Release 1.3: Project Mentor & Project Evaluation) are completed, tested, and validated. Milestone M12.3 represents post-1.3 release. No dates or durations are estimated. Milestone IDs (`M1` to `M13`) are cited elsewhere ([04](04-project-brain-and-rag.md) §14 cites M5, [02](02-system-architecture.md) §13 and [10](10-deployment-and-operations.md) cite M10); keep them stable. Terms: [13](13-glossary-and-domain-terminology.md).
 
 ---
 
@@ -276,8 +276,8 @@ Each sub-release follows the same template; scope and acceptance criteria come f
 | Sub-release | Capabilities | Key deliverables | Acceptance focus | Dependencies | Status |
 |---|---|---|---|---|---|
 | **M12.1 (1.2)** | CAP-03 Bug Memory, CAP-04 Living Documentation | Bug records and similarity (keyword + embeddings), error normalizer; doc records, doc-to-symbol links, drift items and patch proposals (human-approved); web screens S-15/S-16; eval harness; operational runbook ([`docs/runbooks/bug-memory-and-living-docs.md`](runbooks/bug-memory-and-living-docs.md)) | Fixture recurring errors matched at recorded baseline; drift detected for a seeded undocumented endpoint; approval gate enforced | M11 | **Complete** |
-| **M12.2 (1.3)** | CAP-08 Project Mentor, CAP-09 Project Evaluation | Task model and dependency-aware ranking; full scoring formula with inputs displayed; release-readiness verdict with listed blockers; Functionality dimension per OQ-18 | Ranking never places a task above an unmet prerequisite; scores deterministic and unit-tested; no category without data | M12.1 | Scheduled |
-| **M12.3 (1.4)** | CAP-07 Deployment Diagnosis | Log upload/paste with redaction preview, parser, env-name check against config, incident records | Fixture logs diagnosed at recorded baseline; cited log lines; no secret stored | M12.1 | Scheduled |
+| **M12.2 (1.3)** | CAP-08 Project Mentor, CAP-09 Project Evaluation | Task model and dependency-aware ranking; full scoring formula with inputs displayed; release-readiness verdict with listed blockers; Functionality dimension per OQ-18; web screen S-17; eval benchmark suite; operational runbook ([`docs/runbooks/project-mentor-and-evaluation.md`](runbooks/project-mentor-and-evaluation.md)) | Ranking never places a task above an unmet prerequisite; scores deterministic and unit-tested; no category without data; cyclic dependencies rejected | M12.1 | **Complete** |
+| **M12.3 (1.4)** | CAP-07 Deployment Diagnosis | Log upload/paste with redaction preview, parser, env-name check against config, incident records | Fixture logs diagnosed at recorded baseline; cited log lines; no secret stored | M12.2 | Scheduled |
 
 Each sub-release: tasks in order (schema, deterministic core, workflow, UI, evaluation set and baseline, docs); required tests per [09](09-testing-and-quality-strategy.md); DoD is the common DoD plus recorded baselines.
 
