@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-deploy-evals` |
-| **Last commit** | `e877af2` (`feat(server): implement M12-17 deployment diagnosis benchmark suite, harness, and E2E tests`) |
-| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 In Progress |
-| **Working tree** | Clean |
-| **Open PR** | [#111](https://github.com/Warish-Labs/DevMind/pull/111) |
+| **Branch** | `feature/m12-deploy-docs` |
+| **Last commit** | Pending commit for M12-18 |
+| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 Complete |
+| **Working tree** | Staging M12-18 documentation and runbook updates |
+| **Open PR** | Pending PR creation |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,21 +19,46 @@
 
 ## 2. Next action (exact)
 
-1. Review and merge PR #111 (`feature/m12-deploy-evals` → `main`) after CI passes.
-2. After PR is merged:
-   - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-deploy-evals` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-evals`).
-   - Create feature branch `feature/m12-deploy-docs` for task **M12-18**: Milestone 12.3 documentation update and operational runbook.
+1. Run fast verification suite: `node scripts/test-all.mjs --fast`.
+2. Commit M12-18 changes, push branch `feature/m12-deploy-docs` to origin via proxy, and open PR on GitHub.
+3. Review and merge PR for `feature/m12-deploy-docs` into `main`.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #111 (`feature/m12-deploy-evals` → `main`) after CI passes.
+Review and merge PR for `feature/m12-deploy-docs` into `main` after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Documentation & Runbook — M12-18: Deployment Diagnosis Operational Runbook & Milestone 12.3 Documentation
+
+- **Date**: 2026-11-01
+- **Branch**: `feature/m12-deploy-docs`
+- **What**:
+  - Implemented comprehensive operational documentation and runbook for Deployment Diagnosis and DeployDoctor (CAP-07, Release 1.4, docs/01 §4, docs/03 §3.4, docs/05 §6.9, docs/07 §6, docs/10 §11):
+    - **Operational Runbook (`docs/runbooks/deployment-diagnosis.md`)**:
+      - Authored complete operational runbook covering:
+        1. Subsystem overview: dual-tier credential redaction, heuristic log parsing across 10 failure categories, environment variable validation (key names only, zero value storage), canonical fingerprinting, deduplication, and precedent retrieval.
+        2. Architecture & Data Flow Mermaid diagram.
+        3. Data model & schema contracts for `deployment_incidents`, `DeploymentDiagnosisRequest`, and `DeploymentDiagnosisResponse`.
+        4. Non-negotiable security & confidentiality guarantees (ADR-047, docs/07 §6): credential redaction with irreversible keyed hashes, tenant boundary enforcement.
+        5. Step-by-step failure playbooks for all 10 failure modes:
+           - Missing environment variables in Pydantic settings.
+           - Database migration revision missing (`alembic stamp`).
+           - Python / Node dependency mismatches.
+           - Port collisions & socket binding failures.
+           - Build & TypeScript compilation failures.
+           - Platform health check expirations and container startup timeouts.
+           - Truncated / insufficient log payloads.
+        6. Verification and evaluation commands (`pnpm eval:deploy`, `pytest server/tests/test_e2e_deployment.py`, `node scripts/test-all.mjs --fast`).
+    - **System Documentation Updates**:
+      - `docs/03-data-model-and-api.md`: Documented Deployment Diagnosis endpoints and updated status to reflect R1.4 deployment incidents table.
+      - `docs/10-deployment-and-operations.md`: Added operational runbook reference link to §18 triage table.
+      - `docs/11-mvp-and-implementation-roadmap.md`: Updated roadmap status to Release 1.4 Complete and marked M12.3 deliverable as Complete.
+      - `PLAN.md`: Marked M12-18 `[x]` concluding Milestone 12.3 and Milestone 12.
 
 ### Evaluation & E2E — M12-17: Deployment Diagnosis Benchmark Datasets, Evaluation Harness, Baselines, and E2E Tests
 
