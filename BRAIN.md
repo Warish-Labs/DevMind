@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-mentor-docs` |
-| **Last commit** | `pending` (`docs: implement M12-13 milestone 12.2 documentation update and operational runbook`) |
+| **Last commit** | `5299de1` (`docs(docs): implement M12-13 milestone 12.2 documentation update and operational runbook`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete |
 | **Working tree** | Clean |
-| **Open PR** | Pending |
+| **Open PR** | [#107](https://github.com/Warish-Labs/DevMind/pull/107) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,8 +19,8 @@
 
 ## 2. Next action (exact)
 
-1. Wait for CI checks on PR (`feature/m12-mentor-docs`) to pass and owner merge into `main`.
-2. After PR is merged:
+1. Wait for CI checks on PR #107 (`feature/m12-mentor-docs`) to pass and owner merge into `main`.
+2. After PR #107 is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
    - Delete branch `feature/m12-mentor-docs` locally and remotely on GitHub (`git push origin --delete feature/m12-mentor-docs`).
    - Create feature branch `feature/m12-deploy-core` for task **M12-14**: Deployment Diagnosis data models (`deployment_incidents`), migrations, log parser, and secret redaction pre-filter.
@@ -29,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR (`feature/m12-mentor-docs` → `main`) after CI passes.
+Review and merge PR #107 (`feature/m12-mentor-docs` → `main`) after CI passes.
 
 ---
 
