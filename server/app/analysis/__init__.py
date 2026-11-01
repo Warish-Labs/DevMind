@@ -41,6 +41,7 @@ from app.analysis.guard_resolution import (
     RouteSensitivity,
     compute_fingerprint,
 )
+from app.analysis.log_parser import LogFrame, LogParser, ParsedDeploymentLog
 from app.analysis.review_buddy import (
     ChangedFile,
     DiffHunk,
@@ -71,7 +72,10 @@ __all__ = [
     "GuardResolutionChain",
     "GuardType",
     "KNOWN_RULES",
+    "LogFrame",
+    "LogParser",
     "NormalizedError",
+    "ParsedDeploymentLog",
     "ParsedDocument",
     "ProjectSecurityConfig",
     "ResolvedGuard",
