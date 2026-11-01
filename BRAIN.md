@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-deploy-agent` |
-| **Last commit** | `pending` (`feat(server): implement M12-15 deployment diagnosis specialist agent, env checker, and REST API`) |
+| **Last commit** | `8d03a75` (`feat(server): implement M12-15 deployment diagnosis specialist agent, env checker, and REST API`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 In Progress |
 | **Working tree** | Clean |
-| **Open PR** | Pending |
+| **Open PR** | [#109](https://github.com/Warish-Labs/DevMind/pull/109) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -29,7 +29,7 @@
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-deploy-agent` into `main` after CI passes.
+Review and merge PR #109 (`feature/m12-deploy-agent` → `main`) after CI passes.
 
 ---
 
