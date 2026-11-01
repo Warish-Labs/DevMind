@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `feature/m12-deploy-docs` |
-| **Last commit** | Pending commit for M12-18 |
+| **Last commit** | `71092f8` (`docs(docs): implement M12-18 milestone 12.3 documentation update and operational runbook`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 Complete |
-| **Working tree** | Staging M12-18 documentation and runbook updates |
-| **Open PR** | Pending PR creation |
+| **Working tree** | Clean |
+| **Open PR** | [#112](https://github.com/Warish-Labs/DevMind/pull/112) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-01 |
 
@@ -19,15 +19,17 @@
 
 ## 2. Next action (exact)
 
-1. Run fast verification suite: `node scripts/test-all.mjs --fast`.
-2. Commit M12-18 changes, push branch `feature/m12-deploy-docs` to origin via proxy, and open PR on GitHub.
-3. Review and merge PR for `feature/m12-deploy-docs` into `main`.
+1. Review and merge PR #112 (`feature/m12-deploy-docs` → `main`) after CI passes.
+2. After PR is merged:
+   - Switch to `main`, pull latest (`git pull --ff-only origin main`).
+   - Delete branch `feature/m12-deploy-docs` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-docs`).
+   - Milestone 12 (Releases 1.2, 1.3, 1.4) is now 100% complete. Prepare for final release verification and smoke audits.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `feature/m12-deploy-docs` into `main` after CI passes.
+Review and merge PR #112 (`feature/m12-deploy-docs` → `main`) after CI passes.
 
 ---
 
