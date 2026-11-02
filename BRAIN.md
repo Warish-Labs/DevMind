@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `docs/release-readiness-final` |
-| **Last commit** | `021b312` (`Merge pull request #112 from Warish-Labs/feature/m12-deploy-docs`) |
+| **Last commit** | `7935825` (`docs(docs): certify MVP and releases 1.1-1.4 release readiness`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · All Milestones Complete (M1–M13, M11, M12.1, M12.2, M12.3) |
-| **Working tree** | Staging final release readiness checklist alignment |
-| **Open PR** | Pending PR creation |
+| **Working tree** | Clean |
+| **Open PR** | [#113](https://github.com/Warish-Labs/DevMind/pull/113) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-02 |
 
@@ -19,16 +19,17 @@
 
 ## 2. Next action (exact)
 
-1. Verify full fast test suite: `node scripts/test-all.mjs --fast`.
-2. Commit release readiness checklist updates, push `docs/release-readiness-final` to origin via proxy, and open PR.
-3. Review and merge PR into `main`.
-4. DevMind MVP and Releases 1.1–1.4 are complete and release-certified.
+1. Review and merge PR #113 (`docs/release-readiness-final` → `main`) after CI passes.
+2. After PR is merged:
+   - Switch to `main`, pull latest (`git pull --ff-only origin main`).
+   - Delete branch `docs/release-readiness-final` locally and remotely on GitHub (`git push origin --delete docs/release-readiness-final`).
+   - Tag release `v0.1.0` on `main`.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `docs/release-readiness-final` into `main` after CI passes.
+Review and merge PR #113 (`docs/release-readiness-final` → `main`) after CI passes.
 
 ---
 
