@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `docs/academic-viva-guide` |
-| **Last commit** | `6c09020` (`Merge pull request #113 from Warish-Labs/docs/release-readiness-final`) |
+| **Last commit** | `486337e` (`docs(docs): add academic demonstration and viva presentation runbook`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · All Milestones Complete (M1–M13, M11, M12.1, M12.2, M12.3) |
-| **Working tree** | Staging academic viva demonstration runbook |
-| **Open PR** | Pending PR creation |
+| **Working tree** | Clean |
+| **Open PR** | [#114](https://github.com/Warish-Labs/DevMind/pull/114) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-02 |
 
@@ -19,15 +19,17 @@
 
 ## 2. Next action (exact)
 
-1. Verify full fast test suite: `node scripts/test-all.mjs --fast`.
-2. Commit academic demonstration guide updates, push branch `docs/academic-viva-guide` to origin via proxy, and open PR.
-3. Review and merge PR into `main`.
+1. Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes.
+2. After PR is merged:
+   - Switch to `main`, pull latest (`git pull --ff-only origin main`).
+   - Delete branch `docs/academic-viva-guide` locally and remotely on GitHub (`git push origin --delete docs/academic-viva-guide`).
+   - Tag release `v1.4.0` on `main`.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR for `docs/academic-viva-guide` into `main` after CI passes.
+Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes.
 
 ---
 
