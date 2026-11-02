@@ -225,7 +225,7 @@ Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes
       - Defined `DeploymentIncident` mapping table `deployment_incidents` with UUIDv7 primary key, tenant scoping (`workspace_id`, `project_id`), deterministic incident `fingerprint`, `summary`, `probable_cause`, `resolution`, `error_signature`, `environment`, `service_name`, `failure_category`, `log_snippet` (sanitized up to 4000 chars), `occurrence_count`, `last_seen_at`, `resolved_at`, `resolved_by`, and extensible JSONB `metadata_`.
       - Exported `DeploymentIncident` in `server/app/persistence/models/__init__.py`.
     - **Alembic Migration (`server/alembic/versions/0018_deployment_incidents.py`)**:
-      - Created revision `0018_deployment_incidents` down-revisioned to `0017_project_mentor_and_evaluations`.
+      - Created revision `0018_deployment_incidents` down-revisioned to `0017_project_mentor_eval`.
       - Added table `deployment_incidents` with foreign keys on `workspaces` and `projects` (`ondelete="CASCADE"`), unique index on `(project_id, fingerprint)`, composite index on `(workspace_id, project_id)`, and filter index on `(project_id, failure_category)`.
       - Updated schema inventory and migration head assertions in `server/tests/test_migrations.py` and `server/tests/test_restore_drill.py`.
     - **Deterministic Log Parser & Redaction Pre-filter (`server/app/analysis/log_parser.py`)**:
@@ -397,7 +397,7 @@ Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes
       - `TaskDependency`: explicit DAG edge table with composite PK (`task_id`, `depends_on_task_id`), cascade deletes, and reverse indexing.
       - `ProjectEvaluation`: release-readiness and multidimensional health evaluation with composite `overall_score`, JSONB `dimension_scores` (functionality, code_quality, security, testing, documentation, architecture), `verdict` (`ready`, `ready_with_warnings`, `not_ready`), `blockers`, `warnings`, `positive_indicators`, and snapshot/evaluator relationships.
       - Exported models via `app.persistence.models.__init__`.
-    - **Alembic Migration (`server/alembic/versions/0017_project_mentor_and_evaluations.py`)**:
+    - **Alembic Migration (`server/alembic/versions/0017_project_mentor_eval.py`)**:
       - Authored schema migration introducing `project_tasks`, `task_dependencies`, and `project_evaluations` with UUIDv7 primary keys, tenant scoping, foreign keys with CASCADE/SET NULL, and performance indexes.
     - **Topological Task DAG Sorter (`server/app/analysis/task_dag.py`)**:
       - Deterministic topological dependency sorting via Kahn's algorithm.
@@ -411,7 +411,7 @@ Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes
     - **Comprehensive Test Suite**:
       - `server/tests/test_task_dag.py` (8 tests): linear sorting, diamond DAGs, self-dependency rejection, 2-node cycle rejection, multi-hop cycle rejection, ready vs blocked ranking, priority/severity weighting, completed task exclusion.
       - `server/tests/test_mentor_repo.py` (7 tests): task creation and retrieval with relationships, update/delete lifecycle, dependency cycle rejection, self-dependency rejection, task multi-tenant isolation, evaluation creation and latest retrieval, and evaluation cross-tenant isolation.
-      - Updated `test_migrations.py` and `test_restore_drill.py` with the new migration head `0017_project_mentor_and_evaluations`.
+      - Updated `test_migrations.py` and `test_restore_drill.py` with the new migration head `0017_project_mentor_eval`.
 - **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). Linting clean (`ruff check`). Formatting clean (`ruff format`). Import boundaries clean (7/7 contracts maintained). Pytest: 15/15 mentor unit tests passed, 878 total server tests passed.
 
 ### Feature — M12-07: Milestone 12.1 Documentation Update and Operational Runbook

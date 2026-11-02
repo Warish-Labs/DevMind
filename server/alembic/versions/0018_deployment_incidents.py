@@ -1,7 +1,7 @@
 """Deployment Incident schema for Deployment Diagnosis (docs/01 CAP-07, docs/03 §3.4).
 
 Revision ID: 0018_deployment_incidents
-Revises: 0017_project_mentor_and_evaluations
+Revises: 0017_project_mentor_eval
 Create Date: 2026-11-01 12:00:00.000000+00:00
 """
 
@@ -14,7 +14,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "0018_deployment_incidents"
-down_revision: str | None = "0017_project_mentor_and_evaluations"
+down_revision: str | None = "0017_project_mentor_eval"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
