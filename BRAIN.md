@@ -7,33 +7,48 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `feature/m12-deploy-docs` |
-| **Last commit** | `71092f8` (`docs(docs): implement M12-18 milestone 12.3 documentation update and operational runbook`) |
-| **Release Tag** | `v0.1.0` (MVP Release Candidate) · Milestone 11 Complete · Milestone 12.1 Complete · Milestone 12.2 Complete · Milestone 12.3 Complete |
+| **Branch** | `docs/release-readiness-final` |
+| **Last commit** | `7935825` (`docs(docs): certify MVP and releases 1.1-1.4 release readiness`) |
+| **Release Tag** | `v0.1.0` (MVP Release Candidate) · All Milestones Complete (M1–M13, M11, M12.1, M12.2, M12.3) |
 | **Working tree** | Clean |
-| **Open PR** | [#112](https://github.com/Warish-Labs/DevMind/pull/112) |
+| **Open PR** | [#113](https://github.com/Warish-Labs/DevMind/pull/113) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
-| **Date** | 2026-11-01 |
+| **Date** | 2026-11-02 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Review and merge PR #112 (`feature/m12-deploy-docs` → `main`) after CI passes.
+1. Review and merge PR #113 (`docs/release-readiness-final` → `main`) after CI passes.
 2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `feature/m12-deploy-docs` locally and remotely on GitHub (`git push origin --delete feature/m12-deploy-docs`).
-   - Milestone 12 (Releases 1.2, 1.3, 1.4) is now 100% complete. Prepare for final release verification and smoke audits.
+   - Delete branch `docs/release-readiness-final` locally and remotely on GitHub (`git push origin --delete docs/release-readiness-final`).
+   - Tag release `v0.1.0` on `main`.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #112 (`feature/m12-deploy-docs` → `main`) after CI passes.
+Review and merge PR #113 (`docs/release-readiness-final` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Release Readiness — Milestone 12 Complete & Full Platform Certification (Releases 1.1–1.4)
+
+- **Date**: 2026-11-02
+- **Branch**: `docs/release-readiness-final`
+- **What**:
+  - Confirmed merge of PR #112 (`feature/m12-deploy-docs` -> `main`), fast-forward updated local `main`, deleted merged feature branch locally and remotely on GitHub origin, and pruned remotes.
+  - Completed all roadmap capabilities across the full project lifecycle:
+    - **Foundations & Core (M1–M10, M13)**: Multi-tenant auth, Project Brain, AST parsers, Hybrid RAG, LangGraph workflows, Privacy-first VS Code extension, Free-tier cloud profile (Vercel, Render, Neon, Upstash), Staging rehearsals, Security defenses.
+    - **Release 1.1 (M11)**: GitHub App webhook ingestion, ReviewBuddy review rules, change-impact subgraph analysis, workspace invitations, and audit log viewer.
+    - **Release 1.2 (M12.1)**: Bug Memory incident recurrence deduplication, hybrid similarity search, DocsAlive documentation drift detection, and patch approval gates.
+    - **Release 1.3 (M12.2)**: Project Mentor topological DAG dependency backlog scheduler, and Project Evaluation multidimensional health scoring (Quality, Security, Architecture, Velocity, Documentation) with release blocker synthesis.
+    - **Release 1.4 (M12.3)**: Deployment Diagnosis with dual-tier credential redaction, deterministic failure classification (10 failure modes), key-only environment variable name validation, incident deduplication, and historical resolution retrieval.
+  - Updated [`docs/runbooks/release-checklist.md`](docs/runbooks/release-checklist.md) to record the active, complete status of Releases 1.1 through 1.4.
+  - All 13 test suites and quality gates verified clean.
 
 ### Documentation & Runbook — M12-18: Deployment Diagnosis Operational Runbook & Milestone 12.3 Documentation
 
