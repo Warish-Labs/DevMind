@@ -7,11 +7,11 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `docs/release-readiness-final` |
-| **Last commit** | `7935825` (`docs(docs): certify MVP and releases 1.1-1.4 release readiness`) |
+| **Branch** | `docs/academic-viva-guide` |
+| **Last commit** | `486337e` (`docs(docs): add academic demonstration and viva presentation runbook`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · All Milestones Complete (M1–M13, M11, M12.1, M12.2, M12.3) |
 | **Working tree** | Clean |
-| **Open PR** | [#113](https://github.com/Warish-Labs/DevMind/pull/113) |
+| **Open PR** | [#114](https://github.com/Warish-Labs/DevMind/pull/114) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-02 |
 
@@ -19,21 +19,40 @@
 
 ## 2. Next action (exact)
 
-1. Review and merge PR #113 (`docs/release-readiness-final` → `main`) after CI passes.
+1. Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes.
 2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `docs/release-readiness-final` locally and remotely on GitHub (`git push origin --delete docs/release-readiness-final`).
-   - Tag release `v0.1.0` on `main`.
+   - Delete branch `docs/academic-viva-guide` locally and remotely on GitHub (`git push origin --delete docs/academic-viva-guide`).
+   - Tag release `v1.4.0` on `main`.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #113 (`docs/release-readiness-final` → `main`) after CI passes.
+Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes.
 
 ---
 
 ## 4. Done log
+
+### Academic Viva & Evaluation — Academic Demonstration & Viva Presentation Guide
+
+- **Date**: 2026-11-02
+- **Branch**: `docs/academic-viva-guide`
+- **What**:
+  - Authored comprehensive operational and viva defense runbook [`docs/runbooks/academic-demonstration-and-viva.md`](docs/runbooks/academic-demonstration-and-viva.md):
+    - One-sentence core thesis pitch and research problem framing.
+    - System architecture diagram illustrating Project Brain multi-agent synchronization.
+    - Structured 15-minute live demonstration script covering all 5 core acts:
+      1. Code & Security Intelligence (AST local scanning, interactive symbol graph, E2 evidence tiers).
+      2. PR Intelligence & ReviewBuddy (webhook ingestion, change-impact graph, custom rules).
+      3. Bug Memory & Living Docs (normalized fingerprinting, recurrence deduplication, DocsAlive drift patches).
+      4. Project Mentor & Health Evaluation (topological DAG Kahn ordering, cycle prevention, release-readiness verdict).
+      5. Deployment Diagnosis (dual-tier credential redaction, 10 failure categories, env var checking).
+    - Architectural differentiator matrix comparing DevMind against generic coding assistants.
+    - Rigorous model answers for viva examiners covering hallucinations, free-tier scaling (ADR-046), multi-tenant security, and empirical evaluation baselines.
+    - Pre-viva system verification checklist.
+  - Linked runbook in [`docs/10-deployment-and-operations.md`](docs/10-deployment-and-operations.md) §18.
 
 ### Release Readiness — Milestone 12 Complete & Full Platform Certification (Releases 1.1–1.4)
 
