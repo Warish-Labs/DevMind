@@ -1,6 +1,6 @@
 """Project Mentor and Evaluation schema for tasks, dependencies, and health evaluations (docs/01 CAP-08, CAP-09, docs/03 §3.6, §3.7).
 
-Revision ID: 0017_project_mentor_and_evaluations
+Revision ID: 0017_project_mentor_eval
 Revises: 0016_living_documentation
 Create Date: 2026-10-31 15:00:00.000000+00:00
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "0017_project_mentor_and_evaluations"
+revision: str = "0017_project_mentor_eval"
 down_revision: str | None = "0016_living_documentation"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None

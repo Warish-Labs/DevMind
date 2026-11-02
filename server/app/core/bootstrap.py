@@ -11,7 +11,7 @@ import os
 from typing import Any
 
 from alembic.config import Config
-from sqlalchemy import select
+from sqlalchemy import create_engine, select, text
 
 from alembic import command
 from app.core.settings import Settings, get_settings
@@ -37,6 +37,18 @@ def run_alembic_migrations(settings: Settings | None = None) -> bool:
 
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+    # Pre-widen alembic_version.version_num if PostgreSQL to prevent StringDataRightTruncation
+    if "postgresql" in url:
+        try:
+            engine = create_engine(url)
+            with engine.begin() as conn:
+                conn.execute(
+                    text("ALTER TABLE IF EXISTS alembic_version ALTER COLUMN version_num TYPE VARCHAR(64);")
+                )
+            engine.dispose()
+        except Exception as exc:
+            logger.debug("Could not pre-widen alembic_version column: %s", exc)
 
     try:
         logger.info("Executing Alembic migrations (head) using %s", ini_path)
