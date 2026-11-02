@@ -193,8 +193,10 @@ Per [docs/01 §17](../01-product-requirements.md#17-acceptance-criteria-summary)
 | **Database Connections** | **Zero live DB connections** (ADR-034 strictly enforced). Extension never connects directly to Neon/PostgreSQL. | Schema inference via uploaded migration DDL or consented snapshot metadata. |
 | **In-Extension Chat** | **No conversational AI inside VS Code** (ADR-034). Extension provides local scanning, diagnostics, and consent controls. | Conversational intelligence resides in the web app shell; deep links connect IDE to web traces. |
 | **Evidence Tiers** | **E0/E1**: Local pattern-engine match / AST heuristic.<br>**E2**: Server-validated policy solver with resolvable trace. | **E3 (Dynamic sandbox execution)**: Deferred to v1.4 with isolated virtualization and human approval. |
-| **Pull Request Review** | PR summarization and ReviewBuddy checklists deferred. | **Release 1.1 (M11)**: GitHub App webhooks, PRAgent impact analysis, and review rules. |
-| **Bug Memory & Living Docs** | Workspace-wide bug recurrence memory deferred. | **Release 1.2–1.3 (M12)**: Living documentation sync and semantic incident memory. |
+| **Pull Request Review** | PR summarization and ReviewBuddy checklists. | **Release 1.1 (M11) — Complete**: GitHub App webhooks, PRAgent impact analysis, and review rules. |
+| **Bug Memory & Living Docs** | Workspace-wide bug recurrence memory and documentation drift. | **Release 1.2 (M12.1) — Complete**: Living documentation sync and semantic incident memory. |
+| **Project Mentor & Evaluation** | Multidimensional health scorecards, DAG task ranking, release blockers. | **Release 1.3 (M12.2) — Complete**: Project Mentor DAG scheduler and Project Evaluation health auditing. |
+| **Deployment Diagnosis** | Log failure classification, credential redaction, env var checking. | **Release 1.4 (M12.3) — Complete**: DeployDoctor specialist agent, incident ledger, and remediation playbooks. |
 | **Infrastructure Profile** | **Free Tier limits** (ADR-046): Render free web service sleeps after 15m idle; Neon 0.5 CU limits. | Optional self-hosted Docker Compose deployment and funded cloud profiles. |
 
 ---
