@@ -5,6 +5,21 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ---
 
+## [0.2.0] — 2026-11-03
+
+### Added
+
+- **Production API Integration**: Standardized production API configuration pointing to `https://api.devmind.warishlabs.in/api/v1` with runtime override capability via VS Code machine settings.
+- **Enhanced Sync Logging**: High-water mark ceiling protection and structured sync audit history.
+- **Zero-Secret Distribution**: Packaged `.vsix` bundle containing clean assets, production bundles, and zero runtime secret leakages.
+
+### Changed
+
+- Updated extension version to `0.2.0` aligned with DevMind v1.4.0 release.
+- Hardened environment variable resolution across production and local execution profiles.
+
+---
+
 ## [0.1.2] — 2026-10-25
 
 ### Added

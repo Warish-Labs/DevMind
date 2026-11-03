@@ -22,10 +22,34 @@ export default function EarlyAccessPage() {
         Building the Continuous Project Brain
       </h1>
 
-      <p className="text-base sm:text-lg text-[var(--fg-1)] mb-12 max-w-2xl leading-relaxed">
+      <p className="text-base sm:text-lg text-[var(--fg-1)] mb-8 max-w-2xl leading-relaxed">
         DevMind is being built entirely in public with rigorous architectural decisions and
         deterministic verification. We are not selling hype or closed prototypes.
       </p>
+
+      {/* Platform Live CTA Banner */}
+      <div className="mb-12 p-6 rounded-panel border border-[var(--signal)]/30 bg-[var(--signal)]/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-[var(--fg-0)]">DevMind Web Platform is Live</h2>
+          <p className="text-sm text-[var(--fg-1)]">
+            Sign up or log in with Clerk to access workspaces, scans, and project mentor.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
+          <Link
+            href="/sign-up"
+            className="flex-1 sm:flex-initial px-4 py-2 rounded-control text-xs sm:text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono text-center"
+          >
+            Create Account
+          </Link>
+          <Link
+            href="/sign-in"
+            className="flex-1 sm:flex-initial px-4 py-2 rounded-control text-xs sm:text-sm font-medium border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono text-center"
+          >
+            Sign In
+          </Link>
+        </div>
+      </div>
 
       {/* Grid of What Exists vs What is Next */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">

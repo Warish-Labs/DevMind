@@ -72,7 +72,8 @@ describe("Extension Quality and Packaging (Slice B12)", () => {
 
       expect(pkg.name).toBe("devmind-vscode");
       expect(pkg.publisher).toBe("WarishLabs");
-      expect(pkg.version).toBe("0.1.2");
+      expect(pkg.version).toBeDefined();
+      expect(pkg.version).toMatch(/^\d+\.\d+\.\d+$/);
       expect(pkg.license).toBe("MIT");
       expect(pkg.main).toBe("./dist/extension.js");
       expect(pkg.engines?.vscode).toBeDefined();

@@ -35,6 +35,23 @@ Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes
 
 ## 4. Done log
 
+### Documentation & Distribution — User Guide, Extension v0.2.0 & Clerk Authentication CTAs
+
+- **Date**: 2026-11-03
+- **Branch**: `feature/user-guide-extension-clerk-cta`
+- **What**:
+  - **Comprehensive Platform User Guide**: Authored [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) detailing architecture, quickstart, Clerk sign-in/sign-up, workspace/project management, VS Code companion setup, AST scanning & privacy-first consent preview, web platform deep-dives (Brain, Mentor, DocsAlive, Bug Memory, Deployment Diagnosis, PR Intelligence), environment variables, and troubleshooting.
+  - **Clerk Authentication CTAs**:
+    - Updated [`client/components/layout/Header.tsx`](client/components/layout/Header.tsx) with prominent "Sign In" and "Sign Up" links.
+    - Updated [`client/components/hero/Hero.tsx`](client/components/hero/Hero.tsx) with "Get Started Free" (`/sign-up`) and "Sign In" (`/sign-in`).
+    - Updated [`client/components/sections/Section08CTA.tsx`](client/components/sections/Section08CTA.tsx) with "Get Started Free" and "Sign In with Clerk".
+    - Updated [`client/app/early-access/page.tsx`](client/app/early-access/page.tsx) with live platform CTA banner.
+  - **VS Code Extension Rebuild (v0.2.0)**:
+    - Bumped extension version to `0.2.0` in `extension/package.json` and updated `tests/quality.test.ts`.
+    - Documented release in `extension/CHANGELOG.md`.
+    - Packaged `dist/devmind-vscode.vsix` and `dist/devmind-vscode-pre-release.vsix` with production defaults (`https://api.devmind.warishlabs.in/api/v1`).
+  - **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). All 80 extension tests and 209 client tests passed.
+
 ### Academic Viva & Evaluation — Academic Demonstration & Viva Presentation Guide
 
 - **Date**: 2026-11-02
