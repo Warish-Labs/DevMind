@@ -7,29 +7,27 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `docs/academic-viva-guide` |
-| **Last commit** | `486337e` (`docs(docs): add academic demonstration and viva presentation runbook`) |
+| **Branch** | `fix/auth-navigation-and-user-guide` |
+| **Last commit** | `9dbfe32` (`feat(docs): add comprehensive user guide, bump extension to v0.2.0, and add clerk auth ctas`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · All Milestones Complete (M1–M13, M11, M12.1, M12.2, M12.3) |
-| **Working tree** | Clean |
-| **Open PR** | [#114](https://github.com/Warish-Labs/DevMind/pull/114) |
+| **Working tree** | Staged/Committed |
+| **Open PR** | Open PR after push |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
-| **Date** | 2026-11-02 |
+| **Date** | 2026-11-06 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes.
-2. After PR is merged:
-   - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `docs/academic-viva-guide` locally and remotely on GitHub (`git push origin --delete docs/academic-viva-guide`).
-   - Tag release `v1.4.0` on `main`.
+1. Commit changes on `fix/auth-navigation-and-user-guide`.
+2. Push branch to GitHub: `git push -u origin fix/auth-navigation-and-user-guide`.
+3. Open PR on GitHub for owner review.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes.
+Review and merge PR (`fix/auth-navigation-and-user-guide` → `main`) on GitHub.
 
 ---
 
