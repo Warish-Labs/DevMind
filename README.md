@@ -33,6 +33,7 @@
   <a href="#8-privacy-by-design--data-boundary"><strong>Privacy</strong></a> ·
   <a href="#11-getting-started"><strong>Getting Started</strong></a> ·
   <a href="#14-roadmap--honest-status"><strong>Roadmap</strong></a> ·
+  <a href="USER-GUIDE.md"><strong>User Guide</strong></a> ·
   <a href="docs/00-documentation-index.md"><strong>Documentation</strong></a>
 </p>
 
@@ -470,6 +471,7 @@ The repository contains 18 comprehensive technical specifications and operationa
 | [docs/12-architecture-decisions-and-open-questions.md](docs/12-architecture-decisions-and-open-questions.md) | Register of 49 accepted Architectural Decision Records (ADRs)      |
 | [docs/13-glossary-and-domain-terminology.md](docs/13-glossary-and-domain-terminology.md)                     | Standard domain glossary and terminology definitions               |
 | [docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md)                                                                   | Step-by-step developer and owner operational setup manual          |
+| [USER-GUIDE.md](USER-GUIDE.md)                                                                               | Complete platform walkthrough, extension setup, and user manual    |
 | [brand/BRAND-GUIDE.md](brand/BRAND-GUIDE.md)                                                                 | DevMind visual identity, typography, tokens, and lockup rules      |
 
 ---

@@ -87,10 +87,16 @@ export function Section08CTA() {
 
         <div className="flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="/early-access"
+            href="/sign-up"
             className="px-6 py-3 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
           >
-            Open DevMind
+            Get Started Free →
+          </Link>
+          <Link
+            href="/sign-in"
+            className="px-6 py-3 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono cursor-pointer"
+          >
+            Sign In with Clerk
           </Link>
           <a
             href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"

@@ -65,22 +65,28 @@ export function Header() {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/sign-in"
+            className="text-xs sm:text-sm font-mono text-[var(--fg-1)] hover:text-[var(--fg-0)] transition-colors px-2 sm:px-2.5 py-1.5"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/sign-up"
+            className="inline-flex items-center justify-center px-3 sm:px-3.5 py-1.5 rounded-control text-xs sm:text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
+          >
+            Sign Up
+          </Link>
           <a
             href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-mono font-medium border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-mono font-medium border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors"
           >
             <span>VS Code Extension</span>
             <span className="text-[var(--signal)]">↗</span>
           </a>
-          <Link
-            href="/early-access"
-            className="inline-flex items-center justify-center px-4 py-2 rounded-control text-xs sm:text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
-          >
-            Open DevMind
-          </Link>
         </div>
       </div>
     </header>

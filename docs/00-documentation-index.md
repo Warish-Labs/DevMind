@@ -44,6 +44,7 @@ Inline markers used in the documents:
 | 08 | [UI/UX design specification](08-ui-ux-design-specification.md) | Visual identity and screens | Design tokens, screens, motion, accessibility, logo rules (§19) |
 | brand | [brand/BRAND-GUIDE.md](../brand/BRAND-GUIDE.md) | Logo and identity assets | File inventory, usage; tokens source copy |
 | prompt | [ANTIGRAVITY_PROMPT.md](ANTIGRAVITY_PROMPT.md) | Master implementation prompt for the AI coding agent | Execution order, workflow, phase specifications |
+| guide | [USER-GUIDE.md](USER-GUIDE.md) | End-user manual: setup, extension, scanning, web platform features | End-user orientation and operational workflows |
 | guide | [SETUP-GUIDE.md](SETUP-GUIDE.md) | Owner's manual: accounts, keys, GitHub, deploy, publish | Human-only steps and free-tier setup |
 | showcase | [showcase/](showcase/README.personal.md) | README kit for the personal showcase repo | Redirect README content |
 | 09 | [Testing and quality](09-testing-and-quality-strategy.md) | Tests, evaluations, gates | Quality gates, fixtures, evaluation baselines |

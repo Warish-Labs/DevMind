@@ -22,10 +22,87 @@ export default function EarlyAccessPage() {
         Building the Continuous Project Brain
       </h1>
 
-      <p className="text-base sm:text-lg text-[var(--fg-1)] mb-12 max-w-2xl leading-relaxed">
+      <p className="text-base sm:text-lg text-[var(--fg-1)] mb-8 max-w-2xl leading-relaxed">
         DevMind is being built entirely in public with rigorous architectural decisions and
         deterministic verification. We are not selling hype or closed prototypes.
       </p>
+
+      {/* Platform Access Hub - Sign In / Sign Up Cards */}
+      <div className="mb-12 p-6 sm:p-8 rounded-panel border border-[var(--signal)]/40 bg-[var(--bg-1)] shadow-lg">
+        <div className="mb-6 pb-6 border-b border-[var(--line-1)]">
+          <div className="text-xs font-mono uppercase tracking-wider text-[var(--signal)] font-semibold mb-1">
+            Platform Authentication · Clerk Live Integration
+          </div>
+          <h2 className="text-2xl font-display text-[var(--fg-0)]">
+            Sign In or Create Your Account
+          </h2>
+          <p className="text-sm text-[var(--fg-1)] mt-1">
+            Access your Project Brain, developer workspaces, AST findings, and architectural scans.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link
+            href="/sign-up"
+            className="p-5 rounded-control border border-[var(--signal)] bg-[var(--signal)]/10 hover:bg-[var(--signal)]/20 transition-all flex flex-col justify-between group cursor-pointer"
+          >
+            <div>
+              <div className="text-xs font-mono uppercase text-[var(--signal)] font-semibold mb-1">
+                New User
+              </div>
+              <div className="text-lg font-semibold text-[var(--fg-0)] group-hover:text-[var(--signal)] transition-colors">
+                Create Account (Sign Up) →
+              </div>
+              <p className="text-xs text-[var(--fg-1)] mt-2">
+                Register via Clerk with GitHub, Google, or Email to start a Project Brain.
+              </p>
+            </div>
+            <span className="mt-4 inline-flex items-center text-xs font-mono text-[var(--signal)] font-medium">
+              Register with Clerk →
+            </span>
+          </Link>
+
+          <Link
+            href="/sign-in"
+            className="p-5 rounded-control border border-[var(--line-2)] bg-[var(--bg-0)] hover:border-[var(--signal)]/60 transition-all flex flex-col justify-between group cursor-pointer"
+          >
+            <div>
+              <div className="text-xs font-mono uppercase text-[var(--ref)] font-semibold mb-1">
+                Returning User
+              </div>
+              <div className="text-lg font-semibold text-[var(--fg-0)] group-hover:text-[var(--ref)] transition-colors">
+                Sign In with Clerk →
+              </div>
+              <p className="text-xs text-[var(--fg-1)] mt-2">
+                Log into your existing workspace, inspect active scans, and review pull requests.
+              </p>
+            </div>
+            <span className="mt-4 inline-flex items-center text-xs font-mono text-[var(--ref)] font-medium">
+              Open Sign-In Screen →
+            </span>
+          </Link>
+
+          <Link
+            href="/workspaces"
+            className="p-5 rounded-control border border-[var(--line-1)] bg-[var(--bg-0)] hover:border-[var(--line-2)] transition-all flex flex-col justify-between group cursor-pointer"
+          >
+            <div>
+              <div className="text-xs font-mono uppercase text-[var(--fg-2)] font-semibold mb-1">
+                Already Signed In?
+              </div>
+              <div className="text-lg font-semibold text-[var(--fg-0)] group-hover:text-[var(--signal)] transition-colors">
+                Open Workspaces Dashboard →
+              </div>
+              <p className="text-xs text-[var(--fg-1)] mt-2">
+                Jump directly to your active workspaces, projects, and findings.
+              </p>
+            </div>
+            <span className="mt-4 inline-flex items-center text-xs font-mono text-[var(--fg-2)] font-medium">
+              View Workspaces →
+            </span>
+          </Link>
+        </div>
+      </div>
 
       {/* Grid of What Exists vs What is Next */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">

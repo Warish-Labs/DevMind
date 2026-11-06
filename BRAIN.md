@@ -7,33 +7,50 @@
 ## 1. Current state
 
 | Field | Value |
-| **Branch** | `docs/academic-viva-guide` |
-| **Last commit** | `486337e` (`docs(docs): add academic demonstration and viva presentation runbook`) |
+| **Branch** | `fix/auth-navigation-and-user-guide` |
+| **Last commit** | `6c768d1` (`fix(client): make auth access hub prominent on early-access page and add root user guide`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · All Milestones Complete (M1–M13, M11, M12.1, M12.2, M12.3) |
 | **Working tree** | Clean |
-| **Open PR** | [#114](https://github.com/Warish-Labs/DevMind/pull/114) |
+| **Open PR** | [#117](https://github.com/Warish-Labs/DevMind/pull/117) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
-| **Date** | 2026-11-02 |
+| **Date** | 2026-11-06 |
 
 ---
 
 ## 2. Next action (exact)
 
-1. Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes.
+1. Review and merge PR #117 (`fix/auth-navigation-and-user-guide` → `main`) on GitHub.
 2. After PR is merged:
    - Switch to `main`, pull latest (`git pull --ff-only origin main`).
-   - Delete branch `docs/academic-viva-guide` locally and remotely on GitHub (`git push origin --delete docs/academic-viva-guide`).
-   - Tag release `v1.4.0` on `main`.
+   - Delete branch `fix/auth-navigation-and-user-guide` locally and remotely on GitHub (`git push origin --delete fix/auth-navigation-and-user-guide`).
+   - Proceed to next milestone/task.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR #114 (`docs/academic-viva-guide` → `main`) after CI passes.
+Review and merge PR #117 on GitHub: https://github.com/Warish-Labs/DevMind/pull/117
 
 ---
 
 ## 4. Done log
+
+### Documentation & Distribution — User Guide, Extension v0.2.0 & Clerk Authentication CTAs
+
+- **Date**: 2026-11-03
+- **Branch**: `feature/user-guide-extension-clerk-cta`
+- **What**:
+  - **Comprehensive Platform User Guide**: Authored [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) detailing architecture, quickstart, Clerk sign-in/sign-up, workspace/project management, VS Code companion setup, AST scanning & privacy-first consent preview, web platform deep-dives (Brain, Mentor, DocsAlive, Bug Memory, Deployment Diagnosis, PR Intelligence), environment variables, and troubleshooting.
+  - **Clerk Authentication CTAs**:
+    - Updated [`client/components/layout/Header.tsx`](client/components/layout/Header.tsx) with prominent "Sign In" and "Sign Up" links.
+    - Updated [`client/components/hero/Hero.tsx`](client/components/hero/Hero.tsx) with "Get Started Free" (`/sign-up`) and "Sign In" (`/sign-in`).
+    - Updated [`client/components/sections/Section08CTA.tsx`](client/components/sections/Section08CTA.tsx) with "Get Started Free" and "Sign In with Clerk".
+    - Updated [`client/app/early-access/page.tsx`](client/app/early-access/page.tsx) with live platform CTA banner.
+  - **VS Code Extension Rebuild (v0.2.0)**:
+    - Bumped extension version to `0.2.0` in `extension/package.json` and updated `tests/quality.test.ts`.
+    - Documented release in `extension/CHANGELOG.md`.
+    - Packaged `dist/devmind-vscode.vsix` and `dist/devmind-vscode-pre-release.vsix` with production defaults (`https://api.devmind.warishlabs.in/api/v1`).
+  - **Verification**: `node scripts/test-all.mjs --fast` (13 passed, 0 failed, 1 skipped). All 80 extension tests and 209 client tests passed.
 
 ### Academic Viva & Evaluation — Academic Demonstration & Viva Presentation Guide
 

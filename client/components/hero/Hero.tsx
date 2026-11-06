@@ -182,10 +182,17 @@ export function Hero() {
             {/* CTAs */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
               <Link
-                href="/early-access"
-                className="px-5 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono"
+                href="/sign-up"
+                className="px-5 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
               >
-                Open DevMind
+                Get Started Free →
+              </Link>
+
+              <Link
+                href="/sign-in"
+                className="px-4 py-2.5 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono cursor-pointer"
+              >
+                Sign In
               </Link>
 
               <a
