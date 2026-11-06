@@ -8,10 +8,10 @@
 
 | Field | Value |
 | **Branch** | `fix/auth-navigation-and-user-guide` |
-| **Last commit** | `9dbfe32` (`feat(docs): add comprehensive user guide, bump extension to v0.2.0, and add clerk auth ctas`) |
+| **Last commit** | `6c768d1` (`fix(client): make auth access hub prominent on early-access page and add root user guide`) |
 | **Release Tag** | `v0.1.0` (MVP Release Candidate) · All Milestones Complete (M1–M13, M11, M12.1, M12.2, M12.3) |
-| **Working tree** | Staged/Committed |
-| **Open PR** | Open PR after push |
+| **Working tree** | Clean |
+| **Open PR** | [#117](https://github.com/Warish-Labs/DevMind/pull/117) |
 | **Last CI result** | `test-all --fast`: 13 passed, 0 failed, 1 skipped |
 | **Date** | 2026-11-06 |
 
@@ -19,15 +19,17 @@
 
 ## 2. Next action (exact)
 
-1. Commit changes on `fix/auth-navigation-and-user-guide`.
-2. Push branch to GitHub: `git push -u origin fix/auth-navigation-and-user-guide`.
-3. Open PR on GitHub for owner review.
+1. Review and merge PR #117 (`fix/auth-navigation-and-user-guide` → `main`) on GitHub.
+2. After PR is merged:
+   - Switch to `main`, pull latest (`git pull --ff-only origin main`).
+   - Delete branch `fix/auth-navigation-and-user-guide` locally and remotely on GitHub (`git push origin --delete fix/auth-navigation-and-user-guide`).
+   - Proceed to next milestone/task.
 
 ---
 
 ## 3. Waiting on owner
 
-Review and merge PR (`fix/auth-navigation-and-user-guide` → `main`) on GitHub.
+Review and merge PR #117 on GitHub: https://github.com/Warish-Labs/DevMind/pull/117
 
 ---
 
