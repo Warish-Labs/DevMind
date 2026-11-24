@@ -311,7 +311,7 @@ export default function OnboardingPage() {
                         </p>
                       </div>
                       <a
-                        href={`vscode://devmind.devmind-vscode/connect?project=${encodeURIComponent(
+                        href={`vscode://WarishLabs.devmind-vscode/connect?project=${encodeURIComponent(
                           state.projectName
                         )}`}
                         className="shrink-0 px-3 py-1.5 text-xs bg-[var(--bg-1)] border border-[var(--line-3)] text-[var(--fg-0)] rounded-[var(--radius-control)] hover:bg-[var(--bg-0)] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { CoverageHealthStrip } from "./CoverageHealthStrip";
@@ -9,7 +9,13 @@ import { FindingsPanel } from "./FindingsPanel";
 import { ActivityPanel } from "./ActivityPanel";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { BrainIcon, ChatIcon, SettingsIcon, FolderIcon } from "@/components/shell/icons";
+import {
+  BrainIcon,
+  ChatIcon,
+  SettingsIcon,
+  FolderIcon,
+  ExternalLinkIcon,
+} from "@/components/shell/icons";
 import {
   SAMPLE_FINDINGS,
   SAMPLE_HEALTH_STATS,
@@ -18,6 +24,7 @@ import {
   getHighestPriorityFinding,
 } from "./types";
 import type { FindingItem } from "@devmind/common/api";
+import { apiClient } from "@/lib/api";
 
 interface ProjectOverviewProps {
   projectId: string;
@@ -27,7 +34,8 @@ export function ProjectOverview({ projectId }: ProjectOverviewProps) {
   const { currentProject, syncMode, setScanStatus } = useApp();
 
   const [findings, setFindings] = useState<FindingItem[]>(SAMPLE_FINDINGS);
-  const [findingsLoading] = useState(false);
+  const [healthStats, setHealthStats] = useState(SAMPLE_HEALTH_STATS);
+  const [findingsLoading, setFindingsLoading] = useState(false);
   const [findingsError, setFindingsError] = useState<string | null>(null);
 
   const [activityLoading] = useState(false);
@@ -45,10 +53,72 @@ export function ProjectOverview({ projectId }: ProjectOverviewProps) {
     findings.filter((f) => f.status === "open")
   );
 
+  // Fetch live findings and brain summary from Project Brain
+  useEffect(() => {
+    let active = true;
+
+    apiClient
+      .listFindings(projectId)
+      .then((items) => {
+        if (!active) return;
+        if (items && items.length > 0) {
+          setFindings(items);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        // Keep fallback sample data for dev/testing
+      })
+      .finally(() => {
+        if (active) setFindingsLoading(false);
+      });
+
+    apiClient
+      .getBrainSummary(projectId)
+      .then((summary) => {
+        if (!active || !summary) return;
+        const openFindings = summary.findings_summary?.open ?? 0;
+        const critFindings = summary.findings_summary?.critical ?? 0;
+        const highFindings = summary.findings_summary?.high ?? 0;
+        const totalFiles = summary.total_files || SAMPLE_HEALTH_STATS.totalFiles;
+        const analyzedFiles = summary.total_files || SAMPLE_HEALTH_STATS.analyzedFiles;
+        const calculatedScore = Math.max(0, 100 - critFindings * 20 - highFindings * 10);
+        const grade =
+          calculatedScore >= 90
+            ? "A"
+            : calculatedScore >= 75
+              ? "B"
+              : calculatedScore >= 60
+                ? "C"
+                : "D";
+
+        setHealthStats((prev) => ({
+          ...prev,
+          totalFiles,
+          analyzedFiles,
+          analysisCoveragePct:
+            totalFiles > 0 ? Math.round((analyzedFiles / totalFiles) * 100) : 100,
+          tier1AstFiles: totalFiles,
+          tier2GraphFiles: summary.total_symbols > 0 ? totalFiles : prev.tier2GraphFiles,
+          openRisksCount: openFindings,
+          criticalRisksCount: critFindings,
+          securityScore: calculatedScore,
+          securityGrade: grade,
+        }));
+      })
+      .catch(() => {
+        // Fallback to sample health stats
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [projectId]);
+
   const handleTriggerScan = () => {
-    setScanStatus("Scanning 42 files (Tier 1 AST)...");
+    setScanStatus("Scanning files (Tier 1 AST)...");
     setTimeout(() => {
-      setScanStatus("Scan complete · 42 files up to date");
+      setScanStatus("Scan complete · Codebase models up to date");
     }, 2000);
   };
 
@@ -84,26 +154,46 @@ export function ProjectOverview({ projectId }: ProjectOverviewProps) {
 
         {/* Quick Screen Actions */}
         <div className="flex items-center gap-2 flex-wrap">
+          <Link href={`/settings/extension-token?projectId=${projectId}`}>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="flex items-center gap-1.5 font-mono cursor-pointer"
+            >
+              <span>Connect VS Code</span>
+              <ExternalLinkIcon size={12} className="text-[var(--signal)]" />
+            </Button>
+          </Link>
+
           <Button
             type="button"
             variant="secondary"
             size="sm"
             onClick={handleTriggerScan}
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-1.5 cursor-pointer"
           >
             <BrainIcon size={14} />
             <span>Scan AST</span>
           </Button>
 
           <Link href={`/projects/${projectId}/chat`}>
-            <Button variant="primary" size="sm" className="flex items-center gap-1.5">
+            <Button
+              variant="primary"
+              size="sm"
+              className="flex items-center gap-1.5 cursor-pointer"
+            >
               <ChatIcon size={14} />
               <span>Ask Project</span>
             </Button>
           </Link>
 
           <Link href={`/projects/${projectId}/settings`}>
-            <Button variant="tertiary" size="sm" aria-label="Project Settings" className="p-2">
+            <Button
+              variant="tertiary"
+              size="sm"
+              aria-label="Project Settings"
+              className="p-2 cursor-pointer"
+            >
               <SettingsIcon size={16} />
             </Button>
           </Link>
@@ -111,7 +201,7 @@ export function ProjectOverview({ projectId }: ProjectOverviewProps) {
       </div>
 
       {/* Top Strip: Question 5 · Is the Project Healthy? */}
-      <CoverageHealthStrip stats={SAMPLE_HEALTH_STATS} />
+      <CoverageHealthStrip stats={healthStats} />
 
       {/* Next-Action Band: Question 4 · What Should I Do Next? */}
       {/* Rendered first on mobile, full width on desktop */}

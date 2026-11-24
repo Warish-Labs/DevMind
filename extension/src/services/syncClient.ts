@@ -69,7 +69,8 @@ export class SyncClient {
 
     const startTime = Date.now();
     const settings = SettingsService.get();
-    const apiBase = settings.apiBaseUrl.replace(/\/+$/, "");
+    const rawBase = settings.apiBaseUrl.replace(/\/+$/, "");
+    const apiBase = rawBase.endsWith("/api/v1") ? rawBase : `${rawBase}/api/v1`;
 
     this.logger.info("Starting Project Brain metadata sync", { projectId });
     onProgress?.("Resolving extension credentials...", 10);

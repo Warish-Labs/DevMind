@@ -268,6 +268,15 @@ export function ExtensionDevicesPane({
               explicit consent (ADR-034 / docs/07 §3).
             </p>
           </div>
+
+          <div className="pt-2">
+            <a
+              href="/settings/extension-token"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-control bg-[var(--signal)] text-[var(--bg-0)] font-semibold text-xs hover:opacity-90 transition-opacity w-full justify-center"
+            >
+              <span>🔑 Generate Extension Token &amp; 1-Click Connect →</span>
+            </a>
+          </div>
         </div>
       </Dialog>
     </div>

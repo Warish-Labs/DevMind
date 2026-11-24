@@ -5,6 +5,18 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ---
 
+## [0.2.1] — 2026-11-24
+
+### Fixed
+
+- **URI Handler Scheme**: Fixed deep-linking URI scheme to `vscode://WarishLabs.devmind-vscode/connect` matching the official publisher extension ID.
+- **Deep-Link Parameters**: Added flexible parameter support for both `projectId` and `project` in connection links.
+- **Interactive Deep-Link Recovery**: If a connect link is triggered without a token, the extension prompts with a 1-click button to open the web portal token generator or enter the token manually.
+- **Post-Link Auto-Sync**: Automatically prompts the user to trigger an initial sync pass upon successful project linking.
+- **API URL Normalization**: Normalized API base URL resolution across `SyncClient` and `ExtensionAuthService` to cleanly handle hosts with or without trailing `/api/v1`.
+
+---
+
 ## [0.2.0] — 2026-11-03
 
 ### Added
