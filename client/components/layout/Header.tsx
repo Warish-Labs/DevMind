@@ -3,10 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useAuth, UserButton } from "@clerk/nextjs";
 
 export function Header() {
   const pathname = usePathname();
   const isAppRoute = pathname?.startsWith("/projects") || pathname?.startsWith("/workspaces");
+  const { isSignedIn, isLoaded } = useAuth();
 
   if (isAppRoute) return null;
 
@@ -64,20 +66,34 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* Actions */}
+        {/* Actions — auth-aware */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/sign-in"
-            className="text-xs sm:text-sm font-mono text-[var(--fg-1)] hover:text-[var(--fg-0)] transition-colors px-2 sm:px-2.5 py-1.5"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/sign-up"
-            className="inline-flex items-center justify-center px-3 sm:px-3.5 py-1.5 rounded-control text-xs sm:text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
-          >
-            Sign Up
-          </Link>
+          {isLoaded && isSignedIn ? (
+            <>
+              <Link
+                href="/projects"
+                className="inline-flex items-center justify-center px-3 sm:px-3.5 py-1.5 rounded-control text-xs sm:text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
+              >
+                Dashboard →
+              </Link>
+              <UserButton />
+            </>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className="text-xs sm:text-sm font-mono text-[var(--fg-1)] hover:text-[var(--fg-0)] transition-colors px-2 sm:px-2.5 py-1.5"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="inline-flex items-center justify-center px-3 sm:px-3.5 py-1.5 rounded-control text-xs sm:text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
           <a
             href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
             target="_blank"

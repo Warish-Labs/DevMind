@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import { TraceContainer } from "./TraceContainer";
 
 function subscribeReducedMotion(callback: () => void) {
@@ -21,6 +22,7 @@ function getServerSnapshot() {
 }
 
 export function Hero() {
+  const { isSignedIn } = useAuth();
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
     getReducedMotionSnapshot,
@@ -179,21 +181,31 @@ export function Hero() {
               </div>
             </div>
 
-            {/* CTAs */}
+            {/* CTAs — auth-aware */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <Link
-                href="/sign-up"
-                className="px-5 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
-              >
-                Get Started Free →
-              </Link>
-
-              <Link
-                href="/sign-in"
-                className="px-4 py-2.5 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono cursor-pointer"
-              >
-                Sign In
-              </Link>
+              {isSignedIn ? (
+                <Link
+                  href="/projects"
+                  className="px-5 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
+                >
+                  Go to Dashboard →
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-up"
+                    className="px-5 py-2.5 rounded-control text-sm font-medium bg-[var(--signal)] text-[var(--bg-0)] hover:opacity-90 transition-opacity font-mono cursor-pointer"
+                  >
+                    Get Started Free →
+                  </Link>
+                  <Link
+                    href="/sign-in"
+                    className="px-4 py-2.5 rounded-control text-sm font-medium border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors font-mono cursor-pointer"
+                  >
+                    Sign In
+                  </Link>
+                </>
+              )}
 
               <a
                 href="https://marketplace.visualstudio.com/items?itemName=WarishLabs.devmind-vscode"
