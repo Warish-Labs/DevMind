@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@devmind/common"],
   experimental: {
     agentFeedback: true,
+    agentUpgrade: false,
   },
   turbopack: {
     rules: {
