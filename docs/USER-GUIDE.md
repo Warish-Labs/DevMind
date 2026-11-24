@@ -85,7 +85,7 @@ Web Browser (Clerk session)        VS Code Extension
  1. Sign in with Clerk
  2. Visit /settings/extension-token
  3. Server issues scoped ext token  →  4. Token saved in SecretStorage
- 5. Click "Open in VS Code" link    →  vscode://devmind.devmind-vscode/connect?token=...
+ 5. Click "Open in VS Code" link    →  vscode://WarishLabs.devmind-vscode/connect?token=...
                                         Extension auto-signs in + links project
 ```
 
@@ -213,11 +213,11 @@ Set `devmind.fixtureMode: true` in VS Code settings to run the extension with ze
 └─────────────────────────────────────┘
 
 VS Code Extension (local, zero network during scan)
-  ↕ vscode://devmind.devmind-vscode/connect  ← deep-link from web portal
+  ↕ vscode://WarishLabs.devmind-vscode/connect  ← deep-link from web portal
   ↕ POST /api/v1/ext/token                   ← extension auth
   ↕ POST /api/v1/ext/sync                    ← consented metadata upload
 ```
 
 ---
 
-*Last updated: 2026-11-24 · DevMind v0.2.0*
+*Last updated: 2026-11-24 · DevMind v0.2.1*

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp, ProjectWithStats } from "@/context/AppContext";
 import { FolderIcon, PlusIcon, SearchIcon, ExternalLinkIcon } from "@/components/shell/icons";
@@ -66,13 +67,13 @@ export function ProjectIndex() {
         </div>
 
         <div className="flex items-center gap-2">
-          <a
-            href="vscode://devmind.devmind-vscode/connect"
+          <Link
+            href="/settings/extension-token"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control border border-[var(--line-2)] text-[var(--fg-1)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-1)] transition-colors text-xs font-mono"
           >
             <span>Connect VS Code</span>
             <ExternalLinkIcon size={12} className="text-[var(--signal)]" />
-          </a>
+          </Link>
 
           <Button
             type="button"
@@ -142,13 +143,13 @@ export function ProjectIndex() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-center gap-3 pt-4">
-            <a
-              href="vscode://devmind.devmind-vscode/connect"
+            <Link
+              href="/settings/extension-token"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-control border border-[var(--line-2)] bg-[var(--bg-1)] hover:bg-[var(--bg-2)] text-xs font-mono text-[var(--fg-0)] transition-colors"
             >
               <span>Connect VS Code</span>
               <ExternalLinkIcon size={14} className="text-[var(--signal)]" />
-            </a>
+            </Link>
             <Button variant="primary" size="default" onClick={() => setCreateOpen(true)}>
               + Create Project
             </Button>

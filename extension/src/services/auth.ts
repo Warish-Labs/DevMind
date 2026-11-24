@@ -118,7 +118,9 @@ export class ExtensionAuthService {
     refreshToken: string
   ): Promise<{ accessToken: string; refreshToken: string } | null> {
     const settings = SettingsService.get();
-    const endpoint = `${settings.apiBaseUrl}/ext/token/refresh`;
+    const rawBase = settings.apiBaseUrl.replace(/\/+$/, "");
+    const apiBase = rawBase.endsWith("/api/v1") ? rawBase : `${rawBase}/api/v1`;
+    const endpoint = `${apiBase}/ext/token/refresh`;
 
     const res = await fetch(endpoint, {
       method: "POST",

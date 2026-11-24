@@ -199,9 +199,7 @@ export function CommandPalette() {
         subtitle: "Deep-link to local editor companion",
         icon: <ExternalLinkIcon size={16} className="text-[var(--ref)]" />,
         onSelect: () => {
-          if (typeof window !== "undefined") {
-            window.location.assign("vscode://devmind.devmind-vscode/connect");
-          }
+          router.push("/settings/extension-token");
         },
       },
     ];
