@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Early Access & Development Status · DevMind",
   description:
     "DevMind is in its design and build phase. Follow our open development progress, inspect the architecture, or register for early access.",
+  alternates: {
+    canonical: "/early-access",
+  },
 };
 
 import { EarlyAccessForm } from "../../components/early-access/EarlyAccessForm";

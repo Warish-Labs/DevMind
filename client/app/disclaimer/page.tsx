@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Disclaimer & Terms · DevMind",
   description:
     "DevMind Disclaimer & Terms: Build phase status, evidence-backed findings (E0-E3) scope, and software usage terms.",
+  alternates: {
+    canonical: "/disclaimer",
+  },
 };
 
 export default function DisclaimerPage() {

@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "About Us · DevMind & WarishLabs",
   description:
     "DevMind is the Continuous Project Brain for agentic software engineering. Built by WarishLabs with a local-first, zero-leak architecture.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {
