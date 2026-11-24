@@ -1,210 +1,223 @@
-# DevMind · User Guide & Platform Walkthrough
+# 🧠 DevMind — User Guide
 
-Welcome to **DevMind** — the agentic software engineering platform built around a continuous, shared **Project Brain**.
-
-DevMind connects your local development workflow in **VS Code** with a centralized, evidence-grounded intelligence platform on the **Web**, giving both human developers and autonomous AI agents a continuously synchronized mental model of your codebase.
+> **Your codebase, understood.** DevMind keeps a live, evidence-backed mental model of your entire project — security findings, bug history, living docs, deployment incidents, and more — shared between VS Code and your browser.
 
 ---
 
-## Table of Contents
+## ✨ What is DevMind?
 
-1. [Core Principles & Architecture](#1-core-principles-architecture)
-2. [Quickstart: Access & Authentication](#2-quickstart-access-authentication)
-3. [Managing Workspaces & Projects](#3-managing-workspaces-projects)
-4. [VS Code Extension Setup & Usage](#4-vs-code-extension-setup-usage)
-5. [Local Scanning & Privacy-First Sync](#5-local-scanning-privacy-first-sync)
-6. [Web Platform Capabilities](#6-web-platform-capabilities)
-   - [Project Brain & Symbol Knowledge Graph](#61-project-brain-symbol-knowledge-graph)
-   - [Project Mentor & Topological Task DAGs](#62-project-mentor-topological-task-dags)
-   - [Living Documentation (DocsAlive)](#63-living-documentation-docsalive)
-   - [Bug Memory & Resolution Retrieval](#64-bug-memory-resolution-retrieval)
-   - [Deployment Diagnosis & Incident Triage](#65-deployment-diagnosis-incident-triage)
-   - [PR Intelligence & Review Rules](#66-pr-intelligence-review-rules)
-7. [Environment Variables & Configuration](#7-environment-variables-configuration)
-8. [Troubleshooting & Frequently Asked Questions](#8-troubleshooting-frequently-asked-questions)
+DevMind is an **agentic software engineering platform** built around a continuously synchronized **Project Brain**. Instead of re-reading your repository from scratch on every AI request, DevMind maintains a knowledge graph of symbols, call hierarchies, AST dependencies, and semantic embeddings — updated locally by your VS Code extension, securely synced to the cloud on demand.
 
----
+```
+Your Machine (VS Code)          DevMind Cloud (Project Brain)
+─────────────────────────       ─────────────────────────────
+ Source code stays here    →    Symbols, findings, embeddings
+ AST parsed locally        →    Hybrid RAG (keyword + vector)
+ You consent before sync   →    Zero raw code stored
+```
 
-## 1. Core Principles & Architecture
-
-DevMind is built upon four non-negotiable architectural foundations:
-
-1. **Local-First & Zero Egress Without Consent (ADR-022, ADR-047)**:
-   Your source code stays on your developer machine. The VS Code companion parses files locally using tree-sitter ASTs. No source code or chunk leaves your machine without an explicit, interactive **Consent Preview**.
-2. **Continuous Shared Project Brain (ADR-001, ADR-002)**:
-   Instead of re-reading raw repositories on every AI request, DevMind maintains a synchronized knowledge graph of symbols, call hierarchies, AST dependencies, and semantic embeddings in PostgreSQL + pgvector.
-3. **Resolvable Evidence Standard (E0–E3)**:
-   Every finding produced by DevMind must provide verifiable evidence:
-   - `E0 · Syntactic`: AST pattern match (e.g. missing middleware check).
-   - `E1 · Structural`: Call-graph / control-flow connection across files.
-   - `E2 · Semantic / Invariant`: Grounded dynamic trace or model verification.
-   - *(Never speculative or hallucinatory).*
-4. **Zero Live Database Connections (ADR-034)**:
-   DevMind statically discovers schemas, relationships, and models directly from source code and migrations (Prisma, SQLAlchemy, Alembic). It never opens live TCP connections to production databases.
+**Three ironclad guarantees:**
+| Guarantee | What it means |
+|---|---|
+| 🔒 **Local-First** | Source code never leaves your machine without your explicit consent |
+| 🧾 **Evidence-Gated** | Every finding has a resolvable E0–E2 proof — no hallucinations |
+| 🏢 **Tenant-Isolated** | Your data is strictly partitioned from every other workspace |
 
 ---
 
-## 2. Quickstart: Access & Authentication
+## 🚀 Quick Start (3 Steps)
 
-### 2.1 Web Platform Access
-- **Production URL**: [https://devmind.warishlabs.in](https://devmind.warishlabs.in)
-- **Local Dev URL**: `http://localhost:3000`
+### Step 1 — Sign Up on the Web
 
-### 2.2 Sign Up & Sign In with Clerk
-1. Click **Sign In** or **Sign Up** in the top navigation bar.
-2. Authenticate using your preferred Clerk provider:
-   - **Google Workspace** / OAuth
-   - **GitHub** (recommended for seamless PR analysis)
-   - **Email Magic Link / Password**
-3. Upon first sign-in, you are directed to `/onboarding` to initialize your primary workspace and developer profile.
+1. Open **[https://devmind.warishlabs.in](https://devmind.warishlabs.in)**
+2. Click **Sign Up** (top right) and authenticate with **Google**, **GitHub**, or **Email**
+3. Complete the **3-step onboarding wizard**:
+   - Name your workspace (e.g. `my-projects`)
+   - Create a project (e.g. `backend-api`)
+   - Choose sync mode — start with **metadata_only** (safest, recommended)
 
-> [!NOTE]
-> **Developer Offline Bypass**: If evaluating in an air-gapped or local environment without Clerk credentials configured, DevMind automatically presents a fallback **Developer Access** form allowing instant local progression.
+> **Already have an account?** Click **Sign In** — after authentication the header shows a **Dashboard →** button and your avatar instead of the sign-in/up buttons.
 
 ---
 
-## 3. Managing Workspaces & Projects
+### Step 2 — Link Your VS Code Extension
 
-### 3.1 Workspaces (Multi-Tenant Isolation)
-All DevMind data is strictly isolated by `workspace_id`.
-- Navigate to `/workspaces` to inspect your active workspaces.
-- To create a new workspace: Click **Create Workspace**, provide a name and slug (e.g. `engineering-core`).
-- Workspace roles follow role-based access control (RBAC): `Owner`, `Admin`, `Member`, `Viewer`.
+Install the DevMind Companion extension into VS Code:
 
-### 3.2 Projects
-A workspace contains one or more **Projects** (each corresponding to a code repository or microservice).
-- Navigate to your workspace and select **Create Project**.
-- Copy the generated **Project ID (UUIDv7)** — you will link your VS Code workspace to this Project ID.
-
----
-
-## 4. VS Code Extension Setup & Usage
-
-The DevMind Companion extension (`devmind-vscode`) brings local AST scanning, architectural views, and consented sync into your editor.
-
-### 4.1 Installing the Extension Package (.vsix)
-The extension package is generated in the repository under `extension/dist/devmind-vscode.vsix`.
-
-**To install via command line:**
 ```bash
 code --install-extension /path/to/DevMind/extension/dist/devmind-vscode.vsix
 ```
 
-**To install via VS Code UI:**
-1. Open VS Code.
-2. Open the Extensions sidebar (`Ctrl+Shift+X` / `Cmd+Shift+X`).
-3. Click the `...` (Views and More Actions) menu in the top right of the Extensions view.
-4. Select **Install from VSIX...**.
-5. Choose `extension/dist/devmind-vscode.vsix`.
+Or from the VS Code UI: `Extensions sidebar → ⋯ → Install from VSIX…`
 
-### 4.2 Configuring Extension Settings
-Open VS Code Settings (`Ctrl+,` or `Cmd+,`) and search for `DevMind`:
-- `devmind.apiBaseUrl`: Base URL for the DevMind API (default: `https://api.devmind.warishlabs.in/api/v1` or `http://localhost:8000/api/v1` for local dev).
-- `devmind.projectId`: Paste your Project UUID here.
-- `devmind.syncMode`: Choose between `metadata_only` (default), `indexed`, or `disabled`.
-- `devmind.fixtureMode`: Set to `true` if operating offline without a server.
+**🔗 One-click linking (recommended):**
 
----
+1. In the web app, go to **Settings → Extension Token** (`/settings/extension-token`)
+2. Click **"Open in VS Code & Link Automatically"**
+3. VS Code opens, the extension signs in, and your project is linked — done!
 
-## 5. Local Scanning & Privacy-First Sync
+**Manual linking (alternative):**
 
-### 5.1 Scanning Your Workspace
-1. Click the **DevMind** icon on the VS Code Activity Bar (left sidebar).
-2. Click **Scan Workspace** (or run `Ctrl+Shift+P` → `DevMind: Scan Workspace`).
-3. The local scanner parses your workspace using deterministic tree-sitter AST engines.
-4. Detected architectural items appear across the sidebar views:
-   - **Findings**: Code vulnerabilities, missing role checks (`devmind.authz.missing_role_check`), exposed secrets.
-   - **Project Structure**: Discovered API routes, middleware chains, endpoints.
-   - **Database (from files)**: Extracted ORM models and schema migrations.
-
-### 5.2 Reviewing What Leaves Your Machine (Consent Ledger)
-Before any metadata or chunk leaves your machine:
-1. Run `DevMind: Review What Leaves Machine` from the Command Palette.
-2. A security-isolated **Consent Preview Webview** opens showing:
-   - Exact files and line ranges proposed for synchronization.
-   - Total payload byte count.
-   - Redaction checks (all tokens and credentials masked as `[REDACTED:type:hash8]`).
-3. Click **Accept & Sync** to transmit consented data, or **Cancel** to abort.
+1. Copy your token from the Extension Token page
+2. In VS Code: `Ctrl+Shift+P` → `DevMind: Sign In` → paste token
+3. `Ctrl+Shift+P` → `DevMind: Link Workspace to Project` → paste Project ID
 
 ---
 
-## 6. Web Platform Capabilities
+### Step 3 — Scan & Sync
 
-### 6.1 Project Brain & Symbol Knowledge Graph
-- **Route**: `/projects/[projectId]/brain`
-- Explore your codebase as a living knowledge graph.
-- Inspect symbols (classes, functions, interfaces), caller-callee relationships, and semantic embeddings.
-- Filter by file, directory strata, or component blast radius.
-
-### 6.2 Project Mentor & Topological Task DAGs
-- **Route**: `/projects/[projectId]/mentor`
-- **Topological Task Sorting**: View work items organized via Kahn's algorithm DAG. Blocked tasks strictly follow unblocked blockers with zero circular dependency deadlocks.
-- **Health Evaluations**: Generate release-readiness assessments across six dimensions:
-  1. Functionality
-  2. Code Quality
-  3. Security Posture
-  4. Test Coverage
-  5. Living Documentation
-  6. Architecture Adherence
-
-### 6.3 Living Documentation (DocsAlive)
-- **Route**: `/projects/[projectId]/documentation`
-- Automatically compares actual code AST implementations against Markdown / OpenAPI documentation.
-- Detects **Documentation Drift** (outdated parameters, renamed routes, missing docs).
-- Generates one-click unified diff patches to sync documentation back to ground truth.
-
-### 6.4 Bug Memory & Resolution Retrieval
-- **Route**: `/projects/[projectId]/bugs`
-- Deduplicates exceptions and runtime errors using canonical SHA-256 error signatures.
-- When an engineer or CI hits an error, Bug Memory surfaces the exact verified code fix and root cause from historical incidents.
-
-### 6.5 Deployment Diagnosis & Incident Triage
-- **Route**: `/projects/[projectId]/deployments`
-- Paste raw deployment and startup logs from Render, Vercel, or Docker.
-- Automatically redacts sensitive tokens and detects:
-  - Missing environment variables.
-  - Database migration failures and connection timeouts.
-  - Port binding mismatches and container OOM kills.
-- Outputs probable cause classification and step-by-step remediation commands.
-
-### 6.6 PR Intelligence & Review Rules
-- **Route**: `/projects/[projectId]/prs`
-- Connect GitHub repositories to automatically analyze incoming Pull Requests.
-- Runs evidence-based security and architecture checks, posting actionable PR review comments grounded strictly in E0–E2 evidence.
+1. Open your project folder in VS Code
+2. `Ctrl+Shift+P` → **`DevMind: Scan Workspace`**
+3. Watch findings appear in the sidebar — zero network calls during scan!
+4. When ready: `Ctrl+Shift+P` → **`DevMind: Trigger Sync Now`**
+5. A **Consent Preview** shows exactly what will be uploaded — click **Accept & Sync**
+6. Open the web app to see your Project Brain populate in real time
 
 ---
 
-## 7. Environment Variables & Configuration
+## 🔐 How the Extension Knows Who You Are
 
-Below is the reference matrix of environment variables:
+This is the key security design:
 
-| Component | Variable | Purpose | Default / Example |
-|---|---|---|---|
-| **Client** | `NEXT_PUBLIC_API_BASE_URL` | DevMind FastAPI API endpoint | `https://api.devmind.warishlabs.in` |
-| **Client** | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk authentication frontend key | `pk_live_...` |
-| **Client** | `NEXT_PUBLIC_SITE_URL` | Canonical client URL | `https://devmind.warishlabs.in` |
-| **Server** | `DEVMIND_DATABASE_URL` | PostgreSQL connection with pgvector | `postgresql+psycopg://...` |
-| **Server** | `DEVMIND_REDIS_URL` | Redis for Celery queues and caching | `rediss://...` |
-| **Server** | `CLERK_SECRET_KEY` | Clerk backend JWT verification secret | `sk_live_...` |
-| **Extension** | `DEVMIND_API_BASE_URL` | Target server URL during build | `https://api.devmind.warishlabs.in/api/v1` |
+```
+Web Browser (Clerk session)        VS Code Extension
+──────────────────────────         ─────────────────
+ 1. Sign in with Clerk
+ 2. Visit /settings/extension-token
+ 3. Server issues scoped ext token  →  4. Token saved in SecretStorage
+ 5. Click "Open in VS Code" link    →  vscode://devmind.devmind-vscode/connect?token=...
+                                        Extension auto-signs in + links project
+```
+
+The extension token (`dme_at_...`) is:
+- **Scoped** to your account only — it cannot access other workspaces
+- **Stored encrypted** in VS Code's native `SecretStorage` (OS keychain-backed)
+- **Never logged** or exposed in the output channel
+- **Revocable** anytime from workspace settings on the web
 
 ---
 
-## 8. Troubleshooting & Frequently Asked Questions
+## 🌐 Web Platform — What You Can Do
 
-### Q: Why do I see "Developer Access" instead of the Clerk sign-in card?
-**A:** This occurs when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is not present in the active environment. You can enter any developer email to proceed in offline mode, or provide your Clerk publishable key in `client/.env.local`.
+After signing in, navigate to your project to access:
 
-### Q: Does the VS Code extension ever send my source code to third-party AI providers?
-**A:** **Never.** Under ADR-022 and ADR-047, all parsing is local. Only consented manifests or indexed chunk hashes leave your machine, and only to your designated DevMind backend.
+### 🧠 Project Brain (`/projects/[id]/brain`)
+Explore your codebase as a living knowledge graph. Inspect symbols, caller-callee chains, and semantic search across your entire codebase.
 
-### Q: How do I link a new repository to an existing DevMind Project?
-1. Open the project in the DevMind Web UI and copy its **Project ID**.
-2. Open your repository folder in VS Code.
-3. Run `DevMind: Link Workspace to Project` from the Command Palette (`Ctrl+Shift+P`).
-4. Paste the Project ID. Subsequent scans and syncs will associate with that Project Brain.
+### 🤖 Project Mentor (`/projects/[id]/tasks`)
+AI-powered task backlog with topological DAG scheduling. Never get blocked — Mentor always surfaces the next unblocked, highest-impact work item.
 
-### Q: How do I test the platform locally with zero external services?
-DevMind includes complete mock adapters for offline development:
-- Run `node scripts/test-all.mjs --fast` to execute the full end-to-end verification suite across client, server, extension, and common packages.
-- Start the server with `DEVMIND_RUN_MODE=all` and client with `NEXT_PUBLIC_FIXTURE_MODE=true`.
+### 📖 Living Documentation (`/projects/[id]/docs`)
+Automatically detects documentation drift between your code and your Markdown/OpenAPI specs. One-click unified diff patches to fix it.
+
+### 🐛 Bug Memory (`/projects/[id]/bugs`)
+Deduplicates runtime exceptions by canonical signature. Surfaces verified resolutions from historical incidents instantly.
+
+### 🚀 Deployment Diagnosis (`/projects/[id]/deployments`)
+Paste raw deployment logs. Gets probable root cause, cited log lines, and step-by-step fix commands. Auto-redacts credentials.
+
+### 🔎 PR Intelligence (`/projects/[id]/pull-requests`)
+GitHub App integration analyzes incoming PRs with evidence-backed security and architecture checks.
+
+---
+
+## 🔄 Sync Modes — Choosing Your Privacy Level
+
+| Mode | What syncs | Use case |
+|---|---|---|
+| `metadata_only` | AST symbols, line ranges, finding IDs only | **Default — Maximum privacy** |
+| `indexed` | Consented code chunks → pgvector embeddings | Full hybrid RAG / CodeMate reasoning |
+| `disabled` | Nothing — local scan only | Fully air-gapped development |
+
+Switch modes anytime in `Workspace Settings → Sync Mode`. Switching to `metadata_only` automatically purges any stored chunks (NFR-PRV-02).
+
+---
+
+## 🔧 VS Code Extension Commands
+
+| Command | What it does |
+|---|---|
+| `DevMind: Scan Workspace` | Run full local AST scan (zero network) |
+| `DevMind: Trigger Sync Now` | Sync scan metadata to Project Brain (shows consent preview) |
+| `DevMind: Sign In` | Paste extension token to authenticate |
+| `DevMind: Sign Out` | Clear tokens from SecretStorage |
+| `DevMind: Link Workspace to Project` | Set the Project ID for this workspace |
+| `DevMind: Review What Leaves Machine` | Open consent preview webview |
+| `DevMind: Show Sync Log` | View full audit log of past sync operations |
+
+---
+
+## ⚙️ Configuration Reference
+
+| Setting | Description | Default |
+|---|---|---|
+| `devmind.apiBaseUrl` | DevMind API endpoint | `https://api.devmind.warishlabs.in/api/v1` |
+| `devmind.projectId` | Project UUID for sync | *(set via Link command)* |
+| `devmind.syncMode` | `metadata_only` / `indexed` / `disabled` | `metadata_only` |
+| `devmind.fixtureMode` | Offline mode with fixture data | `false` in production |
+
+---
+
+## 🛡️ Privacy & Security Guarantees
+
+- **No source code stored** without `indexed` mode consent
+- **Dual-tier redaction** — credentials masked client-side AND server-side before storage
+- **Cross-tenant isolation** — every query scoped by `workspace_id + project_id`
+- **Zero live DB connections** — schemas discovered from migrations, never from live TCP
+- **Extension reads only** — all writes require explicit human approval
+
+---
+
+## ❓ Troubleshooting
+
+### "Sign In / Sign Up buttons still show after I signed in"
+Hard-refresh (`Ctrl+Shift+R`) — Clerk's session state needs a client-side hydration cycle. If it persists, check that `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set in `client/.env.local`.
+
+### "Developer Access" form shows instead of Clerk sign-in
+The `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` environment variable is missing. Add it to `client/.env.local`. You can still use the developer form to reach onboarding in local/offline mode.
+
+### Extension shows "You must sign in before syncing"
+Run `Ctrl+Shift+P` → `DevMind: Sign In`. Get your token from the web portal at `/settings/extension-token`.
+
+### "Project ID cannot be empty" when syncing
+Run `DevMind: Link Workspace to Project` and paste your project's UUID from the web app (`/projects` page → copy the ID from the URL).
+
+### Sync succeeds but Brain shows no data
+Make sure you ran `DevMind: Scan Workspace` first. Sync sends the last scan result — without a scan there is nothing to upload.
+
+### Testing locally with no external services
+```bash
+node scripts/test-all.mjs --fast   # Full suite: client + server + extension + common
+```
+
+Set `devmind.fixtureMode: true` in VS Code settings to run the extension with zero network calls.
+
+---
+
+## 🏗️ Architecture at a Glance
+
+```
+┌─────────────────────────────────────┐
+│          devmind.warishlabs.in      │  ← Next.js (Vercel Hobby)
+│  Sign In · Dashboard · Brain UI     │
+└──────────────┬──────────────────────┘
+               │ Clerk JWT / API calls
+┌──────────────▼──────────────────────┐
+│   api.devmind.warishlabs.in         │  ← FastAPI + Celery (Render Free)
+│   LangGraph agents · LLM gateway    │
+│   Project Brain · Hybrid RAG        │
+└──────────────┬──────────────────────┘
+               │ pgvector + PostgreSQL
+┌──────────────▼──────────────────────┐
+│          Neon (Free tier)           │  ← 18 schema tables, HNSW index
+└─────────────────────────────────────┘
+
+VS Code Extension (local, zero network during scan)
+  ↕ vscode://devmind.devmind-vscode/connect  ← deep-link from web portal
+  ↕ POST /api/v1/ext/token                   ← extension auth
+  ↕ POST /api/v1/ext/sync                    ← consented metadata upload
+```
+
+---
+
+*Last updated: 2026-11-24 · DevMind v0.2.0*

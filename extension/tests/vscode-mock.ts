@@ -146,6 +146,9 @@ export const window = {
   registerTreeDataProvider: (_id: string, _provider: unknown) => ({
     dispose: () => {},
   }),
+  registerUriHandler: (_handler: unknown) => ({
+    dispose: () => {},
+  }),
   createStatusBarItem: (alignment = StatusBarAlignment.Left, priority = 100) => ({
     alignment,
     priority,

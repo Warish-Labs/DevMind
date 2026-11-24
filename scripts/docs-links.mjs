@@ -28,6 +28,7 @@ const IGNORED_DIRS = new Set([
   ".venv",
   "out",
   ".turbo",
+  "report-build",
 ]);
 
 const ALLOWED_MERMAID_TYPES = new Set([

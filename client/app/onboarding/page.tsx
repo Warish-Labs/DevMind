@@ -283,21 +283,42 @@ export default function OnboardingPage() {
                 </div>
 
                 {state.projectSource === "extension" && (
-                  <div className="p-3 bg-[var(--bg-2)] border border-[var(--line-1)] rounded-[var(--radius-control)] flex items-center justify-between gap-3">
-                    <div className="text-xs text-[var(--fg-1)]">
-                      <p className="font-semibold">VS Code Deep Link</p>
-                      <p className="text-[var(--fg-2)]">
-                        Link local editor session to this project
-                      </p>
+                  <div className="flex flex-col gap-3">
+                    <div className="p-3 bg-[var(--bg-2)] border border-[var(--line-1)] rounded-[var(--radius-control)] flex items-center justify-between gap-3">
+                      <div className="text-xs text-[var(--fg-1)]">
+                        <p className="font-semibold">
+                          Option 1 — Get extension token from web portal
+                        </p>
+                        <p className="text-[var(--fg-2)]">
+                          Visit Settings → Extension Token to auto-link VS Code
+                        </p>
+                      </div>
+                      <a
+                        href="/settings/extension-token"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 px-3 py-1.5 text-xs bg-[var(--signal)] text-[var(--bg-0)] font-mono font-medium rounded-[var(--radius-control)] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"
+                      >
+                        Get Token ↗
+                      </a>
                     </div>
-                    <a
-                      href={`vscode://devmind.devmind-vscode/connect?project=${encodeURIComponent(
-                        state.projectName
-                      )}`}
-                      className="px-3 py-1.5 text-xs bg-[var(--bg-1)] border border-[var(--line-3)] text-[var(--fg-0)] rounded-[var(--radius-control)] hover:bg-[var(--bg-0)] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"
-                    >
-                      Open in VS Code
-                    </a>
+
+                    <div className="p-3 bg-[var(--bg-2)] border border-[var(--line-1)] rounded-[var(--radius-control)] flex items-center justify-between gap-3">
+                      <div className="text-xs text-[var(--fg-1)]">
+                        <p className="font-semibold">Option 2 — VS Code Deep Link</p>
+                        <p className="text-[var(--fg-2)]">
+                          Open editor and link this project session directly
+                        </p>
+                      </div>
+                      <a
+                        href={`vscode://devmind.devmind-vscode/connect?project=${encodeURIComponent(
+                          state.projectName
+                        )}`}
+                        className="shrink-0 px-3 py-1.5 text-xs bg-[var(--bg-1)] border border-[var(--line-3)] text-[var(--fg-0)] rounded-[var(--radius-control)] hover:bg-[var(--bg-0)] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ref)]"
+                      >
+                        Open in VS Code
+                      </a>
+                    </div>
                   </div>
                 )}
               </CardContent>
