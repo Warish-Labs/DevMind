@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Privacy Policy · DevMind",
   description:
     "DevMind Privacy Policy: Local scanning by default, zero unauthorized uploads, cryptographic secret redaction, and deterministic consent boundaries.",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPolicyPage() {
